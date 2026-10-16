@@ -39,7 +39,7 @@ T	p0	\n
 M	which-shops-a-place-keeps
 T	h2	Which shops a place keeps
 T	h2	\n
-T	p0	Not every place carries all nine shops. How many it keeps follows from its size band; 
+T	p0	Not every place carries all ten shops. How many it keeps follows from its size band; 
 T	p0 em	which
 T	p0	 ones it keeps follows from the country around it:
 T	p0	\n
@@ -74,6 +74,12 @@ T	p0	And one more, on top of whatever else a place keeps: the
 T	p0 strong	Statue Store
 T	p0	, which Zangband built where its people were thickest. Every great city has one, and so does a city that is crowded – about three places in a world. It sells and buys statues: likenesses of monsters in wood, clay, stone, iron, copper, silver, gold, ivory and mithril, which do nothing and are worth what their material is worth. The cheap ones come by the handful. The general store and the black market will buy a statue too, which helps, since a stone one weighs fifty pounds.
 T	p0	\n
+T	p0	And the 
+T	p0 strong	Figurine Store
+T	p0	, the same way, which Zangband built where people and magic both ran high: a city or a great city whose country is magical keeps one, two or three in a world, often in the same city as a Statue Store. It sells and buys magical figurines – monsters in miniature that become your pets when thrown (
+L	p0 link	1	pets	Pets and Allies
+T	p0	) – holding monsters up to about the twenty-sixth level.
+T	p0	\n
 T	p0	Two towns of the same size need not hold the same shops. The choice is made once, when the world is generated, from the world seed and the town’s own position, so a given world always has the same places in it however you reach them.
 T	p0	\n
 M	how-good-a-shop-is
@@ -104,7 +110,9 @@ T	p0	It is deliberately rare. Measured across a great many worlds, about two sho
 T	p0	\n
 T	p0	The Statue Store climbs on the country’s magic rather than its people, since it only ever stands in a crowded place: about half are plain, and the Expert and Arcane ones – Zangband’s 
 T	p0 em	Unusual
-T	p0	 Statue Store – are where the silver, gold, ivory and mithril are.
+T	p0	 Statue Store – are where the silver, gold, ivory and mithril are. The Figurine Store stands only where it is crowded and magical both, so its standard is mostly the luck of the place: about half are plain, and the Expert and Arcane ones – Zangband’s 
+T	p0 em	Expensive
+T	p0	 Figurine Store – reach monsters of the forties and fifties.
 T	p0	\n
 T	p0	Two exceptions. The 
 T	p0 strong	black market
@@ -255,7 +263,7 @@ T	p0	\n
 T	p0	The inn has it for a reason worth knowing: it is where people who have been somewhere else are sitting. And since a town that has fallen keeps no services at all, the work dries up exactly where you would expect it to, without any rule needing to say so. Every inn is hiring; a village has no inn, and nor does a town that has fallen.
 T	p0	\n
 T	p0	You can carry eight jobs at once, and a ninth is refused. Any building that hires will tell you how far along you are, or pay you when you are done — twenty gold for each creature asked for, multiplied by how deep that creature lives, and never less than twenty in total. See 
-L	p0 link	1	quests	Quests
+L	p0 link	2	quests	Quests
 T	p0	 for the rest of the terms.
 T	p0	\n
 M	what-you-dream-at-the-inn
@@ -291,7 +299,7 @@ T	p0 strong	Unlife
 T	p0	 and 
 T	p0 strong	Chance
 T	p0	 make a dark one likelier. They are added to the chance rather than replacing it, and twenty points of virtue are worth one percentage point, so where you sleep still matters most; but a scholarly character and a necromancer sleeping in the same bed are not having the same night. See 
-L	p0 link	2	virtues	Virtues
+L	p0 link	3	virtues	Virtues
 T	p0	.
 T	p0	\n
 T	p0	Nothing in a town is free. The prices are in 

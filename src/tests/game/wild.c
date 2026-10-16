@@ -1121,17 +1121,18 @@ static int test_a_large_town_is_built(void *state) {
 }
 
 /**
- * The Statue Store stands where the world says it does, and only there
- * (DEC-145).
+ * The Statue and Figurine Stores stand where the world says they do, and only
+ * there (DEC-145, DEC-146).
  *
- * It is kept by a rule of its own -- every great city, and a crowded city --
- * on top of a town's trades rather than among them, and placed after Home,
- * which is the last of the eight.  So the two things worth holding are the
- * rule, and that a town given the ninth shop still builds every shop it was
- * given: a ninth building is one more lot the layout has to find.
+ * Each is kept by a rule of its own -- every great city and a crowded city for
+ * statues, a city or great city whose country is magical for figurines -- on
+ * top of a town's trades rather than among them, and placed after Home, which
+ * is the last of the eight.  So the things worth holding are the rules, and
+ * that a town given a ninth and tenth shop still builds every shop it was
+ * given: each is one more lot the layout has to find.
  */
 static int test_a_statue_store_stands_where_it_is_given(void *state) {
-	int seed, given = 0;
+	int seed, given = 0, figurines = 0;
 
 	for (seed = 1; seed <= 10; seed++) {
 		struct wilderness *w = wild_new(129, seed * 4409);
@@ -1143,15 +1144,18 @@ static int test_a_statue_store_stands_where_it_is_given(void *state) {
 			const struct wild_block *b = wild_block_at(w, t->block.x,
 				t->block.y);
 			bool has = (t->stores & (1u << WILD_STORE_STATUE)) != 0;
+			bool fig = (t->stores & (1u << WILD_STORE_FIGURINE)) != 0;
 			struct chunk *town;
 			uint16_t found = 0;
 			struct loc grid;
 
-			/* The rule: great cities, and crowded cities, and not home */
+			/* The rules: crowded for statues, magical for figurines */
 			require(has == (i > 0 && (t->band >= 3
 				|| (t->band == 2 && b->pop >= 192))));
-			if (!has) continue;
-			given++;
+			require(fig == (i > 0 && t->band >= 2 && b->magic >= 150));
+			if (!has && !fig) continue;
+			if (has) given++;
+			if (fig) figurines++;
 
 			town = town_gen_wild(player,
 				wild_block_seed(w, t->block.x, t->block.y),
@@ -1169,6 +1173,7 @@ static int test_a_statue_store_stands_where_it_is_given(void *state) {
 		wild_free(w);
 	}
 	require(given > 0);
+	require(figurines > 0);
 	ok;
 }
 

@@ -66,6 +66,15 @@ struct store {
 	int normal_stock_max;
 
 	/**
+	 * The level its goods are made at, from store.txt's `level:`, in place
+	 * of the usual one near the surface; 0 for the usual (ZangbandTK,
+	 * DEC-146).  For a shop whose goods are only as good as the level they
+	 * are made at -- a figurine holds a monster of about that depth.
+	 */
+	int level_min;
+	int level_max;
+
+	/**
 	 * ZangbandTK (WLD-15, WLD-16a): which town this shop's stock belongs to,
 	 * and how good the shop is there.
 	 *

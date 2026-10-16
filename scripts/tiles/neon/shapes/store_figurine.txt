@@ -1,0 +1,19 @@
+# the Figurine Store (DEC-146).  It shares the Statue Store's 0 and is told
+# from it by colour in ASCII, so here it carries what it sells instead of a
+# numeral: a small figure on a base, in the window.  See store_1.
+................
+....XXXXXXXX....
+...XXXXXXXXXX...
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XX....XX....XX.
+.XX...XXXX...XX.
+.XX....XX....XX.
+.XX....XX....XX.
+.XX...XXXX...XX.
+.XX..........XX.
+.XXXXXX..XXXXXX.
+.XXXX......XXXX.
+.XXXX......XXXX.
+................

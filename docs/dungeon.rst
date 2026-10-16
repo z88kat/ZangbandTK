@@ -54,9 +54,12 @@ Features that do not block line of sight
 ``>``   A staircase down           ``8``    Entrance to your Home
 ``#``   A pool of lava             ``9``    Entrance to the magetower
                                    ``0``    Entrance to the Statue Store
+                                   ``0``    Entrance to the Figurine Store
 ===== =========================    =====  ================================== 
 
-The other five town services are all ``+``, each in a colour of its own: the
+The two ``0`` shops are told apart by colour, the Statue Store light brown and
+the Figurine Store light green. The other five town services are all ``+``, each in a
+colour of its own: the
 inn in brown, the healer in green, the magesmith in red, the recharger in blue
 and the chaos tower in violet. Looking at one (``l``) names it. :doc:`towns`
 says which places have which.
@@ -266,7 +269,7 @@ shops (each with an entrance), some townspeople, and a wall around it with gates
 in it. The first time you are in town it will be daytime, but note that the sun
 rises and falls (rather instantly) as time passes.
 
-Not every town holds all nine shops — see :doc:`towns`.
+Not every town holds all ten shops — see :doc:`towns`.
 
 Townspeople
 ===========
@@ -421,6 +424,17 @@ The Statue Store (``0``)
   great cities and the most crowded cities keep one, and a better one --
   Expert or Arcane -- reaches for the precious metals. The general store and
   the black market will take a statue off your hands too.
+
+.. index::
+   single: figurine store
+   seealso: store; figurine store
+
+The Figurine Store (``0``, in light green)
+  The Figurine Store deals in magical figurines: monsters in miniature, which
+  become your pets when thrown (:doc:`pets`). Its figurines hold monsters up to
+  about the twenty-sixth level, now and then deeper, and an Expert or Arcane
+  one's reach further down.
+  Cities and great cities keep one where the country around them is magical.
 
 Within The Dungeon
 ==================

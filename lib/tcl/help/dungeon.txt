@@ -31,17 +31,20 @@ T	p0	\n
 M	features-that-do-not-block-line-of-sight
 T	h3	Features that do not block line of sight
 T	h3	\n
-T	tr0	.  A floor space       1    Entrance to General Store\n
-T	tr0 odd	.  A trap (hidden)     2    Entrance to Armoury\n
-T	tr0	^  A trap (known)      3    Entrance to Weapon Smith\n
-T	tr0 odd	;  A glyph of warding  4    Entrance to Bookseller\n
-T	tr0	'  An open door        5    Entrance to Alchemy Shop\n
-T	tr0 odd	'  A broken door       6    Entrance to Magic Shop\n
-T	tr0	<  A staircase up      7    Entrance to the Black Market\n
-T	tr0 odd	>  A staircase down    8    Entrance to your Home\n
-T	tr0	#  A pool of lava      9 0  Entrance to the magetower Entrance to the Statue Store\n
+T	tr0	.  A floor space       1      Entrance to General Store\n
+T	tr0 odd	.  A trap (hidden)     2      Entrance to Armoury\n
+T	tr0	^  A trap (known)      3      Entrance to Weapon Smith\n
+T	tr0 odd	;  A glyph of warding  4      Entrance to Bookseller\n
+T	tr0	'  An open door        5      Entrance to Alchemy Shop\n
+T	tr0 odd	'  A broken door       6      Entrance to Magic Shop\n
+T	tr0	<  A staircase up      7      Entrance to the Black Market\n
+T	tr0 odd	>  A staircase down    8      Entrance to your Home\n
+T	tr0	#  A pool of lava      9 0 0  Entrance to the magetower Entrance to the Statue Store Entrance to\n
+T	tr0	                              the Figurine Store\n
 T	tbllast0	\n
-T	p0	The other five town services are all 
+T	p0	The two 
+T	p0 code	0
+T	p0	 shops are told apart by colour, the Statue Store light brown and the Figurine Store light green. The other five town services are all 
 T	p0 code	+
 T	p0	, each in a colour of its own: the inn in brown, the healer in green, the magesmith in red, the recharger in blue and the chaos tower in violet. Looking at one (
 T	p0 code	l
@@ -203,7 +206,7 @@ T	h2	The Town Level
 T	h2	\n
 T	p0	The town level is where you will begin your adventure. A town consists of its shops (each with an entrance), some townspeople, and a wall around it with gates in it. The first time you are in town it will be daytime, but note that the sun rises and falls (rather instantly) as time passes.
 T	p0	\n
-T	p0	Not every town holds all nine shops — see 
+T	p0	Not every town holds all ten shops — see 
 L	p0 link	6	towns	Towns and Services
 T	p0	.
 T	p0	\n
@@ -304,6 +307,15 @@ T	dt0 strong	)
 T	dt0	\n
 T	p1	The Statue Store deals in statues: likenesses of monsters in wood, clay, stone, iron, copper, silver, gold, ivory and mithril, and the odd ornate one. A statue does nothing; it is worth what its material is worth, and this is where it fetches the most. The cheap ones are sold by the handful. Only the great cities and the most crowded cities keep one, and a better one – Expert or Arcane – reaches for the precious metals. The general store and the black market will take a statue off your hands too.
 T	p1	\n
+M	index-10
+T	dt0 strong	The Figurine Store (
+T	dt0 strong code	0
+T	dt0 strong	, in light green)
+T	dt0	\n
+T	p1	The Figurine Store deals in magical figurines: monsters in miniature, which become your pets when thrown (
+L	p1 link	8	pets	Pets and Allies
+T	p1	). Its figurines hold monsters up to about the twenty-sixth level, now and then deeper, and an Expert or Arcane one’s reach further down. Cities and great cities keep one where the country around them is magical.
+T	p1	\n
 M	within-the-dungeon
 T	h2	Within The Dungeon
 T	h2	\n
@@ -314,7 +326,7 @@ T	p0 code	>
 T	p0	).
 T	p0	\n
 T	p0	Your character will enter a maze of interconnecting staircases and finally arrive somewhere on the shallowest level of that dungeon — which is the top of its own depth range and not necessarily 50 feet, since a dungeon may begin well below the surface. Each level of the dungeon is fifty feet high (thus dungeon level “Lev 1” is often called “50 ft”), and is divided into (large) rectangular regions (several times larger than the screen) by permanent rock. Once you leave a level by a staircase, you will never again find your way back to that region of that level, but there are an infinite number of other regions at that same “depth” that you can explore later. Monsters, of course, can use the stairs, and you may eventually encounter them again, but they will not chase you up or down stairs. Your pets are the exception and do follow you — see 
-L	p0 link	8	pets	Pets and Allies
+L	p0 link	9	pets	Pets and Allies
 T	p0	.
 T	p0	\n
 T	p0	In the dungeon, there are many things to find, but your character must survive many horrible and challenging encounters to find the treasure lying about.
@@ -350,11 +362,11 @@ T	p0 strong	the surface of the world at the mouth you went down by
 T	p0	 — not to a town, which may be days away across the map. If read on the surface, it takes you back down to the deepest level you had reached in 
 T	p0 strong	the dungeon you were last in
 T	p0	, as described under 
-L	p0 link	9	#the-dungeons	The Dungeons
+L	p0 link	10	#the-dungeons	The Dungeons
 T	p0	 above; it is not a way into a dungeon you have never entered, and not a way to the deepest level you have ever reached anywhere. This makes the scroll very useful for getting back to the deeper levels of ZangbandTK. Once the scroll has been read it takes a while for the spell to act, so don’t expect it to save you in a crisis. During this time the word ‘recall’ will appear on the bottom of the screen below the dungeon. Reading a second scroll before the first takes effect will cancel the action.
 T	p0	\n
 T	p0	You may “inscribe” any object with a textual inscription of your choice. These inscriptions are not limited in length, though you may not be able to see the whole inscription on the item. The game applies special meaning to inscriptions containing any text of the form ‘@#’, ‘@x#’, ‘!!’, ‘!x’, ‘!*’, ‘^x’, ‘^*’, or ‘=g`; see 
-L	p0 link	10	customize#inscribing	the section on inscribing
+L	p0 link	11	customize#inscribing	the section on inscribing
 T	p0	 for more details.
 T	p0	\n
 T	p0	The game provides some “fake” inscriptions to help you keep track of your possessions. Weapons, armor and jewellery which have properties you don’t know about yet will get a ‘{??}’ label. Weapons, armor, and jewellery with a known curse get a ‘{cursed}’ label. Wands, staves and rods can get a ‘{tried}’ label after use, particularly if they have an effect on a monster and were tested in the absence of monsters. Unidentified wands or staves with no remaining charges will have an ‘{empty}’ label. Items which are marked as ignored will have a ‘{ignored}’ label. If an item has more than one of those labels or also has an inscription you provided, all the labels will be shown in one set of brackets, separated by commas, and the inscription you provided, if any, will be first. For instance, you could see ‘{empty, tried}’ on an unidentified wand or staff or ‘{cursed, ??}’ on a piece of armor with ooe or more known curses and one or more unidentified magical properties.
@@ -409,7 +421,7 @@ T	p0 code	>
 T	p0	 represents a down staircase. You must move your character over the staircase before you can use it.
 T	p0	\n
 T	p0	Most levels carry one to three down staircases and one or two up. The deepest level of a dungeon is the exception and carries no way down at all, because there is nothing below it — see 
-L	p0 link	11	#the-dungeons	The Dungeons
+L	p0 link	12	#the-dungeons	The Dungeons
 T	p0	. You may have trouble finding some well hidden secret doors, or you may have to dig through obstructions to get to them, but you can always find the stairs if you look hard enough. Stairs, like permanent rock, and shop entrances, cannot be destroyed by any means.
 T	p0	\n
 T	p0	Many secret doors are used within the dungeon to confuse and demoralize adventurers foolish enough to enter, although all secret doors can be discovered by stepping adjacent to them. Secret doors will sometimes hide rooms or corridors, or even entire sections of that level of the dungeon. Sometimes they simply hide small empty closets or even dead ends. Secret doors always look like granite walls, just like traps always look like normal floors.
@@ -417,7 +429,7 @@ T	p0	\n
 T	p0	Creatures in the dungeon will generally know and use these secret doors, and can often be counted on to leave them open behind them when they pass through.
 T	p0	\n
 M	level-and-object-feelings
-M	index-10
+M	index-11
 T	h2	Level and object feelings
 T	h2	\n
 T	p0	Unless you have disabled the option to get feelings you will get a message upon entering a dungeon giving you a general feel of how dangerous that level is.
@@ -456,7 +468,7 @@ T	p0	\n
 T	p0	You may review your level feeling any time by using the ^f command. You may also consult it by checking the LF: indicator at the bottom left of the screen. The first number after it is the level feeling and the second one is the object feeling. The second one will be ? if you need to explore more before getting a feeling about the value of the treasures present in the dungeon.
 T	p0	\n
 M	winning-the-game
-M	index-11
+M	index-12
 T	h2	Winning The Game
 T	h2	\n
 T	p0	The game ends in Amber, not in Angband. There are two things to kill and you are on both quests from the moment you are born; nobody offers them to you and there is nothing to report back.
@@ -476,7 +488,7 @@ T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
 T	p0 note	Sauron and Morgoth are still in the bestiary as deep uniques. They are no longer what the game is about, and killing them ends nothing. See 
-L	p0 note link	12	quests	Quests
+L	p0 note link	13	quests	Quests
 T	p0 note	.
 T	p0 note	\n
 T	p0	When you are ready to retire, press the 
@@ -484,7 +496,7 @@ T	p0 code	Q
 T	p0	 key to have your character entered into the high score list as a winner. Note that until you retire, you can still be killed, so you may want to retire before wandering into yet another horde of greater demons.
 T	p0	\n
 M	upon-death-and-dying
-M	index-12
+M	index-13
 T	h2	Upon Death and Dying
 T	h2	\n
 T	p0	If your character falls below 0 hit points, they have died and cannot be restored (with the exception that blackguards can go below zero hit points in some circumstances and live to tell tale). A tombstone showing information about your character will be displayed. You are also permitted to get a record of your character, and all your equipment (identified) either on the screen or in a file.

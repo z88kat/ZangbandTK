@@ -934,7 +934,7 @@ survives.**
 | Rare Book Store | The **Bookseller** stocks each realm's town book; anything deeper is what the **Black Market** is for, and it already stocks anything |
 | Supplies Store, Grocer, Flea Market | Subsets of the **General Store** |
 | Jeweler (+ Copper, Silver, Gold, Rare) | 4.2 has **no mundane jewellery**. Every ring and amulet in the game is a significant magic item, so a jeweller would be a second Black Market -- and DEC-29 made the Black Market the reason to travel |
-| Statue Store, Figurine Store | Need `TV_STATUE` and `TV_FIGURINE`, which 4.2 does not have. Content invention, not porting. *The Statue Store is reversed by DEC-145, once there were statues to sell.* |
+| Statue Store, Figurine Store | Need `TV_STATUE` and `TV_FIGURINE`, which 4.2 does not have. Content invention, not porting. *Both reversed, once there was something to sell: the Statue Store by DEC-145, the Figurine Store by DEC-146.* |
 | Temple (+ Large, High, Hidden) | A 2.8.1 shop 4.2 removed on purpose. DEC-27: where Zangband merely looks like 2.8.1, 4.2 wins |
 | Library | WLD-16b already established it has no implementation anywhere in Zangband |
 
@@ -7890,3 +7890,55 @@ shop door into the four inherited sets, as it draws the services: none has a
 
 **Not built: the Figurine Store.** DEC-33 declined it with the Statue Store and
 nothing here revisits it; the figurines remain on the black market's shelves.
+*Built the same day: DEC-146.*
+
+
+**DEC-146 — The Figurine Store comes back too (16 October 2026, the project
+owner).**
+
+DEC-145 left it out because the ruling named only the Statue Store, and DEC-33
+had turned the two away together. Asked, the owner: "yes good point, please do
+that".
+
+**The store (3.131.0), the tenth shop.** `STORE_FIGURINE` is appended after
+`STORE_STATUE`, store index 9, `WILD_STORE_FIGURINE`. It shares the Statue
+Store's `0` — no digit is left — and is told from it by colour, as the six
+services all share a `+`: light green, which Zangband gave its Expensive
+Figurine Store, because the healer and the bookseller already have the darker
+green. Zangband's owner names and titles again, purses of 5,000 to 25,000
+(place_sb), the half shelf and turnover 9, and one kind on the table, the
+Magical Figurine. Cheap figurines come by the handful, as Zangband's
+mass_produce grouped them with statues.
+
+*What level its monsters are.* A figurine holds a monster chosen at the level
+it is made at, and a shop's goods are made near the surface (store_magic_level
+plus the player's depth past 20), which would have filled the shelves with
+figurines of jackals. Zangband made its Figurine Store's at level 26 and its
+Expensive one's at 50 to 90. So store.txt gains an optional `level:min:max`, read
+into `struct store`, which replaces the usual range when it is set — 26 here —
+and the shop's tier still adds to it, to 41-56 at Arcane. The Expensive store
+is those upper rungs, as DEC-33 folded every variant.
+
+*Where.* Zangband's table put figurine stores at population 200 and magic 200,
+the statue stores' rarity. So a city or great city whose country's magic is 150
+or more keeps one: 99 over 40 worlds, about two and a half a world, half of
+them in a city that has a Statue Store too. Added on top of a town's trades, as
+the Statue Store is.
+
+*Its standard.* Measured first. Where a figurine store stands is already
+crowded and magical, and law at a town site is all but constant, so every
+formula over the place's own numbers gave either nearly all tiered (the
+default, 7% plain; on magic, 6%) or none above Advanced (people and law alone,
+66% plain and nothing higher). Zangband placed its two figurine stores
+independently, so the standard is mostly the luck of the place: people and law
+for a base, and a wide roll hashed from the town's seed. Measured: 57 plain, 19
+Advanced, 16 Expert, 7 Arcane of 99.
+
+**Old saves** need nothing new: DEC-145's loader seats a keeper for every shop a
+savefile lacks, and chunks version 3 counts its terrain. game/saves holds both
+over the whole corpus, including the 3.128 persistent-levels character.
+
+**Tiles.** Neon draws a door with a small figure in its window rather than a
+numeral, since its glyph is the Statue Store's; make-services.py draws the door
+into the four inherited sets in sand, since the healer is green there. Every
+other cell in every sheet is unchanged.

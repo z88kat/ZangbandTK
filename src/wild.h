@@ -166,7 +166,9 @@ enum {
 	 * (DEC-145): a town keeps it on top of its trades rather than among
 	 * them, so wild_town_stores() never weighs it against the eight.
 	 */
-	WILD_STORE_STATUE
+	WILD_STORE_STATUE,
+	/* And the Figurine Store, the same way (DEC-146) */
+	WILD_STORE_FIGURINE
 };
 
 /**

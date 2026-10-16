@@ -11,6 +11,10 @@
 #                                        appear multiple times
 # turnover: turnover                   - how many items the store turns over
 # slots: min : max                     - number of 'normal' slots to keep stocked
+# level: min : max                     - the level its goods are made at, in
+#                                        place of the usual one near the
+#                                        surface; the shop's tier still adds
+#                                        to it (ZangbandTK, DEC-146)
 # normal: type name : item name        - for the normal stocking list
 # always: type name : ?item name       - for things to always stock
 # buy: type name                       - base types the store will buy
@@ -310,3 +314,23 @@ normal:statue:Ivory Statue
 normal:statue:Ornate Statue
 normal:statue:Mithril Statue
 buy:statue
+
+# ZangbandTK (DEC-146): Zangband's Figurine Store (t_info 109), which DEC-33
+# turned away with the Statue Store and comes back with it.  Its sibling, the
+# Expensive Figurine Store, is its upper rungs on the quality ladder.
+#
+# A figurine is only as good as the monster in it, and the monster is chosen
+# at the level the figurine is made at -- so this shop says what that is.
+# Zangband's made them at level 26 and its expensive one at 50 to 90; here 26,
+# and a better shop adds its tier, to 41-56 at the top.  The owners are again
+# Zangband's names and titles, and the purses its place_sb()'s 5,000 to 25,000.
+store:STORE_FIGURINE
+owner:5000:Lyar-el the Comely (Elf)
+owner:10000:Ellis the Sneaky (Human)
+owner:15000:Forovir the Mad (Gnome)
+owner:25000:Erashnak the Telepath (Half-Orc)
+slots:3:9
+turnover:9
+level:26:26
+normal:figurine:Magical Figurine
+buy:figurine

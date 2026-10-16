@@ -98,6 +98,8 @@ A town is somewhere to do things, not a row of shop doors (:doc:`towns`).
   silver, gold, ivory and mithril, which do nothing and are worth their
   material. Statues turn up in the dungeon from level 9, and the general store
   and the black market will buy them too.
+- **A Figurine Store** in the cities whose country is magical: magical
+  figurines, each a monster that becomes your pet when you throw it.
 - **One house.** Every town has a home and they are all the same home: what you
   leave in your village is on the shelf in a city four days away.
 

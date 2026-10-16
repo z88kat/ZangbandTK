@@ -55,7 +55,7 @@ the reference the others are larger than.
 Which shops a place keeps
 -------------------------
 
-Not every place carries all nine shops. How many it keeps follows from its size
+Not every place carries all ten shops. How many it keeps follows from its size
 band; *which* ones it keeps follows from the country around it:
 
 - the **armoury** and the **weaponsmith** follow people and order;
@@ -74,6 +74,12 @@ gold, ivory and mithril, which do nothing and are worth what their material is
 worth. The cheap ones come by the handful. The general store and the black
 market will buy a statue too, which helps, since a stone one weighs fifty
 pounds.
+
+And the **Figurine Store**, the same way, which Zangband built where people and
+magic both ran high: a city or a great city whose country is magical keeps one,
+two or three in a world, often in the same city as a Statue Store. It sells and
+buys magical figurines -- monsters in miniature that become your pets when
+thrown (:doc:`pets`) -- holding monsters up to about the twenty-sixth level.
 
 Two towns of the same size need not hold the same shops. The choice is made once,
 when the world is generated, from the world seed and the town's own position, so
@@ -104,7 +110,10 @@ you travel to rather than something your nearest city happens to have.
 The Statue Store climbs on the country's magic rather than its people, since it
 only ever stands in a crowded place: about half are plain, and the Expert and
 Arcane ones -- Zangband's *Unusual* Statue Store -- are where the silver, gold,
-ivory and mithril are.
+ivory and mithril are. The Figurine Store stands only where it is crowded and
+magical both, so its standard is mostly the luck of the place: about half are
+plain, and the Expert and Arcane ones -- Zangband's *Expensive* Figurine Store
+-- reach monsters of the forties and fifties.
 
 Two exceptions. The **black market** has no rung, because it is already the top of
 every ladder — it will sell you anything, pitched at how deep you have been. And

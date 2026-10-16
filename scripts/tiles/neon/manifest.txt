@@ -63,6 +63,7 @@ feat:STORE_MAGIC:store_6
 feat:STORE_BLACK:store_7
 feat:HOME:store_8
 feat:STORE_STATUE:store_0
+feat:STORE_FIGURINE:store_figurine
 feat:HEALER:healer
 feat:INN:inn
 feat:MAGESMITH:magesmith

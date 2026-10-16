@@ -376,7 +376,11 @@ T	p0	 A
 T	p0 strong	Magical Figurine
 T	p0	 is a monster in miniature, and its name says which: 
 T	p0 em	a Magical Figurine of a cave spider
-T	p0	. Throw it and it breaks, and the monster is there where it came down — beside whatever you threw it at, or where it fell — and on your side. It is found from dungeon level 26, holds an ordinary monster and never a unique, and usually one no deeper than where it was found; now and then something a good deal worse. It is worth that monster’s level squared, times five, and the black market will buy it.
+T	p0	. Throw it and it breaks, and the monster is there where it came down — beside whatever you threw it at, or where it fell — and on your side. It is found from dungeon level 26, holds an ordinary monster and never a unique, and usually one no deeper than where it was found; now and then something a good deal worse. It is worth that monster’s level squared, times five. The 
+T	p0 strong	Figurine Store
+T	p0	, in a magical city, sells them and buys them, and so does the black market (
+L	p0 link	3	towns	Towns and Services
+T	p0	).
 T	p0	\n
 T	p0	It has to have somewhere to stand, within a few paces of where the figurine lands. A fish needs water, and nothing comes down on lava or deep water unless it can bear it. With nowhere to stand, or in single combat, where nothing may be summoned at all, 
 T	p0 em	the figurine writhes and then shatters

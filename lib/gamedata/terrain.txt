@@ -257,6 +257,19 @@ look-in-preposition:at
 desc:A shop full of likenesses, in everything from wood to mithril, of things
 desc: you would rather not meet in the flesh.
 
+# ZangbandTK (DEC-146): Zangband's Figurine Store, the tenth shop.  It shares
+# the Statue Store's '0' -- there is no digit left -- and is told from it by
+# colour, as the services all share a '+'.  Light green, which Zangband gave
+# its Expensive Figurine Store, because the healer already has the green.
+code:STORE_FIGURINE
+name:Figurine Store
+graphics:0:G
+priority:20
+flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+look-prefix:the entrance to the
+look-in-preposition:at
+desc:Small statuettes on every shelf, and every one of them seems to move.
+
 code:SECRET
 name:secret door
 graphics:#:w

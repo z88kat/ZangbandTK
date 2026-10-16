@@ -1,6 +1,7 @@
 /* object/statue.c
  *
- * Zangband's statues and its Statue Store (ZangbandTK, DEC-145).
+ * Zangband's statues and its Statue Store (ZangbandTK, DEC-145), and its
+ * Figurine Store (DEC-146).
  *
  * A statue is a monster rendered in a material and worth what the material is
  * worth: it does nothing else, so what is checked here is that it is that and
@@ -255,6 +256,40 @@ static int test_a_better_statue_store_reaches_deeper(void *state) {
 }
 
 /**
+ * The Figurine Store sells figurines, of monsters about as deep as Zangband's
+ * did -- level 26, from store.txt's `level:` -- rather than of whatever lives
+ * by the town gate, and buys them (DEC-146).
+ */
+static int test_the_figurine_store_deals_in_figurines(void *state) {
+	struct store *s = store_of(FEAT_STORE_FIGURINE);
+	struct object *obj;
+	int round, seen = 0, deep = 0;
+
+	notnull(s);
+	notnull(s->owners);
+	notnull(s->owners->next);
+	require(buys(s, TV_FIGURINE));
+	eq(s->level_min, 26);
+	eq(s->level_max, 26);
+
+	for (round = 0; round < 5; round++) {
+		store_stock_at_quality(s, 0);
+		for (obj = s->stock; obj; obj = obj->next) {
+			eq(obj->tval, TV_FIGURINE);
+			notnull(obj->race);
+			require(!rf_has(obj->race->flags, RF_UNIQUE));
+			seen++;
+			if (obj->race->level >= 10) deep++;
+		}
+	}
+	require(seen > 0);
+
+	/* Mostly deeper than the surface's monsters, which a level of 5 gives */
+	require(deep * 2 > seen);
+	ok;
+}
+
+/**
  * A shop with one keeper keeps them.  store_shuffle() wanted someone other
  * than the incumbent and looped for ever when there was nobody.
  */
@@ -282,6 +317,8 @@ struct test tests[] = {
 	  test_the_statue_store_deals_in_statues },
 	{ "a-better-statue-store-reaches-deeper",
 	  test_a_better_statue_store_reaches_deeper },
+	{ "the-figurine-store-deals-in-figurines",
+	  test_the_figurine_store_deals_in_figurines },
 	{ "a-lone-keeper-stays", test_a_lone_keeper_stays },
 	{ NULL, NULL }
 };

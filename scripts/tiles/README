@@ -5,7 +5,7 @@ Tiles for the things Angband does not have
     borrow-tiles.py             give a thing with no tile one that exists
     make-terrain.py             draw the wilderness for sets that have none
     make-services.py            draw the six service buildings, and the
-                                Statue Store's door
+                                Statue and Figurine Stores' doors
     build-neon.py               build the Neon set, generated whole
     import-zangband-tiles.py    bring Adam Bolt's Zangband uniques into his
                                 Angband sheet, and Zangband's figurine and

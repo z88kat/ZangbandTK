@@ -160,6 +160,14 @@ static enum parser_error parse_turnover(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_level(struct parser *p) {
+	struct store *s = parser_priv(p);
+	s->level_min = parser_getuint(p, "min");
+	s->level_max = parser_getuint(p, "max");
+	if (s->level_max < s->level_min) return PARSE_ERROR_INVALID_VALUE;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_normal(struct parser *p) {
 	struct store *s = parser_priv(p);
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
@@ -296,6 +304,7 @@ struct parser *init_parse_stores(void) {
 	parser_reg(p, "owner uint purse str name", parse_owner);
 	parser_reg(p, "slots uint min uint max", parse_slots);
 	parser_reg(p, "turnover uint turnover", parse_turnover);
+	parser_reg(p, "level uint min uint max", parse_level);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
 	parser_reg(p, "always sym tval ?sym sval", parse_always);
 	parser_reg(p, "buy str base", parse_buy);
@@ -777,14 +786,17 @@ static void mass_produce(struct object *obj)
 		}
 
 		/*
-		 * ZangbandTK (DEC-145): the cheap materials by the handful, as
-		 * Zangband's statue shops had them
+		 * ZangbandTK (DEC-145, DEC-146): the cheap ones by the handful, as
+		 * Zangband's statue and figurine shops had them
 		 * ([store.c:332](../archive/zangband/src/store.c#L332)): five to
 		 * nine of wood, clay or stone, three to five of iron, copper or
-		 * silver, and the rest alone.  A pile is one monster's likeness over
-		 * again; it is only in a shop that statues ever share a stack.
+		 * silver, and the rest alone -- and a figurine by what its monster
+		 * is worth, so the shallow ones in piles.  A pile is one monster's
+		 * likeness over again; it is only in a shop that they ever share a
+		 * stack.
 		 */
 		case TV_STATUE:
+		case TV_FIGURINE:
 		{
 			if (cost <= 100L) size += damroll(2, 2);
 			if (cost <= 1000L) size += damroll(2, 2);
@@ -1213,6 +1225,10 @@ static bool store_create_random(struct store *store)
 	if (store->feat == FEAT_STORE_BLACK) {
 		min_level = player->max_depth + 5;
 		max_level = player->max_depth + 20;
+	} else if (store->level_max) {
+		/* A level of its own, from store.txt (DEC-146) */
+		min_level = store->level_min;
+		max_level = store->level_max;
 	} else {
 		min_level = 1;
 		max_level = z_info->store_magic_level + MAX(player->max_depth - 20, 0);

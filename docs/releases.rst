@@ -108,6 +108,13 @@ front end reads.
 Statues, and the Statue Store — 16 October 2026
 ------------------------------------------------
 
+- **3.131.0** — **The Figurine Store comes back too** (DEC-146), the tenth
+  shop: magical figurines, bought and sold, in a city or great city whose
+  country is magical — two or three in a world. It shares the Statue Store's
+  ``0``, in light green. Its figurines hold monsters up to about the
+  twenty-sixth level, as Zangband's did; an Expert or Arcane one — Zangband's
+  Expensive Figurine Store — reaches into the forties and fifties.
+
 - **3.130.0** — **Zangband's ten statues** (DEC-145): likenesses of monsters
   in wood, clay, stone, iron, copper, silver, gold, ivory, mithril and an
   ornate one, any monster at all, uniques included — *a Golden Statue of

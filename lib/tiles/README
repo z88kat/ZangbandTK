@@ -34,8 +34,8 @@ Per tileset
   This used to say the image was byte-identical to Angband's, and it stopped
   being true on 10 September 2026, when `scripts/tiles/make-services.py` drew
   the service buildings Gervais has no art for into **one new row** at the
-  bottom of `32x32.png` (`serv-ztk.prf`).  The Statue Store's door joined them
-  in 3.130.0.  Every cell above that row is still Angband's, byte for byte.
+  bottom of `32x32.png` (`serv-ztk.prf`).  The Statue and Figurine Stores'
+  doors joined them in 3.130.0 and 3.131.0.  Every cell above that row is still Angband's, byte for byte.
 
 **adam-bolt (16x16), nomad (16x16), old (8x8) -- modified.**
 

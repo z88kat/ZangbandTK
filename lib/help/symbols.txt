@@ -32,8 +32,9 @@ Features that do not block line of sight
 <  A staircase up                7  Entrance to the Black Market
 >  A staircase down              8  Entrance to your Home
 #  A pool of lava                0  Entrance to the Statue Store
+                                 0  (light green) Figurine Store
 
-Not every town holds all nine.  A village keeps three or four trades, a
+Not every town holds all ten.  A village keeps three or four trades, a
 town five or six, a city or a great city more; which ones it keeps depends
 on the country around it.  Your home village is the smallest of them, and
 has neither an armoury nor a weapon smith -- those are in the next town

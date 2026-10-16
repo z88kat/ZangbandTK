@@ -559,7 +559,8 @@ and the monster is there where it came down — beside whatever you threw it at,
 or where it fell — and on your side. It is found from dungeon level 26, holds
 an ordinary monster and never a unique, and usually one no deeper than where it
 was found; now and then something a good deal worse. It is worth that monster's
-level squared, times five, and the black market will buy it.
+level squared, times five. The **Figurine Store**, in a magical city, sells
+them and buys them, and so does the black market (:doc:`towns`).
 
 It has to have somewhere to stand, within a few paces of where the figurine
 lands. A fish needs water, and nothing comes down on lava or deep water unless

@@ -73,3 +73,9 @@ FEAT(INVIS_WALL) /* looks like floor and is not (BAL-15, DEC-83) */
  * eight Angband had.  wild.h's WILD_STORE_STATUE depends on that.
  */
 FEAT(STORE_STATUE) /* statues, bought and sold (DEC-145) */
+
+/*
+ * ZangbandTK (DEC-146): Zangband's Figurine Store, the tenth shop, appended
+ * for the same reason -- store index 9, WILD_STORE_FIGURINE.
+ */
+FEAT(STORE_FIGURINE) /* magical figurines, bought and sold (DEC-146) */

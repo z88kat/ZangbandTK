@@ -705,6 +705,9 @@ static const struct { uint16_t wid, hgt; } wild_town_bands[] = {
  * What it does *not* hold -- the armoury, the weaponsmith, the magic shop, the
  * black market -- is what makes a larger town worth the walk.
  */
+/* How magical a city's country must be for a Figurine Store (DEC-146). */
+#define FIGURINE_MAGIC 150
+
 #define WILD_VILLAGE_STORES \
 	((1u << WILD_STORE_GENERAL) | (1u << WILD_STORE_BOOK) | \
 	 (1u << WILD_STORE_ALCHEMY) | (1u << WILD_STORE_HOME))
@@ -890,6 +893,18 @@ int wild_store_quality(struct wilderness *w, int town, int store)
 		case WILD_STORE_STATUE:
 			score = magic * 3 / 4 + pop / 4;
 			break;
+		/*
+		 * The Figurine Store and Zangband's Expensive Figurine Store, the
+		 * same way (DEC-146) -- but where a figurine store stands is already
+		 * crowded *and* magical, and law at a town is all but constant, so
+		 * nothing about the place is left to tell one standard from another.
+		 * Zangband placed its two independently.  So the standard is mostly
+		 * the luck of the place, below: about half plain, a quarter Expert
+		 * or better.
+		 */
+		case WILD_STORE_FIGURINE:
+			score = pop / 2 + law / 4;
+			break;
 		default:
 			score = pop * 3 / 4 + law / 4;
 			break;
@@ -905,6 +920,9 @@ int wild_store_quality(struct wilderness *w, int town, int store)
 		 * shift; the bits above 26 belong to Home, which never has a tier.
 		 */
 		score += (int) ((seed >> 27) & 31) - 16;
+	} else if (store == WILD_STORE_FIGURINE) {
+		/* A wide roll, hashed so it owes nothing to the other stores' bits */
+		score += (int) ((((seed * 2654435761u) >> 24) * 3) / 4) - 96;
 	} else {
 		score += (int) ((seed >> (store * 3 + 5)) & 31) - 16;
 	}
@@ -968,8 +986,8 @@ static uint16_t wild_town_stores(struct wilderness *w, int bx, int by, int band)
 
 			if (held & (1u << n)) continue;
 
-			/* Kept by its own rule, below, and never instead of a trade */
-			if (n == WILD_STORE_STATUE) continue;
+			/* Kept by their own rules, below, and never instead of a trade */
+			if (n == WILD_STORE_STATUE || n == WILD_STORE_FIGURINE) continue;
 
 			switch (n) {
 				/* Arms and armour follow people and order. */
@@ -1013,6 +1031,16 @@ static uint16_t wild_town_stores(struct wilderness *w, int bx, int by, int band)
 	if (WILD_STORE_STATUE < (int) z_info->store_max
 			&& (band >= 3 || (band == 2 && pop >= 192)))
 		held |= 1u << WILD_STORE_STATUE;
+
+	/*
+	 * And a Figurine Store, the same way (DEC-146).  Zangband built them
+	 * where people and magic both ran high -- 200 and 200 in its table, at
+	 * the statue stores' rarity -- so here a city or a great city whose
+	 * country is magical keeps one.
+	 */
+	if (WILD_STORE_FIGURINE < (int) z_info->store_max && band >= 2
+			&& (block ? block->magic : 0) >= FIGURINE_MAGIC)
+		held |= 1u << WILD_STORE_FIGURINE;
 
 	return held;
 }
