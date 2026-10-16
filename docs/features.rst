@@ -271,15 +271,16 @@ Pets and allies
 - **They cost.** An allowance you keep for nothing, then a charge on the sum of
   your pets' levels above it — so a stable of weak animals is cheap and one deep
   ally is not. A pet leaves you about one time in twenty at a level change.
-- **Ways to get one:** a realm spell that summons or charms, a Mindcrafter's
-  *domination* (a mind attack until level 30, and wholesale from 30), a Chaos
-  Lord handing you a servant, and anything your own pets summon. **Trump is the
+- **Ways to get one:** a realm spell that summons or charms, a Wand of Tame
+  Monster, a Mindcrafter's *domination* (a mind attack until level 30, and
+  wholesale from 30), a Chaos Lord handing you a servant, and anything your own
+  pets summon. **Trump is the
   realm of pets** — twelve of its spells call something that serves you.
 - **Walking into one changes places with it**; hurting one turns it against you,
   rather than asking you to confirm.
 
-Two of Zangband's routes are still missing, and both want an object rather than
-a mechanism: a thrown magical figurine, and a wand of charm monster. See
+One of Zangband's routes is still missing, and it wants an object rather than a
+mechanism: a thrown magical figurine, which carries the monster it releases. See
 :doc:`pets`.
 
 Nightmare mode

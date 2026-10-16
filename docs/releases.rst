@@ -28,8 +28,9 @@ player-side safety, the sources, Trump, following you downstairs, and the stable
 that costs you one in twenty at each level change — and, in 3.92.0, the last two
 of PLR-28's five ways to acquire one: a Mindcrafter's domination and a Chaos
 Lord's gift. Both turned out to be data rather than the code hook they were
-recorded as needing. Two of Zangband's routes remain and want objects that do
-not exist here: a thrown figurine, and a wand of charm monster.
+recorded as needing. One of Zangband's routes remains, and wants an object that
+does not exist here: a thrown figurine. Its wand of charm monster has been here
+since 3.72.0, as the Wand of Tame Monster, Zangband's own name for it.
 
 **M11, nightmare mode, is done**, closed on 4 October. Stage 1 is every
 behaviour Zangband's own nightmare mode has: sixteen, twelve of them built and

@@ -557,7 +557,8 @@ and it is yours.
 Still to come
 -------------
 
-Two of Zangband's routes to a pet remain, and both want an *object* rather than
-a mechanism: a thrown magical figurine, and a wand of charm monster. Neither
-object exists here yet, so neither is a change to the pet machinery — which is
-finished.
+One of Zangband's routes to a pet remains, and it wants an *object* rather than
+a mechanism: a thrown magical figurine, which carries the monster it releases.
+No object here can name a monster yet, so it is not a change to the pet
+machinery — which is finished. Zangband's wand of charm monster is not missing:
+it is the Wand of Tame Monster above, which is Zangband's own name for it.
