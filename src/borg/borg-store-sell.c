@@ -960,8 +960,11 @@ bool borg_think_shop_sell_useless(void)
     /* Evaluate */
     b_p = borg.power;
 
-    /* Check each shop */
-    for (k = 0; k < (z_info->store_max - 1); k++) {
+    /* Check each shop but home, which is no longer the last of them */
+    for (k = 0; k < z_info->store_max; k++) {
+        if (k == BORG_HOME)
+            continue;
+
         /* Skip "full" shops */
         if (borg_shops[k].ware[icky].iqty)
             continue;

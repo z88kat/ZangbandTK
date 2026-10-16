@@ -49,6 +49,10 @@ buy:cloak
 buy:shot
 buy:bolt
 buy:arrow
+# ZangbandTK (DEC-145): and statues, which Zangband's general store would not
+# take.  The project owner's call: a statue is heavy, and a town without a
+# statue store should still take one off your hands.
+buy:statue
 
 # Armoury
 store:STORE_ARMOR
@@ -231,3 +235,78 @@ owner:0:Your home
 owner:0:Your home
 owner:0:Your home
 owner:0:Your home
+
+# ZangbandTK (DEC-145): Zangband's Statue Store (t_info 107), with its sibling,
+# the Unusual Statue Store, folded into the quality ladder as DEC-33 folded
+# Zangband's other variant shops: a plain one keeps cheap materials, and an
+# Expert or Arcane one reaches for silver, gold, ivory and mithril.
+#
+# Its shopkeepers are Zangband's own owner names and titles (tables.c), and
+# their purses the 5,000 to 10,000 gold its place_sb() gave a statue store.
+# Half a shop's shelves, as ST_HALF_INVEN gave it, and Zangband's turnover.
+#
+# The kinds are listed more than once on purpose.  A plain shop draws evenly
+# from this table and a better one draws again and keeps the deeper kind, so
+# the repeats are the weights: wood and clay most of the time, mithril about
+# one statue in fifty on a plain shelf -- where Zangband's levels 1 to 50 sold
+# little past copper, and its unusual store all ten.
+store:STORE_STATUE
+owner:5000:Voirin the Aged (Dwarf)
+owner:7500:Eloise the Beautiful (Half-Elf)
+owner:10000:Qonwyn the Grim (Human)
+owner:10000:Filbert the Rotund (Gnome)
+slots:3:9
+turnover:9
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Wooden Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Clay Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Stone Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Iron Statue
+normal:statue:Copper Statue
+normal:statue:Copper Statue
+normal:statue:Copper Statue
+normal:statue:Copper Statue
+normal:statue:Copper Statue
+normal:statue:Copper Statue
+normal:statue:Silver Statue
+normal:statue:Silver Statue
+normal:statue:Silver Statue
+normal:statue:Silver Statue
+normal:statue:Golden Statue
+normal:statue:Golden Statue
+normal:statue:Ivory Statue
+normal:statue:Ivory Statue
+normal:statue:Ornate Statue
+normal:statue:Mithril Statue
+buy:statue

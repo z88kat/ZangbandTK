@@ -414,7 +414,9 @@ static int test_the_sides_survive_a_round_trip(void *state) {
  * Reads the block headers out of the file rather than trusting the table in
  * `savefile.c`, and asks for version 2 on both blocks that carry a monster
  * record -- "monsters" and "chunks", because `rd_chunks()` reads stored levels
- * through the same reader.
+ * through the same reader.  "chunks" has since moved on to 3, which counts its
+ * terrain features before it lists them (DEC-145); the monster record in it is
+ * still version 2's, which 3 and 2 both read, and 1 does not.
  *
  * This is the mistake worth a test: change the record, forget one of the two
  * version numbers, and an old savefile is read with the fields one byte out
@@ -446,8 +448,12 @@ static int test_the_monster_blocks_say_version_two(void *state) {
 		size = head[20] | (head[21] << 8) | (head[22] << 16)
 			| ((uint32_t) head[23] << 24);
 
-		if (streq(name, "monsters") || streq(name, "chunks")) {
+		if (streq(name, "monsters")) {
 			eq(version, 2);
+			found++;
+		}
+		if (streq(name, "chunks")) {
+			eq(version, 3);
 			found++;
 		}
 

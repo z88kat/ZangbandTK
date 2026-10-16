@@ -160,7 +160,13 @@ enum {
 	WILD_STORE_ALCHEMY,
 	WILD_STORE_MAGIC,
 	WILD_STORE_BLACK,
-	WILD_STORE_HOME
+	WILD_STORE_HOME,
+	/*
+	 * After Home, because its terrain was appended after everything else
+	 * (DEC-145): a town keeps it on top of its trades rather than among
+	 * them, so wild_town_stores() never weighs it against the eight.
+	 */
+	WILD_STORE_STATUE
 };
 
 /**

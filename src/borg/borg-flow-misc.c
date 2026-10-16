@@ -2025,8 +2025,8 @@ bool borg_flow_far_from_stairs_dist(int x, int y, int b_stair, int distance)
 void borg_init_flow_misc(void)
 {
     /* Track the shop locations */
-    track_shop_x = mem_zalloc(9 * sizeof(int));
-    track_shop_y = mem_zalloc(9 * sizeof(int));
+    track_shop_x = mem_zalloc(z_info->store_max * sizeof(int));
+    track_shop_y = mem_zalloc(z_info->store_max * sizeof(int));
 
     /* Track mineral veins with treasure. */
     borg_init_track(&track_vein, 100);

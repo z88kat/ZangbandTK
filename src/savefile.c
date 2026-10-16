@@ -132,7 +132,7 @@ static const struct {
 	{ "objects", wr_objects, 1 },
 	{ "monsters", wr_monsters, 2 },
 	{ "traps", wr_traps, 1 },
-	{ "chunks", wr_chunks, 2 },
+	{ "chunks", wr_chunks, 3 },
 	{ "history", wr_history, 1 },
 };
 
@@ -179,7 +179,8 @@ static const struct blockinfo loaders[] = {
 	{ "monsters", rd_monsters, 2 },
 	{ "traps", rd_traps, 1 },
 	{ "chunks", rd_chunks_1, 1 },
-	{ "chunks", rd_chunks, 2 },
+	{ "chunks", rd_chunks_2, 2 },
+	{ "chunks", rd_chunks, 3 },
 	{ "history", rd_history, 1 },
 	/*
 	 * The terminator, which was missing (ZangbandTK, review of 3.105-3.124).

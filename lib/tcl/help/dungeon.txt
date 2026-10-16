@@ -31,15 +31,15 @@ T	p0	\n
 M	features-that-do-not-block-line-of-sight
 T	h3	Features that do not block line of sight
 T	h3	\n
-T	tr0	.  A floor space       1  Entrance to General Store\n
-T	tr0 odd	.  A trap (hidden)     2  Entrance to Armoury\n
-T	tr0	^  A trap (known)      3  Entrance to Weapon Smith\n
-T	tr0 odd	;  A glyph of warding  4  Entrance to Bookseller\n
-T	tr0	'  An open door        5  Entrance to Alchemy Shop\n
-T	tr0 odd	'  A broken door       6  Entrance to Magic Shop\n
-T	tr0	<  A staircase up      7  Entrance to the Black Market\n
-T	tr0 odd	>  A staircase down    8  Entrance to your Home\n
-T	tr0	#  A pool of lava      9  Entrance to the magetower\n
+T	tr0	.  A floor space       1    Entrance to General Store\n
+T	tr0 odd	.  A trap (hidden)     2    Entrance to Armoury\n
+T	tr0	^  A trap (known)      3    Entrance to Weapon Smith\n
+T	tr0 odd	;  A glyph of warding  4    Entrance to Bookseller\n
+T	tr0	'  An open door        5    Entrance to Alchemy Shop\n
+T	tr0 odd	'  A broken door       6    Entrance to Magic Shop\n
+T	tr0	<  A staircase up      7    Entrance to the Black Market\n
+T	tr0 odd	>  A staircase down    8    Entrance to your Home\n
+T	tr0	#  A pool of lava      9 0  Entrance to the magetower Entrance to the Statue Store\n
 T	tbllast0	\n
 T	p0	The other five town services are all 
 T	p0 code	+
@@ -203,7 +203,7 @@ T	h2	The Town Level
 T	h2	\n
 T	p0	The town level is where you will begin your adventure. A town consists of its shops (each with an entrance), some townspeople, and a wall around it with gates in it. The first time you are in town it will be daytime, but note that the sun rises and falls (rather instantly) as time passes.
 T	p0	\n
-T	p0	Not every town holds all eight shops — see 
+T	p0	Not every town holds all nine shops — see 
 L	p0 link	6	towns	Towns and Services
 T	p0	.
 T	p0	\n
@@ -296,6 +296,13 @@ T	dt0 strong code	8
 T	dt0 strong	)
 T	dt0	\n
 T	p1	This is your house where you can store objects that you cannot carry on your travels, or will need at a later date.
+T	p1	\n
+M	index-9
+T	dt0 strong	The Statue Store (
+T	dt0 strong code	0
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Statue Store deals in statues: likenesses of monsters in wood, clay, stone, iron, copper, silver, gold, ivory and mithril, and the odd ornate one. A statue does nothing; it is worth what its material is worth, and this is where it fetches the most. The cheap ones are sold by the handful. Only the great cities and the most crowded cities keep one, and a better one – Expert or Arcane – reaches for the precious metals. The general store and the black market will take a statue off your hands too.
 T	p1	\n
 M	within-the-dungeon
 T	h2	Within The Dungeon
@@ -410,7 +417,7 @@ T	p0	\n
 T	p0	Creatures in the dungeon will generally know and use these secret doors, and can often be counted on to leave them open behind them when they pass through.
 T	p0	\n
 M	level-and-object-feelings
-M	index-9
+M	index-10
 T	h2	Level and object feelings
 T	h2	\n
 T	p0	Unless you have disabled the option to get feelings you will get a message upon entering a dungeon giving you a general feel of how dangerous that level is.
@@ -449,7 +456,7 @@ T	p0	\n
 T	p0	You may review your level feeling any time by using the ^f command. You may also consult it by checking the LF: indicator at the bottom left of the screen. The first number after it is the level feeling and the second one is the object feeling. The second one will be ? if you need to explore more before getting a feeling about the value of the treasures present in the dungeon.
 T	p0	\n
 M	winning-the-game
-M	index-10
+M	index-11
 T	h2	Winning The Game
 T	h2	\n
 T	p0	The game ends in Amber, not in Angband. There are two things to kill and you are on both quests from the moment you are born; nobody offers them to you and there is nothing to report back.
@@ -477,7 +484,7 @@ T	p0 code	Q
 T	p0	 key to have your character entered into the high score list as a winner. Note that until you retire, you can still be killed, so you may want to retire before wandering into yet another horde of greater demons.
 T	p0	\n
 M	upon-death-and-dying
-M	index-11
+M	index-12
 T	h2	Upon Death and Dying
 T	h2	\n
 T	p0	If your character falls below 0 hit points, they have died and cannot be restored (with the exception that blackguards can go below zero hit points in some circumstances and live to tell tale). A tombstone showing information about your character will be displayed. You are also permitted to get a record of your character, and all your equipment (identified) either on the screen or in a file.

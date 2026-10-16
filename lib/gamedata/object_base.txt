@@ -219,5 +219,11 @@ graphics:green
 break:100
 flags:EASY_KNOW
 
+# ZangbandTK: Zangband's statues, a monster rendered in a material and worth
+# what the material is worth.  No HATES flag, as Zangband gave them none.
+name:statue:Statue~
+graphics:light umber
+flags:EASY_KNOW
+
 name:gold
 graphics:light yellow

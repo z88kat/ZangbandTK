@@ -1706,6 +1706,16 @@ static void monster_turn_grab_objects(struct monster *mon, const char *m_name,
 			continue;
 		}
 
+		/*
+		 * And statues, neither taken nor crushed -- "to avoid extreme
+		 * silliness like a novice rogue with pockets full of them"
+		 * (ZangbandTK, [melee2.c:2565](../archive/zangband/src/melee2.c#L2565)).
+		 */
+		if (tval_is_statue(obj)) {
+			obj = next;
+			continue;
+		}
+
 		/* Skip mimicked objects */
 		if (obj->mimicking_m_idx) {
 			obj = next;

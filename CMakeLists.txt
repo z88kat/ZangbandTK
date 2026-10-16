@@ -956,6 +956,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     object/pile.c
     object/randpower.c
     object/slays.c
+    object/statue.c
     object/util.c
     parse/a-info.c
     parse/blowe.c

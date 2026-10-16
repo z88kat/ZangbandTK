@@ -879,6 +879,17 @@ int wild_store_quality(struct wilderness *w, int town, int store)
 		case WILD_STORE_ARMOR:
 			score = pop / 2 + law / 4 + magic / 4;
 			break;
+		/*
+		 * Zangband had a Statue Store and an Unusual Statue Store, as often
+		 * as each other (DEC-145).  Here the second is the first on a higher
+		 * rung, and a statue store only stands in a crowded city -- so scored
+		 * on people, as the default does, nearly every one came out Expert
+		 * or Arcane.  Scored on the place's magic, which nothing about a city
+		 * selects for, about half are plain and a quarter Expert or better.
+		 */
+		case WILD_STORE_STATUE:
+			score = magic * 3 / 4 + pop / 4;
+			break;
 		default:
 			score = pop * 3 / 4 + law / 4;
 			break;
@@ -886,7 +897,17 @@ int wild_store_quality(struct wilderness *w, int town, int store)
 
 	/* Size tells, and so does the place itself. */
 	score += t->band * 10;
-	score += (int) ((seed >> (store * 3 + 5)) & 31) - 16;
+	if (store == WILD_STORE_STATUE) {
+		/*
+		 * Five bits of its own (DEC-145).  The rule below hands store n the
+		 * bits from n * 3 + 5, which for the ninth store would run off the
+		 * top of the seed and leave it three, and for a tenth be an undefined
+		 * shift; the bits above 26 belong to Home, which never has a tier.
+		 */
+		score += (int) ((seed >> 27) & 31) - 16;
+	} else {
+		score += (int) ((seed >> (store * 3 + 5)) & 31) - 16;
+	}
 
 	/*
 	 * Thresholds taken from the measured distribution rather than guessed, at
@@ -947,6 +968,9 @@ static uint16_t wild_town_stores(struct wilderness *w, int bx, int by, int band)
 
 			if (held & (1u << n)) continue;
 
+			/* Kept by its own rule, below, and never instead of a trade */
+			if (n == WILD_STORE_STATUE) continue;
+
 			switch (n) {
 				/* Arms and armour follow people and order. */
 				case WILD_STORE_ARMOR:
@@ -977,6 +1001,18 @@ static uint16_t wild_town_stores(struct wilderness *w, int bx, int by, int band)
 
 		if (wild_town_popcount(held) >= want) break;
 	}
+
+	/*
+	 * And a Statue Store, on top (DEC-145).  Zangband built them where its
+	 * people were thickest -- population 250 of 255 in wild2.c's building
+	 * table, at the middling rarity of its jewellers -- so here every great
+	 * city keeps one, and a city that is crowded: over 40 worlds that is
+	 * about three towns in each.  Added rather than chosen, so that no town
+	 * that had a trade before it lost one to make room.
+	 */
+	if (WILD_STORE_STATUE < (int) z_info->store_max
+			&& (band >= 3 || (band == 2 && pop >= 192)))
+		held |= 1u << WILD_STORE_STATUE;
 
 	return held;
 }

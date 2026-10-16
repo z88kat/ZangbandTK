@@ -57,6 +57,7 @@
 #include "object.h"
 #include "player-quest.h"
 #include "savefile.h"
+#include "store.h"
 #include "z-file.h"
 #include "z-util.h"
 #include "z-virt.h"
@@ -296,6 +297,14 @@ static int test_one_saved_character(void *state) {
 	notnull(player->class);
 	notnull(player->race->name);
 	notnull(player->class->name);
+
+	/*
+	 * Every shop has a keeper, the Statue Store included, which none of these
+	 * savefiles had (DEC-145): a shop without one crashes the first time its
+	 * door is used.
+	 */
+	for (k = 0; k < z_info->store_max; k++)
+		notnull(stores[k].owner);
 
 	/* What the character knows of each kind, to compare after the trip */
 	known = mem_zalloc(z_info->k_max);

@@ -1,0 +1,18 @@
+# store 0 -- the Statue Store, the ninth shop and the one digit left (DEC-145).
+# See store_1.
+................
+....XXXXXXXX....
+...XXXXXXXXXX...
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XX...XXX....XX.
+.XX..X...X...XX.
+.XX..X...X...XX.
+.XX..X...X...XX.
+.XX...XXX....XX.
+.XX..........XX.
+.XXXXXX..XXXXXX.
+.XXXX......XXXX.
+.XXXX......XXXX.
+................

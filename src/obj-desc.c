@@ -184,14 +184,10 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 		case TV_MUSHROOM:
 			return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 
-		/*
-		 * ZangbandTK: the monster inside goes where the '#' is, as it did in
-		 * Zangband ([flavor.c:796](../archive/zangband/src/flavor.c#L796)).
-		 * One with nothing in it -- the knowledge menu's specimen, made
-		 * without apply_magic() -- is just the kind.
-		 */
+		/* Their monster is added after the name: see obj_desc_name() */
 		case TV_FIGURINE:
-			return obj->race ? "& Magical Figurine~ of #" : obj->kind->name;
+		case TV_STATUE:
+			return obj->kind->name;
 	}
 
 	return "(nothing)";
@@ -336,14 +332,6 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	const char *basename = obj_desc_get_basename(obj, aware, terse,
 		mode, p);
 	const char *modstr = obj_desc_get_modstr(obj->kind);
-	char held[100];
-
-	/* A figurine's '#' is its monster, with the article a monster takes */
-	if (tval_is_figurine(obj) && obj->race) {
-		strnfmt(held, sizeof(held), "%s %s",
-			is_a_vowel(obj->race->name[0]) ? "an" : "a", obj->race->name);
-		modstr = held;
-	}
 
 	/* Quantity prefix */
 	if (prefix)
@@ -352,6 +340,22 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	/* Base name */
 	end = obj_desc_name_format(buf, max, end, basename, modstr, plural);
+
+	/*
+	 * ZangbandTK: a figurine or a statue is of its monster, "a Magical
+	 * Figurine of a cave spider", "a Golden Statue of Smeagol" -- a unique
+	 * by name alone, everything else with the article it takes, as Zangband
+	 * worded both ([flavor.c:796](../archive/zangband/src/flavor.c#L796)).
+	 * One with no monster -- the knowledge menu's specimen, made without
+	 * apply_magic() -- is just the kind.
+	 */
+	if (obj->race) {
+		const char *article = "";
+
+		if (!rf_has(obj->race->flags, RF_UNIQUE))
+			article = is_a_vowel(obj->race->name[0]) ? "an " : "a ";
+		strnfcat(buf, max, &end, " of %s%s", article, obj->race->name);
+	}
 
 	/* Append extra names of various kinds */
 	if (object_is_known_artifact(obj))

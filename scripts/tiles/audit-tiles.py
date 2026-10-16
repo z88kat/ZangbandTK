@@ -41,18 +41,19 @@ MONSTERS = ('monster.txt', 'monster.zangband.txt', 'monster.zangbandtk.txt')
 # property of a door rather than something drawn on the floor beside it.
 TRAP_SKIP = ('no trap', 'door lock')
 
-# Objects some sets leave as their letter on purpose, by tileset directory.
+# Object types some sets leave as their letter on purpose, by tileset directory.
 #
-# The magical figurine (3.129.0) is a monster in miniature, and no Angband set
-# ever drew one.  Borrowing another object's picture would say it is that
-# object, which is the claim DEC-18 refuses for uniques; borrowing a monster's
-# would put a monster on the floor that is not there.  Zangband drew one for
-# Adam Bolt's set and one for the 8x8, and import-zangband-tiles.py brings both
-# across; Neon draws its own.  These two have nothing that is a figurine, and
-# Gervais' sheet is mapped only, so they show the green ` until someone draws
-# one.
+# The magical figurine (3.129.0) is a monster in miniature, and the statues
+# (3.130.0) monsters rendered in wood and gold; no Angband set ever drew either.
+# Borrowing another object's picture would say it is that object, which is the
+# claim DEC-18 refuses for uniques; borrowing a monster's would put a monster on
+# the floor that is not there.  Zangband drew them all for Adam Bolt's set and
+# for the 8x8, and import-zangband-tiles.py brings them across; Neon draws its
+# own.  These two have nothing like them, so they show the ` until someone
+# draws one.
 OBJECT_SKIP = {
-    'figurine:magical figurine': ('nomad', 'gervais'),
+    'figurine': ('nomad', 'gervais'),
+    'statue': ('nomad', 'gervais'),
 }
 
 # Flavoured kinds are covered by flavor: lines rather than object: lines,
@@ -219,8 +220,7 @@ def main():
         miss_obj = [o for o in objects
                     if ('%s:%s' % o).lower() not in got['object']]
         left_obj = [o for o in miss_obj
-                    if ts['dir'] not in OBJECT_SKIP.get(('%s:%s' % o).lower(),
-                                                        ())]
+                    if ts['dir'] not in OBJECT_SKIP.get(o[0], ())]
         miss_flav = sorted(flavours - {int(x) for x in got['flavor']
                                        if x.isdigit()})
         miss_trap = [t for t in traps if t.lower() not in got['trap']]
@@ -236,8 +236,9 @@ def main():
               % (ts['name'], len(miss_mon), len(miss_terr), len(miss_obj),
                  len(miss_flav), len(miss_trap), len(miss_gf)))
 
-        stale = [key for key, dirs in OBJECT_SKIP.items()
-                 if ts['dir'] in dirs and key in got['object']]
+        stale = [tval for tval, dirs in OBJECT_SKIP.items()
+                 if ts['dir'] in dirs
+                 and any(k.startswith(tval + ':') for k in got['object'])]
 
         gaps = (('monsters that are not unique', left_mon),
                 ('terrain', miss_terr),

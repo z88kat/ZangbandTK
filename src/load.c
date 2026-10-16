@@ -1951,9 +1951,13 @@ static int rd_stores_aux(rd_item_t rd_item_version, bool with_quality)
 	int i;
 	uint16_t tmp16u;
 
-	/* Read the stores */
+	/*
+	 * Read the stores.  Fewer than the game has is a savefile from before a
+	 * shop was added -- the Statue Store, ninth, in 3.130.0 -- and is mended
+	 * below rather than reported; more is a savefile from somewhere else.
+	 */
 	rd_u16b(&tmp16u);
-	if (tmp16u != z_info->store_max) {
+	if (tmp16u > z_info->store_max) {
 		note(format("The number of stores in the savefile (%u) is "
 			"different than expected (%u).", tmp16u,
 			z_info->store_max));
@@ -2039,6 +2043,23 @@ static int rd_stores_aux(rd_item_t rd_item_version, bool with_quality)
 				object_delete(NULL, NULL, &obj);
 			}
 		}
+	}
+
+	/*
+	 * A shop the savefile did not know of gets a keeper here, as a new
+	 * character's every shop does in store_reset().  Without one its first
+	 * customer is served by NULL, and the shop screen, selling to it and the
+	 * knowledge menu all read the owner.  Its shelves are empty and stocked on
+	 * the first visit, which store_enter() does for any shop whose stock
+	 * belongs to another town -- and town 0, the village, has none of these.
+	 */
+	for (i = tmp16u; i < z_info->store_max; i++) {
+		struct store *store = &stores[i];
+
+		store->owner = NULL;
+		store_shuffle(store);
+		store->stock_town = 0;
+		store->quality = 0;
 	}
 
 	return 0;
@@ -2868,6 +2889,19 @@ int rd_traps(void)
 }
 
 /**
+ * How many feature counts a stored level's record carries.
+ *
+ * Chunks version 3 writes the number down.  Versions 1 and 2 did not, and
+ * read back as many as the game they were read by had -- which is one more
+ * than they wrote for every terrain feature added since, and the stream then
+ * reads the next level's name out of the last count.  So an older record is
+ * read at the length it was written: everything up to INVIS_WALL, the last
+ * feature before the Statue Store, and the spare slot after.
+ */
+static uint16_t chunk_feat_counts;
+#define CHUNK_FEAT_COUNTS_V2 (FEAT_INVIS_WALL + 2)
+
+/**
  * Read the chunk list
  */
 int rd_chunks_1(void)
@@ -2875,8 +2909,19 @@ int rd_chunks_1(void)
 	int result;
 
 	monster_record_has_allegiance = false;
-	result = rd_chunks();
+	result = rd_chunks_2();
 	monster_record_has_allegiance = true;
+
+	return result;
+}
+
+int rd_chunks_2(void)
+{
+	int result;
+
+	chunk_feat_counts = CHUNK_FEAT_COUNTS_V2;
+	result = rd_chunks();
+	chunk_feat_counts = 0;
 
 	return result;
 }
@@ -2933,9 +2978,22 @@ int rd_chunks(void)
 			rd_u16b(&tmp16u);
 			c->width = tmp16u;
 			rd_u16b(&c->feeling_squares);
-			for (i = 0; i < FEAT_MAX + 1; i++) {
-				rd_u16b(&tmp16u);
-				c->feat_count[i] = tmp16u;
+			{
+				uint16_t counts = chunk_feat_counts;
+
+				/* Version 3 says how many; 0 here means read it */
+				if (!counts) rd_u16b(&counts);
+				for (i = 0; i < counts; i++) {
+					rd_u16b(&tmp16u);
+
+					/*
+					 * The last is the spare slot after the features, which
+					 * nothing counts into; any past this game's features
+					 * belong to a newer one.
+					 */
+					if (i < counts - 1 && i < FEAT_MAX)
+						c->feat_count[i] = tmp16u;
+				}
 			}
 		} else if (c->name) {
 			struct level *lev = level_by_name(c->name);

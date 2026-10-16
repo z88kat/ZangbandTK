@@ -14,9 +14,9 @@
 
 # ---------------------------------------------------------------- types
 # Zangband's tval numbers to 4.2's type names. The two games agree on every
-# number they share. 4.2 has no type for statues, which are dealt with under
-# "defers" below; the figurine has one of this game's own since 3.129.0, and
-# its one kind is hand-built (see [built]), so its number is not mapped here.
+# number they share. 4.2 has no type for figurines or statues; this game has one
+# of its own for each since 3.129.0 and 3.130.0, and their kinds are hand-built
+# (see [built]), so their numbers are not mapped here.
 
 [type]
 16 = "shot"
@@ -99,25 +99,6 @@ Sorting the true from the false is 647 judgements for one flavour scroll.""" }
 # substitute would be the same item.
 
 [defer]
-
-# The ten statues are one decision, not ten. Zangband's statue is a monster
-# rendered in a material: the `#` in the name is replaced by the monster's name
-# and `pval` holds its race index (object2.c:3179). Until 3.129.0 a 4.2 object
-# could not hold a monster at all; the magical figurine gave it one, so the
-# mechanism a statue needs now exists. What still holds them is that a statue
-# does nothing with its monster but carry its name -- two hundred pounds sold
-# for that -- and DEC-33 declined the Statue Store that dealt in them. Waiting
-# on a reason rather than on a mechanism, which is a decision to come back to.
-"9:0" = { name = "Wooden Statue of #", why = "statue" }
-"9:1" = { name = "Clay Statue of #", why = "statue" }
-"9:2" = { name = "Stone Statue of #", why = "statue" }
-"9:3" = { name = "Iron Statue of #", why = "statue" }
-"9:4" = { name = "Copper Statue of #", why = "statue" }
-"9:5" = { name = "Silver Statue of #", why = "statue" }
-"9:6" = { name = "Golden Statue of #", why = "statue" }
-"9:7" = { name = "Ivory Statue of #", why = "statue" }
-"9:8" = { name = "Mithril Statue of #", why = "statue" }
-"9:9" = { name = "Ornate Statue of #", why = "statue" }
 
 "70:52" = { name = "Artifact Creation", why = "no 4.2 effect", note = """\
 `artifact_scroll()` turns an ordinary item in the pack into a random \
@@ -326,3 +307,23 @@ monster race on `struct object`, saved by name in ITEM_VERSION 6 -- by name \
 rather than as Zangband's race index, because the bestiary is not in the order \
 it was. Lives in object.txt as `& Magical Figurine~`, the `#` supplied when it \
 is described.""" }
+
+# The ten statues are one decision, not ten. Zangband's statue is a monster
+# rendered in a material: the `#` in the name is replaced by the monster's name
+# and `pval` holds its race index (object2.c:3179). Deferred while an object
+# could not hold a monster, then for want of a use once the figurine gave it
+# one: a statue does nothing with its monster but carry its name, and DEC-33 had
+# declined the Statue Store that dealt in them. Built in 3.130.0 (DEC-145), with
+# that store, as Zangband had them: treasure priced by its material, sold in
+# the Statue Store and bought there, at the general store and on the black
+# market. They live in object.txt as `& Wooden Statue~` and the rest.
+"9:0" = { name = "Wooden Statue of #" }
+"9:1" = { name = "Clay Statue of #" }
+"9:2" = { name = "Stone Statue of #" }
+"9:3" = { name = "Iron Statue of #" }
+"9:4" = { name = "Copper Statue of #" }
+"9:5" = { name = "Silver Statue of #" }
+"9:6" = { name = "Golden Statue of #" }
+"9:7" = { name = "Ivory Statue of #" }
+"9:8" = { name = "Mithril Statue of #" }
+"9:9" = { name = "Ornate Statue of #" }

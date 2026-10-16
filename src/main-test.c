@@ -1264,7 +1264,8 @@ static void c_borg_towns(char *rest)
 {
 	static const char *store_name[] = {
 		"general", "armoury", "weapon", "book",
-		"alchemy", "magic",   "black",  "home"
+		"alchemy", "magic",   "black",  "home",
+		"statue"
 	};
 	int i, here;
 	struct loc w;

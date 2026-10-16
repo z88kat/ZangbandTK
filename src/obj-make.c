@@ -961,6 +961,28 @@ static struct monster_race *figurine_race(int level)
 }
 
 /**
+ * The monster a newly made statue depicts (ZangbandTK).
+ *
+ * Zangband's own choice again, and a looser one than the figurine's
+ * ([object2.c:3179](../archive/zangband/src/object2.c#L3179)): any race that
+ * is generated at all, uniques included and at any depth.  A statue is a
+ * likeness and nothing comes out of it, so a Golden Statue of Oberon says
+ * nothing about where Oberon is.
+ */
+static struct monster_race *statue_race(void)
+{
+	int tries;
+
+	for (tries = 0; tries < 10000; tries++) {
+		struct monster_race *race = &r_info[randint1(z_info->r_max - 1)];
+
+		if (race->name && race->rarity) return race;
+	}
+
+	return NULL;
+}
+
+/**
  * Applying magic to an object, which includes creating ego-items, and applying
  * random bonuses,
  *
@@ -1048,6 +1070,9 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 	} else if (tval_is_figurine(obj)) {
 		/* And a figurine its monster */
 		obj->race = figurine_race(lev);
+	} else if (tval_is_statue(obj)) {
+		/* And a statue its likeness */
+		obj->race = statue_race();
 	}
 
 	/* Apply minima from ego items if necessary */
@@ -1223,6 +1248,7 @@ int obj_theme_weight(const struct obj_theme *theme, int tval)
 		case TV_RING:
 		case TV_GOLD:
 		case TV_FIGURINE:
+		case TV_STATUE:
 			return theme->treasure;
 
 		/* Dragon scale mail is both, as it was in Zangband. */

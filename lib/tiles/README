@@ -24,14 +24,18 @@ whether a licence that forbids modification has been respected.
 Per tileset
 -----------
 
-**gervais (32x32) -- mapped only.  The image is untouched.**
+**gervais (32x32) -- mapped, and one row added.**
 
   Angband maps 1151 of this sheet's 3840 cells.  Another 1239 unmapped cells
   hold art, and a contiguous block of it -- sheet rows 23 to 25 -- is a
   wilderness terrain set that Angband never had a use for.  `feat-ztk.prf`
   points thirteen ZangbandTK features at cells that were already there.
 
-  `32x32.png` is byte-identical to Angband's.
+  This used to say the image was byte-identical to Angband's, and it stopped
+  being true on 10 September 2026, when `scripts/tiles/make-services.py` drew
+  the service buildings Gervais has no art for into **one new row** at the
+  bottom of `32x32.png` (`serv-ztk.prf`).  The Statue Store's door joined them
+  in 3.130.0.  Every cell above that row is still Angband's, byte for byte.
 
 **adam-bolt (16x16), nomad (16x16), old (8x8) -- modified.**
 
@@ -85,25 +89,25 @@ Per tileset
   61 byte-identical -- and the script reclaims its own rows on a re-run.  It
   must be the last generator to run, after make-terrain and make-services.
 
-  And one object, the same way: the magical figurine (3.129.0), which Adam
-  Bolt drew for Zangband and Angband never had.  It is the cell after the last
-  unique, on the same rows.
+  And eleven objects, the same way: the magical figurine (3.129.0) and the ten
+  statues (3.130.0), which Adam Bolt drew for Zangband and Angband never had.
+  They are the cells after the last unique, on the same rows.
 
 **old -- also modified, with Zangband's own 8x8 figurine.**
 
-  Zangband's copy of the 8x8 tileset has a magical figurine too, and its
-  `graf-xxx.prf` says which cell -- `# Magical Figurine` above `K:567` -- where
-  for monsters it names almost none.  The same script copies that one cell
-  into **one new row** at the bottom of `8x8.png` and writes `zang-ztk.prf`
-  (3.129.1).  The archive's 8x8 tiles have no mask: they sit on a flat grey,
+  Zangband's copy of the 8x8 tileset has a magical figurine and ten statues
+  too, and its `graf-xxx.prf` says which cell is which -- `# Magical Figurine`
+  above `K:567` -- where for monsters it names almost none.  The same script
+  copies those eleven cells into **one new row** at the bottom of `8x8.png` and
+  writes `zang-ztk.prf` (3.129.1, and the statues 3.130.0).  The archive's 8x8 tiles have no mask: they sit on a flat grey,
   and the grey is what becomes transparent, which the script's own notes
   calibrate against the cells both sheets share.  Rows 0 to 100 are
   byte-identical.
 
   Nomad's and Gervais' get nothing: Nomad's is a modern set with no 2001
   counterpart, and Gervais' is mapped-only and staying that way.  So the
-  figurine is its letter in those two, which `audit-tiles.py` lists as
-  deliberate.
+  figurine and the statues are their letter in those two, which
+  `audit-tiles.py` lists as deliberate.
 
   Each tileset's own `graf-*.prf` gains `%:` lines loading the above.  That is a
   modification of a text file, not of any art.
@@ -121,7 +125,9 @@ May we?
     (`archive/zangband/z_update.txt`), so the Zangband rows are the same artist
     under the same terms, not a third party's art travelling under his licence.
   * **David Gervais'** is Creative Commons Attribution 3.0, which permits
-    modification with attribution.  We have not modified it in any case.
+    modification with attribution and asks that changes be indicated.  The one
+    modification is the generated row described above, and this file is where
+    it is indicated.
   * **The original 8x8 and Nomad's** carry no licence statement, here or in
     Angband's own `copying.rst`.  They are not listed among the exceptions in
     LICENSE.md, so they stand on the project licence like the rest of the tree.
@@ -149,4 +155,5 @@ generated sets have none of those, nor a dungeon mouth or a secret door.  Those
 are buildings and openings rather than ground textures -- shapes, not rules --
 and a borrowed picture for one of them would be actively wrong rather than
 merely absent.  They render as ASCII until somebody draws them.  So does the
-magical figurine in the Nomad and Gervais sets, for the same reason.
+magical figurine and the statues in the Nomad and Gervais sets, for the same
+reason.

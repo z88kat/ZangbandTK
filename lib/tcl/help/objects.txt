@@ -210,14 +210,8 @@ T	p0	, waits with them: every property it had was
 T	p0 code	WILD_WALK
 T	p0	, so importing it would have put a pair of boots in the game that granted nothing at all.
 T	p0	\n
-T	p0	Twelve of Zangband’s object kinds are likewise recorded but not imported:
+T	p0	Two of Zangband’s object kinds are likewise recorded but not imported:
 T	p0	\n
-T	li1	•\t
-T	li1 strong	Ten statues.
-T	li1	 A Zangband statue is a monster rendered in a material — the name reads 
-T	li1 em	Mithril Statue of a Balrog
-T	li1	. An object here can hold a monster now, since the magical figurine below, so what a statue needs exists; what it lacks is a use. It does nothing with its monster but carry its name, two hundred pounds of it, and the Statue Store that dealt in them was turned down with Zangband’s other shops (DEC-33).
-T	li1	\n
 T	li1	•\t
 T	li1 strong	A Scroll of Artifact Creation
 T	li1	, which makes a new artifact out of an ordinary item during play. Angband generates its random artifacts once, at birth, and stores an artifact in the savefile by name — so one invented mid-game would not be there when the character was loaded again.
@@ -226,7 +220,7 @@ T	li1	•\t
 T	li1 strong	A Wand of Rockets
 T	li1	, whose damage is its own element — it stuns, and shard resistance halves it — and adding an element changes the savefile layout.
 T	li1	\n
-T	p0	Three that used to be on this list have since arrived. The 
+T	p0	Thirteen that used to be on this list have since arrived. The 
 T	p0 strong	Wand of Tame Monster
 T	p0	 waited on pets and now has them (
 L	p0 link	1	pets	Pets and Allies
@@ -234,12 +228,22 @@ T	p0	). The
 T	p0 strong	Potion of New Life
 T	p0	 strips every mutation you carry (
 L	p0 link	2	mutations	Mutations
-T	p0	); Zangband’s version also re-rolled your hit points, and that half of it is still not built. And the 
+T	p0	); Zangband’s version also re-rolled your hit points, and that half of it is still not built. The 
 T	p0 strong	Magical Figurine
-T	p0	, which waited on an object that could name a monster: 
+T	p0	 waited on an object that could name a monster: 
 T	p0 em	a Magical Figurine of a cave spider
 T	p0	, thrown, breaks and leaves the cave spider behind as your pet (
 L	p0 link	3	pets	Pets and Allies
+T	p0	).
+T	p0	\n
+T	p0	And the 
+T	p0 strong	ten statues
+T	p0	, which needed the same thing and then a reason. A statue is a monster rendered in a material — 
+T	p0 em	a Golden Statue of Smeagol
+T	p0	, any monster at all, uniques included — and it does nothing. It is treasure: worth what its material is worth, from 75 gold for wood to 10,000 for mithril, and heavy, twenty pounds for the wooden one and fifty for the rest. They are found from level 9 down, never stack, and no monster will pick one up. The 
+T	p0 strong	Statue Store
+T	p0	, which Zangband’s great cities had and this game turned away while it had no statues to sell, buys and sells them, and the general store and the black market will take one too (
+L	p0 link	4	towns	Towns and Services
 T	p0	).
 T	p0	\n
 T	p0	One more is not waiting at all. 

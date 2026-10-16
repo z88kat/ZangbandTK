@@ -775,6 +775,21 @@ static void mass_produce(struct object *obj)
 
 			break;
 		}
+
+		/*
+		 * ZangbandTK (DEC-145): the cheap materials by the handful, as
+		 * Zangband's statue shops had them
+		 * ([store.c:332](../archive/zangband/src/store.c#L332)): five to
+		 * nine of wood, clay or stone, three to five of iron, copper or
+		 * silver, and the rest alone.  A pile is one monster's likeness over
+		 * again; it is only in a shop that statues ever share a stack.
+		 */
+		case TV_STATUE:
+		{
+			if (cost <= 100L) size += damroll(2, 2);
+			if (cost <= 1000L) size += damroll(2, 2);
+			break;
+		}
 	}
 
 	/* Save the total pile size */
@@ -1646,6 +1661,18 @@ void store_shuffle(struct store *store)
 		return;
 	}
 
+	/*
+	 * A shop with a single keeper keeps them.  The loop below wants someone
+	 * other than the incumbent and there is no one, so it never ended: store.txt
+	 * lists the home's one owner four times over to get past it, and when a
+	 * slip while adding the Statue Store left the home one line (DEC-145) the
+	 * game hung on the second birth in a process.
+	 */
+	if (store->owners && !store->owners->next) {
+		store->owner = store->owners;
+		return;
+	}
+
 	o = store->owner;
 
 	while (o == store->owner)
@@ -1692,8 +1719,9 @@ int find_inven(const struct object *obj)
 				return 0;
 			}
 
-			/* Figurines, of the same monster */
+			/* Figurines and statues, of the same monster */
 			case TV_FIGURINE:
+			case TV_STATUE:
 			{
 				if (obj->race != gear_obj->race)
 					continue;

@@ -1365,17 +1365,6 @@ _MAKE_TOA = [
      lambda m: "d%sM%s" % (m.group(1), m.group(2))),
 ]
 
-#: Shared by all ten statues, which are one decision rather than ten.
-STATUE_NOTE = (
-    "Zangband's statue is a monster rendered in a material: the `#` in the "
-    "name is replaced by the monster's name and `pval` holds its race index "
-    "(object2.c:3179). Since 3.129.0 an object can hold a monster race, which "
-    "the magical figurine brought, so the mechanism is there; what is not is "
-    "a use. A statue does nothing with its monster but carry its name, and "
-    "DEC-33 declined the Statue Store that dealt in them."
-)
-
-
 def cmd_objects(args) -> int:
     """Convert Zangband-only object kinds onto 4.2's object.txt model (CNT-11)."""
     import artifacts as art
@@ -1491,9 +1480,8 @@ def cmd_objects(args) -> int:
         if key in defers:
             counts["deferred"] += 1
             spec = defers[key]
-            note = spec.get("note",
-                             STATUE_NOTE if spec["why"] == "statue" else "")
-            # The ten statues share one reason; saying it ten times buries it.
+            note = spec.get("note", "")
+            # Kinds that share one reason say it once; ten times buries it.
             if note and any(note == n for _, _, n in report.deferred):
                 note = "As above."
             report.deferred.append((rec.name, spec["why"], note))

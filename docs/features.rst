@@ -90,9 +90,14 @@ A town is somewhere to do things, not a row of shop doors (:doc:`towns`).
   put on your map, or a bad dream about something you have met. Which, depends on
   how well governed the town is.
 - **Shops come at a standard as well as a trade**: a plain Weapon Smiths, or an
-  Advanced, Expert or Arcane one, deeper-stocked and better enchanted. Seven in
-  ten are plain and one in fifty is arcane, so the good ones are worth travelling
-  for.
+  Advanced, Expert or Arcane one, deeper-stocked and better enchanted. About two
+  in three are plain and one in forty is arcane, so the good ones are worth
+  travelling for.
+- **A Statue Store** in every great city and the most crowded cities, as
+  Zangband had: likenesses of monsters in wood, clay, stone, iron, copper,
+  silver, gold, ivory and mithril, which do nothing and are worth their
+  material. Statues turn up in the dungeon from level 9, and the general store
+  and the black market will buy them too.
 - **One house.** Every town has a home and they are all the same home: what you
   leave in your village is on the shelf in a city four days away.
 

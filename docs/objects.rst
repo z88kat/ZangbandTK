@@ -236,14 +236,8 @@ how the wilderness plays rather than a conversion of a flag. One ego,
 importing it would have put a pair of boots in the game that granted nothing at
 all.
 
-Twelve of Zangband's object kinds are likewise recorded but not imported:
+Two of Zangband's object kinds are likewise recorded but not imported:
 
-- **Ten statues.** A Zangband statue is a monster rendered in a material — the
-  name reads *Mithril Statue of a Balrog*. An object here can hold a monster
-  now, since the magical figurine below, so what a statue needs exists; what it
-  lacks is a use. It does nothing with its monster but carry its name, two
-  hundred pounds of it, and the Statue Store that dealt in them was turned down
-  with Zangband's other shops (DEC-33).
 - **A Scroll of Artifact Creation**, which makes a new artifact out of an
   ordinary item during play. Angband generates its random artifacts once, at
   birth, and stores an artifact in the savefile by name — so one invented
@@ -251,13 +245,23 @@ Twelve of Zangband's object kinds are likewise recorded but not imported:
 - **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
   resistance halves it — and adding an element changes the savefile layout.
 
-Three that used to be on this list have since arrived. The **Wand of Tame
+Thirteen that used to be on this list have since arrived. The **Wand of Tame
 Monster** waited on pets and now has them (:doc:`pets`). The **Potion of New
 Life** strips every mutation you carry (:doc:`mutations`); Zangband's version
-also re-rolled your hit points, and that half of it is still not built. And
-the **Magical Figurine**, which waited on an object that could name a monster:
-*a Magical Figurine of a cave spider*, thrown, breaks and leaves the cave spider
-behind as your pet (:doc:`pets`).
+also re-rolled your hit points, and that half of it is still not built. The
+**Magical Figurine** waited on an object that could name a monster: *a Magical
+Figurine of a cave spider*, thrown, breaks and leaves the cave spider behind as
+your pet (:doc:`pets`).
+
+And the **ten statues**, which needed the same thing and then a reason. A
+statue is a monster rendered in a material — *a Golden Statue of Smeagol*, any
+monster at all, uniques included — and it does nothing. It is treasure: worth
+what its material is worth, from 75 gold for wood to 10,000 for mithril, and
+heavy, twenty pounds for the wooden one and fifty for the rest. They are found
+from level 9 down, never stack, and no monster will pick one up. The **Statue
+Store**, which Zangband's great cities had and this game turned away while it
+had no statues to sell, buys and sells them, and the general store and the
+black market will take one too (:doc:`towns`).
 
 One more is not waiting at all. **The Scroll of Rumour is dropped**, not
 deferred. Zangband's 647 rumours are in the archive and Angband already has the

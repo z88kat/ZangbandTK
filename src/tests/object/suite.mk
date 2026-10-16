@@ -6,4 +6,5 @@ TESTPROGS += \
 	object/info \
 	object/pile \
 	object/slays \
+	object/statue \
 	object/util

@@ -15,3 +15,23 @@
 
 # from the Zangband sheet at row 52, col 0
 object:figurine:Magical Figurine:0xE5:0x80
+# from the Zangband sheet at row 52, col 1
+object:statue:Wooden Statue:0xE5:0x81
+# from the Zangband sheet at row 52, col 2
+object:statue:Clay Statue:0xE5:0x82
+# from the Zangband sheet at row 52, col 3
+object:statue:Stone Statue:0xE5:0x83
+# from the Zangband sheet at row 52, col 4
+object:statue:Iron Statue:0xE5:0x84
+# from the Zangband sheet at row 52, col 5
+object:statue:Copper Statue:0xE5:0x85
+# from the Zangband sheet at row 52, col 6
+object:statue:Silver Statue:0xE5:0x86
+# from the Zangband sheet at row 52, col 7
+object:statue:Golden Statue:0xE5:0x87
+# from the Zangband sheet at row 52, col 8
+object:statue:Ivory Statue:0xE5:0x88
+# from the Zangband sheet at row 52, col 9
+object:statue:Mithril Statue:0xE5:0x89
+# from the Zangband sheet at row 52, col 10
+object:statue:Ornate Statue:0xE5:0x8A

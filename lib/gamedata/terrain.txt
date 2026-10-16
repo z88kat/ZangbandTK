@@ -244,6 +244,19 @@ look-in-preposition:at
 desc:Your safe piece of Middle Earth, and the only place you can store goods
 desc: apart from on your person.
 
+# ZangbandTK (DEC-145): Zangband's Statue Store, which its great cities had and
+# this game turned away until there were statues to sell in it.  The ninth shop,
+# so '0' -- every other digit is taken -- in Zangband's own light umber.
+code:STORE_STATUE
+name:Statue Store
+graphics:0:U
+priority:20
+flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+look-prefix:the entrance to the
+look-in-preposition:at
+desc:A shop full of likenesses, in everything from wood to mithril, of things
+desc: you would rather not meet in the flesh.
+
 code:SECRET
 name:secret door
 graphics:#:w

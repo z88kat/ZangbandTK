@@ -244,8 +244,13 @@ bool borg_think_shop_buy_useful(void)
     /* Extract the "power" */
     b_p = borg.power;
 
-    /* Check the shops */
-    for (k = 0; k < (z_info->store_max - 1); k++) {
+    /*
+     * Check the shops.  Every one but home, by its index: this read "all but
+     * the last", which was home until the Statue Store came after it.
+     */
+    for (k = 0; k < z_info->store_max; k++) {
+        if (k == BORG_HOME)
+            continue;
 
         /* If I am bad shape up, only see certain stores */
         if ((borg.trait[BI_LIGHT] == 0 || borg.trait[BI_FOOD] == 0) && k != 0
@@ -762,8 +767,11 @@ bool borg_think_shop_grab_interesting(void)
     /* Evaluate the home */
     b_s = borg_power_home();
 
-    /* Check the shops (max -1 to skip home) */
-    for (k = 0; k < (z_info->store_max - 1); k++) {
+    /* Check the shops, skipping home by its index rather than its place */
+    for (k = 0; k < z_info->store_max; k++) {
+        if (k == BORG_HOME)
+            continue;
+
         /* Scan the wares */
         for (n = 0; n < z_info->store_inven_max; n++) {
             borg_item *item = &borg_shops[k].ware[n];

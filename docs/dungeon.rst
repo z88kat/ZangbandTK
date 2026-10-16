@@ -53,6 +53,7 @@ Features that do not block line of sight
 ``<``   A staircase up             ``7``    Entrance to the Black Market
 ``>``   A staircase down           ``8``    Entrance to your Home
 ``#``   A pool of lava             ``9``    Entrance to the magetower
+                                   ``0``    Entrance to the Statue Store
 ===== =========================    =====  ================================== 
 
 The other five town services are all ``+``, each in a colour of its own: the
@@ -265,7 +266,7 @@ shops (each with an entrance), some townspeople, and a wall around it with gates
 in it. The first time you are in town it will be daytime, but note that the sun
 rises and falls (rather instantly) as time passes.
 
-Not every town holds all eight shops — see :doc:`towns`.
+Not every town holds all nine shops — see :doc:`towns`.
 
 Townspeople
 ===========
@@ -407,6 +408,19 @@ The Black Market (``7``)
 Your Home (``8``)
   This is your house where you can store objects that you cannot carry on
   your travels, or will need at a later date.
+
+.. index::
+   single: statue store
+   seealso: store; statue store
+
+The Statue Store (``0``)
+  The Statue Store deals in statues: likenesses of monsters in wood, clay,
+  stone, iron, copper, silver, gold, ivory and mithril, and the odd ornate one.
+  A statue does nothing; it is worth what its material is worth, and this is
+  where it fetches the most. The cheap ones are sold by the handful. Only the
+  great cities and the most crowded cities keep one, and a better one --
+  Expert or Arcane -- reaches for the precious metals. The general store and
+  the black market will take a statue off your hands too.
 
 Within The Dungeon
 ==================

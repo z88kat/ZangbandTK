@@ -105,6 +105,31 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Statues, and the Statue Store — 16 October 2026
+------------------------------------------------
+
+- **3.130.0** — **Zangband's ten statues** (DEC-145): likenesses of monsters
+  in wood, clay, stone, iron, copper, silver, gold, ivory, mithril and an
+  ornate one, any monster at all, uniques included — *a Golden Statue of
+  Smeagol*. A statue does nothing; it is treasure, worth its material, from 75
+  gold to 10,000, and heavy, twenty pounds of wood or fifty of anything else.
+  Found from dungeon level 9 down. They never stack, and no monster will pick
+  one up.
+- **The Statue Store comes back**, the ninth shop, behind a ``0``. It was turned
+  away in DEC-33 for having nothing to sell. Every great city and every crowded
+  city keeps one, on top of its other trades, so no town lost a shop for it;
+  a plain one sells wood and clay by the handful, and an Expert or Arcane one —
+  Zangband's Unusual Statue Store — the precious metals. The **general store**
+  and the **black market** buy statues as well.
+- **Older characters load with the new shop ready**: a savefile from before it
+  gets a shopkeeper for it on loading, where it would otherwise have had none.
+  And a character with persistent levels, saved by 3.120.0 or later, still
+  loads its stored levels: adding a kind of terrain would have made the game
+  read one number too many from each. Persistent-level saves from before
+  3.120.0 were already broken by the same mistake, and still are.
+- Tiles: the statues in every set but Nomad's and Gervais', in Zangband's own
+  drawings for Adam Bolt's and the 8x8; a door for the Statue Store in all six.
+
 The magical figurine — 16 October 2026
 --------------------------------------
 

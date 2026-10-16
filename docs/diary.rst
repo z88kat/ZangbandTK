@@ -31,6 +31,27 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+16 October 2026 — statues, and a shop I turned away
+===================================================
+
+I had the statues down as waiting on a mechanism, and once the figurine gave an
+object a monster to hold they were waiting on nothing but a reason. A statue does
+nothing; it is a likeness of something you met, in wood or gold, worth its
+material. That read as no purpose, and DEC-33 had already turned away the Statue
+Store on the same grounds. Looking at it again, that was wrong. Treasure that
+is a story -- a Golden Statue of Smeagol -- is a purpose, and Zangband's great
+cities had a shop for it. So they are back as Zangband had them, and the shop
+with them, behind the one digit left.
+
+The shop was the harder half, because a ninth shop touches everything that had
+counted to eight: the savefile's store list, the stored levels' terrain counts,
+the borg's idea of which shop is home. Each of those would have broken an old
+character without a word. And it found a slip of my own: adding the shop's
+entry I left the home with one owner line where it had four, and the game hung
+for ever the second time a character was born. The four lines were there for a
+reason nobody had written down. The code no longer needs them.
+
+
 16 October 2026 — the figurine, and what the old saves knew
 ===========================================================
 

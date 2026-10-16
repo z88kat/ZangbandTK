@@ -470,9 +470,9 @@ struct object {
 	const struct monster_race *origin_race;	/**< Monster race that dropped it */
 
 	/**
-	 * The monster a figurine holds, and becomes when thrown (ZangbandTK).
-	 * NULL for every other object.  Not `const`, because placing the monster
-	 * counts it against its race.
+	 * The monster a figurine holds, and becomes when thrown, or a statue
+	 * depicts (ZangbandTK).  NULL for every other object.  Not `const`,
+	 * because placing a figurine's monster counts it against its race.
 	 */
 	struct monster_race *race;
 

@@ -55,4 +55,9 @@ TV(DECK, "deck")
  * race (`struct object`'s `race`).
  */
 TV(FIGURINE, "figurine")
+/*
+ * ZangbandTK: a monster rendered in a material, worth what the material is
+ * worth.  Zangband's TV_STATUE; holds a race as a figurine does.
+ */
+TV(STATUE, "statue")
 TV(GOLD, "gold")

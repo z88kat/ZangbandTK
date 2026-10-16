@@ -55,7 +55,7 @@ the reference the others are larger than.
 Which shops a place keeps
 -------------------------
 
-Not every place carries all eight shops. How many it keeps follows from its size
+Not every place carries all nine shops. How many it keeps follows from its size
 band; *which* ones it keeps follows from the country around it:
 
 - the **armoury** and the **weaponsmith** follow people and order;
@@ -65,6 +65,15 @@ band; *which* ones it keeps follows from the country around it:
 - the **magic shop** wants both people and law, which is why it is a city trade;
 - the **black market** keeps out of the light, and appears where law is thin and
   people are many -- which is rare, and worth the walk.
+
+And one more, on top of whatever else a place keeps: the **Statue Store**, which
+Zangband built where its people were thickest. Every great city has one, and so
+does a city that is crowded -- about three places in a world. It sells and buys
+statues: likenesses of monsters in wood, clay, stone, iron, copper, silver,
+gold, ivory and mithril, which do nothing and are worth what their material is
+worth. The cheap ones come by the handful. The general store and the black
+market will buy a statue too, which helps, since a stone one weighs fifty
+pounds.
 
 Two towns of the same size need not hold the same shops. The choice is made once,
 when the world is generated, from the world seed and the town's own position, so
@@ -88,9 +97,14 @@ bookseller almost entirely, and for arms and armour it is people and order first
 with magic behind them, since the top of that ladder is enchanted steel. A general
 store climbs on people alone; there is no arcane bread.
 
-It is deliberately rare. Measured across a great many worlds, seven shops in ten
-are plain and one in fifty is arcane, so the top of the ladder is somewhere you
-travel to rather than something your nearest city happens to have.
+It is deliberately rare. Measured across a great many worlds, about two shops in
+three are plain and one in forty is arcane, so the top of the ladder is somewhere
+you travel to rather than something your nearest city happens to have.
+
+The Statue Store climbs on the country's magic rather than its people, since it
+only ever stands in a crowded place: about half are plain, and the Expert and
+Arcane ones -- Zangband's *Unusual* Statue Store -- are where the silver, gold,
+ivory and mithril are.
 
 Two exceptions. The **black market** has no rung, because it is already the top of
 every ladder — it will sell you anything, pitched at how deep you have been. And

@@ -1121,6 +1121,58 @@ static int test_a_large_town_is_built(void *state) {
 }
 
 /**
+ * The Statue Store stands where the world says it does, and only there
+ * (DEC-145).
+ *
+ * It is kept by a rule of its own -- every great city, and a crowded city --
+ * on top of a town's trades rather than among them, and placed after Home,
+ * which is the last of the eight.  So the two things worth holding are the
+ * rule, and that a town given the ninth shop still builds every shop it was
+ * given: a ninth building is one more lot the layout has to find.
+ */
+static int test_a_statue_store_stands_where_it_is_given(void *state) {
+	int seed, given = 0;
+
+	for (seed = 1; seed <= 10; seed++) {
+		struct wilderness *w = wild_new(129, seed * 4409);
+		int i;
+
+		wild_generate(w);
+		for (i = 0; i < wild_town_count(w); i++) {
+			const struct wild_town *t = &w->towns[i];
+			const struct wild_block *b = wild_block_at(w, t->block.x,
+				t->block.y);
+			bool has = (t->stores & (1u << WILD_STORE_STATUE)) != 0;
+			struct chunk *town;
+			uint16_t found = 0;
+			struct loc grid;
+
+			/* The rule: great cities, and crowded cities, and not home */
+			require(has == (i > 0 && (t->band >= 3
+				|| (t->band == 2 && b->pop >= 192))));
+			if (!has) continue;
+			given++;
+
+			town = town_gen_wild(player,
+				wild_block_seed(w, t->block.x, t->block.y),
+				t->wid, t->hgt, t->stores, t->services);
+			require(town);
+			for (grid.y = 1; grid.y < town->height - 1; grid.y++)
+				for (grid.x = 1; grid.x < town->width - 1; grid.x++) {
+					int shop = square_shopnum(town, grid);
+
+					if (shop >= 0 && shop < 16) found |= 1u << shop;
+				}
+			cave_free(town);
+			eq(found, t->stores);
+		}
+		wild_free(w);
+	}
+	require(given > 0);
+	ok;
+}
+
+/**
  * A town away from home is drawn onto the surface that covers it.
  *
  * The call that draws towns into the live window used to be wrapped in a test
@@ -6731,6 +6783,8 @@ struct test tests[] = {
 	{ "the-surface-knows-the-hour", test_the_surface_knows_the_hour },
 	{ "the-town-holds-the-trades-it-was-given", test_the_town_holds_the_trades_it_was_given },
 	{ "a-large-town-is-built", test_a_large_town_is_built },
+	{ "a-statue-store-stands-where-it-is-given",
+	  test_a_statue_store_stands_where_it_is_given },
 	{ "a-distant-town-is-drawn", test_a_distant_town_is_drawn },
 	{ "the-doorstep-is-survivable", test_the_doorstep_is_survivable },
 	{ "the-wilderness-is-inhabited", test_the_wilderness_is_inhabited },

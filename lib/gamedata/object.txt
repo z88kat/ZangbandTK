@@ -5062,6 +5062,131 @@ attack:1d1:0:0
 armor:0:0
 desc:This small statuette seems to move.
 
+##### Statues #####
+
+# ZangbandTK: Zangband's ten statues (k_info 568-577), hand-built like the
+# figurine above and for the same reason.  Each is a monster rendered in a
+# material: the monster is chosen when it is made -- any monster at all,
+# uniques included -- and named after the kind, "a Golden Statue of Smeagol".
+# Unlike a figurine's, the monster does not set the price; the material does,
+# and the statue does nothing else.
+#
+# Zangband's numbers: its W: weights are in tenths of a pound, so the wooden
+# one weighs twenty pounds and the rest fifty; every A: line is a single band
+# at rarity 3, a commonness of 33, from the depth it gives.  The dice are the
+# P: lines, which is what one does when thrown.  Two descriptions are
+# corrected from "status".
+
+name:& Wooden Statue~
+type:statue
+graphics:`:u
+level:5
+weight:200
+cost:75
+alloc:33:9 to 100
+attack:1d2:0:0
+armor:0:0
+desc:An unpolished statue made of wood.
+
+name:& Clay Statue~
+type:statue
+graphics:`:U
+level:5
+weight:500
+cost:50
+alloc:33:17 to 100
+attack:1d3:0:0
+armor:0:0
+desc:A hardbaked statue made of clay.
+
+name:& Stone Statue~
+type:statue
+graphics:`:s
+level:5
+weight:500
+cost:100
+alloc:33:26 to 100
+attack:2d3:0:0
+armor:0:0
+desc:This statue has been cut out of a rock.
+
+name:& Iron Statue~
+type:statue
+graphics:`:D
+level:5
+weight:500
+cost:200
+alloc:33:35 to 100
+attack:2d4:0:0
+armor:0:0
+desc:This statue was poured from molten iron.
+
+name:& Copper Statue~
+type:statue
+graphics:`:o
+level:20
+weight:500
+cost:500
+alloc:33:43 to 100
+attack:2d4:0:0
+armor:0:0
+desc:This copper statue needs polishing.
+
+name:& Silver Statue~
+type:statue
+graphics:`:W
+level:32
+weight:500
+cost:1000
+alloc:33:52 to 100
+attack:2d4:0:0
+armor:0:0
+desc:This silver statue needs varnishing.
+
+name:& Golden Statue~
+type:statue
+graphics:`:y
+level:50
+weight:500
+cost:2500
+alloc:33:63 to 100
+attack:2d4:0:0
+armor:0:0
+desc:This golden statue needs polishing.
+
+name:& Ivory Statue~
+type:statue
+graphics:`:w
+level:40
+weight:500
+cost:2000
+alloc:33:70 to 100
+attack:1d4:0:0
+armor:0:0
+desc:This ivory statue needs cleaning.
+
+name:& Mithril Statue~
+type:statue
+graphics:`:B
+level:70
+weight:500
+cost:10000
+alloc:33:95 to 100
+attack:2d5:0:0
+armor:0:0
+desc:This mithril statue needs polishing.
+
+name:& Ornate Statue~
+type:statue
+graphics:`:v
+level:60
+weight:500
+cost:5000
+alloc:33:80 to 100
+attack:2d4:0:0
+armor:0:0
+desc:This ornate statue needs dusting.
+
 ##### Dragon Scale Mail #####
 
 name:Black Dragon Scale Mail~

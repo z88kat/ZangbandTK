@@ -934,7 +934,7 @@ survives.**
 | Rare Book Store | The **Bookseller** stocks each realm's town book; anything deeper is what the **Black Market** is for, and it already stocks anything |
 | Supplies Store, Grocer, Flea Market | Subsets of the **General Store** |
 | Jeweler (+ Copper, Silver, Gold, Rare) | 4.2 has **no mundane jewellery**. Every ring and amulet in the game is a significant magic item, so a jeweller would be a second Black Market -- and DEC-29 made the Black Market the reason to travel |
-| Statue Store, Figurine Store | Need `TV_STATUE` and `TV_FIGURINE`, which 4.2 does not have. Content invention, not porting |
+| Statue Store, Figurine Store | Need `TV_STATUE` and `TV_FIGURINE`, which 4.2 does not have. Content invention, not porting. *The Statue Store is reversed by DEC-145, once there were statues to sell.* |
 | Temple (+ Large, High, Hidden) | A 2.8.1 shop 4.2 removed on purpose. DEC-27: where Zangband merely looks like 2.8.1, 4.2 wins |
 | Library | WLD-16b already established it has no implementation anywhere in Zangband |
 
@@ -7796,3 +7796,97 @@ archive's flat grey background stands in for the mask it does not have —
 calibrated against the 34 object cells that are the same drawing in both
 sheets, where it matched our transparency on every pixel. `OBJECT_SKIP` now
 excuses only Nomad and Gervais.
+
+
+**DEC-145 — The statues are built as Zangband had them, and the Statue Store
+comes back (16 October 2026, the project owner).**
+
+DEC-144 left Zangband's ten statues deferred: the figurine had given an object a
+monster to hold, so the mechanism was there, but a statue does nothing with its
+monster except carry its name, and DEC-33 had turned away the Statue Store that
+dealt in them. Put to the owner as build, reject or invent a use, the answer was
+three rulings:
+
+1. "Build them as Zangband had them."
+2. "Bring back the Statue Store, we reject them as it appeared to had no
+   purpose, we were wrong."
+3. "Also allow the statues to also be sold on the black market general
+   stores" — the player may sell a statue at the general store and the black
+   market as well.
+
+**The statues (3.130.0).** A new object base, `statue` (`TV_STATUE`, after the
+figurine), and Zangband's ten kinds hand-built in object.txt from k_info
+568-577: wooden, clay, stone, iron, copper, silver, golden, ivory, mithril and
+ornate. Its numbers throughout — level, cost (75 to 10,000), allocation from
+depth 9 to 95 at rarity 3, dice — and its weights in tenths of a pound, so
+twenty pounds for wood and fifty for the rest (DEC-144's docs had said two
+hundred, reading the figure as pounds; corrected). Two descriptions lose
+Zangband's "status" typo. A statue's monster is any race generated at all,
+uniques included and at any depth (object2.c:3179); its name is "a Golden Statue
+of Smeagol", a unique by name and anything else with its article, one rule for
+statues and figurines alike (flavor.c:796). Its price is its material's, not its
+monster's. It never stacks, monsters neither pick it up nor crush it
+(melee2.c:2565), and it does nothing — Zangband's activation hook admitted
+statues and then had nothing to run. The race, its savefile record and old
+saves' knowledge all go through DEC-144's machinery unchanged; adding ten kinds
+moved nothing in the corpus.
+
+**The Statue Store (3.130.0), the ninth shop.** Its terrain is appended after
+INVIS_WALL, since a grid's feature is saved as an index, which makes it store 8,
+after Home; its glyph is `0`, the one digit left, in Zangband's light umber.
+store.txt gives it Zangband's own owner names and titles (tables.c) and purses of
+5,000 to 10,000, the ST_HALF_INVEN half shelf (slots 3 to 9) and turnover 9.
+Zangband's **Unusual Statue Store** — the same shop at levels 50 to 100 — is not
+a second door: as with DEC-33's other variants it is the quality ladder, and the
+store's table repeats the cheap materials so that a plain shop sells wood and
+clay and an Expert or Arcane one, drawing again for the deeper kind, reaches
+silver, gold and mithril. Cheap statues come by the handful, as Zangband's
+mass production made them (store.c:332).
+
+*Where.* Zangband built them where its people were densest (population 250 in
+wild2.c's building table). Here every great city keeps one, and a city of
+population 192 or more — about three towns in a world. It is added on top of a
+town's trades rather than chosen among them, so no existing town lost a shop to
+make room; it is the last shop placed, so every other shop in a town that gains
+one stays where it was. Its quality roll takes five seed bits of its own: the
+rule the others use would have given the ninth store three.
+
+*Selling.* The general store's buy list gains `statue`, which is the owner's
+addition — Zangband's general store bought none — and the black market, with no
+buy list, takes anything of value already. Zangband's temples and flea market
+bought them too; neither shop exists here.
+
+**Old saves.** Three things a ninth shop disturbs, all mended in the loader:
+
+- A savefile's store count is the old eight. The store reader now seats a keeper
+  for any shop the file did not have — without one the shop screen, selling
+  and the knowledge menu read a NULL owner — and its shelves stock on the first
+  visit. The "number of stores is different" note is kept for a file with
+  *more* stores than the game, which is a file from elsewhere.
+- The chunks block wrote one count per terrain feature with no length, and the
+  reader read as many as it had features, so any feature added desynchronised a
+  persistent-levels save from the next level on. INVIS_WALL had done it once
+  already, in 3.120.0. Chunks version 3 writes the count first; versions 1 and 2
+  are read at the length 3.120.0 to 3.129.x wrote them, up to INVIS_WALL. A
+  persistent-levels save from before 3.120.0 is one count shorter still and
+  nothing in it says so; those stay as broken as INVIS_WALL left them.
+- The borg's three shop loops read "every store but the last" to mean "every
+  store but home", and its shop-position arrays were fixed at nine. Home is
+  skipped by its index now, and the arrays follow `store_max`.
+
+Found while testing: a draft of store.txt left the home a single owner line,
+and `store_shuffle()` — which wants a keeper other than the incumbent — then
+looped for ever on the second birth in a process. store.txt lists the home's
+one owner four times for exactly that reason. `store_shuffle()` now keeps a
+lone keeper rather than looking for another.
+
+**Tiles.** Neon draws the statues (a full-height figure on a plinth, in its
+material's colour) and the shop door (store_0, with its numeral).
+import-zangband-tiles.py brings Zangband's own drawings of all ten into Adam
+Bolt's set and the 8x8 one, as it did the figurine. make-services.py draws the
+shop door into the four inherited sets, as it draws the services: none has a
+`0` shopfront to borrow. Nomad and Gervais have no statue to show, so
+`OBJECT_SKIP` now names object types, figurine and statue, for those two.
+
+**Not built: the Figurine Store.** DEC-33 declined it with the Statue Store and
+nothing here revisits it; the figurines remain on the black market's shelves.

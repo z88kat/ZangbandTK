@@ -434,10 +434,11 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 	if (tval_is_chest(obj1)) {
 		/* Chests never stack */
 		return false;
-	} else if (tval_is_figurine(obj1)) {
+	} else if (tval_is_figurine(obj1) || tval_is_statue(obj1)) {
 		/*
-		 * Nor figurines, not even two of the same monster: Zangband's
-		 * "never okay" ([object2.c:1471](../archive/zangband/src/object2.c#L1471)).
+		 * Nor figurines or statues, not even two of the same monster:
+		 * Zangband's "never okay"
+		 * ([object2.c:1471](../archive/zangband/src/object2.c#L1471)).
 		 */
 		return false;
 	}

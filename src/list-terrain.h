@@ -65,3 +65,11 @@ FEAT(CHAOSTOWER) /* takes a mutation off you, for a price (DEC-24, PLR-13) */
  * (DEC-79), one file over.
  */
 FEAT(INVIS_WALL) /* looks like floor and is not (BAL-15, DEC-83) */
+
+/*
+ * ZangbandTK (DEC-145): Zangband's Statue Store.  Appended for the reason
+ * INVIS_WALL is, and it makes the store the ninth shop -- shopnums are handed
+ * out in this order, so it is store index 8, after Home, and not among the
+ * eight Angband had.  wild.h's WILD_STORE_STATUE depends on that.
+ */
+FEAT(STORE_STATUE) /* statues, bought and sold (DEC-145) */

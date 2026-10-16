@@ -1391,6 +1391,14 @@ void wr_chunks(void)
 			wr_u16b(c->height);
 			wr_u16b(c->width);
 			wr_u16b(c->feeling_squares);
+
+			/*
+			 * How many counts follow, then the counts (chunks version 3).
+			 * Version 2 wrote them with no length, so a reader could only
+			 * assume its own FEAT_MAX -- and every feature added since made
+			 * that one count too many.
+			 */
+			wr_u16b(FEAT_MAX + 1);
 			for (i = 0; i < FEAT_MAX + 1; i++) {
 				wr_u16b(c->feat_count[i]);
 			}
