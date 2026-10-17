@@ -8320,6 +8320,18 @@ before it. Replaced with what it was reaching for. Three instances is a
 pattern: a check that counts the collection it loops over is testing its own
 loop.
 
+**A crash I shipped and the Windows arm caught.** The first version looped
+`while ((entry = advance_ui_entry_iterator(it)) != NULL)`.
+`advance_ui_entry_iterator` does no bounds check at all -- it returns
+`entries[i]` and increments -- so it never yields NULL at the end and that
+loop walks off the array and dereferences whatever follows. `ui-player.c`
+counts first and advances exactly that many times, which I read as style and
+is not. It passed every local check and both macOS CI arms, and segfaulted
+the Windows Tk build. Fixed by counting first, and the bridge now bounds the
+row total at both ends so a runaway loop fails as a check rather than as a
+crash. Worth recording for what it says about the arm: the Windows Tk job is
+three days old and has already paid for itself.
+
 **What is verified where.** Headless and local: the four groups answering
 with no character, the grid verbs refusing without one, a typo named as a
 typo, the Flags page existing among the Character window's pages and

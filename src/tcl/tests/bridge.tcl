@@ -1587,13 +1587,21 @@ proc birth_pass_held {} {
 		set bad
 	} ""
 
-	check "the four groups between them describe something" {
+	# Bounded at both ends. The lower bound says the grid describes
+	# something; the upper one is the check that would have caught the
+	# segfault. advance_ui_entry_iterator does no bounds check and never
+	# returns NULL at the end, so a loop that waits for NULL walks off the
+	# array -- which passed on macOS and crashed the Windows Tk build. A
+	# runaway loop shows up here as far more rows than there are entries in
+	# ui_entry.txt, of which there are 47 before the parameterised ones are
+	# expanded.
+	check "the four groups describe something, and not more than exists" {
 		set n 0
 		foreach group [angband_flags categories] {
 			incr n [llength [angband_flags rows $group]]
 		}
-		expr {$n > 10}
-	} 1
+		list [expr {$n > 10}] [expr {$n < 200}]
+	} {1 1}
 
 	check "the Flags page draws for a real character" {
 		character_window

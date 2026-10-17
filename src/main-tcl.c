@@ -4817,6 +4817,7 @@ static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		const char               *group = Tcl_GetString(objv[2]);
 		struct ui_entry_iterator *it;
 		struct ui_entry          *entry;
+		int                       nentry, e;
 		Tcl_Obj                  *list;
 		int                      *vals, *auxs;
 		struct cached_object_data **ocache;
@@ -4840,6 +4841,17 @@ static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_OK;
 		}
 
+		/*
+		 * Counted first, then advanced exactly that many times, which is
+		 * how ui-player.c drives this iterator and is not a stylistic
+		 * choice. advance_ui_entry_iterator() does no bounds check -- it
+		 * returns entries[i] and increments -- so it never yields NULL at
+		 * the end and a `while (advance() != NULL)` loop reads past the
+		 * array and dereferences whatever is there. That loop passed on
+		 * macOS and segfaulted on the Windows Tk build.
+		 */
+		nentry = count_ui_entry_iterator(it);
+
 		list   = Tcl_NewListObj(0, NULL);
 		vals   = mem_alloc((n + 1) * sizeof(*vals));
 		auxs   = mem_alloc((n + 1) * sizeof(*auxs));
@@ -4848,10 +4860,13 @@ static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 		for (i = 0; i < n; i++) worn[i] = slot_object(player, i);
 
-		while ((entry = advance_ui_entry_iterator(it)) != NULL) {
+		for (e = 0; e < nentry; e++) {
 			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
 			Tcl_Obj *vl  = Tcl_NewListObj(0, NULL);
 			Tcl_Obj *al  = Tcl_NewListObj(0, NULL);
+
+			entry = advance_ui_entry_iterator(it);
+			if (!entry) break;
 			wchar_t     wlabel[32];
 			Tcl_DString lbl;
 			char        one[8];
