@@ -25,7 +25,8 @@
 #
 # An item is {cmd Label "the game's description"}, {menu Label {items}},
 # {tk Label script} for the front end's own, {tiles Label} for the tile sets,
-# {option Label name} for one of the game's options as a tick, or "-" for a
+# {option Label name} for one of the game's options as a tick,
+# {spells Label "the game's description"} for the Cast cascade, or "-" for a
 # rule.  {instead Label "the game's description" script} is a
 # front-end window standing in for one of the game's commands -- the Options
 # window for the game's options screen, as the original's Preferences had it.
@@ -53,7 +54,7 @@ set commands(layout) {
             -
             {cmd Browse "Browse a book"}
             {cmd Study "Gain new spells"}
-            {cmd Cast "Cast a spell"}
+            {spells Cast "Cast a spell"}
             {cmd "Use Power" "Use a power"}
         }}
         {menu Use {
@@ -313,6 +314,24 @@ proc commands_fill {m items} {
                 menu $child -tearoff 0
                 angband_tiles_menu $child
                 $m add cascade -label $label -menu $child
+            }
+            spells {
+                # A cascade standing in for one of the game's commands, as
+                # `instead` does, but a menu rather than a command: Cast
+                # opens book and spell here instead of in the game's own
+                # prompts. It counts as that command's place, so the check
+                # that every command has one still finds it, and it shows no
+                # key because the key still does what the game does with it.
+                #
+                # Filled on posting, like the tile sets above and for the
+                # same reason: what is in the pack, what is castable and what
+                # it costs all move while the menu is closed.
+                lassign $item kind label desc
+                set child $m.spells
+                menu $child -tearoff 0 \
+                    -postcommand [list spellmenu_fill $child]
+                $m add cascade -label $label -menu $child
+                lappend commands(instead) $desc
             }
             option {
                 # The Options window's own variable, so a tick here and a

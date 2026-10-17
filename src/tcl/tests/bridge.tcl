@@ -357,6 +357,56 @@ check "angband_player takes at most one field" {
 	string match "wrong # args*" $e
 } 1
 
+# --- the Spells menu, before there is a character ---------------------------
+
+# The menu is built from angband_book, which refuses before there is anyone
+# to have books, so the menu has to render that rather than raise.
+# Cast lives in the generated layout, in Inventory > Magic, where the game's
+# own "Cast a spell" command was. It is a cascade rather than a command now:
+# the book and the spell are chosen here instead of in the game's prompts.
+proc spells_menu_path {} {
+	set inv [commands_menu_path Inventory]
+	set magic [$inv entrycget [$inv index Magic] -menu]
+	return [$magic entrycget [$magic index Cast] -menu]
+}
+
+check "Cast is a cascade in Inventory, Magic, where the command was" {
+	commands_build
+	set inv [commands_menu_path Inventory]
+	set magic [$inv entrycget [$inv index Magic] -menu]
+	list [$magic type [$magic index Cast]] \
+		[expr {"Cast a spell" in $commands(instead)}]
+} "cascade 1"
+
+check "the Spells cascade says so when there are no books" {
+	set m [spells_menu_path]
+	spellmenu_fill $m
+	list [$m index end] [$m entrycget 0 -label] [$m entrycget 0 -state]
+} "0 {No spell books} disabled"
+
+# Rebuilt on every posting, so it has to clear up after itself: entries are
+# deleted and submenu widgets destroyed. Without the destroy the widgets
+# accumulate one set per posting and the old ones keep their stale spells.
+check "rebuilding the menu destroys the submenus it made" {
+	set m [spells_menu_path]
+	menu $m.stale -tearoff 0
+	set before [winfo exists $m.stale]
+	spellmenu_fill $m
+	list $before [winfo exists $m.stale]
+} "1 0"
+
+# The two numbers a caster acts on, in the right-hand column.
+check "the menu says what a spell costs and how often it fails" {
+	spellmenu_numbers 3 12
+} "3 mana · 12%"
+
+# Why an entry is greyed. Inert outranks the state because it is the one a
+# player cannot find out any other way: the game thinks the spell is castable.
+check "an inert spell is greyed for being inert, not for its state" {
+	list [spellmenu_why known 1 1] [spellmenu_why difficult 0 0] \
+		[spellmenu_why known 1 0]
+} {{nothing yet} difficult {}}
+
 # --- quests and the home, before there is a character -----------------------
 
 # Both are knowledge tabs, so both answer the table verbs, and both refuse
@@ -1449,6 +1499,61 @@ proc birth_pass_held {} {
 		set m [choice_menu_build 0]
 		list [$m entrycget 2 -label] [$m entrycget 2 -accelerator]
 	} [list Inspect [commands_accel I]]
+
+	# --- the Spells menu, with a character ----------------------------------
+
+	# The bridge takes Human and then answers the rest at random, so the
+	# class may or may not be a caster. These hold either way: an empty pack
+	# is as valid an answer as a full one, and what is checked is the shape
+	# of whatever comes back.
+	check "every book row names a realm" {
+		set bad {}
+		foreach row [angband_book books] {
+			if {[llength $row] != 3} { lappend bad "width [llength $row]" }
+			if {[lindex $row 2] eq ""} { lappend bad "[lindex $row 1]: no realm" }
+		}
+		set bad
+	} ""
+
+	# Ten fields now: the tenth is inert, which the Spell Book window had no
+	# way to say before and so showed two dud spells as ordinary ones.
+	check "every spell row carries its cost, its real failure rate and inert" {
+		set bad {}
+		foreach book [angband_book books] {
+			foreach row [angband_book spells [lindex $book 0]] {
+				lassign $row sidx name level mana fail info state castable \
+					learnable inert
+				if {[llength $row] != 10} { lappend bad "$name: width" }
+				if {$inert ni {0 1}} { lappend bad "$name: inert=$inert" }
+				if {$mana < 0} { lappend bad "$name: mana $mana" }
+				if {$fail < 0 || $fail > 100} { lappend bad "$name: fail $fail" }
+			}
+		}
+		set bad
+	} ""
+
+	check "the Spells cascade builds from whatever the character carries" {
+		set m [spells_menu_path]
+		spellmenu_fill $m
+		expr {[$m index end] >= 0}
+	} 1
+
+	# If the character happens to carry an inert spell, the menu must refuse
+	# to offer it. Written to pass when there is none to find, because the
+	# class is random -- what it guards is that a found one is never enabled.
+	check "an inert spell is never offered as castable" {
+		set bad {}
+		foreach book [angband_book books] {
+			foreach row [angband_book spells [lindex $book 0]] {
+				lassign $row sidx name level mana fail info state castable \
+					learnable inert
+				if {$inert && [spellmenu_why $state $castable $inert] eq ""} {
+					lappend bad $name
+				}
+			}
+		}
+		set bad
+	} ""
 
 	# --- quests and the home, with a character ------------------------------
 

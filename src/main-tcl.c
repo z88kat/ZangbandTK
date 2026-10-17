@@ -6286,7 +6286,8 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  *    angband_book books           {n name realm} for each book in the pack the
  *                                 character can read, n its pack position
  *    angband_book spells <n>      the spells of book n, as {sidx name level
- *                                 mana fail info state castable learnable}
+ *                                 mana fail info state castable learnable
+ *                                 inert}
  *    angband_book text <sidx>     the spell's own description
  *    angband_book chooses         whether this class picks the spell it
  *                                 learns, or learns one at random from a book
@@ -6394,6 +6395,28 @@ static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 						Tcl_NewBooleanObj(spell_okay_to_cast(player, sidx)));
 				Tcl_ListObjAppendElement(ip, row,
 						Tcl_NewBooleanObj(spell_okay_to_study(player, sidx)));
+				/*
+				 * Inert: the entry exists and has no effect, so casting it
+				 * spends the turn and the mana and nothing happens.
+				 *
+				 * Two spells are like this -- Detect Enchantment and Raise
+				 * the Dead -- across twenty-two class and realm slots, each
+				 * carrying a description that says so and points at
+				 * realmmap.toml. Asked of the data rather than of that
+				 * prose: a spell with no effect is inert whatever its
+				 * description says, and the two agree exactly today (22
+				 * and 22, nothing in one and not the other).
+				 *
+				 * `state` cannot carry this. It is the word from
+				 * spell_menu_display -- known, untried, unknown, difficult,
+				 * forgotten, illegible -- and an inert spell is honestly
+				 * "known": the character has learned it. What it is not is
+				 * worth casting, and nothing in the old row said so, which
+				 * is why the Spell Book window has been offering both of
+				 * them as ordinary spells.
+				 */
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewBooleanObj(spell->effect == NULL));
 				Tcl_ListObjAppendElement(ip, list, row);
 			}
 			Tcl_SetObjResult(ip, list);

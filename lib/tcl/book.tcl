@@ -32,6 +32,7 @@ array set book {
     colour,difficult #b03030
     colour,forgotten #a07800
     colour,illegible #909090
+    colour,inert     #909090
 }
 
 set book(events) {
@@ -118,10 +119,17 @@ proc book_show {} {
             {*}[expr {$book(down) ? "-decreasing" : ""}] $rows]
     }
     foreach row $rows {
-        lassign $row sidx name level mana fail info state castable learnable
-        $tv insert {} end -id s$sidx -tags $state \
-            -values [list $name $level $mana "$fail%" \
-                [expr {$info ne "" ? $info : $state}]]
+        lassign $row sidx name level mana fail info state castable learnable \
+            inert
+        # An inert spell is honestly "known" -- the character has learned it
+        # -- and casting it spends the turn and the mana and does nothing.
+        # The state column cannot say that, because the game's six words are
+        # about whether you can cast it and not about whether it is worth
+        # casting, so the last column says it instead.
+        set last [expr {$inert ? "nothing yet"
+                      : ($info ne "" ? $info : $state)}]
+        $tv insert {} end -id s$sidx -tags [expr {$inert ? "inert" : $state}] \
+            -values [list $name $level $mana "$fail%" $last]
     }
 
     if {$book(sel) ne "" && [$tv exists s$book(sel)]} {
@@ -370,7 +378,9 @@ proc book_window {} {
         $tv column $col -anchor $anchor -width $width \
             -stretch [expr {$col in {name info}}]
     }
-    foreach state {known untried unknown difficult forgotten illegible} {
+    # The game's six, and "inert", which is ours: a spell the character knows
+    # and that has no effect to produce.
+    foreach state {known untried unknown difficult forgotten illegible inert} {
         $tv tag configure $state -foreground $book(colour,$state)
     }
     pack $body.sb -side right -fill y

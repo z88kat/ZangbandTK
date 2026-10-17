@@ -8153,3 +8153,86 @@ conversation.** The Word of Recall correction (DEC-133) had to be rescued
 after being reached twice and written down neither time, and the same
 happened to the tile licence position. A ruling that exists only in a chat
 log will be re-argued by whoever reads the code next.
+
+---
+
+**DEC-150 — The Book menu is a cascade where the Cast command already was,
+and two spells are marked as doing nothing (17 October 2026).** (Tk front
+end. One accessor field, one new script, one layout change, one existing
+window corrected.)
+
+The todo asked for "a Book menu (realm ▸ book ▸ spell)". Checked against the
+tree before building, as DEC-148's list was.
+
+**What already existed.** The Spell Book *window* — `lib/tcl/book.tcl`, a
+sortable table of name, level, mana, failure and state, with Cast and Study.
+So the item is not a window. And `angband_book` already answered everything a
+cascade needs: `books` gives `{n name realm}`, `spells` gives mana, the
+computed failure and the state, and `cast` acts. No new accessor was wanted,
+only one field.
+
+**Where it belongs, which was not where I first put it.** The menu bar is
+generated from `commands(layout)` in `commands.tcl`, and
+`{cmd Cast "Cast a spell"}` was already in Inventory ▸ Magic, dropping the
+player into the game's own book-then-spell prompts. A new top-level "Spells"
+menu was the wrong answer and an existing bridge check said so immediately:
+"the menu bar is the original's" asserts the six cascades File, Inventory,
+Action, Other, Window, Help, and a seventh broke it. That check was right and
+the first attempt was wrong. The cascade now *replaces* the Cast command in
+the layout, through a new `spells` item kind modelled on the `tiles` one, and
+records itself in `commands(instead)` so the "every command has a place"
+check still finds "Cast a spell" placed.
+
+**The numbers, corrected.** Seven realms is right. The rest was not: there are
+**1,472 class-spell entries over 200 distinct names**, and **two** distinct
+inert spells -- Detect Enchantment and Raise the Dead -- across **22** class
+and realm slots, not seventeen.
+
+**Inert spells: shown, greyed, with the reason.** Asked of the data rather
+than of prose: a spell with no `effect:` is inert whatever its description
+says. The two tests agree exactly -- 22 entries have no effect, 22 carry the
+"does nothing. See realmmap.toml" description, and there is nothing in one
+set and not the other -- so the structural test is used and the prose
+corroborates it.
+
+Hiding them was rejected: a known spell that vanishes from the menu is a
+player wondering what they did wrong. Greying with no reason was rejected for
+the same reason. The entry reads "Detect Enchantment — nothing yet", and the
+grey is a judgement worth naming: **the keyboard will still cast it.** The
+menu refuses to offer what the game will still do, which is a deliberate
+divergence and the only one here.
+
+**The existing window had the same hole**, and that is the part of this worth
+most. `state` is the word from `spell_menu_display` -- known, untried,
+unknown, difficult, forgotten, illegible -- and an inert spell is honestly
+"known": the character has learned it, and `spell_okay_to_cast` agrees. So
+the Spell Book window has been listing both duds as ordinary castable spells
+since it was built. It now shows "nothing yet" in the last column and greys
+the row.
+
+**The numbers shown are the ones the game uses.** Failure is
+`spell_chance()`, which carries the character's stat, level, stun and the
+penalty for being short of mana -- the book's own `sfail` is only its
+starting point. Mana is `spell->smana`, and that is honest here because the
+game charges exactly that: `player-spell.c` subtracts it unmodified, and the
+shortfall when the player is low is already inside `spell_chance()`.
+
+**Re-entrancy, and a guard deliberately not added.** `angband_book cast` asks
+`command_may_start()` and then pushes `CMD_CAST` and nudges. It does *not*
+hold `COMMAND_INSIDE_HELD`, and should not: that guard exists for a hook
+called synchronously, where a nested prompt can start a second command inside
+the first. Queueing a command for the game's own loop cannot do that. Adding
+the guard here would look careful and would be cargo cult.
+
+**What is verified where.** Headless and local: the cascade rendering "No
+spell books" disabled before there is a character, a rebuild destroying the
+submenus it made rather than accumulating them, the two pure helpers, Cast
+being a cascade in Inventory ▸ Magic with "Cast a spell" still counted as
+placed, and the menu bar still being the original's six. On CI: the
+with-character checks -- every book row naming a realm, every spell row ten
+fields wide with a boolean `inert` and a failure rate in range, the cascade
+building from whatever the character carries, and no inert spell ever being
+offered as castable. Those last are written to hold for a non-caster too,
+because the bridge takes Human and answers the rest at random. Nobody has
+looked at the menu: whether a five-level cascade is bearable in practice is
+exactly what needs eyes.
