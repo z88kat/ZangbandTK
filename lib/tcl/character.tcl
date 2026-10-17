@@ -296,15 +296,20 @@ proc character_refresh_flags {have} {
     }
 
     # Said on the page, because a grid that is not everything and does not
-    # admit it is worse than no grid. The sources are what player_flags()
-    # and the equipment carry; what is missing is every property with no
-    # bindui: line in the data, which includes several of this project's own.
+    # admit it is worse than no grid. What is left out is now a short and
+    # deliberate list rather than "everything without a bindui line"
+    # (DEC-152): ten of those were bound and these are the ones that were
+    # left, each for a reason.
     $t insert end "\n  + has it   - takes it away   ~ temporary only\
          ? not yet known\n" note
     $t insert end "  The last column is you: race, class and the grants that\
         arrive with a level.\n" note
-    $t insert end "  Mutations, shapes and anything with no grid entry of its\
-        own are not shown here.\n" note
+    $t insert end "  Your race's and class's own abilities have no row here:\
+        nothing can grant or take\n" note
+    $t insert end "  them, so a row would say the same in every column.\
+        Mutations and shapes likewise.\n" note
+    $t insert end "  A weapon's brands belong to its blows rather than to\
+        you, and are on the weapon.\n" note
 
     $t configure -state disabled
 }

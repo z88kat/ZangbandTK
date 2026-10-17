@@ -8344,3 +8344,88 @@ than ten entries between them, and the page drawing for a real character.
 single characters line up under their equippy heads, whether the legend
 reads, and whether the whole thing fits the page without scrolling. That
 needs eyes and nothing here substitutes for them.
+
+---
+
+**DEC-152 — Ten properties bound into the Flags grid, twenty-one deliberately
+left out, and why the list was never seventeen (17 October 2026).** (Tk front
+end and game data. Ruled: bind the Zangband properties the grid can honestly
+carry.)
+
+**The real set is forty-nine, not seventeen.** My DEC-151 report named a
+subset from memory. Re-derived from the data: **18 unbound player properties
+and 31 unbound object properties**. The two files do not share a record
+header -- `object_property.txt` starts a record at `name:`,
+`player_property.txt` at `type:` -- which is why a generic parse kept
+producing phantoms, including a "Sworn to Chaos has no type" defect that does
+not exist: a blank line sits in an unconventional place in that record, and
+the parser is line-driven, so the game reads it correctly. **Third parsing
+artifact in three days; the lesson is to key on the record header the parser
+itself uses rather than on whatever looks like one.**
+
+**Ten bound**, each because a column can honestly answer "can I drop this"
+for it:
+
+      abilities   Prot. cut, Reflection, Pass wall, Ghoul touch,
+                  Fiery aura, Electric aura, Luck
+      hindrances  Anti-magic, Cannot eat
+      modifier    Mana
+
+Prot. cut is the clearest case: `PROT_FEAR` and `PROT_STUN` were already
+bound and it was not, so its absence was an inconsistency rather than a
+judgement.
+
+**Twenty-one left out, in four groups.**
+
+*The brands -- vampiric, vorpal, chaotic.* Checked against the term screen
+first, as asked: `ui_entry.txt` has no brand entry and `ui-player.c` never
+mentions one. A brand belongs to a weapon's blows, not to the bearer, and
+object info already shows it. Binding them would put a row in a player grid
+for something that is not a property of the player.
+
+*The double-edged two -- chaos patron, weird luck.* The grid has exactly two
+flag templates, `good_flag` and `other_flag`, and they colour a row as good
+or bad. Weird luck "sharpens your critical hits, and everything else's", and
+a chaos patron deals out rewards and punishments. Either colouring would
+state something false, so neither is bound until the grid can say "both".
+
+*Item mechanics -- fourteen of them*: burns out, takes fuel, no fuel,
+intensity 2 and 3 light, explode, throwing, multiply weight, returning,
+easily enchanted, magic-powered criticals, earthquakes, and the four ignore
+flags. These describe the item, not its bearer. "Which slot gives me
+takes-fuel" is not a question.
+
+*The seventeen player-only abilities* -- Undead, Blood Diet, Martial Arts,
+Deep Reserves, No Magic, Sworn to Chaos, Rock, Mushroom Lore, Device Lore,
+Miner, Blessed Fighter, Full Spellcaster, Extra Spell Beaming, Spell Choice,
+Charms, Pickpocketing, Shield Bash. All are `type:player`: nothing can grant
+or remove them, so each would be a row of dots with one mark in the last
+column -- seventeen rows carrying one bit each, in a matrix whose whole
+purpose is comparing sources. **Where they belong is a list, not a grid**,
+and the Character window's Info page is the place: they are facts about the
+character in the way its race and class are, and the page already holds
+facts of that kind. Not built here.
+
+**A trap worth recording: a `bindui:` naming an entry that does not exist is
+silently ignored.** `bind_object_property_to_ui_entry_by_name` returns 1 for
+an unknown name and both callers discard it -- and `init.c:2094` already
+records why, from an earlier review: the entry table is built by
+`textui_knowledge_init()` after `init_angband()` has parsed these files, so
+every bind fails at parse time in every build and discarding the result is
+what makes that work at all. Verified by pointing a binding at
+`no_such_entry_at_all`: the data loads, every test passes, and the row simply
+never appears. So the ten are asserted **by name** in the bridge rather than
+assumed, because nothing else would catch a typo in one.
+
+**The footer now names what is left out rather than "everything unbound"**,
+and says the three reasons: race and class abilities have no row because
+nothing can grant them, mutations and shapes likewise, and a weapon's brands
+belong to its blows.
+
+**What is verified where.** Local: the data parses and all 1617 unit tests
+pass, including `parse/objprop`, `parse/ui_knowledge` and `parse/parser`; the
+dangling-binding falsification above. On CI: that all ten labels reach the
+grid for a real character, and that no brand does. The local bridge cannot
+make a character, so the positive binding evidence is CI's. **Nobody has
+looked at the page**, and with ten more rows the question of whether the grid
+still fits without scrolling is sharper than it was yesterday.

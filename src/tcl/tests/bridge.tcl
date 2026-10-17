@@ -1603,6 +1603,42 @@ proc birth_pass_held {} {
 		list [expr {$n > 10}] [expr {$n < 200}]
 	} {1 1}
 
+	# The ten this project bound in DEC-152. Asserted by name rather than
+	# trusted, because a bindui: naming an entry that does not exist is
+	# silently ignored -- init.c:2094 records why that cannot be caught at
+	# parse time -- so a typo in one of these would lose a row with nothing
+	# said anywhere.
+	check "the properties bound for this game reach the grid" {
+		set seen {}
+		foreach group [angband_flags categories] {
+			foreach row [angband_flags rows $group] {
+				lappend seen [lindex $row 0]
+			}
+		}
+		set missing {}
+		foreach want {"Prot. cut" Reflection "Pass wall" "Ghoul touch"
+					  "Fiery aura" "Electric aura" Luck "Anti-magic"
+					  "Cannot eat" Mana} {
+			if {$want ni $seen} { lappend missing $want }
+		}
+		set missing
+	} ""
+
+	# And the ones deliberately left out stay out: a brand belongs to a
+	# weapon's blows rather than to the bearer, and the term screen has no
+	# brand entry either.
+	check "brands are not rows in the grid" {
+		set seen {}
+		foreach group [angband_flags categories] {
+			foreach row [angband_flags rows $group] { lappend seen [lindex $row 0] }
+		}
+		set wrong {}
+		foreach no {Vampiric Vorpal Chaotic} {
+			if {$no in $seen} { lappend wrong $no }
+		}
+		set wrong
+	} ""
+
 	check "the Flags page draws for a real character" {
 		character_window
 		set ::character(page) flags

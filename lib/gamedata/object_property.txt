@@ -215,6 +215,7 @@ code:MANA
 power:14
 mult:5
 desc:Increases your maximum mana, by this much for every level you can cast at
+bindui:mana_ui_compact_0:0
 
 name:light
 type:mod
@@ -321,6 +322,7 @@ id-type:on effect
 power:10
 msg:Your {name} closes your wounds.
 desc:bleeding
+bindui:pcut_ui_compact_0:0:1
 
 name:slow digestion
 type:flag
@@ -1019,6 +1021,7 @@ id-type:on effect
 code:REFLECT
 power:10
 desc:Bounces bolt spells back at whoever cast them
+bindui:reflect_ui_compact_0:0:1
 
 name:fiery aura
 type:flag
@@ -1027,6 +1030,7 @@ id-type:on effect
 code:SH_FIRE
 power:8
 desc:Burns those who strike you in melee
+bindui:shfire_ui_compact_0:0:1
 
 name:electric aura
 type:flag
@@ -1038,6 +1042,7 @@ desc:Shocks those who strike you in melee
 
 # ZangbandTK (CNT-09): the last of the Zangband object flags.  See
 # src/mon-aura.c for the auras above and src/player-attack.c for these.
+bindui:shelec_ui_compact_0:0:1
 
 name:ghoul touch
 type:flag
@@ -1049,6 +1054,7 @@ desc:Sends what you strike bare-handed to sleep
 
 # Walking through rock (PLR-01, DEC-74).  Not "sustain" or "protection" or
 # anything else on the list; it is an ability, so it goes with the others.
+bindui:ghoultouch_ui_compact_0:0:1
 name:pass wall
 type:flag
 subtype:misc ability
@@ -1056,6 +1062,7 @@ id-type:on wield
 code:PASS_WALL
 power:30
 desc:Lets you walk through walls
+bindui:passwall_ui_compact_0:0:1
 
 name:returning
 type:flag
@@ -1072,6 +1079,7 @@ id-type:on wield
 code:LUCK_10
 power:8
 desc:Improves your saving throw
+bindui:luck_ui_compact_0:0:1
 
 name:chaos patron
 type:flag
@@ -1088,6 +1096,7 @@ id-type:on wield
 code:NO_MAGIC
 power:-30
 desc:Stops you casting spells altogether
+bindui:nomagic_ui_compact_0:0:1
 
 name:weird luck
 type:flag
@@ -1120,3 +1129,4 @@ id-type:on wield
 code:CANT_EAT
 power:-8
 desc:Leaves you a twentieth of the good in anything you eat
+bindui:canteat_ui_compact_0:0:1
