@@ -77,6 +77,19 @@ set knowledge(categories) {
     {traps Traps angband_trap kind -1 {
         kind "Kind"
     }}
+    {quests Quests angband_quest State -1 {
+        kind   "Kind of errand"
+        state  "Where it has got to"
+        quarry "What it is about"
+        sofar  "Done so far"
+        needed "Needed in all"
+        fixed  "Judged on it"
+    }}
+    {home Home angband_home kind -1 {
+        kind   "Kind"
+        number "How many"
+        weight "Weight"
+    }}
 }
 
 foreach c $knowledge(categories) {
@@ -166,8 +179,12 @@ proc knowledge_fill {} {
 
     set total [llength $all]
     set knowledge(count) "$total known"
+    # The right-hand column's heading is the category's own word for it. This
+    # was a fixed "Kind" for everything that was not a depth, which was true
+    # while every such column held a kind -- the Quests tab's holds a state.
     set knowledge(header) [knowledge_line $key Name \
-        [expr {$knowledge(right,$key) eq "depth" ? "Depth" : "Kind"}]]
+        [expr {$knowledge(right,$key) eq "depth"
+            ? "Depth" : [string totitle $knowledge(right,$key)]}]]
     .knowledge.f.body.list configure \
         -text "$knowledge(label,$key) — $knowledge(count)"
 
@@ -227,7 +244,7 @@ proc knowledge_fact {key field info} {
             # In tenths of a pound, as the game keeps it.
             return [format "%d.%d lb" [expr {$v / 10}] [expr {$v % 10}]]
         }
-        aware - fully_known {
+        aware - fully_known - fixed {
             return [expr {$v ? "yes" : "no"}]
         }
     }

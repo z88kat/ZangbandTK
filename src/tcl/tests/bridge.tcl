@@ -357,6 +357,35 @@ check "angband_player takes at most one field" {
 	string match "wrong # args*" $e
 } 1
 
+# --- quests and the home, before there is a character -----------------------
+
+# Both are knowledge tabs, so both answer the table verbs, and both refuse
+# before there is anyone whose quests or home they would be.
+check "the quest list refuses before there is a character" {
+	catch {angband_quest list} e
+	set e
+} "the quest list is not loaded yet"
+
+check "the home refuses before there is a character" {
+	catch {angband_home list} e
+	set e
+} "there is no home yet"
+
+# Through table_verb_parse, so they inherit the verb checking the seven older
+# tabs have -- including an unknown verb being named as one.
+check "both new tabs take the same four verbs" {
+	set bad {}
+	foreach cmd {angband_quest angband_home} {
+		foreach verb {max list info lore} {
+			catch {$cmd $verb 1} e
+			if {[string match "expected max*" $e]} { lappend bad "$cmd $verb" }
+		}
+		catch {$cmd sideways} e
+		if {![string match "expected max*" $e]} { lappend bad "$cmd sideways: $e" }
+	}
+	set bad
+} ""
+
 # --- pets, before there is anyone to have them ------------------------------
 
 # Same shape as angband_player above: the names are answerable without a
@@ -548,13 +577,25 @@ check "the knowledge window opens without a character" {
 	list [winfo exists .knowledge] $::knowledge(count)
 } "1 {0 known}"
 
+# Not a count. This asserted "7", which is the length of the very list it
+# iterates, so it proved nothing about the widgets and broke the moment a
+# category was added. What it was reaching for is that every category has a
+# button and that each one is a radiobutton, which is what it now says -- and
+# a missing widget is now a reported failure rather than an error inside the
+# check.
 check "it has a radio button per category" {
-	set radios {}
+	set bad {}
 	foreach c $::knowledge(categories) {
-		lappend radios [winfo class .knowledge.f.cat.[lindex $c 0]]
+		set key [lindex $c 0]
+		set w .knowledge.f.cat.$key
+		if {![winfo exists $w]} {
+			lappend bad "$key: no button"
+		} elseif {[winfo class $w] ne "TRadiobutton"} {
+			lappend bad "$key: [winfo class $w]"
+		}
 	}
-	list [llength $::knowledge(categories)] [lsort -unique $radios]
-} "7 TRadiobutton"
+	set bad
+} ""
 
 check "choosing a category changes the list and its facts" {
 	set ::knowledge(cat) objects
@@ -1408,6 +1449,90 @@ proc birth_pass_held {} {
 		set m [choice_menu_build 0]
 		list [$m entrycget 2 -label] [$m entrycget 2 -accelerator]
 	} [list Inspect [commands_accel I]]
+
+	# --- quests and the home, with a character ------------------------------
+
+	# A new character has the fixed quests and nothing taken, so the list is
+	# the ones the game is won by finishing.
+	check "the quest list is the fixed ones and no more" {
+		set rows [angband_quest list]
+		set bad {}
+		foreach row $rows {
+			set info [angband_quest info [lindex $row 0]]
+			if {![dict get $info fixed]} { lappend bad [dict get $info name] }
+		}
+		list [expr {[llength $rows] > 0}] $bad
+	} {1 {}}
+
+	check "every quest row carries a state and a kind" {
+		set bad {}
+		foreach row [angband_quest list] {
+			if {[llength $row] != 5} { lappend bad "width [llength $row]" }
+			if {[lindex $row 2] eq ""} { lappend bad "no state" }
+			if {[lindex $row 3] eq ""} { lappend bad "no kind" }
+		}
+		set bad
+	} ""
+
+	# The progress columns are real: player.h called both "(unused)" and
+	# quest_check counts kills into one and reads the other. A row that
+	# reported nothing here would mean the tab was showing a dead field.
+	check "a quest knows how much of it is left" {
+		set info [angband_quest info [lindex [angband_quest list] 0 0]]
+		list [expr {[dict get $info needed] > 0}] \
+			[expr {[dict get $info sofar] >= 0}] \
+			[expr {[dict get $info sofar] <= [dict get $info needed]}]
+	} {1 1 1}
+
+	check "a quest that is not there is refused" {
+		catch {angband_quest info 9999} e
+		string match "no such quest*" $e
+	} 1
+
+	# A new character's home is empty, which is the case the tab has to render
+	# rather than divide by.
+	check "a new character's home is empty and says so" {
+		list [angband_home max] [angband_home list]
+	} {0 {}}
+
+	check "nothing at home is refused by index" {
+		catch {angband_home info 0} e
+		string match "nothing at home is*" $e
+	} 1
+
+	# Both tabs are in the browser and both draw, which is the half a bridge
+	# check can reach without anyone looking.
+	check "the browser has the two new tabs and both draw" {
+		global knowledge
+		knowledge_window
+		set bad {}
+		foreach key {quests home} {
+			if {![info exists knowledge(accessor,$key)]} {
+				lappend bad "$key missing"
+				continue
+			}
+			set knowledge(cat) $key
+			if {[catch {knowledge_switch} e]} { lappend bad "$key: $e" }
+		}
+		update
+		destroy .knowledge
+		set bad
+	} ""
+
+	# The right-hand heading is the category's own word. It was a fixed
+	# "Kind", which the Quests tab's state column would have made untrue.
+	check "the quests tab heads its right column State" {
+		global knowledge
+		knowledge_window
+		set knowledge(cat) quests
+		knowledge_switch
+		set h $knowledge(header)
+		set knowledge(cat) monsters
+		knowledge_switch
+		set d $knowledge(header)
+		destroy .knowledge
+		list [string match "*State*" $h] [string match "*Depth*" $d]
+	} {1 1}
 
 	# --- pets, with a character ---------------------------------------------
 

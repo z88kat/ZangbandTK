@@ -8013,3 +8013,98 @@ work stashed, so it predates it. It is the same shape as the `game/nightmare`
 variation recorded in DEC-138: a new test whose assertion is tight against the
 spread of the thing it samples. The bridge fails only on the Birth window,
 local to this machine and already explained in DEC-138.
+
+---
+
+**DEC-148 — The Knowledge browser's missing tabs: what the list actually was,
+and the two that were built (17 October 2026).** (Tk front end. Two
+accessors, two tabs, one corrected struct comment, one test that could only
+ever break.)
+
+The todo named "Pets, Quests and Home in the Knowledge window". Checked
+against the tree, one of those three was already answered, and the game's own
+knowledge menu names two more that the todo does not.
+
+**What the browser had:** seven tabs -- monsters, objects, artifacts, egos,
+runes, features, traps -- table-driven off `knowledge(categories)`, each tab
+an accessor answering `max|list|info|lore`.
+
+**The yardstick, `main_knowledge_menu` in `ui-knowledge.c`.** Its entries map
+onto the browser like this:
+
+      object / rune / artifact / ego / monster / feature / trap   have tabs
+      every store's contents, the home among them                 NO TAB
+      shapechange effects                                         NO TAB
+      equippable comparison                                       NO TAB
+      hall of fame                                                has a window
+      character history                                           in the Character window
+
+**So the real list was not the todo's list.**
+
+- **Pets: already answered, and not as a tab.** DEC-147 gave it a window the
+  day before. It is the right shape and the reason is structural rather than
+  aesthetic: every knowledge tab is a read-only list of things the character
+  *knows about*, and the Pets window *acts* -- it gives orders and toggles two
+  flags. A tab that could send commands would be the only one, and the browser
+  has no guard for it. Pets is also absent from the game's own knowledge menu,
+  which agrees. Dropped.
+- **Home: real, and on the game's own menu.** Built.
+- **Quests: real, and on nobody's menu.** 4.2 has no quest list worth showing
+  -- two quests, alive from birth, marked done by zeroing their level. Ours is
+  WLD-19 and WLD-20: six kinds, four states, taken from a townsman and handed
+  back. Until now the only way to see one was to walk back to whoever gave it
+  to you. Built.
+- **Shapechange effects and equippable comparison: real gaps, not built, and
+  not in the todo.** Nine shapes exist, so the first is a genuine list with no
+  home and would be a third tab of about the same size as these two. The
+  second is an interactive comparison rather than a list and does not fit the
+  browser's shape at all. Both are recorded here rather than quietly added,
+  because widening a named task is the project owner's call.
+- **Mutations, virtues and the timeline: already answered.** All three have
+  accessors and all three live in the Character window. Not gaps.
+
+**Two things that would have lied.**
+
+*The Home read the wrong order.* The obvious implementation walks
+`home->stock`, which is the order things were put down. The home screen sorts
+with `earlier_object()` through `store_stock_list()`. Same items, different
+order -- so "the third one" would have meant one thing in the tab and another
+in the home, and an index taken from the tab would have pointed at the wrong
+object. It goes through `store_stock_list()` for that reason.
+
+*The quest progress looked dead and is not.* `cur_num` and `max_num` were both
+commented "(unused)" in `player.h`. Both are live: `quest_check()` counts a
+kill into `cur_num` for the three kill kinds, `quest_check_item()` adds
+carried items for `QUEST_FIND_ITEM`, `quest_check_arrival()` sets it to
+`max_num` for `QUEST_DELIVERY` and `QUEST_FIND_PLACE` -- arrive-or-not, so
+honestly binary -- `generate.c` places `max_num` quest monsters, and the
+reward is computed from it. Taking the comment at its word would have dropped
+the most useful column in the tab. The comment is corrected in the same
+change; the fields are shown.
+
+**A test that could only ever break.** "It has a radio button per category"
+asserted the count was 7 -- the length of the very list it iterates, so it
+proved nothing about the widgets and failed the moment a category was added.
+Replaced with what it was reaching for: every category has a button, and each
+is a radiobutton, with a missing widget reported rather than erroring inside
+the check.
+
+**One shared heading was wrong.** The right-hand column's heading was a fixed
+"Kind" for anything that was not a depth, which held while every such column
+held a kind. The Quests tab's holds a state. It is now the category's own
+word.
+
+**Neither accessor acts**, so neither takes the re-entrancy guard: they read a
+quest array and a store pile and have no verb that changes anything. Keeping
+the home separate from `angband_store` is what holds that line -- that command
+buys and sells and needs the player in the doorway, and merging them is how a
+knowledge tab grows a Buy button it cannot honour.
+
+**What is verified where.** Headless and local: both accessors refusing before
+there is a character, an unknown verb named as a typo through the shared
+parser, the browser opening with both new tabs, each switching and drawing,
+and the Quests tab heading its column "State" while Monsters still heads
+"Depth". On CI: the with-character checks -- the fixed quests listing, every
+row carrying a state and a kind, the progress fields being live, an empty home
+rendering as empty, and bad indices refused. The local bridge cannot make a
+character, for the reason in DEC-138. Nobody has looked at either tab.

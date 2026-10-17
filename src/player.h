@@ -174,8 +174,20 @@ struct quest
 	char *name;
 	uint8_t level;			/* Dungeon level */
 	struct monster_race *race;	/* Monster race */
-	int cur_num;			/* Number killed (unused) */
-	int max_num;			/* Number required (unused) */
+	/*
+	 * How far along, and how far there is to go.
+	 *
+	 * Both were marked "(unused)", and both are used. quest_check() counts
+	 * a kill into cur_num for QUEST_BOUNTY, QUEST_DUNGEON and QUEST_WILD;
+	 * quest_check_item() adds carried items for QUEST_FIND_ITEM; and
+	 * quest_check_arrival() sets cur_num to max_num for QUEST_DELIVERY and
+	 * QUEST_FIND_PLACE, which are arrive-or-not and so honestly binary.
+	 * generate.c places max_num quest monsters, and the reward in
+	 * quest_giver_business() is computed from it. The comment dated from
+	 * 4.2's two fixed quests, which needed neither (ZangbandTK, WLD-20).
+	 */
+	int cur_num;			/* Done so far */
+	int max_num;			/* Needed in all */
 
 	/**
 	 * ZangbandTK (WLD-20).  `fixed` marks the quests that come from quest.txt

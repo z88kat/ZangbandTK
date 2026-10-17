@@ -4345,6 +4345,340 @@ static int objcmd_trap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_quest -- the errands this character has taken, and the two it is
+ * judged by.
+ *
+ *    angband_quest max            how many quest slots there are
+ *    angband_quest list ?pattern? {index name state type progress} rows
+ *    angband_quest info <index>   one quest, as a name/value dict
+ *    angband_quest lore <index>   what it asks, in a sentence
+ *
+ * A knowledge tab in the same shape as the seven already there, so it goes
+ * through table_verb_parse like they do.
+ *
+ * **Quests are not in the game's own knowledge menu**, because 4.2 has no
+ * list worth showing: two quests, alive from birth, marked done by zeroing
+ * their level. Ours is WLD-19 and WLD-20 -- six kinds, four states, taken
+ * from a townsman and handed back -- and until now the only way to see one
+ * was to walk back to whoever gave it to you.
+ *
+ * Untaken slots are left out. The array is `quest_max` long and most of it
+ * is empty most of the time; a list of blank rows is not a list.
+ *
+ * **The progress is real, and the struct says otherwise.** `cur_num` and
+ * `max_num` are both commented "(unused)" in player.h and both are live:
+ * quest_check() counts kills into `cur_num` for the three kill kinds,
+ * quest_check_item() counts carried items for FIND_ITEM, and
+ * quest_check_arrival() sets it to `max_num` for DELIVERY and FIND_PLACE,
+ * which are arrive-or-not and so honestly binary. The reward in
+ * quest_giver_business() is computed from `max_num`. So the column is
+ * shown; the comment is what is wrong, and is corrected in the same change.
+ */
+static const char *quest_state_name(int state)
+{
+	switch (state) {
+	case QUEST_UNTAKEN:  return "not taken";
+	case QUEST_TAKEN:    return "in hand";
+	case QUEST_COMPLETE: return "done, unpaid";
+	case QUEST_FINISHED: return "closed";
+	}
+	return "unknown";
+}
+
+static const char *quest_type_name(int type)
+{
+	switch (type) {
+	case QUEST_BOUNTY:     return "a bounty";
+	case QUEST_DUNGEON:    return "a dungeon errand";
+	case QUEST_WILD:       return "a hunt above ground";
+	case QUEST_DELIVERY:   return "a delivery";
+	case QUEST_FIND_PLACE: return "a place to reach";
+	case QUEST_FIND_ITEM:  return "something to fetch";
+	}
+	return "an errand";
+}
+
+/**
+ * Is this slot a quest at all?  A fixed one always is; a taken one is while
+ * it has a state other than untaken.
+ */
+static bool quest_is_real(const struct quest *q)
+{
+	return q && (q->fixed || q->state != QUEST_UNTAKEN);
+}
+
+static int objcmd_quest(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char      *pattern;
+	enum table_verb  verb;
+	int              idx, i;
+
+	(void)dummy;
+
+	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
+	if (verb == TABLE_BAD) return TCL_ERROR;
+
+	if (!player || !player->quests || !z_info) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the quest list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_MAX) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj((int)z_info->quest_max));
+		return TCL_OK;
+	}
+
+	if (verb == TABLE_LIST) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < (int)z_info->quest_max; i++) {
+			struct quest *q = &player->quests[i];
+			Tcl_Obj      *row;
+			char          progress[32];
+
+			if (!quest_is_real(q)) continue;
+			if (!table_matches(q->name, pattern)) continue;
+
+			strnfmt(progress, sizeof(progress), "%d of %d",
+					q->cur_num, q->max_num);
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(q->name ? q->name : "an errand", -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(quest_state_name(q->state), -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(quest_type_name(q->type), -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(progress, -1));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (idx < 0 || idx >= (int)z_info->quest_max
+			|| !quest_is_real(&player->quests[idx])) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such quest: %d", idx));
+		return TCL_ERROR;
+	}
+
+	{
+		struct quest *q = &player->quests[idx];
+
+		if (verb == TABLE_LORE) {
+			char text[256];
+
+			if (q->race && q->max_num > 1) {
+				strnfmt(text, sizeof(text),
+						"%s: %d %s, and %d so far.",
+						quest_type_name(q->type), q->max_num,
+						q->race->name ? q->race->name : "creatures",
+						q->cur_num);
+			} else if (q->race) {
+				strnfmt(text, sizeof(text), "%s: %s.",
+						quest_type_name(q->type),
+						q->race->name ? q->race->name : "a creature");
+			} else {
+				strnfmt(text, sizeof(text), "%s, %s.",
+						quest_type_name(q->type),
+						quest_state_name(q->state));
+			}
+
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(text, -1));
+			return TCL_OK;
+		}
+
+		{
+			Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+			table_put(ip, d, "name", Tcl_NewStringObj(
+					q->name ? q->name : "an errand", -1));
+			table_put(ip, d, "kind", Tcl_NewStringObj(
+					quest_type_name(q->type), -1));
+			table_put(ip, d, "state", Tcl_NewStringObj(
+					quest_state_name(q->state), -1));
+			table_put(ip, d, "needed", Tcl_NewIntObj(q->max_num));
+			table_put(ip, d, "sofar", Tcl_NewIntObj(q->cur_num));
+			table_put(ip, d, "level", Tcl_NewIntObj(q->level));
+			table_put(ip, d, "fixed", Tcl_NewBooleanObj(q->fixed));
+			table_put(ip, d, "quarry", Tcl_NewStringObj(
+					(q->race && q->race->name) ? q->race->name : "", -1));
+
+			Tcl_SetObjResult(ip, d);
+			return TCL_OK;
+		}
+	}
+}
+
+/* Both defined with the map drawing, further down; the home list wants them
+ * here. */
+static wchar_t     object_glyph(const struct object *obj);
+static const char *object_colour(const struct object *obj);
+
+/**
+ * angband_home -- what is in the character's home, without walking there.
+ *
+ *    angband_home max            how many things are in it
+ *    angband_home list ?pattern? {index name number weight} rows
+ *    angband_home info <index>   one item, as a name/value dict
+ *    angband_home lore <index>   what the game says about it
+ *
+ * The game's own knowledge menu offers every store's contents, the home
+ * among them, and the Tk browser offered none of them. The home is the one
+ * worth having: a shop's shelves are restocked when the player carries their
+ * custom to another town (WLD-15), so last week's list is not information,
+ * whereas the home is exactly where things were left.
+ *
+ * Separate from angband_store rather than a verb on it, because that command
+ * is about the store being *visited* -- its verbs buy and sell, and they need
+ * the player standing in the doorway. This one reads a pile from across the
+ * world and cannot act on it. Keeping them apart is what stops a knowledge
+ * tab growing a Buy button it could not honour.
+ */
+static struct store *home_store(void)
+{
+	int i;
+
+	if (!stores || !z_info) return NULL;
+
+	for (i = 0; i < (int)z_info->store_max; i++)
+		if (stores[i].feat == FEAT_HOME) return &stores[i];
+
+	return NULL;
+}
+
+static int objcmd_home(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char      *pattern;
+	enum table_verb  verb;
+	struct store    *home;
+	struct object  **list;
+	struct object   *obj;
+	int              idx, i, max, count = 0;
+
+	(void)dummy;
+
+	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
+	if (verb == TABLE_BAD) return TCL_ERROR;
+
+	home = home_store();
+	if (!player || !home) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("there is no home yet", -1));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * Through store_stock_list, not down home->stock, and the difference
+	 * matters. The pile is in the order things were put down; the home
+	 * screen sorts it with earlier_object(). Reading the pile raw would
+	 * list the same things in a different order, so "the third one" would
+	 * mean one thing in this tab and another in the home itself, and an
+	 * index taken from here would point at the wrong object.
+	 */
+	max = z_info->store_inven_max;
+	list = mem_zalloc(max * sizeof(*list));
+	store_stock_list(home, list, max);
+	for (i = 0; i < max; i++) if (list[i]) count = i + 1;
+
+	if (verb == TABLE_MAX) {
+		mem_free(list);
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(count));
+		return TCL_OK;
+	}
+
+	if (verb == TABLE_LIST) {
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+		char     name[120];
+
+		for (i = 0; i < count; i++) {
+			Tcl_Obj *row;
+
+			obj = list[i];
+			if (!obj) continue;
+
+			object_desc(name, sizeof(name), obj,
+					ODESC_PREFIX | ODESC_FULL, player);
+			if (!table_matches(name, pattern)) continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			/*
+			 * The tval name, as the objects tab uses for its own kind
+			 * column, so the browser's right-hand column means the same
+			 * thing on both.
+			 */
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					tval_find_name(obj->tval) ? tval_find_name(obj->tval)
+											  : "", -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(obj->number));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(obj->weight));
+			Tcl_ListObjAppendElement(ip, rows, row);
+		}
+
+		mem_free(list);
+		Tcl_SetObjResult(ip, rows);
+		return TCL_OK;
+	}
+
+	obj = (idx >= 0 && idx < count) ? list[idx] : NULL;
+	mem_free(list);
+	if (!obj) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at home is %d", idx));
+		return TCL_ERROR;
+	}
+
+	{
+		char name[120];
+
+		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL,
+				player);
+
+		if (verb == TABLE_LORE) {
+			textblock *tb = object_info(obj, OINFO_NONE);
+			Tcl_Obj   *text;
+
+			if (!tb) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"There is nothing more to say about it.", -1));
+				return TCL_OK;
+			}
+
+			text = textblock_to_obj(tb);
+			textblock_free(tb);
+			Tcl_SetObjResult(ip, text);
+			return TCL_OK;
+		}
+
+		{
+			Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+			char     glyph[8];
+
+			table_put(ip, d, "name", Tcl_NewStringObj(name, -1));
+			table_put(ip, d, "kind", Tcl_NewStringObj(
+					tval_find_name(obj->tval) ? tval_find_name(obj->tval)
+											  : "", -1));
+			table_put(ip, d, "number", Tcl_NewIntObj(obj->number));
+			table_put(ip, d, "weight", Tcl_NewIntObj(obj->weight));
+			table_put(ip, d, "glyph", Tcl_NewStringObj(glyph,
+					Tcl_UniCharToUtf((int)object_glyph(obj), glyph)));
+			table_put(ip, d, "colour", Tcl_NewStringObj(
+					object_colour(obj), -1));
+
+			Tcl_SetObjResult(ip, d);
+			return TCL_OK;
+		}
+	}
+}
+
+/**
  * The character window's other pages: virtues, mutations and the timeline.
  *
  * Three small lists rather than three tables: each is about *this* character,
@@ -10134,6 +10468,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_feature", objcmd_feature, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_trap", objcmd_trap, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_quest", objcmd_quest, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_home", objcmd_home, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_virtue", objcmd_virtue, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_mutation", objcmd_mutation, NULL,
 			NULL);
