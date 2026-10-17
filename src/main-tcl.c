@@ -56,6 +56,8 @@
 #include "ui-command.h"
 #include "ui-death.h"
 #include "ui-display.h"
+#include "ui-entry.h"
+#include "ui-entry-renderers.h"
 #include "ui-game.h"
 #include "ui-help.h"
 #include "main.h"
@@ -4676,6 +4678,255 @@ static int objcmd_home(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_OK;
 		}
 	}
+}
+
+/**
+ * angband_flags -- the resistances-and-abilities grid, as the character
+ * screen's second page draws it.
+ *
+ *    angband_flags categories     the four groups, with no character
+ *    angband_flags columns        {slot name glyph colour} per equipment
+ *                                 slot, in the game's order
+ *    angband_flags rows <group>   {label known values auxs renderer} per
+ *                                 entry
+ *
+ * Built on ui-entry.h's iterator, which is what `character.tcl` said it was
+ * waiting for. That is deliberate rather than convenient: the term screen's
+ * panel is built from the same iterator with the same two categories, so the
+ * two cannot show different things, and a property given a `bindui:` line in
+ * the data appears in both without either being edited.
+ *
+ * **The last column is the character, and it is the point.** A player asking
+ * "can I drop this ring" needs to know where a resistance is coming from,
+ * and a grid of worn items alone answers that wrongly whenever the answer is
+ * "from you". `values` and `auxs` are `[llength columns] + 1` long: one per
+ * equipment slot, then the character's own, exactly as the term screen's
+ * trailing `@` column works.
+ *
+ * **Timed and untimed are separate, and that is the lying case this avoids.**
+ * `compute_ui_entry_values_for_player` fills the value from
+ * `player_flags()` -- race, class, and the level-gated grants PLR-01 added,
+ * so a Mindflayer's see-invisible at level 15 is in it -- and puts anything
+ * from `player_flags_timed()` in the aux instead. A page that added the two
+ * together would tell a player they resist fire when what they have is four
+ * turns of a potion. They are reported apart and the page says which is
+ * which.
+ *
+ * **`known` is not decoration.** `is_ui_entry_for_known_rune` says whether
+ * this character has learned the rune behind the entry. Reporting the value
+ * regardless would make the page a cheat -- it would read properties off
+ * unidentified equipment. The caller is expected to render an unknown row as
+ * unknown rather than as absent, because "I have not learned this yet" and
+ * "I do not have it" are different answers.
+ *
+ * **What it does not cover, which the page has to say out loud.** The grid
+ * shows what has a `bindui:` line, and a good deal of this project's own
+ * work has none: among player properties Undead, Blood Diet, Sworn to Chaos,
+ * Martial Arts, Deep Reserves and No Magic, and among object properties pass
+ * wall, ghoul touch, reflection, chaos patron, anti-magic shell and the
+ * vampiric, vorpal and chaotic brands. Some of the unbound ones are item
+ * mechanics nobody wants in a resistance grid -- takes fuel, multiply weight
+ * -- but those are not. Binding them is a data change per property and is
+ * not done here; what is done is that the page does not pretend the grid is
+ * everything.
+ */
+static const char *flags_category[] = {
+	"resistances", "abilities", "hindrances", "modifiers"
+};
+
+/* The iterator's filter: in the character screen's set, and in this group. */
+static bool flags_in_group(const struct ui_entry *entry, const void *closure)
+{
+	const char *group = closure;
+
+	return ui_entry_has_category(entry, "CHAR_SCREEN1")
+		&& ui_entry_has_category(entry, group);
+}
+
+static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	size_t      k;
+	int         i, j;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "categories | columns | rows group");
+		return TCL_ERROR;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	/* Answerable with no character, so a page can be laid out before one. */
+	if (streq(what, "categories") && objc == 2) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (k = 0; k < N_ELEMENTS(flags_category); k++)
+			Tcl_ListObjAppendElement(ip, list,
+					Tcl_NewStringObj(flags_category[k], -1));
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (!streq(what, "columns") && !streq(what, "rows")) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"expected categories, columns or rows, not: %s", what));
+		return TCL_ERROR;
+	}
+
+	if (!player || !player->upkeep || !player->body.slots) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (streq(what, "columns") && objc == 2) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < player->body.count; i++) {
+			struct object *obj = slot_object(player, i);
+			Tcl_Obj       *row = Tcl_NewListObj(0, NULL);
+			char           glyph[8];
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					player->body.slots[i].name
+						? player->body.slots[i].name : "", -1));
+			/*
+			 * The equippy character, which is how the term screen heads its
+			 * columns, and an empty one for a slot with nothing in it.
+			 */
+			if (obj) {
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(glyph,
+						Tcl_UniCharToUtf((int)object_glyph(obj), glyph)));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(object_colour(obj), -1));
+			} else {
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+			}
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "rows") && objc == 3) {
+		const char               *group = Tcl_GetString(objv[2]);
+		struct ui_entry_iterator *it;
+		struct ui_entry          *entry;
+		Tcl_Obj                  *list;
+		int                      *vals, *auxs;
+		struct cached_object_data **ocache;
+		struct cached_player_data  *pcache = NULL;
+		struct object            **worn;
+		int                        n = player->body.count;
+
+		for (k = 0; k < N_ELEMENTS(flags_category); k++)
+			if (streq(group, flags_category[k])) break;
+		if (k == N_ELEMENTS(flags_category)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"no such group: %s -- \"angband_flags categories\""
+					" lists them", group));
+			return TCL_ERROR;
+		}
+
+		it = initialize_ui_entry_iterator_const(flags_in_group,
+				flags_category[k], flags_category[k]);
+		if (!it) {
+			Tcl_SetObjResult(ip, Tcl_NewListObj(0, NULL));
+			return TCL_OK;
+		}
+
+		list   = Tcl_NewListObj(0, NULL);
+		vals   = mem_alloc((n + 1) * sizeof(*vals));
+		auxs   = mem_alloc((n + 1) * sizeof(*auxs));
+		worn   = mem_alloc(n * sizeof(*worn));
+		ocache = mem_zalloc(n * sizeof(*ocache));
+
+		for (i = 0; i < n; i++) worn[i] = slot_object(player, i);
+
+		while ((entry = advance_ui_entry_iterator(it)) != NULL) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			Tcl_Obj *vl  = Tcl_NewListObj(0, NULL);
+			Tcl_Obj *al  = Tcl_NewListObj(0, NULL);
+			wchar_t     wlabel[32];
+			Tcl_DString lbl;
+			char        one[8];
+			int         c;
+
+			/*
+			 * The label is the game's, in wide characters, and goes out as
+			 * UTF-8 the same way textblock_to_obj does it. Trailing blanks
+			 * are trimmed: get_ui_entry_label pads to the width the term
+			 * screen's column needs, and a Tk grid sets its own.
+			 */
+			get_ui_entry_label(entry, (int)N_ELEMENTS(wlabel) - 1, false,
+					wlabel);
+			wlabel[N_ELEMENTS(wlabel) - 1] = 0;
+			for (c = (int)wcslen(wlabel); c > 0 && wlabel[c - 1] == L' '; c--)
+				wlabel[c - 1] = 0;
+
+			Tcl_DStringInit(&lbl);
+			for (c = 0; wlabel[c]; c++) {
+				Tcl_Size nb = Tcl_UniCharToUtf((int)wlabel[c], one);
+				Tcl_DStringAppend(&lbl, one, nb);
+			}
+
+			for (j = 0; j < n; j++)
+				compute_ui_entry_values_for_object(entry, worn[j], player,
+						ocache + j, vals + j, auxs + j);
+			compute_ui_entry_values_for_player(entry, player, &pcache,
+					vals + n, auxs + n);
+
+			for (j = 0; j <= n; j++) {
+				Tcl_ListObjAppendElement(ip, vl, Tcl_NewIntObj(vals[j]));
+				Tcl_ListObjAppendElement(ip, al, Tcl_NewIntObj(auxs[j]));
+			}
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					Tcl_DStringValue(&lbl), Tcl_DStringLength(&lbl)));
+			Tcl_DStringFree(&lbl);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(
+					is_ui_entry_for_known_rune(entry, player)));
+			Tcl_ListObjAppendElement(ip, row, vl);
+			Tcl_ListObjAppendElement(ip, row, al);
+			/*
+			 * Which renderer the term screen would use. Not the symbol it
+			 * would draw: ui_entry_renderer_apply writes to the Term and
+			 * there is no way to ask it for a character, and reimplementing
+			 * its index arithmetic for five renderer kinds is exactly where
+			 * a grid starts quietly disagreeing with the screen it copies.
+			 * The name is enough for a caller to tell a resistance from a
+			 * stat modifier and render each honestly in its own terms.
+			 */
+			{
+				const char *rn = ui_entry_renderer_get_name(
+						get_ui_entry_renderer_index(entry));
+
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(rn ? rn : "", -1));
+			}
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		if (pcache) release_cached_player_data(pcache);
+		for (i = 0; i < n; i++)
+			if (ocache[i]) release_cached_object_data(ocache[i]);
+		mem_free(ocache);
+		mem_free(worn);
+		mem_free(auxs);
+		mem_free(vals);
+		release_ui_entry_iterator(it);
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "categories | columns | rows group");
+	return TCL_ERROR;
 }
 
 /**
@@ -10493,6 +10744,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_trap", objcmd_trap, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_quest", objcmd_quest, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_home", objcmd_home, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_flags", objcmd_flags, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_virtue", objcmd_virtue, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_mutation", objcmd_mutation, NULL,
 			NULL);

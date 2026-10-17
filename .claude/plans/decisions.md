@@ -8236,3 +8236,99 @@ offered as castable. Those last are written to hold for a non-caster too,
 because the bridge takes Human and answers the rest at random. Nobody has
 looked at the menu: whether a five-level cascade is bearable in practice is
 exactly what needs eyes.
+
+---
+
+**DEC-151 — The Flags page: the grid, its last column, and what it admits it
+does not show (17 October 2026).** (Tk front end. One accessor, a fifth
+Character page, one more self-referential test count removed.)
+
+Unlike the three items before it, this one was what it said. `character.tcl`
+carried the reason it was absent: *"Flags is not here: the resistance grid is
+built from ui-entry.h's iterator with a column per equipment slot, and an
+empty page would be worse than a missing one."* Nothing read that iterator
+until now.
+
+**Built on the term screen's own machinery, deliberately.**
+`display_resistance_panel` in `ui-player.c` filters `ui_entry` by the two
+categories `CHAR_SCREEN1` and one of resistances, abilities, hindrances,
+modifiers. `angband_flags` does the same, through the same public iterator,
+so a property given a `bindui:` line in the data appears on both surfaces
+without either being edited and the two cannot drift.
+
+**The last column is the point.** A player asking whether they can drop a
+ring needs to know where the resistance comes from, and a grid of worn items
+alone answers wrongly whenever the answer is "from you". `values` and `auxs`
+are one per equipment slot plus one for the character, as the term screen's
+trailing `@` is.
+
+**Timed is kept apart from untimed**, which is the third outing for the
+lesson the pet distance taught. `compute_ui_entry_values_for_player` fills
+the value from `player_flags()` and the aux from `player_flags_timed()`. The
+page marks the second `~` rather than `+`: adding them would tell a player
+they resist fire when what they have is four turns of a potion.
+`player_flags()` already includes PLR-01's level-gated racial grants, so a
+Mindflayer's see-invisible at level 15 is in the column without anything
+being added here.
+
+**Unknown is not absent.** `is_ui_entry_for_known_rune` says whether the
+character has learned the rune. A grid that reported the value anyway would
+read properties off unidentified equipment and be a cheat. An unlearned row
+is `?`, which is a different answer from `.`.
+
+**What it does not cover, and the page says so.** The grid shows what has a
+`bindui:` line, and a good deal of this project's own work has none. Among
+player properties: **Undead, Blood Diet, Sworn to Chaos, Martial Arts, Deep
+Reserves, No Magic**. Among object properties: **pass wall, ghoul touch,
+reflection, chaos patron, anti-magic shell**, and the vampiric, vorpal and
+chaotic brands. Some unbound entries are item mechanics nobody wants in a
+resistance grid -- takes fuel, multiply weight -- but those are not. Binding
+them is a data change per property, is not done here, and is the obvious next
+piece. The page carries a line saying mutations, shapes and anything without
+a grid entry are not shown, because a grid that is not everything and does
+not admit it is worse than no grid.
+
+**A mistake worth recording, because I nearly reported it as a finding.**
+Counting bound properties by splitting the data on `name:` attributed each
+record's `bindui:` to the record before it, since `bindui:` precedes `name:`
+in the file. That produced a list in which Hold Life looked unbound as a
+player property while bound as an object one -- a spectacular-looking defect
+that does not exist. Re-parsed by record, Hold Life is bound. The totals
+happened to be identical either way, which is what made it convincing. The
+same shape as DEC-135's averaging artifact: a plausible aggregate computed
+the wrong way, believed because it was tidy.
+
+**Numbers rather than the term screen's symbols, on purpose.**
+`ui_entry_renderer_apply` writes straight to the Term and there is no way to
+ask it for a character. The choice was between reimplementing its index
+arithmetic for five renderer kinds and saying plainly what the values are.
+Reimplementing it is precisely how this grid would come to disagree with the
+screen it copies, so the row carries the renderer's *name* and the page
+renders a mark for a flag and a signed number for a modifier, with a legend.
+
+**Read-only, confirmed rather than assumed.** `angband_flags` has three
+verbs and none of them writes: it iterates entries and reads values. So by
+DEC-149 it is a page and not a window, and it takes no `command_may_start()`
+and no `COMMAND_INSIDE_HELD`, which is the correct absence rather than an
+oversight.
+
+**The third self-referential test count.** "The character window has a page
+per entry" asserted `5`, which is the length of the list it iterates -- it
+proved nothing about the widgets and failed the moment a page was added, as
+the Knowledge browser's radio count and the menu bar's cascade list did
+before it. Replaced with what it was reaching for. Three instances is a
+pattern: a check that counts the collection it loops over is testing its own
+loop.
+
+**What is verified where.** Headless and local: the four groups answering
+with no character, the grid verbs refusing without one, a typo named as a
+typo, the Flags page existing among the Character window's pages and
+switching to it, and seven assertions on the cell helper covering flags,
+modifiers and the temporary case. On CI: a column for every equipment slot
+each named, every row carrying one value per slot plus one for the character
+with a boolean `known` and a renderer name, the four groups describing more
+than ten entries between them, and the page drawing for a real character.
+**The layout is the part no test reaches** -- whether twenty-odd rows of
+single characters line up under their equippy heads, whether the legend
+reads, and whether the whole thing fits the page without scrolling. That
+needs eyes and nothing here substitutes for them.
