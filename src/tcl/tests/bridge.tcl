@@ -357,6 +357,42 @@ check "angband_player takes at most one field" {
 	string match "wrong # args*" $e
 } 1
 
+# --- pets, before there is anyone to have them ------------------------------
+
+# Same shape as angband_player above: the names are answerable without a
+# character, because the Pets window is laid out before there is one.
+check "the pet fields can be listed before there is a player" {
+	set f [angband_pet fields]
+	expr {"count" in $f && "free" in $f && "upkeep" in $f
+			&& "charged" in $f && "effective" in $f}
+} 1
+
+check "and reading them says why it cannot" {
+	catch {angband_pet} e
+	set e
+} "there is no character yet"
+
+check "the pet roster says the same" {
+	catch {angband_pet list} e
+	set e
+} "there is no character yet"
+
+# The verb is checked before the character is, so a typo reads as a typo
+# whether or not a game is running -- angband_player's rule.
+check "a pet verb nobody has heard of is refused as a typo" {
+	catch {angband_pet sideways} e
+	string match "expected fields, list, orders*" $e
+} 1
+
+# Not the arity, here: for a verb it knows, the character is checked before
+# the argument count, so before a game this says "there is no character yet"
+# too. The arity complaint is asserted in the third pass, where it is
+# reachable.
+check "a known pet verb still needs a character" {
+	catch {angband_pet list extra} e
+	set e
+} "there is no character yet"
+
 # --- the character window -------------------------------------------------
 
 # Decision 18: the windows are Tk's own widgets in Tk's classic theme, and
@@ -1372,6 +1408,96 @@ proc birth_pass_held {} {
 		set m [choice_menu_build 0]
 		list [$m entrycget 2 -label] [$m entrycget 2 -accelerator]
 	} [list Inspect [commands_accel I]]
+
+	# --- pets, with a character ---------------------------------------------
+
+	# A new character has none, which is the case worth pinning: the window
+	# has to say "nothing follows you" rather than divide by a count of zero.
+	check "a new character has no pets and owes nothing" {
+		set d [angband_pet]
+		list [dict get $d count] [dict get $d upkeep] [dict get $d charged]
+	} {0 0 0}
+
+	check "but is allowed at least one for nothing" {
+		expr {[dict get [angband_pet] free] >= 1}
+	} 1
+
+	check "the roster is empty rather than absent" {
+		angband_pet list
+	} {}
+
+	check "there are five orders and exactly one is in force" {
+		set rows [angband_pet orders]
+		set on 0
+		foreach row $rows { if {[lindex $row 2]} { incr on } }
+		list [llength $rows] $on
+	} {5 1}
+
+	check "a pet verb with the wrong arity is an arity complaint" {
+		catch {angband_pet list extra} e
+		string match "wrong # args*" $e
+	} 1
+
+	check "an order nobody has heard of is refused" {
+		catch {angband_pet order sideways} e
+		string match "no such order: sideways*" $e
+	} 1
+
+	# Giving an order and reading it back, which is the whole of what the
+	# window's radiobuttons do.
+	check "an order given is an order held" {
+		set was [dict get [angband_pet] order]
+		angband_pet order follow
+		set got [angband_pet]
+		angband_pet order $was
+		list [dict get $got order] [dict get $got distance]
+	} {follow 6}
+
+	# The one that matters for the window being honest. "Seek and destroy"
+	# sets the leash to 255 and no pet ever wanders 255 grids: past the seek
+	# distance a pet comes back whatever its leash. A window showing 255
+	# would be stating a number the game never uses.
+	check "seek and destroy reports the distance that applies, not 255" {
+		set was [dict get [angband_pet] order]
+		angband_pet order destroy
+		set d [angband_pet]
+		angband_pet order $was
+		list [dict get $d distance] [dict get $d effective] [dict get $d seek]
+	} {255 10 10}
+
+	# A keep-away order is negative and is not clamped, so the two agree.
+	check "a keep-away order is not clamped" {
+		set was [dict get [angband_pet] order]
+		angband_pet order away
+		set d [angband_pet]
+		angband_pet order $was
+		expr {[dict get $d distance] == [dict get $d effective]
+				&& [dict get $d distance] < 0}
+	} 1
+
+	check "the two pet toggles round-trip" {
+		set bad {}
+		foreach what {doors pickup} {
+			set was [angband_pet $what]
+			angband_pet $what 1
+			if {![angband_pet $what]} { lappend bad "$what: set 1 failed" }
+			angband_pet $what 0
+			if {[angband_pet $what]} { lappend bad "$what: set 0 failed" }
+			angband_pet $what $was
+		}
+		set bad
+	} ""
+
+	# The window itself, built and torn down without anyone looking at it.
+	check "the Pets window opens, refreshes and closes" {
+		pet_window
+		set built [winfo exists .pet]
+		pet_refresh
+		update
+		set alive [winfo exists .pet]
+		destroy .pet
+		list $built $alive [winfo exists .pet]
+	} {1 1 0}
 
 	set ::waits 0
 	tips_pass

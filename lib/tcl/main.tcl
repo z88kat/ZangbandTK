@@ -275,6 +275,7 @@ menu .menubar.views -tearoff 0
 .menubar.views add command -label "Character" -command character_window
 .menubar.views add command -label "Knowledge" -command knowledge_window
 .menubar.views add command -label "Items" -command items_window
+.menubar.views add command -label "Pets" -command pet_window
 .menubar.views add command -label "Spell Book" -command book_window
 .menubar.views add command -label "Options" -command options_window
 .menubar.views add command -label "Hall of Fame" -command fame_window
@@ -336,6 +337,7 @@ source [file join [file dirname [info script]] portrait.tcl]
 # nothing else (decision 18).
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
+source [file join [file dirname [info script]] pet.tcl]
 source [file join [file dirname [info script]] items.tcl]
 source [file join [file dirname [info script]] book.tcl]
 source [file join [file dirname [info script]] store.tcl]

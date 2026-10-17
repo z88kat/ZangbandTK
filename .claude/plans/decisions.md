@@ -7942,3 +7942,74 @@ over the whole corpus, including the 3.128 persistent-levels character.
 numeral, since its glyph is the Statue Store's; make-services.py draws the door
 into the four inherited sets in sand, since the healer is green there. Every
 other cell in every sheet is unchanged.
+
+---
+
+**DEC-147 — The Pets window, and `angband_pet` under it (17 October 2026).**
+(Tk front end. New window, new accessor, fifteen bridge checks.)
+
+DEC-144 built the figurine, the last of Zangband's five routes to a pet, so
+the game could hand a character animals by five means and had nowhere to look
+at them but the keyboard's text screen. This is that screen as a window.
+
+**The accessor is the testable half, so it carries the judgements.**
+`angband_pet` answers a summary dict, a roster, the five orders, and takes the
+three changes a player can make. Shaped like `angband_player` for the scalars
+and `angband_gear` for the rows, because it is both.
+
+**It reports the distance that applies, not the one that was chosen.** This is
+the one place the window could have lied. `pet_follow_distance` is the
+setting, and for four of the five orders it is also the behaviour -- but "Seek
+and destroy" sets 255 and no pet ever wanders 255 grids, because the pet arm
+of `get_move_find_safety` clamps the leash to `PET_SEEK_DIST` whenever a pet
+is further off than that. A window showing 255 would state a number the game
+never uses. So `distance` is the setting, `effective` is what the game does
+with it, `seek` is the clamp, and the window says "10 grids -- the order says
+255, but a pet further off than 10 comes back whatever its leash". A
+keep-away order is negative and is not clamped, so for those the two agree and
+only one is shown.
+
+**The upkeep cliff is stated before it happens, not after.** The allowance is
+a *count* and the charge is a *sum of levels*, so one pet over the allowance
+charges for the whole stable rather than for the extra one. The window reports
+room remaining while there is room, warns at exactly the allowance, and names
+the percentage past it. The wording was checked against the manual's own
+worked example -- a level-30 Mage keeping three young red dragons free and
+paying 95% for the fourth.
+
+**Dismissing is deliberately absent.** `dismiss_pets()` asks through
+`get_check()`, the game's own text prompt, and opening one from a Tk binding
+is the shape both of this front end's known crashes had. Orders and state are
+here; dismissing stays on the keyboard command until it has a prompt of its
+own.
+
+**Re-entrancy.** The three verbs that change something ask
+`command_may_start()` and hold `COMMAND_INSIDE_HELD` while they run, the same
+as the menus, and return through `command_done()` so no drawing leftover
+escapes as the command's result (DEC-138). A refused order leaves the
+radiobutton showing what the game holds, not what was clicked, because the
+window re-reads rather than trusting the variable.
+
+**Two small things followed from existing records rather than being invented.**
+The verb is validated before the character is, so a typo reads as a typo
+before a game as well as during one -- `angband_player`'s rule. And the
+boolean is read with `Tcl_GetBoolFromObj` spelled out, because Tcl 9's
+`Tcl_GetBooleanFromObj` is a macro containing a GNU statement expression and
+the game builds `-pedantic`; the file already documents this at `obj_true()`.
+
+**What is verified where.** Locally and headlessly: the accessor's
+no-character behaviour, the typo and arity messages, the window building,
+refreshing, closing and reopening, and nine unit assertions on the two
+formatting helpers including the manual's cliff example. On CI: the ten
+with-character checks, which need a character the local bridge cannot make --
+the Birth pass fails on this machine for reasons recorded in DEC-138, and CI
+runs the full set. Nobody has looked at the window.
+
+**The gate, and two failures that are not this.** `check-build-lists` and
+`run-tcl-tests` pass. `check-build --tests` and `check-flakes` both fail on
+`object/statue`, which is seed-dependent rather than random -- seed 4202522584
+gives 8/9 three times out of three -- and which fails identically with this
+work stashed, so it predates it. It is the same shape as the `game/nightmare`
+variation recorded in DEC-138: a new test whose assertion is tight against the
+spread of the thing it samples. The bridge fails only on the Birth window,
+local to this machine and already explained in DEC-138.

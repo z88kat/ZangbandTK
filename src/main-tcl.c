@@ -29,6 +29,7 @@
 #include "player-calcs.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
 #include "obj-desc.h"
 #include "obj-info.h"
@@ -2856,6 +2857,320 @@ static int objcmd_player(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	Tcl_SetObjResult(ip, player_field_obj((enum player_field_id)i));
 
 	return TCL_OK;
+}
+
+/**
+ * angband_pet -- what follows the character, what it costs, and its orders.
+ *
+ *    angband_pet                      the summary, as a name/value dict
+ *    angband_pet fields               the dict's names, with no character
+ *    angband_pet list                 {index name level distance} per pet
+ *    angband_pet orders               {name distance current} per order
+ *    angband_pet order <name>         give that order to all of them
+ *    angband_pet doors ?0|1?          read or set "pets may open doors"
+ *    angband_pet pickup ?0|1?         read or set "pets may pick up items"
+ *
+ * Shaped like angband_player for the summary and like angband_gear for the
+ * roster, because it is both: a handful of scalars the window puts in a
+ * header, and a table under them.
+ *
+ * **The distance it reports is the one that applies, not the one that was
+ * chosen.** `pet_follow_distance` is the setting, and for the first four
+ * orders it is also the behaviour -- but "Seek and destroy" sets 255 and no
+ * pet ever wanders 255 grids, because `get_move_find_safety`'s pet branch
+ * clamps the leash to `PET_SEEK_DIST` whenever a pet is further off than
+ * that (`mon-move.c`, the `distant` arm). A window that showed 255 would be
+ * stating a number that never happens. So `distance` is the setting,
+ * `effective` is what the game does with it, and `seek` is the clamp itself
+ * so a caller can say why the two differ. For a keep-away order the setting
+ * is negative and is not clamped, so the two agree.
+ *
+ * **`charged` is the thing players get wrong.** The allowance is a *count*
+ * and the charge is a *sum of levels*, so going one pet over the allowance
+ * starts charging for the whole stable at once rather than for the extra
+ * one. `count`, `free` and `charged` are all reported so a window can say
+ * that before it happens rather than after.
+ *
+ * Dismissing is deliberately absent. `dismiss_pets()` asks the player
+ * through `get_check()`, which is the game's own text prompt, and opening
+ * one from a Tk binding is the shape this front end's two crashes came
+ * from. The Pets window sends orders and reads state; dismissing stays on
+ * the keyboard command until it has a prompt of its own.
+ */
+static const struct {
+	const char *name;
+	int16_t     distance;
+} pet_order[] = {
+	{ "close",   PET_CLOSE_DIST },
+	{ "follow",  PET_FOLLOW_DIST },
+	{ "destroy", PET_DESTROY_DIST },
+	{ "space",   PET_SPACE_DIST },
+	{ "away",    PET_AWAY_DIST },
+};
+
+/**
+ * The leash the game will actually keep, for a setting it was given.
+ *
+ * Positive and beyond the seek distance means the seek distance; anything
+ * else is itself.  See the note above.
+ */
+static int pet_effective_distance(int set)
+{
+	return (set > PET_SEEK_DIST) ? PET_SEEK_DIST : set;
+}
+
+static const char *pet_order_name(int distance)
+{
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(pet_order); i++)
+		if (pet_order[i].distance == distance) return pet_order[i].name;
+
+	return "";
+}
+
+/**
+ * Count them and add up their levels, as player_pet_upkeep does.
+ */
+static int pet_census(int *levels)
+{
+	int i, n = 0;
+
+	if (levels) *levels = 0;
+	if (!cave) return 0;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race || !monster_is_pet(mon)) continue;
+		n++;
+		if (levels) *levels += mon->race->level;
+	}
+
+	return n;
+}
+
+static const char *pet_field_name[] = {
+	"count", "free", "levels", "upkeep", "charged",
+	"distance", "effective", "seek", "order", "doors", "pickup"
+};
+
+static void pet_put(Tcl_Interp *ip, Tcl_Obj *d, const char *key, Tcl_Obj *v)
+{
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(key, -1));
+	Tcl_ListObjAppendElement(ip, d, v);
+}
+
+static Tcl_Obj *pet_summary(Tcl_Interp *ip)
+{
+	Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+	int levels = 0;
+	int count = pet_census(&levels);
+	int free_pets = 1 + (player->lev / player->class->pet_upkeep_div);
+	int set = player->pet_follow_distance;
+
+	pet_put(ip, d, "count", Tcl_NewIntObj(count));
+	pet_put(ip, d, "free", Tcl_NewIntObj(free_pets));
+	pet_put(ip, d, "levels", Tcl_NewIntObj(levels));
+	pet_put(ip, d, "upkeep", Tcl_NewIntObj(player_pet_upkeep(player)));
+	pet_put(ip, d, "charged", Tcl_NewBooleanObj(count > free_pets));
+	pet_put(ip, d, "distance", Tcl_NewIntObj(set));
+	pet_put(ip, d, "effective", Tcl_NewIntObj(pet_effective_distance(set)));
+	pet_put(ip, d, "seek", Tcl_NewIntObj(PET_SEEK_DIST));
+	pet_put(ip, d, "order", Tcl_NewStringObj(pet_order_name(set), -1));
+	pet_put(ip, d, "doors", Tcl_NewBooleanObj(player->pet_open_doors));
+	pet_put(ip, d, "pickup", Tcl_NewBooleanObj(player->pet_pickup_items));
+
+	return d;
+}
+
+static int objcmd_pet(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	size_t      k;
+
+	(void)dummy;
+
+	/* The names alone, which needs no character, as angband_player has it. */
+	if (objc == 2 && streq(Tcl_GetString(objv[1]), "fields")) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (k = 0; k < N_ELEMENTS(pet_field_name); k++)
+			Tcl_ListObjAppendElement(ip, list,
+					Tcl_NewStringObj(pet_field_name[k], -1));
+		Tcl_SetObjResult(ip, list);
+
+		return TCL_OK;
+	}
+
+	/*
+	 * The verb is checked before the character is, as angband_player checks
+	 * its field name: a typo should be reported as a typo whether or not a
+	 * game is in progress. Only the values need somebody to be playing.
+	 */
+	what = (objc > 1) ? Tcl_GetString(objv[1]) : "";
+
+	if (objc > 1
+			&& !streq(what, "list") && !streq(what, "orders")
+			&& !streq(what, "order") && !streq(what, "doors")
+			&& !streq(what, "pickup")) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"expected fields, list, orders, order, doors or pickup,"
+				" not: %s", what));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * Everything past here reads the character and the level it is standing
+	 * on. player->class is wanted too, for the upkeep divider.
+	 */
+	if (!player || !player->upkeep || !player->class) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (objc == 1) {
+		Tcl_SetObjResult(ip, pet_summary(ip));
+		return TCL_OK;
+	}
+
+	if (objc == 2 && streq(what, "list")) {
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+		int      i;
+
+		if (cave) {
+			for (i = 1; i < cave_monster_max(cave); i++) {
+				struct monster *mon = cave_monster(cave, i);
+				char            m_name[80];
+				Tcl_Obj        *row;
+
+				if (!mon->race || !monster_is_pet(mon)) continue;
+
+				/*
+				 * MDESC_SHOW for the same reason the text roster gives: a pet
+				 * across the level is still one the player owns and can name,
+				 * and a list of "It" is no list.
+				 */
+				monster_desc(m_name, sizeof(m_name), mon,
+						MDESC_CAPITAL | MDESC_SHOW);
+
+				row = Tcl_NewListObj(0, NULL);
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(m_name, -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewIntObj(mon->race->level));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(mon->cdis));
+				Tcl_ListObjAppendElement(ip, rows, row);
+			}
+		}
+
+		Tcl_SetObjResult(ip, rows);
+		return TCL_OK;
+	}
+
+	if (objc == 2 && streq(what, "orders")) {
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+
+		for (k = 0; k < N_ELEMENTS(pet_order); k++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(pet_order[k].name, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewIntObj(pet_order[k].distance));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(
+					player->pet_follow_distance == pet_order[k].distance));
+			Tcl_ListObjAppendElement(ip, rows, row);
+		}
+
+		Tcl_SetObjResult(ip, rows);
+		return TCL_OK;
+	}
+
+	/*
+	 * The three that change something.  Giving an order from a window is a
+	 * command arriving in a running game, so it asks the same question the
+	 * menus ask and holds the same door shut while it runs -- see
+	 * command_may_start().
+	 */
+	if (objc == 3 && streq(what, "order")) {
+		const char *name = Tcl_GetString(objv[2]);
+
+		for (k = 0; k < N_ELEMENTS(pet_order); k++)
+			if (streq(name, pet_order[k].name)) break;
+
+		if (k == N_ELEMENTS(pet_order)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"no such order: %s -- \"angband_pet orders\" lists them",
+					name));
+			return TCL_ERROR;
+		}
+
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		{
+			COMMAND_INSIDE_HELD;
+			player->pet_follow_distance = pet_order[k].distance;
+		}
+
+		return command_done(ip);
+	}
+
+	if ((objc == 2 || objc == 3)
+			&& (streq(what, "doors") || streq(what, "pickup"))) {
+		bool  doors = streq(what, "doors");
+		bool *flag  = doors ? &player->pet_open_doors
+							: &player->pet_pickup_items;
+
+		if (objc == 2) {
+			Tcl_SetObjResult(ip, Tcl_NewBooleanObj(*flag));
+			return TCL_OK;
+		}
+
+		{
+			int on = 0;
+
+			/*
+			 * Not Tcl_GetBooleanFromObj, for the reason obj_true() gives:
+			 * in Tcl 9 it is a macro with a GNU statement expression in it
+			 * and the game builds -pedantic. This is the call it expands
+			 * to, with the interpreter passed so a bad value is reported
+			 * rather than read as "no".
+			 */
+			if (Tcl_GetBoolFromObj(ip, objv[2], (int)sizeof(on),
+					(char *)&on) != TCL_OK)
+				return TCL_ERROR;
+
+			if (!command_may_start()) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"the game is in the middle of something else", -1));
+				return TCL_ERROR;
+			}
+
+			{
+				COMMAND_INSIDE_HELD;
+				*flag = (on != 0);
+			}
+		}
+
+		return command_done(ip);
+	}
+
+	/*
+	 * A verb this knows, with the wrong number of arguments. Said as an
+	 * arity complaint rather than as an unknown verb, for the reason
+	 * table_verb_parse gives.
+	 */
+	Tcl_WrongNumArgs(ip, 1, objv,
+			"fields | list | orders | order name | doors ?on? | pickup ?on?");
+
+	return TCL_ERROR;
 }
 
 /**
@@ -9808,6 +10123,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_ask", objcmd_ask, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_option", objcmd_option, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_player", objcmd_player, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_pet", objcmd_pet, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_monster", objcmd_monster, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_object", objcmd_object, NULL, NULL);
