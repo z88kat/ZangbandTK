@@ -8108,3 +8108,48 @@ and the Quests tab heading its column "State" while Monsters still heads
 row carrying a state and a kind, the progress fields being live, an empty home
 rendering as empty, and bad indices refused. The local bridge cannot make a
 character, for the reason in DEC-138. Nobody has looked at either tab.
+
+---
+
+**DEC-149 — A knowledge tab lists; a window acts. Pets keeps its own window.**
+(Tk front end. Confirmed by the project owner, 17 October 2026. A precedent,
+recorded because the next surface will face the same choice.)
+
+**Ruled: pets having their own window rather than a tab in the Knowledge
+browser is correct.** Raised in DEC-148 as the reason the todo's "Pets,
+Quests and Home" became two tabs rather than three, and confirmed rather
+than left as the implementer's taste.
+
+**The rule, which is what makes this worth an entry of its own.**
+
+> A knowledge tab is a read-only list of what the character knows.
+> Anything that *acts* gets a window.
+
+**Why it is structural and not a preference.** Every tab in the browser is
+driven by an accessor answering `max|list|info|lore`, and not one of those
+verbs changes anything. The browser has no re-entrancy guard anywhere in it,
+because nothing in it has ever needed one. The Pets surface gives orders and
+toggles two flags, so its three mutating verbs ask `command_may_start()` and
+hold `COMMAND_INSIDE_HELD` (DEC-147). Putting that inside the browser would
+make one tab the only one that could send a command into a running game --
+and the guard would live in a container built on the assumption that nothing
+in it ever does. That is the shape both of this front end's known crashes
+had.
+
+**Independent corroboration, which is why this is not just our taste.** The
+game's own `main_knowledge_menu` in `ui-knowledge.c` has no pets entry
+either, and never had one. Two designs reached the same split without
+consulting each other.
+
+**What it decides next time.** Shapechange effects is a list of nine things
+the character can learn about and changes nothing: a tab. Equippable
+comparison is interactive: not a tab, whatever else it becomes. The same
+question will be asked of quests if they ever grow an "abandon this errand"
+button -- and the answer then is that the button moves to a window, not that
+the tab grows a guard.
+
+**Recorded because this project keeps losing conclusions that live only in
+conversation.** The Word of Recall correction (DEC-133) had to be rescued
+after being reached twice and written down neither time, and the same
+happened to the tile licence position. A ruling that exists only in a chat
+log will be re-argued by whoever reads the code next.
