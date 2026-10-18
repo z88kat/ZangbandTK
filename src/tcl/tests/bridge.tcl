@@ -357,6 +357,55 @@ check "angband_player takes at most one field" {
 	string match "wrong # args*" $e
 } 1
 
+# --- the Close controls -----------------------------------------------------
+
+# None of these were asserted anywhere before: `btns.close` appeared nowhere
+# in this file, so every window's Close button was untested and the Pets
+# window having none at all went unnoticed until somebody looked at it.
+# Written over all five rather than only the new one, because the gap was
+# general rather than the Pets window's.
+check "every window with a Close button agrees on its shape" {
+	set bad {}
+	foreach {w maker} {.character character_window .knowledge knowledge_window
+					   .items items_window .pet pet_window} {
+		$maker
+		set b $w.f.btns.close
+		if {![winfo exists $b]} {
+			lappend bad "$w: no Close button"
+		} else {
+			foreach {opt want} {-text Close -underline 0 -width 10
+								-default active} {
+				set got [$b cget $opt]
+				if {$got ne $want} { lappend bad "$w $opt=$got want $want" }
+			}
+		}
+		destroy $w
+	}
+	set bad
+} ""
+
+# book.tcl is the one that differs: it has the accelerator but not the
+# underline that advertises it, so its button is checked for the rest only.
+check "the Spell Book's Close button is the odd one, and only in its underline" {
+	book_window
+	set b .book.f.btns.close
+	set r [list [$b cget -text] [$b cget -width] [$b cget -default] \
+		[$b cget -underline]]
+	destroy .book
+	set r
+} {Close 10 active {}}
+
+# Three ways out, all of which this window lacked entirely.
+check "the Pets window closes by button, by accelerator and by its close box" {
+	pet_window
+	set wired [list [expr {[string trim [bind .pet <Alt-c>]] ne ""}] \
+		[expr {[string trim [wm protocol .pet WM_DELETE_WINDOW]] ne ""}] \
+		[expr {[string trim [bind .pet <Escape>]] ne ""}]]
+	.pet.f.btns.close invoke
+	lappend wired [expr {![winfo exists .pet]}]
+	set wired
+} {1 1 1 1}
+
 # --- the Flags page, before there is a character ----------------------------
 
 # The four groups are the term screen's own and need no character, so a page

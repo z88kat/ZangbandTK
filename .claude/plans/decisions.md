@@ -8641,3 +8641,71 @@ unsigned, as aarch64 Linux requires` and the step passes; the same source
 under `-fsigned-char` prints the diagnosis to stderr and the step fails. The
 fixed probe carries its own polarity and the shell adds none, so there is no
 negation left to get backwards.
+
+---
+
+**DEC-157 — The Pets window gets the Close control the others have, and the
+others turn out not to agree (18 October 2026).** (Tk front end. Consistency
+fix, found by looking at the window.)
+
+**What was already there.** The Pets window had a Close entry in its own menu
+and an Escape binding from the day it was built. What it had no visible
+button, which is what the project owner saw and asked for.
+
+**The omission was not recorded anywhere.** DEC-147 describes the window at
+length and never mentions a close control; its only "button" is the order
+radiobutton. So this was an oversight rather than a decision, and there is
+nothing to overrule.
+
+**The other windows do not all agree, which is worth having written down.**
+
+      window      Close button   accel_bind c   wm protocol
+      character        yes           yes            yes
+      knowledge        yes           yes            yes
+      items            yes           yes            yes
+      book             yes           yes            yes
+      record           yes           no             yes
+      fame             no            no             no
+      pet              no            no             no
+
+Four windows share the full idiom: a `ttk::button $w.btns.close -text Close
+-underline 0 -width 10 -default active`, packed `-side right` in a `btns`
+frame that is packed `-side bottom` after the status line so the status sits
+below it; `accel_bind <top> c`, which is what makes the underline mean
+something on a Mac, where plain `<Alt-c>` never fires; and an explicit
+`wm protocol WM_DELETE_WINDOW`. Pet now matches those four exactly, verified
+field by field against the Knowledge browser's.
+
+Two departures are left as they are and recorded instead of quietly
+normalised. **`record` has no accelerator**, which is defensible: it is a
+dialog rather than a window to leave open. **`book` has the accelerator but
+not the `-underline 0` that advertises it**, so its shortcut works and
+nothing on screen says so; that looks like an oversight rather than a choice,
+but it is the Spell Book's to make.
+
+**`fame` has the identical gap to the one just fixed** -- no button, no
+accelerator, no protocol -- so the Pets window was not unique. Not fixed
+here, because the request was for Pets and widening it is the owner's call.
+
+**DEC-149 does not apply, and that was checked rather than assumed.** No
+close path in any window in this front end goes near `command_may_start()` or
+`command_done()` -- a search of `lib/tcl` finds the guard mentioned only in a
+comment in `spellmenu.tcl`, about casting. Closing is `destroy` and nothing
+else. Nor can a close land badly: `pet_refresh` returns immediately when the
+window is gone, so a close arriving in the middle of an order leaves nothing
+half-done, and the order itself is already a queued command rather than a
+nested call.
+
+**No window's Close button was asserted anywhere.** `btns.close` appeared
+nowhere in `bridge.tcl`, which is why a window shipping without one went
+unnoticed until somebody looked at it. The new checks cover all five rather
+than only the new one, since the gap was general: that every window with a
+button agrees on its shape, that the Spell Book's differs only in the
+underline, and that the Pets window now closes by button, by accelerator and
+by its close box.
+
+**A correction to DEC-138 and everything since.** This run of the bridge
+passed **238 of 238 with no failures at all**, Birth included. The
+character-creation failure this machine has shown for days is therefore
+*intermittent* locally, not deterministic -- I have been describing it as
+though it always failed here. It still has never failed on CI.

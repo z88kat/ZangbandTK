@@ -187,6 +187,24 @@ proc pet_window {} {
         -relief sunken -borderwidth 1 -anchor w -padding {4 1} -wraplength 700
     pack $w.status -side bottom -fill x -padx 2 -pady 2
 
+    # Close, as character.tcl, knowledge.tcl, items.tcl and book.tcl have it:
+    # the button, the accelerator its underline advertises, and the window
+    # manager's own close box bound explicitly rather than left to Tk's
+    # default. Packed after the status line and also to the bottom, so the
+    # status sits below the buttons exactly as it does in those four.
+    #
+    # Nothing here asks command_may_start(). Closing is a Tk operation --
+    # `destroy` and nothing else -- and no close path in any window in this
+    # front end goes near the command guard. DEC-149 draws the line at acting
+    # on the game, and shutting a window is not that: pet_refresh returns at
+    # once when the window is gone, so a close landing in the middle of an
+    # order leaves nothing half-done.
+    ttk::frame $w.btns
+    pack $w.btns -side bottom -fill x -padx 10 -pady 10
+    ttk::button $w.btns.close -text Close -underline 0 -width 10 \
+        -default active -command {destroy .pet}
+    pack $w.btns.close -side right
+
     set h $w.hdr
     ttk::frame $h
     pack $h -side top -fill x -padx 10 -pady {10 4}
@@ -227,8 +245,10 @@ proc pet_window {} {
     bindtags $f.t [list $f.t .pet all]
     bind $f.t <MouseWheel> { tk::MouseWheel %W y %D -40.0 }
 
+    wm protocol .pet WM_DELETE_WINDOW { destroy .pet }
     bind .pet <Escape> { destroy .pet }
     bind .pet <F1> { pet_help ; break }
+    accel_bind .pet c { destroy .pet ; break }
 
     pet_refresh
 }
