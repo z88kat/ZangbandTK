@@ -8502,3 +8502,142 @@ CI never sees it because the harness runs suites sequentially.
 hundreds of runs to A/B: two concurrent processes now report
 `./questroundtrip-3599` and `./questroundtrip-3601`. Distinct by construction,
 so the collision is no longer possible rather than less likely.
+
+---
+
+**DEC-155 — Linux on aarch64 gets a job, arm64 only, running the whole suite
+(18 October 2026).** (CI. The first build in which `char` is unsigned.)
+
+`.github/workflows/arm64.yaml`, one job on `ubuntu-24.04-arm`, building with
+`linux.yaml`'s `tests` flags verbatim and running `alltests`.
+
+**The gap is narrower than "ARM", and the Mac jobs do not close it.**
+`macos-latest` has meant arm64 since macos-14, so `src/` has been compiled
+for Apple Silicon on every push for over a year. But Apple's ABI keeps `char`
+*signed* on arm64 while the AArch64 Linux ABI makes it unsigned -- so the one
+property this codebase is most exposed to, with its attr/char pairs and grid
+types, is precisely the property a Mac runner cannot test, because there it
+holds the x86 value. This is the first job in CI where `char` is unsigned.
+
+**arm64 only, and that is a decision.** 32-bit Raspberry Pi OS is out of
+scope; the project owner was asked and answered. Anyone adding armhf later
+should do it knowing it is a new target with its own ILP32 questions --
+pointer width, `time_t`, alignment -- and not as housekeeping on this file.
+Dropping armhf narrows the `char` concern and does not remove it.
+
+**Native runners, not emulation, and that decided the scope.**
+`ubuntu-24.04-arm` is free and unlimited on public repositories (4 vCPU,
+16 GB), which this repository is. QEMU under binfmt and a cross-compiler were
+the other two candidates: emulation costs roughly ten times the wall clock
+and would have put the full suite out of reach, and a cross-compiler builds
+but cannot run, which reduces the job to a compile check. On real hardware
+the suite runs at native speed, so there was no tradeoff to weigh and no
+reason to settle for compile-only.
+
+**Measured on native aarch64** (Ubuntu 22.04, gcc 11.4, 4 cores): build
+8 seconds, `alltests` **1617/1617 in 74 seconds** against `b8f0d5b21`. A
+wider sweep -- `-Wall -Wextra -Wtype-limits -Wchar-subscripts` across core
+and borg -- found **zero warnings**, and `-Werror` with `SUPPORT_BORG=ON` is
+clean.
+
+**Nothing here compares against another platform, which is the borg
+baseline's lesson.** That baseline records its platform and refuses
+cross-platform comparison after the same seed gave depth 7 / clevel 13 on
+Darwin and 1/1 on Linux with no root cause ever found. The unit suites need
+no such baseline: each asserts a rule against the game rather than against a
+recorded number, and each reseeds per run unless `ZTK_TEST_SEED` says
+otherwise. So there is no figure in this job that can diverge between
+architectures -- only tests that pass or do not. The borg is deliberately not
+run here, for exactly the reason it is pinned to one platform there.
+
+**The Tk front end is not built here, and that is a judgement.** `tk.yaml` is
+path-filtered and builds the vendored Tcl/Tk 9.0.4 toolchain from source on
+three platforms already; a fourth arm64 Linux arm would need its own cache
+key (the existing Linux key hardcodes `ubuntu-22.04`), Xvfb and the bridge
+session, for a front end whose 25 Tcl scripts have no architecture at all and
+whose C is already careful about the hazard that matters: `main-tcl.c` uses
+`unsigned char` for every pixel buffer and casts to `unsigned char` at every
+ctype call, which is the signedness-proof spelling. The one place in it with
+real ARM exposure is the hand-rolled PNG decoder, and that is byte arithmetic
+on little-endian hardware either way. The right trigger for an arm64 Tk job
+is an arm64 Linux release target, not this file. **Untested claim**: the
+sandbox had no Xft or fontconfig headers and no root to install them, so this
+is reasoning, not measurement.
+
+**A latent sign-compare found on the way, and not fixed here.** Forcing
+`-fsigned-char` -- the x86 default -- makes the borg fail to compile under
+`-Werror`: `char borg_nasties[7]` compared against `wchar_t d_char` at
+`borg-flow-kill.c:906` and `borg-fight-defend.c:2125` and `:2227`. On aarch64
+the warning *disappears*, because unsigned `char` matches unsigned `wchar_t`.
+It is latent on x86 today only because no job builds the borg with `-Werror`
+-- `borg.yaml` uses plain `RelWithDebInfo`. It is harmless in practice:
+`borg_nasties` is `{'Z','A','V','U','L','W',...}`, all positive under either
+signedness. Left for its owner, as `game/nightmare` was.
+
+**Which gate steps ran, and which were argued.** This change is one new
+workflow file plus a line in `README.md` and this entry; it touches no
+source. **Executed** on native aarch64: the GCC `-Werror` CMake build with
+unit tests (`check-build` item 3), `scripts/check-build-lists` (item 5b),
+`object/statue` at 16 passes via `check-flakes`, and `check-jsonschema
+--builtin-schema vendor.github-workflows` against the new file. **Not
+executed**: the clang passes and the ASAN/UBSAN pass (no clang, no root to
+install it), the manual (no sphinx), and the realm content check (Python
+3.10, no `tomllib`). Those four are *argued* unaffected on the grounds that
+no source changed -- which is reasoning, not a result, and is recorded here
+so nobody has to reconstruct it in a month. The full `scripts/check-build
+--tests` has **not** been run against this commit.
+
+**And the job has never run on a real `ubuntu-24.04-arm` runner.** Everything
+above is local. The runner label, the apt step and `actions/checkout@v6` are
+unverified until the first push to master.
+
+**`src/doc/release-checklist.rst` was left alone and needs its own pass.** It
+enumerates workflows per platform but is inherited upstream text -- the names
+in it are backwardsEric, d_m and fizzix, and half its entries say "perhaps
+outdated" -- and it already omits `tk.yaml`, `borg.yaml`, `wasm.yaml`,
+`cygwin.yaml` and `release.yaml`. Adding arm64 to it alone would make it look
+maintained when it is not. `README.md` was updated, because its list is the
+living one and its stated subject is platform coverage.
+
+---
+
+**DEC-156 — A new assertion is not finished until it has been made to fail
+(18 October 2026).** (Practice. Standing expectation, from two in two days.)
+
+`arm64.yaml`'s runner-label guard was written inverted. It read
+
+    int main(void) { char c = -1; return c < 0; }
+
+inside `if ./sign; then fail`, which inverts twice -- C's true is 1 and the
+shell's true is 0 -- so the step **failed on unsigned `char` and passed on
+signed**: red on precisely the architecture it was written to confirm, green
+on any x86 runner it accidentally landed on. It was caught by running it, not
+by reading it.
+
+**This is the second in two days.** The flag iterator yesterday asked an
+endless iterator for its end; this asked a guard for the opposite of its
+premise. Both passed review. Both were found by execution. The common shape
+is not carelessness about logic -- it is that **a guard that cannot fail is
+indistinguishable, from the outside, from a guard that passes.** Both emit
+nothing. Both are green. The only signal that separates them is produced by
+making the thing fail on purpose.
+
+**So, the standing expectation.** Any new assertion whose job is to go red --
+a CI guard, a precondition check, a `--check` mode, a test for a threshold --
+is not finished until it has been demonstrated in **both** directions: once
+passing on the real input, and once failing against a deliberately broken
+one. The negative control is the part that is worth anything; the positive
+one only says the code runs.
+
+This is not new to the project. It is the practice DEC-153 already followed
+when it broke the figurine store's depth bar, and separately its `store.txt`
+level, to prove the statue test could still fail. What is new is that it
+applies to *guards and gates* and not only to statistical tests -- which is
+the class that had been getting a pass, on the assumption that a check simple
+enough to read is simple enough to trust. This one was four lines.
+
+**Done here, in both directions**: native aarch64 defaults print `char is
+unsigned, as aarch64 Linux requires` and the step passes; the same source
+under `-fsigned-char` prints the diagnosis to stderr and the step fails. The
+fixed probe carries its own polarity and the shell adds none, so there is no
+negation left to get backwards.

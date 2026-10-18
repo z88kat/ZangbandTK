@@ -1,0 +1,127 @@
+name: ARM64
+
+# Linux on aarch64, which until now nothing built.
+#
+# The gap this closes is narrower than "ARM", and worth stating precisely,
+# because the macOS jobs have been building ARM for over a year: macos-latest
+# has meant arm64 since macos-14, so src/ has been compiled by clang for
+# Apple Silicon on every push.  What has never been compiled is *Linux* on
+# aarch64, and the difference between the two is not academic.  Apple's ABI
+# keeps `char` signed on arm64; the AArch64 Linux ABI makes it unsigned.  So
+# the one platform property this codebase is most exposed to -- the attr/char
+# pairs, the grid types, anything that lets a `char` go negative -- is the one
+# property the Mac jobs cannot test, because on a Mac it has the x86 value.
+# This job is the first build in CI where `char` is unsigned.
+#
+# **arm64 only, deliberately.**  32-bit Raspberry Pi OS is out of scope and
+# the absence of an armhf job is a decision, not an oversight: the project
+# owner was asked and answered arm64.  Anyone adding one later should do it
+# knowing it is a new target with its own ILP32 questions -- pointer width,
+# time_t, alignment -- and not as housekeeping on this file.  Note that
+# dropping armhf narrows the `char` concern but does not remove it: `char` is
+# unsigned on aarch64 too, which is the whole reason this job exists.
+#
+# **Native runners, not emulation.**  ubuntu-24.04-arm is free and unlimited
+# on public repositories (4 vCPU, 16 GB), which this repository is.  QEMU
+# under binfmt and a cross-compiler were the other two candidates and both
+# are worse here: emulation costs roughly ten times the wall clock and would
+# have put the full suite out of reach, and a cross-compiler builds but
+# cannot run, which would have reduced this to a compile check.  Because the
+# runner is real hardware the suite runs at native speed -- about 90 seconds
+# for all 1617 tests, measured -- so there is no reason to settle for
+# compile-only.  A job that proves it builds is worth having; a job that
+# proves it *behaves* is worth much more and costs about two minutes.
+#
+# **Nothing here compares against another platform.**  That is on purpose and
+# it is the lesson of the borg baseline, which now records the platform it
+# was taken on and refuses cross-platform comparison after the same seed gave
+# depth 7 / clevel 13 on Darwin and 1/1 on Linux with no root cause ever
+# found.  The unit suites need no such baseline: each asserts a rule against
+# the game rather than against a recorded number, and each seeds itself
+# freshly per run unless ZTK_TEST_SEED says otherwise.  So there is no number
+# in this job that can diverge between architectures -- only tests that pass
+# or do not -- and the borg is deliberately not run here for exactly the
+# reason it is pinned to one platform there.
+#
+# **The Tk front end is not built here, and that is a judgement, not an
+# omission.**  tk.yaml is path-filtered and builds the vendored Tcl/Tk 9.0.4
+# toolchain from source on three platforms already; a fourth arm64 Linux arm
+# would need its own cache key (the existing Linux key hardcodes
+# ubuntu-22.04), Xvfb, and the bridge session, for a front end whose 25 Tcl
+# scripts have no architecture at all and whose C is already careful about
+# the one hazard that matters: main-tcl.c uses `unsigned char` for every
+# pixel buffer and casts to `unsigned char` at every ctype call, which is the
+# correct spelling and the one that is signedness-proof.  The place in it
+# with genuine ARM exposure is the hand-rolled PNG decoder, and that is byte
+# arithmetic on little-endian hardware either way.  If the Tk front end is
+# ever shipped as an arm64 Linux download, that changes -- the right trigger
+# is a release target, not this file.
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests (aarch64)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc cmake ninja-build libx11-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      # Asserted rather than assumed, in the same spirit as tk.yaml checking
+      # that wish really links Cocoa.  This job exists because `char` is
+      # unsigned here, and a runner label that silently started resolving to
+      # x86 -- or a toolchain default that changed -- would leave every step
+      # below green while testing nothing this repository was not already
+      # testing.
+      #
+      # The probe carries its own polarity and the shell adds none.  The first
+      # version of this step wrote `if ./sign; then fail` around a program
+      # returning `c < 0`, which inverts twice -- C's true is 1 and the
+      # shell's true is 0 -- and so went red on precisely the architecture it
+      # was written to confirm.  It was found by running it, not by reading
+      # it, which is the argument for a check cheap enough to run.  So: the
+      # program exits 0 when the premise holds and prints why when it does
+      # not, and the step fails because a command failed.
+      - name: This is aarch64, and char is unsigned
+        run: |
+          test "$(uname -m)" = aarch64 || { echo "not aarch64: $(uname -m)" >&2; exit 1; }
+          cat > sign.c <<'EOF'
+          #include <stdio.h>
+          int main(void) {
+              char c = -1;
+              if (c < 0) {
+                  fprintf(stderr, "char is signed here -- this job is not"
+                          " testing what it exists to test.\n");
+                  return 1;
+              }
+              printf("char is unsigned, as aarch64 Linux requires\n");
+              return 0;
+          }
+          EOF
+          gcc -o sign sign.c
+          ./sign
+
+      # The same configuration as linux.yaml's `tests` job, flag for flag, so
+      # that a failure here reads as "the architecture" and not "a different
+      # build".  -Werror because GCC on aarch64 warns in places it does not on
+      # x86-64 -- a `char` compared against a wider unsigned type is a
+      # sign-compare on one and not the other -- and those warnings are the
+      # cheapest half of what this job is looking for.
+      - name: Build with Ninja
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_TEST_FRONTEND=ON ..
+          ninja -j$(nproc)
+          ninja -j$(nproc) alltests

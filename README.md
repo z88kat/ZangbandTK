@@ -318,8 +318,13 @@ cmake --build build --parallel
 
 What CI actually runs on each platform is in
 [.github/workflows/](.github/workflows/) — `linux.yaml`, `windows.yaml`,
-`msys2.yaml`, `cygwin.yaml`, `dos.yaml`, `nintendo.yaml`, `wasm.yaml` and the
-rest — and those are the commands kept working, dependencies included.
+`msys2.yaml`, `cygwin.yaml`, `dos.yaml`, `nintendo.yaml`, `wasm.yaml`,
+`arm64.yaml` and the rest — and those are the commands kept working,
+dependencies included. `arm64.yaml` is Linux on aarch64, which is not the
+same platform as the Apple Silicon the macOS jobs build on: Apple's ABI keeps
+`char` signed, the AArch64 Linux ABI makes it unsigned, so this is the only
+job that compiles the game with the signedness a Raspberry Pi gives it.
+64-bit only, deliberately; 32-bit Raspberry Pi OS is out of scope.
 
 ### The tests
 
