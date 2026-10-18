@@ -8473,3 +8473,32 @@ that can quietly make a test toothless.** With the depth bar raised so that
 almost nothing counts as deep, 8/9 three times out of three. With the
 figurine store's own level dropped from 26 to 2 in `store.txt`, 8/9. Restored,
 9/9, and 0 of 400 seeds fail.
+
+---
+
+**DEC-154 — The quest round-trip reintroduced the fixed-savefile collision
+(18 October 2026).** (Test. One line, and the fix was already written down
+fourteen lines above it.)
+
+`test_a_taken_quest_survives_a_save` wrote `questroundtrip.sav` into the
+working directory under that fixed name, so two runs of `game/saves` in one
+directory write and delete the same file and whichever deletes first takes
+the other's savefile with it, failing the load.
+
+**The same bug, in the same file, with the remedy named in its own comment.**
+`test_one_saved_character` carries a note at lines 232-244 describing this
+exact collision being fixed for `saves-roundtrip.tmp`, naming
+`test_savefile_name()` as the answer and recording that three other suites
+already use it. The quest test, added later, did not.
+
+**Measured rather than asserted**: 1 of 80 concurrent runs failed here, and
+separately 1 of 6 in an earlier batch. It is rare because the quest test is a
+narrow slice of a 66-test suite, so the window in which two processes are
+both inside it is small. That rarity is the hazard -- it reads as an
+intermittent savefile bug rather than as two processes sharing a filename.
+CI never sees it because the harness runs suites sequentially.
+
+**Verified by the mechanism rather than by the rate**, since 1.25% needs
+hundreds of runs to A/B: two concurrent processes now report
+`./questroundtrip-3599` and `./questroundtrip-3601`. Distinct by construction,
+so the collision is no longer possible rather than less likely.

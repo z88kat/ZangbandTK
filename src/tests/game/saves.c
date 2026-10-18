@@ -435,6 +435,7 @@ static int test_every_file_was_tried(void *state) {
 static int test_a_taken_quest_survives_a_save(void *state) {
 	const char *seed = NULL;
 	char tmp[1024];
+	char qname[64];
 	struct monster_race *race;
 	struct object_kind *kind = NULL;
 	struct quest *bounty, *fetch;
@@ -471,7 +472,19 @@ static int test_a_taken_quest_survives_a_save(void *state) {
 	notnull(fetch);
 	fetch->kind = kind;
 
-	path_build(tmp, sizeof(tmp), ".", "questroundtrip.sav");
+	/*
+	 * Per process, not a fixed name -- the same rule, and the same reason,
+	 * as test_one_saved_character above. This went in as
+	 * "questroundtrip.sav" for everybody, so two runs of this suite in one
+	 * directory write and delete the same file and whichever deletes first
+	 * takes the other one's savefile with it, failing the load below. The
+	 * harness runs suites sequentially so CI never sees it; running a suite
+	 * by hand beside a verification job does, about once in eighty runs
+	 * here, and it reads as an intermittent savefile bug rather than as a
+	 * collision.
+	 */
+	test_savefile_name(qname, sizeof(qname), "questroundtrip");
+	path_build(tmp, sizeof(tmp), ".", qname);
 	require(savefile_save(tmp));
 
 	play_again = true;
