@@ -272,7 +272,32 @@ static int test_the_figurine_store_deals_in_figurines(void *state) {
 	eq(s->level_min, 26);
 	eq(s->level_max, 26);
 
-	for (round = 0; round < 5; round++) {
+	/*
+	 * Forty rounds, not five, and the bar at 0.45 rather than 0.5
+	 * (ZangbandTK, DEC-153).
+	 *
+	 * The proportion of figurines holding a level-10-or-deeper monster has
+	 * a mean of 0.60 whatever the sample size; what changes is the spread.
+	 * At five rounds the standard deviation is 0.081, so a bar at 0.50 sits
+	 * about 1.2 sd below the mean and the test failed 12.8% of the seeds
+	 * measured here -- roughly one CI run in seven, on a suite that runs on
+	 * every push on every platform. At forty rounds the deviation is 0.032.
+	 *
+	 * Both numbers moved, because widening alone is not enough: forty
+	 * rounds against 0.50 is still only 3.1 sd and that is thin for
+	 * something this often run. Forty against 0.45 is 4.7 sd, and 0 of 400
+	 * seeds failed with the lowest ratio seen at 0.510.
+	 *
+	 * The bar moving is not the guarantee weakening. The claim is that this
+	 * shop reaches meaningfully deeper than the monsters by the town gate,
+	 * and 0.45 of a distribution centred on 0.60 still says that. What it
+	 * stops doing is sitting on top of its own noise.
+	 *
+	 * Forty rounds costs 4ms: 74ms a run before, 78ms after, because the
+	 * time goes on starting the process and reading the data rather than on
+	 * stocking a shop.
+	 */
+	for (round = 0; round < 40; round++) {
 		store_stock_at_quality(s, 0);
 		for (obj = s->stock; obj; obj = obj->next) {
 			eq(obj->tval, TV_FIGURINE);
@@ -285,7 +310,7 @@ static int test_the_figurine_store_deals_in_figurines(void *state) {
 	require(seen > 0);
 
 	/* Mostly deeper than the surface's monsters, which a level of 5 gives */
-	require(deep * 2 > seen);
+	require(deep * 20 > seen * 9);
 	ok;
 }
 

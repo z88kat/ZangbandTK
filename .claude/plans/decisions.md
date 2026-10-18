@@ -8429,3 +8429,47 @@ grid for a real character, and that no brand does. The local bridge cannot
 make a character, so the positive binding evidence is CI's. **Nobody has
 looked at the page**, and with ten more rows the question of whether the grid
 still fits without scrolling is sharper than it was yesterday.
+
+---
+
+**DEC-153 — `object/statue` gets forty rounds and a bar at 0.45 (18 October
+2026).** (Test. Ruled by the project owner on measured numbers; reproduced
+here before applying.)
+
+The figurine-store test turned CI red on roughly one push in seven, including
+once on a commit that changed only a planning document. Its assertion was
+`deep * 2 > seen`: strictly more than half the figurines stocked must hold a
+monster of level 10 or deeper, measured over five rounds of restocking a shop
+with three to nine slots.
+
+**Reproduced before applying, as asked.** A parallel session measured this
+independently; both sets of numbers, 400 seeds here against their 2000:
+
+      rounds   mean    sd      min     fail at 0.50
+      5        0.596   0.081   0.345   12.8%   (theirs 0.602 / 0.088 / 14.15%)
+      20       0.600   0.041   0.481    0.5%   (theirs 0.599 / 0.044 / ~1.6%)
+      40       0.599   0.032   0.510    0.0%   (theirs 0.598 / 0.031 / 0 of 500)
+
+The mean does not move with sample size; only the spread does. That is what
+makes this a noise problem and not a content one.
+
+**Both numbers had to move.** Forty rounds against the old 0.50 bar is
+(0.599 - 0.50) / 0.032 = 3.1 sd, which is thin for a suite that runs on every
+push on every platform. Forty against 0.45 is 4.7 sd. **Moving the bar is not
+weakening the guarantee**: the claim is that this shop reaches meaningfully
+deeper than the monsters by the town gate, and 0.45 of a distribution centred
+on 0.60 still says exactly that. What it stops doing is sitting on top of its
+own noise.
+
+**Runtime, which was the open question.** 74ms a run at five rounds, 78ms at
+forty: **4ms**, because the time goes on starting the process and reading the
+data rather than on stocking a shop. Against a 145-second `check-build
+--tests` it does not register. So there is no tradeoff to weigh and no reason
+to settle for 20 or 30 rounds, which would buy nothing in time and give 3.7
+sd instead of 4.7.
+
+**Proven able to fail, twice, because a threshold change is exactly the edit
+that can quietly make a test toothless.** With the depth bar raised so that
+almost nothing counts as deep, 8/9 three times out of three. With the
+figurine store's own level dropped from 26 to 2 in `store.txt`, 8/9. Restored,
+9/9, and 0 of 400 seeds fail.
