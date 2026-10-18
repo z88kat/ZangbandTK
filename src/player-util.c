@@ -2329,6 +2329,59 @@ bool player_power_is_class_power(const struct player *p,
 }
 
 /**
+ * Is this a *psionic* power -- one that goes off inside the head when it fails?
+ * (PLR-35)
+ *
+ * This used to be asked as `player_power_is_class_power()`, and that was exact
+ * for as long as the Mindcrafter was the only class with a power list.  It
+ * stopped being exact the moment the shapechanges came back as class powers:
+ * a Druid who fumbles Bear Form is not having a psionic accident, and without
+ * this the failure branch would have handed them `player_mind_backfires()`.
+ *
+ * The test is that the class's powers *are* its magic -- no `magic:` line, no
+ * books, nothing else to fail at.  That is the Mindcrafter and nothing else in
+ * the game, and it says what it means without naming a class: a power list
+ * standing in for a realm is psionics, a power list standing beside one is not.
+ *
+ * **Left open rather than guessed at.** The death-realm shapes (bat, warg,
+ * vampire, werewolf) were 4.2 *spells*, and a death spell that fails calls
+ * `death_miscast()` (player-spell.c).  Whether they should keep that on the
+ * power path is a real question and not one this change had to answer, so they
+ * fail quietly for now, as racial powers do.
+ */
+static bool player_power_is_psionic(const struct player *p,
+									const struct player_power *power)
+{
+	if (!p || !p->class) return false;
+	if (p->class->magic.total_spells) return false;
+
+	return player_power_is_class_power(p, power);
+}
+
+/**
+ * Does using this power change the character's shape? (PLR-35)
+ *
+ * Asked of the effects rather than recorded in the data, for the same reason
+ * `player_power_is_class_power()` walks a list: it cannot fall out of step with
+ * what the power actually does.  Every band is examined, including ones the
+ * character has not grown into, because the answer must not change with level.
+ */
+bool player_power_is_shapechange(const struct player_power *power)
+{
+	const struct power_effect *band;
+
+	for (band = power ? power->effects : NULL; band; band = band->next) {
+		const struct effect *e;
+
+		for (e = band->effect; e; e = e->next) {
+			if (e->index == EF_SHAPECHANGE) return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Does this band's class restriction admit `p`? (PLR-01, DEC-87)
  *
  * The restriction is the '|'-separated text from `power-when-class`, matched
@@ -2441,6 +2494,37 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 	}
 
 	/*
+	 * One shape at a time, and you pay to enter each one (PLR-35).
+	 *
+	 * Decided deliberately, because the shapes arriving as class powers put
+	 * them on a path nothing gates.  `do_cmd_cast()` refuses outright while
+	 * shapechanged (cmd-obj.c), so a shape could never be reached from another
+	 * shape by spell; powers are not gated at all, so without this the same
+	 * feature would behave one way through a book and another through the
+	 * power menu.  It would also hand the player a way to swap shapes without
+	 * passing through normal -- and since the entry costs in shape.txt are the
+	 * whole of the balance here, a route that chains shapes is a route that
+	 * dodges the one lever we have.
+	 *
+	 * Scoped to shape powers on purpose.  Blanket-gating powers while
+	 * shapechanged would silently change the Draconian's breath, the
+	 * Mindcrafter's twelve, every activatable mutation and -- worst of the
+	 * four -- the Vampire's drink blood, which is the only food a shapechanged
+	 * character can reach at all, the pack being closed to them.  None of that
+	 * is this change's business.
+	 *
+	 * Refusing rather than reverting first: "become a bear" is not a sentence
+	 * that should end with the character human.  Reverting is free and one
+	 * prompt away from any item command (player_get_resume_normal_shape()).
+	 * That there is no *direct* key for it is a rough edge this inherits and
+	 * does not widen.
+	 */
+	if (player_is_shapechanged(p) && player_power_is_shapechange(power)) {
+		msg("You must resume your own shape first.");
+		return false;
+	}
+
+	/*
 	 * Short of mana, the price is paid in blood.  This is Zangband's rule and
 	 * it is the only reason the whole feature works for everyone: the Warrior
 	 * and the Mindcrafter have no spellbooks, so calc_mana() leaves the Warrior
@@ -2476,8 +2560,13 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 		 * A failed psionic power backfires half as often as it fails.  The
 		 * chance is read again here rather than kept from the test above
 		 * because it costs nothing and says what it means.
+		 *
+		 * `player_power_is_psionic()` rather than `..._is_class_power()`: the
+		 * two were the same predicate while the Mindcrafter was the only class
+		 * with powers, and stopped being the same when the shapechanges came
+		 * back as class powers (PLR-35).
 		 */
-		if (player_power_is_class_power(p, power)
+		if (player_power_is_psionic(p, power)
 				&& randint1(100) < player_power_chance(p, power) / 2) {
 			player_mind_backfires(p);
 		}

@@ -1545,6 +1545,54 @@ title:Windrider
 title:Stormwielder
 title:High Mystic
 
+# The four shapechanges a Druid used to cast (PLR-35).
+#
+# These were Druid *spells* until 6eea8e605 replaced the five nature books with
+# Zangband's realm; they went out with the books that held them, and nobody
+# decided they should.  They come back as powers rather than spells because
+# every realm is now four books of eight -- `player/realm` asserts it -- so
+# there is no slot for them that does not either break that or displace a
+# ported Zangband spell.  Powers sit beside a realm instead of inside one.
+#
+# Level, cost and failure are 4.2's own numbers, transplanted rather than
+# re-guessed, and the stat is the realm's (nature casts on wisdom).  Two things
+# the power path does differently, neither worth fighting:
+# `player_use_power()` charges a variable price -- randint1(cost - cost/2) +
+# cost/2, so 20 means 11 to 20 -- which is Zangband's rule for powers; and
+# powers carry no `desc:`, so the flavour text these had is not recoverable
+# here.
+#
+# Druid only.  The Ranger has had the whole nature realm since 6eea8e605 and
+#4.2 gave him none of these; keeping it that way is the project owner's call.
+
+power:become a fox
+power-level:1
+power-cost:2
+power-stat:WIS
+power-fail:20
+power-effect:SHAPECHANGE:fox
+
+power:become a Pukel-man
+power-level:30
+power-cost:20
+power-stat:WIS
+power-fail:75
+power-effect:SHAPECHANGE:Pukel-man
+
+power:become an eagle
+power-level:35
+power-cost:20
+power-stat:WIS
+power-fail:80
+power-effect:SHAPECHANGE:eagle
+
+power:become a bear
+power-level:40
+power-cost:20
+power-stat:WIS
+power-fail:85
+power-effect:SHAPECHANGE:bear
+
 magic:1:350:4
 realm-choice:1:nature
 
@@ -1727,7 +1775,6 @@ effect:SPHERE:MANA:4
 dice:100+$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Nature turns on everything around you, the ground included.
-
 
 ############### PRIEST ###############
 name:Priest
@@ -3079,6 +3126,48 @@ title:Controller
 title:Commander
 title:Dark Master
 title:Night Lord
+
+# The three shapechanges a Necromancer used to cast (PLR-35).
+#
+# Same story as the Druid's four, one commit later: 314c344d8 replaced the
+# Necromancer's five shadow books with Zangband's death realm and these went
+# out with them.  Back as powers for the same reason -- four books of eight is
+# an invariant now -- at 4.2's own level, cost and failure, casting on the
+# realm's stat (death casts on intelligence).
+#
+# Vampire Form keeps its second effect.  JUMP_AND_BITE still exists in the code
+# (src/effect-handler-attack.c) and this spell was its only consumer in the
+# whole of gamedata, so it has been as dead as the shapes were since 314c344d8.
+# It drains the character's level, which is 4.2's dice, carried over unchanged.
+#
+# These three fail quietly.  They were death-realm spells, and a death spell
+# that fails calls death_miscast(); whether that should follow them onto the
+# power path is left open rather than invented here -- see PLR-35 in
+# decisions.md.
+
+power:become a bat
+power-level:3
+power-cost:4
+power-stat:INT
+power-fail:20
+power-effect:SHAPECHANGE:bat
+
+power:become a warg
+power-level:28
+power-cost:20
+power-stat:INT
+power-fail:60
+power-effect:SHAPECHANGE:warg
+
+power:become a vampire
+power-level:37
+power-cost:20
+power-stat:INT
+power-fail:60
+power-effect:SHAPECHANGE:vampire
+power-effect:JUMP_AND_BITE
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
 
 magic:1:300:4
 realm-choice:1:death
@@ -5442,6 +5531,23 @@ title:Marauder
 title:Destroyer
 title:Tyrant
 
+# The one shapechange a Blackguard used to cast (PLR-35).
+#
+# Lost with the Necromancer's three in 314c344d8, and back on the same terms:
+# 4.2's level, cost and failure, death's casting stat.
+#
+# The werewolf now charges an entry cost in shape.txt, which it did not before.
+# It is the only shape whose assumption is itself an attack -- PROJECT_LOS at
+# the character's level plus SHERO, both of which survive a free revert -- so
+# it was the one shape a player could have fired over and over for nothing.
+
+power:become a werewolf
+power-level:32
+power-cost:30
+power-stat:INT
+power-fail:40
+power-effect:SHAPECHANGE:werewolf
+
 magic:1:600:4
 realm-choice:1:death
 
@@ -5629,7 +5735,6 @@ dice:$B+d$S
 expr:B:PLAYER_LEVEL:/ 2 - 1
 expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
 desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
-
 
 ############### MONK ###############
 # ZangbandTK (PLR-03/PLR-04).  Zangband's own numbers, converted by the mapping

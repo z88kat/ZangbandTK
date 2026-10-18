@@ -35,8 +35,9 @@
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) gained
 # from the shapechange.
 
-# 'play-flags' is for player flags (as in src/list-player-flags.h) gained
-# from the shapechange.
+# 'player-flags' is for player flags (as in src/list-player-flags.h) gained
+# from the shapechange.  (The header was documented as 'play-flags' and the
+# parser has always registered 'player-flags' -- src/init.c, init_parse_shape.)
 
 # 'values' is for resistances and modifiers gained from the shapechange.
 
@@ -101,6 +102,19 @@ combat:5:0:10
 obj-flags:SUST_WIS | PROT_BLIND | PROT_CONF | PROT_FEAR | SEE_INVIS | FREE_ACT
 obj-flags:TRAP_IMMUNE
 values:MOVES[3]
+# ZangbandTK (PLR-35): an entry cost, because the eagle had none.
+#
+# MOVES[3] takes `energy_per_move()` from 100 to 25 -- four moves to the turn
+# -- on top of TRAP_IMMUNE, FREE_ACT and three protections, and nothing in the
+# shape was negative.  Priced by analogy rather than invention: this is warg's
+# cost, `1d$S` on PLAYER_LEVEL, copied unchanged.  Warg buys combat where the
+# eagle buys mobility and immunities, but they sit at the same tier, and a
+# level-scaled roll keeps costing something at fifty where a flat number is
+# rounding error by then.
+effect:DAMAGE
+dice:1d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect-msg:taking eagle form
 blow:peck
 blow:claw
 blow:claw
@@ -148,6 +162,25 @@ name:werewolf
 combat:5:5:0
 obj-flags:REGEN
 values:BLOWS[1] | MOVES[1]
+# ZangbandTK (PLR-35): an entry cost, and the steepest one in the file.
+#
+# The werewolf is the only shape whose *assumption* is itself an attack:
+# PROJECT_LOS:TURN_ALL at the character's level, plus SHERO.  Reverting is free
+# and clears only TMD_ATT_VAMP, so both survive it -- assume, turn the room,
+# revert for nothing, assume again.  Until now that loop cost nothing at all.
+#
+# Priced by analogy, as vampire's: `$B` on PLAYER_HP / 4, copied unchanged.
+# Vampire pays that for +5 speed and a bite that the revert then takes away
+# again; the werewolf's burst has already landed by the time anyone reverts, so
+# it does not deserve the cheaper tier.  Warg's `1d$S` averages half a level --
+# sixteen at thirty-two -- which would not slow the loop down at all.
+#
+# The effect-msg below used to sit above the first effect, where
+# parse_shape_effect_msg() discards it (src/init.c: no effect yet, so it
+# returns without attaching).  It is live now that an effect precedes it.
+effect:DAMAGE
+dice:$B
+expr:B:PLAYER_HP:/ 4
 effect-msg:taking werewolf form
 effect:PROJECT_LOS:TURN_ALL
 dice:$B

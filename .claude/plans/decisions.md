@@ -1368,6 +1368,22 @@ equipment bonus and all casting go until the character changes back, and the
 change back is always one keystroke away -- any blocked action offers it -- so a
 patron cannot strand anyone.
 
+> **Correction (PLR-35, 18 October 2026): the equipment half of that sentence
+> is wrong, and it is wrong about the code rather than about the intent.**
+> Casting goes -- `do_cmd_cast()` refuses outright while shapechanged -- and so
+> does reaching the pack, the quiver and the equipment to *use* anything out of
+> them (`cmd_get_item()` strips `USE_EQUIP | USE_INVEN | USE_QUIVER`). But the
+> equipment *bonuses* do not go. `calc_bonuses()` has no shape guard anywhere on
+> its equipment loop, `calc_shapechange()` runs afterwards and only adds, and
+> `py_attack_real()` substitutes the shape's blow *verb* and nothing else -- the
+> weapon's dice, brands, slays and criticals all still apply. A shapechanged
+> character keeps every ring, every resist and every point of AC and adds the
+> shape on top, so a shapechange is a pure gain for anything that does not need
+> to drink a potion. That is upstream 4.2's behaviour, not something this
+> project introduced, and it is left as it is; it is corrected here because
+> this passage is a stated rationale and anyone reasoning from it will reason
+> wrongly. The consequences are costed under PLR-35.
+
 *Mutations are a deliberate gap until M8.* One roll in six replaces a patron's
 reward with a mutation, and PLR-13 to PLR-17 do not exist yet. That branch is
 left as a hole rather than substituted with something else, because a
@@ -8055,8 +8071,11 @@ onto the browser like this:
   back. Until now the only way to see one was to walk back to whoever gave it
   to you. Built.
 - **Shapechange effects and equippable comparison: real gaps, not built, and
-  not in the todo.** Nine shapes exist, so the first is a genuine list with no
-  home and would be a third tab of about the same size as these two. The
+  not in the todo.** Nine shapes exist -- **corrected by PLR-35: eight.**
+  `shape.txt` holds nine `name:` records and one of them is `normal`, which
+  `count_interesting_shapes()` in `ui-knowledge.c` excludes by name before the
+  tab ever sees it; DEC-38 said eight and was right. So the first is a genuine
+  list with no home and would be a third tab of about the same size as these two. The
   second is an interactive comparison rather than a list and does not fit the
   browser's shape at all. Both are recorded here rather than quietly added,
   because widening a named task is the project owner's call.
@@ -8142,6 +8161,7 @@ either, and never had one. Two designs reached the same split without
 consulting each other.
 
 **What it decides next time.** Shapechange effects is a list of nine things
+-- **eight; see the correction under DEC-148, and PLR-35** -- that
 the character can learn about and changes nothing: a tab. Equippable
 comparison is interactive: not a tab, whatever else it becomes. The same
 question will be asked of quests if they ever grow an "abandon this errand"
@@ -8709,3 +8729,258 @@ passed **238 of 238 with no failures at all**, Birth included. The
 character-creation failure this machine has shown for days is therefore
 *intermittent* locally, not deterministic -- I have been describing it as
 though it always failed here. It still has never failed on CI.
+
+---
+
+**DEC-158 — The eight shapechanges come back as class powers, restoring 4.2's
+own assignment (PLR-35, 18 October 2026).** (Gamedata and one source file.
+Eight powers, two entry costs, one latent backfire fixed, four new assertions.)
+
+Eight shapes are defined in `lib/gamedata/shape.txt` and five of them could not
+be reached at all. The three that could -- bat, bear, warg -- arrived only
+involuntarily, from one branch of the Potion of Surprise's `effect:RANDOM`
+(`object.txt:3663`) and three chaos patron rewards (`patron.txt:93/96/99`).
+`class.txt` contained no `SHAPECHANGE` at all.
+
+**The premise was wrong, and git says so.** This was framed as dead data looking
+for a design. It is not: all eight had a home, in 4.2, with a per-class
+thematic split and a calibrated curve, and it was deleted as collateral.
+`6eea8e605` ("Nature is Zangband's") replaced the Druid's five nature books with
+Zangband's realm and took its four shape spells out with them; `314c344d8`
+("Death is Zangband's") did the same to the Necromancer's three and the
+Blackguard's one. Nobody decided the shapes should go.
+
+| Shape | Class | Realm | Level | Mana | Fail | Exp |
+|---|---|---|---|---|---|---|
+| fox | Druid | nature | 1 | 2 | 20 | 10 |
+| Pukel-man | Druid | nature | 30 | 20 | 75 | 50 |
+| eagle | Druid | nature | 35 | 20 | 80 | 80 |
+| bear | Druid | nature | 40 | 20 | 85 | 100 |
+| bat | Necromancer | death | 3 | 4 | 20 | 10 |
+| warg | Necromancer | death | 28 | 20 | 60 | 80 |
+| vampire | Necromancer | death | 37 | 20 | 60 | 140 |
+| werewolf | Blackguard | death | 32 | 30 | 40 | 100 |
+
+**DEC-20 does not reach this, and that had to be established rather than
+assumed.** Zangband 2.7.5-pre1 has no player shape system whatever. Its only
+"become something else" is `do_poly_self()`
+([effects.c:3040](../../archive/zangband/src/effects.c#L3040)) -- sex change,
+outright race change, stat drain, mutation churn, permanent, and its own help
+calls the race change the single exception to "irrevocable"
+([charattr.txt:12](../../archive/zangband/lib/help/charattr.txt)). It is reached
+from Chaos spell #21 in `[Chaos Channels]`, the `MUT1_POLYMORPH` mutation,
+patron `REW_POLY_SLF` and `GF_NUKE`. **Nature has nothing shape-like at all** --
+the whole 32-spell list was read. So the archive is *silent* here, not contrary,
+and the authority falls back to 4.2's own design, which is the other half of
+this codebase's ancestry and which we have exact numbers for. A Nature-realm
+shapechange line, which was the suggestion on the table, would have had no
+archive support of any kind.
+
+Our port of the Chaos spell is already exact, which is how the silence was
+confirmed: Mage 42/50, Priest 45/55, Ranger 42/75, Chaos-Warrior 42/75,
+Warrior-Mage 45/55, High-Mage 39/40, matching `magic_info[]` pair for pair.
+`effect:POLY_SELF` is not a shapechange and never was -- `effect_handler_POLY_SELF`
+only sheds and adds mutations -- and the six class spells carrying it are
+untouched.
+
+**Powers rather than spells, and that is forced rather than preferred.** Every
+realm is now four books of eight, and `player/realm` asserts it. There is no
+slot for eight spells that does not either break that invariant or displace a
+ported Zangband spell. Class powers sit beside a realm instead of inside one,
+use exactly the knobs 4.2's spells used (`power-level`, `power-cost`,
+`power-stat`, `power-fail`), need no book, and cost no fidelity. Level, cost and
+failure are transplanted verbatim; the stat is the realm's -- nature casts on
+wisdom, death on intelligence.
+
+Three differences the power path brings, none worth fighting and all of them
+recorded rather than discovered later: `player_use_power()` charges
+`randint1(cost - cost/2) + cost/2`, so a cost of 20 takes 11 to 20 rather than
+20, which is Zangband's rule for powers; powers carry no `desc:`, so the flavour
+text these spells had is not recoverable; and `player_power_chance()` does not
+honour `PF_ZERO_FAIL`, which the Druid has and which `spell_chance()` does
+honour, so a Druid's shape powers floor at 5% where its spells can reach zero.
+
+**Vampire Form keeps its second effect, and that un-deadens a second thing.**
+`EF_JUMP_AND_BITE` still exists in `effect-handler-attack.c` and this spell was
+its only consumer anywhere in gamedata, so it has been as dead as the shapes
+since `314c344d8`. Its dice are 4.2's, `$B` on `PLAYER_LEVEL`.
+
+**The project owner's calls, confirmed explicitly rather than taken by
+silence.** *Druid only, no Ranger* -- the Ranger has had the whole nature realm
+since `6eea8e605`, and 4.2 gave him none of these; the asymmetry is deliberate.
+*Eagle and werewolf get entry costs*, which they did not have before.
+
+**The entry costs, chosen by analogy and not invented.** `shape.txt` already
+held three prices and the new ones are two of them copied unchanged, because the
+number is the cheapest balance lever here and it should be legible:
+
+- **eagle pays warg's price**, `1d$S` on `PLAYER_LEVEL`. It had no drawback at
+  all -- not one negative modifier and no entry effect -- while `MOVES[3]` takes
+  `energy_per_move()` from 100 to 25, four moves to the turn, on top of
+  `TRAP_IMMUNE`, `FREE_ACT` and three protections. Warg buys combat where the
+  eagle buys mobility and immunity, but they sit at the same tier, and a
+  level-scaled roll still costs something at fifty where a flat number would be
+  rounding error.
+- **werewolf pays vampire's price**, `$B` on `PLAYER_HP / 4`, the steepest in the
+  file. It is the only shape whose *assumption* is itself an attack:
+  `PROJECT_LOS:TURN_ALL` at the character's level, plus `SHERO`. Reverting is
+  free and clears only `TMD_ATT_VAMP`, so both survive it -- assume, turn the
+  room, revert for nothing, assume again, with mana the only brake. Vampire pays
+  that price for +5 speed and a bite the revert then takes away again; the
+  werewolf's burst has already landed by the time anyone reverts. Warg's
+  `1d$S` averages half a level -- sixteen at thirty-two -- and would not slow
+  the loop at all.
+
+Werewolf's `effect-msg:taking werewolf form` sat above its first effect, where
+`parse_shape_effect_msg()` discards it silently (no effect yet, so it returns
+without attaching). It is live now that an effect precedes it.
+
+**One shape at a time, decided rather than inherited.** `do_cmd_cast()` refuses
+outright while shapechanged, so no shape was ever reachable from inside another
+by spell. Powers are gated by nothing, so putting the shapes on the power path
+would have made the same feature behave one way through a book and another
+through the power menu, and would have handed the player a way to swap shapes
+without passing through normal -- which is a way round the entry costs that are
+the whole of the balance here. `player_use_power()` now refuses a shape power
+from a character already in a shape, before anything is paid.
+
+Scoped to shape powers on purpose. Blanket-gating powers while shapechanged
+would silently have changed the Draconian's breath, the Mindcrafter's twelve,
+every activatable mutation, and -- worst of the four -- the Vampire's drink
+blood, which is the only food a shapechanged character can reach at all with the
+pack closed to them. Refusing rather than reverting-then-acting, because
+"become a bear" is not a sentence that should end with the character human.
+That there is no *direct* revert key is a rough edge this inherits and does not
+widen.
+
+---
+
+### The latent defect this woke up, which is the most important thing here
+
+**`player_use_power()` would have given a Druid a psionic accident.** The
+failure branch fired `player_mind_backfires()` behind
+`player_power_is_class_power()`. That predicate was an *exact* test of "is this
+psionic" for exactly as long as the Mindcrafter was the only class in the game
+with a power list -- which it was, until this change. Add four powers to the
+Druid and a fumbled Bear Form reads one of five bands off `mind.c`'s table:
+forget the map, hallucinate, confusion, stun, or a mana storm centred on the
+character.
+
+**It was not reachable by any other route, and still is not.** Nothing else in
+the game put a power list on a class that has books; no race power reaches the
+branch, because racial powers are not in `class->powers`; the Mindcrafter's own
+twelve are supposed to backfire and do. So this is not a pre-existing defect
+being fixed opportunistically -- it is a defect **this change would have
+created**, which is why it is fixed in the same commit rather than filed.
+
+**Fixed, not deferred.** The test is now `player_power_is_psionic()`: the
+class's powers must *be* its magic -- no `magic:` line, no books, nothing else
+to fail at. That is the Mindcrafter and nothing else in the game, and it says
+what it means without naming a class. A power list standing in for a realm is
+psionics; a power list standing beside one is not. The comment on
+`player_mind_backfires()` already said the backfire was psionic and already
+explained why racial powers are excluded; the implementation had simply never
+needed to distinguish the two cases.
+
+Measured, not argued: reverting the predicate to `player_power_is_class_power()`
+and running `player/shape-powers` gives **753 psionic marks on a Druid over
+3000 uses of Bear Form**.
+
+**Left open rather than guessed at.** Bat, warg, vampire and werewolf were
+*death-realm spells*, and a death spell that fails calls `death_miscast()`
+(`player-spell.c`). Whether that should follow them onto the power path is a
+real question. They fail quietly for now, as racial powers do, and inventing a
+miscast for the power path was not this change's business.
+
+---
+
+### Verified, with every assertion seen to fail
+
+`src/tests/player/shape-powers.c`, four cases, each broken deliberately before
+it counted (DEC-156):
+
+| Case | Broken with | Went red as |
+|---|---|---|
+| `a-caster-keeps-both-lists` | `calc_mana()` reordered to try `powers` before `magic.total_spells` | a Druid's level-20 pool read 26 with its power list attached and 33 without |
+| `a-druid-becomes-a-fox` | `paid = 0` in `player_use_power()` | the power charged nothing |
+| `one-shape-at-a-time` | the new guard forced to `false` | a fox became a bear |
+| `a-casters-power-does-not-backfire` | the predicate reverted to `..._is_class_power()` | 753 marks in 3000 uses |
+
+**The magic-and-powers combination is the one the project owner asked to have
+proven rather than assumed, and the answer is that `calc_mana()` is correct as
+written but only just.** It is `if (magic.total_spells) ... else if (powers)`,
+so the Druid, Necromancer and Blackguard keep taking the books branch. Had the
+order been the other way they would read `class->power_first` -- zero, because
+they set no `power-first:` line -- and `class->power_stat`, which they do not
+set either, so the pool would be computed from the wrong level offset and off
+the wrong stat. The measured cost of getting it wrong is seven mana at level 20,
+silently. The assertion detaches the power list, recomputes, reattaches and
+requires the number not to move, rather than asserting that the Druid has *some*
+mana, which would be true however the branch fell.
+
+The suite also keeps `player/psionic-backfire` honest from the other side: that
+file already asserts through the door that a race's powers never backfire while
+the class's sometimes do, and it still passes unchanged, so the Mindcrafter has
+not lost its backfire while the Druid was being spared one.
+
+Full local run: **1621/1621 unit tests**, `check-build-lists` consistent, and
+`zconv realms --check` green.
+
+**A landmine defused on the way.** The powers were first appended at the end of
+each class block, which put them *inside* the realm's book region as
+`extract_realm_block()` computes it -- it runs from a realm's first `book:` to
+the end of the class. `zconv realms --apply` carries non-book lines across by
+inserting each one at index 3 of the regenerated region, so a later regeneration
+of nature or death would have scattered eight `power:` blocks into the middle of
+the first book and separated each `power:` from its own `power-level:`. The
+check named them as strays, in ninety-six notes, which is how it was noticed.
+They now sit ahead of the `magic:` line, outside the region, and the check
+reports no strays at all.
+
+---
+
+### Three things found and deliberately not fixed
+
+All three are real, all three are upstream 4.2 behaviour rather than this
+project's, and bundling any of them into a reachability change would make both
+harder to reason about. Recorded with the numbers so the next reader does not
+have to re-measure.
+
+**1. `+BLOWS` bypasses the class cap.** `calc_blows()` ends
+`return MAX(blows + (100 * extra_blows), ...)` where `blows` was already
+`MIN(..., 100 * p->class->max_attacks)`. The cap is applied and then added to.
+So warg's `BLOWS[2]` is two blows *above* the class maximum and bear's
+`BLOWS[1]` is one above -- and because a shapechange substitutes only the blow
+verb, those blows land with the character's real weapon, its dice, its brands
+and its slays, with bear adding +15 to-hit and +15 to-damage on top. A 4-blow
+character goes to 5 blows at +15 each, or 6 blows at +5: on the order of +60 to
++70% melee output for a one-off cost. These are the two strongest things in the
+file and they are already reachable today through the patron, which is the
+reason this is its own item rather than part of this change.
+
+**2. The vampire shape's only drawback is dead data.** `values:LIGHT[-1]` is
+never read. `calc_shapechange()` handles STEALTH, SEARCH, INFRA, TUNNEL, SPEED,
+DAM_RED, BLOWS, SHOTS, MIGHT and MOVES -- there is no LIGHT case -- and
+`calc_light()` consults equipment, mutations and `p->race->light` and never the
+shape. So vampire form is a pure gain after its entry cost, and specifically the
+Vampire race's own `light:1` is not cancelled the way the data plainly intends.
+Wants its own change, in `calc_light()` rather than here.
+
+**3. Pukel-man's `DAM_RED 10` is unmeasured at reachable depths.** It is flat,
+applied before any percentage reduction, per hit -- near-immunity against swarms
+of weak attacks and trivial against one big breath -- and which dominates
+depends on the actual damage distribution where a level-30 Druid meets it. It
+ships with 4.2's original numbers, on the grounds that those are at least
+calibrated by somebody, and **this is explicitly unverified**: it wants the borg
+rather than a number invented here. Saying so is worth more than a guess.
+
+Also noted and not acted on: `shape.txt` documented its flag line as
+`play-flags` while `init_parse_shape()` has always registered `player-flags`.
+The header is corrected, since the file was open anyway.
+
+And one for DEC-30's ledger rather than this change's: the shape *names* in
+`shape.txt` are Tolkien -- Pukel-man and warg -- and 4.2's spell descriptions
+for them named the Drúedain and Manwë. The names are data keys and renaming them
+is a separate question; the descriptions are gone with the spells and were not
+carried into the power comments.
+
