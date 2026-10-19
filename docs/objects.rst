@@ -166,7 +166,7 @@ Something that took your memory the moment you swallowed it would be an ordinary
 bad mushroom. The five turns are long enough to work out what you've done, and
 not long enough to do anything about it.
 
-Seven more from Zangband
+Eight more from Zangband
 ------------------------
 
 **Returning.** A thrown weapon comes back to your hand, nineteen throws in
@@ -209,21 +209,23 @@ and the borrowed reward is a smaller thing in both directions.
 Not yet implemented
 -------------------
 
-One Zangband object property is recorded but inactive: passing through walls.
-Angband has no form of player wall-movement to hang it on, neither a spell nor a
-temporary state, so supporting it would mean building wall-phasing for the
-player first. Items with it work in every other respect.
+One Zangband object property is left off every item: passing through walls.
+A Spectre walks through walls, and so does anyone in wraith form (see
+:doc:`mutations`), but no item grants it, because wall-walking you can put on
+takes the dungeon away as an obstacle. Zangband's one item with it, the cloak
+'Soulless One', comes without it and works in every other respect.
 
-Two more object properties are recorded and inactive, for the same reason: each
-cancels a penalty this game does not impose. ``WILD_SHOT`` ignores the cover a
+Two more object properties are recorded and inactive, because each cancels a
+penalty this game does not impose. ``WILD_SHOT`` ignores the cover a
 monster gets from standing in trees, and Angband has no terrain term in its
 combat at all. ``WILD_WALK`` removes the extra effort of climbing a mountain and
 the poison of wading a swamp, but here a mountainside is a wall, not slow
-ground, and there's no swamp terrain. Building either flag alone would do
-nothing. Building what they cancel would change how the wilderness plays, which
-is a bigger job than converting a flag. One ego, ``of the Wild``, waits with
-them: every property it had was ``WILD_WALK``, so importing it would have put a
-pair of boots in the game that granted nothing at all.
+ground, and a swamp is mud and shallow water that poisons nobody. Building
+either flag alone would do nothing. Building what they cancel would change how
+the wilderness plays, which is a bigger job than converting a flag. One ego,
+``of the Wild``, waits with them: every property it had was ``WILD_WALK``, so
+importing it would have put a pair of boots in the game that granted nothing at
+all.
 
 Two of Zangband's object kinds are likewise recorded but not imported:
 

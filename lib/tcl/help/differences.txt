@@ -2,13 +2,13 @@ H	What’s Different
 M	what-s-different
 T	h1	What’s Different
 T	h1	\n
-T	p0	What ZangbandTK does that Angband does not. If you have played Angband and want the short version, read 
+T	p0	What ZangbandTK does that Angband doesn’t. If you’ve played Angband and want the short version, read 
 L	p0 link	1	balance	How Balance Differs
-T	p0	 first — it is the account of what will kill you that would not have before.
+T	p0	 first. It explains what will kill you here that wouldn’t have before.
 T	p0	\n
-T	p0	All of these are in the game except 
+T	p0	All of these are in the game. 
 L	p0 link	2	nightmare	Nightmare Mode
-T	p0	, which is the last milestone and says so at the top.
+T	p0	 was the last to go in, and its milestone closed on 4 October 2026.
 T	p0	\n
 T	p0	\n
 T	li1	•\t
@@ -132,7 +132,7 @@ T	li2	•\t
 L	li2 link	42	objects#the-lotus	The lotus
 T	li2	\n
 T	li2	•\t
-L	li2 link	43	objects#seven-more-from-zangband	Seven more from Zangband
+L	li2 link	43	objects#eight-more-from-zangband	Eight more from Zangband
 T	li2	\n
 T	li2	•\t
 L	li2 link	44	objects#not-yet-implemented	Not yet implemented

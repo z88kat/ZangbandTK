@@ -145,7 +145,7 @@ page	The Ring of Fate	objects#the-ring-of-fate
 page	The Ancient and Foul Curse	objects#the-ancient-and-foul-curse
 page	Activations	objects#activations
 page	The lotus	objects#the-lotus
-page	Seven more from Zangband	objects#seven-more-from-zangband
+page	Eight more from Zangband	objects#eight-more-from-zangband
 page	Not yet implemented	objects#not-yet-implemented
 stop
 book	The Wilderness	wilderness

@@ -120,11 +120,11 @@ T	h2	Non-melee attacks and resistances
 T	h2	\n
 T	p0	The player may at some time gain access to non-melee attacks, and many monsters also have them. Perhaps the most famous of this type of attack is dragon breath, but monsters may also cast spells at the player, and vice versa. This damage generally is not affected by armor class, and does not need a hit roll to hit the player or monster being aimed at.
 T	p0	\n
-T	p0	Some attacks are purely magical: attack spells which blind, confuse, slow, scare or paralyze the target. These attacks are resisted by monsters of higher level (native to deeper dungeon depths) and characters with a high saving throw - saving throws being dependent on class, level and wisdom. There are also available resistances to fear, blindness, confusion and stunning, and the power of “free action” prevents magical paralysis (the player may still be paralyzed by being “knocked out” in melee or by a stunning attack, but this is very rare and can be prevented with protection from stunning; paralysis due to fainting from hunger or casting a spell with with insufficient mana is also unaffected by having free action). There are monsters that can cause status effects such as blindness, paralysis or confusion through their melee attack. Since this is a physical effect and not a mental one, the player will not get a saving throw. However, having resistance to that effect will prevent the negative status in all cases. It should also be noticed that most unique monsters automatically pass their saving throws, and some monsters are naturally resistant to confusion, fear and sleep. Some monsters may have spells that ‘cause wounds’ that can be deadly if successful but do no damage if the saving throw is passed. Some melee attacks by monsters may drain a stat, as can some traps: this is prevented by having that stat sustained. Drained stats are temporary and can be restored on gaining a new character level or consuming rare items found in the dungeon.
+T	p0	Some attacks are purely magical: attack spells which blind, confuse, slow, scare or paralyze the target. These attacks are resisted by monsters of higher level (native to deeper dungeon depths) and characters with a high saving throw - saving throws being dependent on class, level and wisdom. There are also available resistances to fear, blindness, confusion and stunning, and the power of “free action” prevents magical paralysis (the player may still be paralyzed by being “knocked out” in melee or by a stunning attack, but this is very rare and can be prevented with protection from stunning; paralysis due to fainting from hunger or casting a spell with insufficient mana is also unaffected by having free action). There are monsters that can cause status effects such as blindness, paralysis or confusion through their melee attack. Since this is a physical effect and not a mental one, the player will not get a saving throw. However, having resistance to that effect will prevent the negative status in all cases. It should also be noticed that most unique monsters automatically pass their saving throws, and some monsters are naturally resistant to confusion, fear and sleep. Some monsters may have spells that ‘cause wounds’ that can be deadly if successful but do no damage if the saving throw is passed. Some melee attacks by monsters may drain a stat, as can some traps: this is prevented by having that stat sustained. Drained stats are temporary and can be restored on gaining a new character level or consuming rare items found in the dungeon.
 T	p0	\n
-T	p0	Some monsters may cast spells that teleport the player character. There is no saving throw, except to those that would actually teleport him up or down one dungeon level. Having resistance to nexus will also prevent being level-teleported, but will not help against normal teleportation spell attacks. The player may teleport monsters in the same way, with a spell, wand or rod — but in ZangbandTK a hundred and two of the imported monsters shrug it off. A unique that does is simply unmoved; anything else gets a saving throw that a heavy creature usually passes and a light one usually fails, so teleport-other is a reliable escape from a swarm and an unreliable one from the thing you most want moved. The monster recall says 
+T	p0	Some monsters may cast spells that teleport the player character. There is no saving throw, except to those that would actually teleport him up or down one dungeon level. Having resistance to nexus will also prevent being level-teleported, but will not help against normal teleportation spell attacks. The player may teleport monsters in the same way, with a spell, wand or rod, though in ZangbandTK a hundred and two of the imported monsters shrug it off. A unique among them isn’t moved at all. Anything else gets a saving throw, which a heavy creature usually passes and a light one usually fails, so teleport-other is a reliable escape from a swarm and an unreliable one from the thing you most want moved. The monster recall says 
 T	p0 em	cannot be teleported
-T	p0	 once you have seen it happen. See 
+T	p0	 once you’ve seen it happen. See 
 L	p0 link	2	monsters	Monsters
 T	p0	.
 T	p0	\n
@@ -158,7 +158,7 @@ T	h2	A note on speed
 T	h2	\n
 T	p0	Monsters which do not move at normal speed generally move “slowly” (-10 to speed), “fairly quickly” (+5), “quickly” (+10), “very quickly” (+20) or “incredibly quickly” (anything past +20). Twenty-seven creatures fall in that last band, and the two fastest things in the game are both Zelazny’s: the Serpent of Chaos at +45 and the Unicorn of Order at +50. This is further adjusted by the fact that any non-unique monster may have a random adjustment from (-2) to (+2) to its own speed.
 T	p0	\n
-T	p0	Generally, (+10) is exactly double normal speed, and (-10) exactly half. (+20) is about three times normal speed, but after that there is less noticeable improvement as speed goes higher - for instance, (+30) is not quite four times normal speed, and higher values than this are largely irrelevant. The player may find items which can be worn or wielded that provide speed bonuses: these may include boots of speed, rings of speed and a few very rare artifacts. Boots and rings of speed are rolled the same way — a small base plus a bonus that grows with depth — and they stop at the same ceiling, so no single item of either kind will take you past (+10); a ring is not the bigger prize the older manuals made it. Two rings together can reach (+20), and that is the usual route to serious speed. The figures themselves are in 
+T	p0	Generally, (+10) is exactly double normal speed, and (-10) exactly half. (+20) is about three times normal speed, but after that there is less noticeable improvement as speed goes higher - for instance, (+30) is not quite four times normal speed, and higher values than this are largely irrelevant. The player may find items which can be worn or wielded that provide speed bonuses: these may include boots of speed, rings of speed and a few very rare artifacts. Boots and rings of speed are rolled the same way, as a small base plus a bonus that grows with depth, and they stop at the same ceiling, so no single item of either kind will take you past (+10). A ring isn’t the bigger prize the older manuals made it out to be. Two rings together can reach (+20), and that’s the usual route to serious speed. The figures are in 
 T	p0 code	lib/gamedata/object.txt
 T	p0	 and 
 T	p0 code	lib/gamedata/ego_item.txt
@@ -173,17 +173,17 @@ T	p0	Some of the ego weapons that you might find in the dungeon are listed below
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note	This list is Angband’s. ZangbandTK adds sixteen ego types of its own — 
+T	p0 note	This list is Angband’s. ZangbandTK adds sixteen ego types of its own, among them 
 T	p0 note code	(Vampiric)
 T	p0 note	, 
 T	p0 note code	(Chaotic)
 T	p0 note	, 
 T	p0 note code	of Sharpness
-T	p0 note	, 
+T	p0 note	 and 
 T	p0 note code	(Trump Weapon)
-T	p0 note	 and the rest — which are described in 
+T	p0 note	, and they’re described in 
 L	p0 note link	3	objects	Objects
-T	p0 note	 rather than here.
+T	p0 note	.
 T	p0 note	\n
 M	ego-melee-weapons
 T	h3	Ego Melee Weapons:
@@ -245,9 +245,7 @@ T	p1	These launchers allow the wielder to shoot more times per round than normal
 T	p1	\n
 T	dt0 strong	Launchers of Extra Might
 T	dt0	\n
-T	p1	These launchers have a higher base damage than normally made launchers of their type. For instance, a ‘Long Bow of Extra Might (x3)(+X,+Y)(+1)’ is really a Long Bow ‘(x4)(+X,+Y)’ where ‘(+X,+Y)’ is the standard to-hit and to-dam. As the damage multiplier with the bow affects 
-T	p1 strong	everything
-T	p1	 — the base arrow damage and the magical damage bonus on both the bow and the arrow — this makes it a powerful weapon. A brand or slay on the ammunition adds to that multiplier rather than being multiplied by it; see “Ammo of Elemental Brands” below.
+T	p1	These launchers have a higher base damage than normally made launchers of their type. For instance, a ‘Long Bow of Extra Might (x3)(+X,+Y)(+1)’ is really a Long Bow ‘(x4)(+X,+Y)’ where ‘(+X,+Y)’ is the standard to-hit and to-dam. As the damage multiplier with the bow affects everything (the base arrow damage and the magical damage bonus on both the bow and the arrow), this makes it a powerful weapon. A brand or slay on the ammunition adds to that multiplier instead of being multiplied by it; see “Ammo of Elemental Brands” below.
 T	p1	\n
 T	dt0 strong	Ammo of Wounding
 T	dt0	\n
@@ -255,19 +253,13 @@ T	p1	This ammunition - whether it be pebbles, iron shots, arrows, bolts, seeker 
 T	p1	\n
 T	dt0 strong	Ammo of Elemental Brands, and Ammo of Slaying enemies
 T	dt0	\n
-T	p1	This does 
-T	p1 strong	not
-T	p1	 work the way melee weapons of the same type do. On a melee weapon the brand or slay multiplies the damage. On ammo it is 
+T	p1	This doesn’t work the way melee weapons of the same type do. On a melee weapon the brand or slay multiplies the damage. On ammo it’s 
 T	p1 em	added to the launcher’s own multiplier
-T	p1	 instead: fire a branded arrow that would treble damage from an x3 bow and the shot is multiplied by six, not by nine. The effect is still large, but it adds where you might expect it to compound.
+T	p1	 instead: fire a branded arrow that would treble damage from an x3 bow and the shot is multiplied by six, not by nine. That’s still a big effect, but it adds where you might expect it to compound.
 T	p1	\n
-T	p1	Only the 
-T	p1 strong	best
-T	p1	 brand or slay applies, and the game looks at the bow and the arrow together to find it. A brand on your launcher and a different brand on your ammunition do not stack; you get whichever of the two is worth more against the creature in front of you.
+T	p1	Only the best brand or slay applies, and the game looks at the bow and the arrow together to find it. A brand on your launcher and a different brand on your ammunition don’t stack: you get whichever of the two does more against the creature in front of you.
 T	p1	\n
-T	p1	Unlike melee weapons, the slays and elemental brands 
-T	p1 strong	do
-T	p1	 affect the magical damage bonus for ammo — the to-dam of both bow and arrow is added before the multiplier is applied.
+T	p1	Unlike melee weapons, the slays and elemental brands do affect the magical damage bonus for ammo. The to-dam of both bow and arrow is added before the multiplier is applied.
 T	p1	\n
 T	p0	These are the most common types of ego-weapon: note that they are not the ONLY ego-items available in the dungeon, there may be more.
 T	p0	\n

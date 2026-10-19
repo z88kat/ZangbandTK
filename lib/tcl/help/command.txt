@@ -89,7 +89,7 @@ T	dt0 strong	Walk (with pickup) (
 T	dt0 strong code	;
 T	dt0 strong	 in both keysets)
 T	dt0	\n
-T	p1	Takes a single step in a direction, picking up what you step onto if you normally pick things up. It is what the direction keys already do, named as a command so that it can be given a repeat count or bound to something else. This command may take a count, requires a direction, and takes some energy.
+T	p1	Takes a single step in a direction, picking up what you step onto if you normally pick things up. It’s what the direction keys already do, made into a command of its own so that it can be given a repeat count or bound to something else. This command may take a count, requires a direction, and takes some energy.
 T	p1	\n
 T	dt0 strong	Run (
 T	dt0 strong code	.
@@ -105,9 +105,7 @@ T	dt0 strong	Go up staircase (
 T	dt0 strong code	<
 T	dt0 strong	)
 T	dt0	\n
-T	p1	Climbs up an up staircase you are standing on. There is always at least one staircase going up on every level underground (this doesn’t mean it’s easy to find). Going up a staircase will take you to a new dungeon level unless you are on the shallowest level of the dungeon you are in, in which case you come out on 
-T	p1 strong	the surface of the world, at the mouth you went down by
-T	p1	. That is not the town level: dungeon mouths open wherever they open, and the shallowest level of a dungeon is the top of its own depth range rather than 50 feet. See 
+T	p1	Climbs up an up staircase you are standing on. There is always at least one staircase going up on every level underground (this doesn’t mean it’s easy to find). Going up a staircase will take you to a new dungeon level unless you are on the shallowest level of the dungeon you are in, in which case you come out on the surface of the world, at the mouth you went down by. That isn’t the town level. Dungeon mouths open wherever they open, and the shallowest level of a dungeon is the top of its own depth range, not 50 feet. See 
 L	p1 link	3	dungeon	Exploring the Dungeon
 T	p1	. Note that whenever you leave a level (not the town), you will never find it again. This means that for all intents and purposes, any objects on that level are destroyed. This includes artifacts unless the “Lose artifacts when leaving level” option was turned off when your character was created, in which case the artifacts may show up again later. The option to lose artifacts is off in the default configuration. This command takes some energy. If the 
 L	p1 link	4	option#autoexplore-commands-option	Autoexplore Commands Option
@@ -121,7 +119,7 @@ T	dt0 strong	Go down staircase (
 T	dt0 strong code	>
 T	dt0 strong	)
 T	dt0	\n
-T	p1	Descends a down staircase you are standing on. There is always at least one staircase going down on each level, with three exceptions: the town, which has only one; “quest” levels, which have none until the quest monster is killed; and the deepest level of a dungeon, which has none at all — to go further down you must leave and find a dungeon that reaches deeper. Going down a staircase will take you to a new dungeon level. See “Go Up Staircase” for more info. This command takes some energy. If the 
+T	p1	Descends a down staircase you are standing on. There is always at least one staircase going down on each level, with three exceptions: the town, which has only one; “quest” levels, which have none until the quest monster is killed; and the deepest level of a dungeon, which has none at all. To go further down you must leave and find a dungeon that reaches deeper. Going down a staircase will take you to a new dungeon level. See “Go Up Staircase” for more info. This command takes some energy. If the 
 L	p1 link	6	option#autoexplore-commands-option	Autoexplore Commands Option
 T	p1	 is on, you are not on an down staircase, you are not confused, and no monsters are in view, 
 T	p1 code	>
@@ -164,9 +162,9 @@ T	dt0 strong	Do autopickup (
 T	dt0 strong code	^g
 T	dt0 strong	 in both keysets)
 T	dt0	\n
-T	p1	Takes the gold, and then takes only what you have already said you want — what your inscriptions and pickup options mark as yours — leaving the rest where it lies. Where 
+T	p1	Takes the gold, then only what you’ve already said you want (what your inscriptions and pickup options mark as yours), and leaves the rest where it lies. Where 
 T	p1 code	g
-T	p1	 offers you everything on the floor, this offers you nothing: it is the same pass the game makes for you when you walk onto a pile, run by hand. It costs a tenth of a turn an item, up to a full turn.
+T	p1	 offers you everything on the floor, this doesn’t offer you anything. It’s the same pass the game makes for you when you walk onto a pile, run by hand. It costs a tenth of a turn an item, up to a full turn.
 T	p1	\n
 T	dt0 strong	Rest (
 T	dt0 strong code	R
@@ -182,7 +180,7 @@ T	p1	 your mana are restored,
 T	p1 code	*
 T	p1	 until both are, or 
 T	p1 code	&
-T	p1	 – what the prompt offers – to rest as needed: until both are restored, every ailment has passed, and a Word of Recall or Deep Descent you have read has taken you. This command may take an argument (used for the number of turns to rest), and takes some energy.
+T	p1	 (what the prompt offers) to rest as needed: until both are restored, every ailment has passed, and a Word of Recall or Deep Descent you have read has taken you. This command may take an argument (used for the number of turns to rest), and takes some energy.
 T	p1	\n
 M	alter-commands
 T	h2	Alter Commands
@@ -238,7 +236,7 @@ T	dt0 strong	Gain new spells (
 T	dt0 strong code	G
 T	dt0 strong	)
 T	dt0	\n
-T	p1	Use this command to actually learn new spells. When you are able to learn new spells, the word “Study” will appear on the status line at the bottom of the screen. If you have a book in your possession, containing spells which you may learn, then you may choose to study that book. Most classes may actually choose which spell to study, but priests, paladins and monks are taught one at random from the book. Every realm has four books of eight spells; the first two are sold in town and the last two are normally found only in the dungeon, and a rogue or a ranger cannot learn every spell in a realm it borrows (see 
+T	p1	Use this command to actually learn new spells. When you are able to learn new spells, the word “Study” will appear on the status line at the bottom of the screen. If you have a book in your possession, containing spells which you may learn, then you may choose to study that book. Most classes may actually choose which spell to study, but priests, paladins and monks are taught one at random from the book. Every realm has four books of eight spells. The first two are sold in town and the last two are normally found only in the dungeon, and a rogue or a ranger can’t learn every spell in a realm it borrows (see 
 L	p1 link	11	realms#books-short	Books that come up short
 T	p1	). This command takes some energy.
 T	p1	\n
@@ -254,19 +252,19 @@ T	dt0 strong	) or Use a power (
 T	dt0 strong code	&
 T	dt0 strong	)
 T	dt0	\n
-T	p1	Some characters can do things no spellbook teaches. Most of the races — twenty-two of the twenty-eight — carry something they can do by blood, an Amberite walks into shadow, a Draconian breathes, a Vampire drinks — and the Mindcrafter’s entire craft is a list of twelve psionic powers rather than a realm of magic. This command lists everything your character can call on from either source, what each costs, and how likely each is to fail. See 
+T	p1	Some characters can do things no spellbook teaches. Most of the races (twenty-two of the twenty-eight) have something they can do by blood: an Amberite walks into shadow, a Draconian breathes, a Vampire drinks. A Mindcrafter has no realm of magic at all, and its whole craft is a list of twelve psionic powers. This command lists everything your character can call on from either source, what each one costs, and how likely each is to fail. See 
 L	p1 link	12	birth#racial-powers	Racial powers
 T	p1	 and 
 L	p1 link	13	birth#psionics	Psionics
 T	p1	.
 T	p1	\n
-T	p1	A power draws on spell points like a spell. A character with none left — and a warrior never has any, having no spells at all — pays in hit points instead, at the same price, and the menu says which before you commit. The price itself is not the figure in the menu: it is rolled each time, somewhere between half that figure and all of it, so a power is never quite something you can budget for. The listed failure chance falls as you gain levels past the level the power arrives at, and falls further as you raise the stat it leans on; being stunned raises it, and so does being afraid. Failing still costs the price; being told you are too junior, too confused, or too spent costs nothing.
+T	p1	A power draws on spell points like a spell. A character with none left pays in hit points instead, at the same price (a warrior never has any, having no spells at all), and the menu says which before you commit. The price isn’t the figure in the menu. It’s rolled each time, somewhere between half that figure and all of it, so you can never quite budget for a power. The listed failure chance falls as you gain levels past the level the power arrives at, and falls further as you raise the stat it leans on. Being stunned raises it, and so does being afraid. A failed power still costs the price, but being told you’re too junior, too confused or too spent costs nothing.
 T	p1	\n
 T	p1	A 
 T	p1 em	racial
-T	p1	 power that fails simply fails. A Mindcrafter’s psionics are the exception: half as often as one of those fails, it goes off inside your head instead — see 
+T	p1	 power that fails just fails. A Mindcrafter’s psionics are the exception: half as often as one of those fails, it goes off inside your head instead (see 
 L	p1 link	14	birth#psionics	Psionics
-T	p1	. This command takes some energy.
+T	p1	). This command takes some energy.
 T	p1	\n
 M	object-manipulation-commands
 T	h2	Object Manipulation Commands
@@ -362,7 +360,7 @@ T	dt0 strong	) or Use an item (
 T	dt0 strong code	X
 T	dt0 strong	)
 T	dt0	\n
-T	p1	One command for all of the above. Rather than deciding whether the thing in your hand wants quaffing, reading, aiming, using, zapping or activating, pick it from a single list of everything you are carrying that can be used at all, and the game does the right verb for it. The effect, the failure chance and the energy are whatever the specific command would have been; nothing is cheaper or dearer for going through here.
+T	p1	One command for all of the above. Pick the item from a single list of everything you’re carrying that can be used at all, and the game works out whether it wants quaffing, reading, aiming, using, zapping or activating. The effect, the failure chance and the energy are whatever the specific command would have been, so nothing is cheaper or dearer for going through here.
 T	p1	\n
 M	throwing-and-missile-weapons
 T	h2	Throwing and Missile Weapons
@@ -401,9 +399,9 @@ T	dt0 strong	Target closest monster (
 T	dt0 strong code	'
 T	dt0 strong	 in both keysets)
 T	dt0	\n
-T	p1	Targets the nearest thing you can see that is worth shooting at, without opening the targeting interface at all. The cursor jumps to it for a moment so you can see what you got. If there is nothing in sight it does nothing and leaves the old target alone. It is the quick version of 
+T	p1	Targets the nearest thing you can see that’s worth shooting at, without opening the targeting interface at all. The cursor jumps to it for a moment so you can see what you got. If there’s nothing in sight it does nothing and leaves the old target alone. It’s the quick version of 
 T	p1 code	*
-T	p1	 and costs no energy.
+T	p1	, and costs no energy.
 T	p1	\n
 M	looking-commands
 T	h2	Looking Commands
@@ -460,7 +458,7 @@ T	dt0 strong	)
 T	dt0	\n
 T	p1	Puts your own square back in the middle of the view. Useful after 
 T	p1 code	L
-T	p1	 has left the map looking somewhere else, and on a screen wide enough that the view does not scroll until you reach its edge. It costs no energy and changes nothing but what you are looking at.
+T	p1	 has left the map looking somewhere else, and on a screen wide enough that the view doesn’t scroll until you reach its edge. It costs no energy and changes nothing but what you’re looking at.
 T	p1	\n
 M	message-commands
 T	h2	Message Commands
@@ -479,7 +477,7 @@ T	p1	Reprints the most recent message on the top line, marked with
 T	p1 code	>
 T	p1	, without taking over the screen the way 
 T	p1 code	^p
-T	p1	 does. It is for the one line that got overwritten before you had finished reading it. It shows the last message only — pressing it again shows the same one.
+T	p1	 does. Use it for the one line that got overwritten before you’d finished reading it. It only shows the last message, and pressing it again shows the same one.
 T	p1	\n
 T	dt0 strong	Take notes (
 T	dt0 strong code	:
@@ -494,11 +492,11 @@ T	dt0 strong	View abilities (
 T	dt0 strong code	S
 T	dt0 strong	 in both keysets)
 T	dt0	\n
-T	p1	Lists what your class and your race give you that is not a spell, a power or a number on the character sheet — the standing properties, class first and race second, each with a description you can read. It is where you find out what 
+T	p1	Lists what your class and your race give you that isn’t a spell, a power or a number on the character sheet: the standing properties, class first and race second, each with a description you can read. This is where you find out what 
 T	p1 em	holds its life
 T	p1	 or 
 T	p1 em	does not bleed
-T	p1	 actually means for the character you are playing, rather than inferring it from a line in this manual. It costs no energy.
+T	p1	 means for the character you’re playing, without having to work it out from a line in this manual. It costs no energy.
 T	p1	\n
 T	dt0 strong	Character Description (
 T	dt0 strong code	C
@@ -566,7 +564,7 @@ T	dt0 strong	) or Things you have taken on (
 T	dt0 strong code	%
 T	dt0 strong	)
 T	dt0	\n
-T	p1	Lists the work you have accepted and not yet handed back: what each job is, which town it came from, and how far along you are. The two quests the game ends on — Oberon and the Serpent of Chaos — are not listed here, because nobody gave them to you and there is nothing to report back. You can give up a job from this screen; walking back into the building that hired you also works. See 
+T	p1	Lists the work you’ve accepted and not yet handed back: what each job is, which town it came from, and how far along you are. The two quests the game ends on, Oberon and the Serpent of Chaos, aren’t listed here, because nobody gave them to you and there’s nothing to report back. You can give up a job from this screen, or by walking back into the building that hired you. See 
 L	p1 link	19	quests	Quests
 T	p1	.
 T	p1	\n
@@ -586,7 +584,7 @@ T	p1	Opens the pet menu. Five orders set how close your animals stay, from
 T	p1 em	stay close
 T	p1	 to 
 T	p1 em	stay away
-T	p1	; two switches say whether they may open doors and whether they may pick things up; and two more list what is following you and dismiss it. The orders are a policy rather than instructions to an individual — every pet follows the same one, and it keeps across a save. See 
+T	p1	; two switches say whether they may open doors and whether they may pick things up; and two more list what’s following you and dismiss it. An order covers all your pets at once: every pet follows the same one, and it keeps across a save. See 
 L	p1 link	20	pets	Pets and Allies
 T	p1	.
 T	p1	\n
@@ -628,7 +626,7 @@ T	p1	Allow you to interact with options. Note that using the “cheat” options
 T	p1 code	=
 T	p1	 then 
 T	p1 code	x
-T	p1	) marks the character as unsuitable for the high score list, permanently — see 
+T	p1	) marks the character as unsuitable for the high score list, permanently. See 
 L	p1 link	21	option#cheating-options	cheating options
 T	p1	, and 
 L	p1 link	22	option#debug-commands	debug commands
@@ -656,7 +654,7 @@ T	dt0 strong	Load a single pref line (
 T	dt0 strong code	"
 T	dt0 strong	 in both keysets)
 T	dt0	\n
-T	p1	Prompts for one line of user-pref syntax and runs it immediately, exactly as though it had been read out of a pref file. It is for trying a single setting without editing a file and reloading it; nothing is saved, so a line entered this way lasts until you quit. 
+T	p1	Prompts for one line of user-pref syntax and runs it immediately, exactly as though it had been read out of a pref file. Use it to try a single setting without editing a file and reloading it. Nothing is saved, so a line entered this way lasts until you quit. 
 T	p1 code	=
 T	p1	 then 
 T	p1 code	p
@@ -675,7 +673,7 @@ T	p1	In the Tcl/Tk front end,
 T	p1 code	ZangbandTK.app
 T	p1	, opens the Help window: this manual, with its contents beside it, links between its pages and a search of all of them. Help ▸ Help opens the same window, and Help ▸ Open in Browser shows the page being read on the website.
 T	p1	\n
-T	p1	Elsewhere it brings up the ZangbandTK on-line help system: the command list, the map symbols, the towns and their services, the dungeons of the world, and the cheat and debug commands. It is a short reference rather than a manual — this documentation is the long form, and the help system points at it.
+T	p1	Elsewhere it brings up the ZangbandTK on-line help system: the command list, the map symbols, the towns and their services, the dungeons of the world, and the cheat and debug commands. It’s a short reference. This documentation is the long form, and the help system points at it.
 T	p1	\n
 T	p1	The help files are just text files in a particular format, in 
 T	p1 code	lib/help/
@@ -710,17 +708,17 @@ T	dt0 strong	Repeat previous command (
 T	dt0 strong code	n
 T	dt0 strong	) or Repeat previous command (‘^v’)
 T	dt0	\n
-T	p1	Does the last thing you did again, with the same item, direction and target. It is the one to reach for when you are drinking a stack of potions, firing the same arrows at the same monster, or tunnelling through a wall — and it costs whatever the command it repeats costs.
+T	p1	Does the last thing you did again, with the same item, direction and target. It’s the one to reach for when you’re drinking a stack of potions, firing the same arrows at the same monster, or tunnelling through a wall. It costs whatever the command it repeats costs.
 T	p1	\n
 T	dt0 strong	Toggle wizard mode (‘^w’ in both keysets)
 T	dt0	\n
-T	p1	Turns on the debugging mode, which is not a way to play the game. It warns you the first time and asks you to confirm, and once you agree the character is marked as unscored for good — the mark is in the savefile and switching the mode back off does not remove it. See 
+T	p1	Turns on the debugging mode, which isn’t a way to play the game. It warns you the first time and asks you to confirm, and once you agree, the character is marked as unscored for good. The mark is in the savefile, and switching the mode back off doesn’t remove it. See 
 L	p1 link	26	option#debug-commands	debug commands
 T	p1	 for what it opens up.
 T	p1	\n
 T	dt0 strong	Borg commands (‘^z’ in both keysets)
 T	dt0	\n
-T	p1	Hands the character to the automatic player, if the game was built with it. Like wizard mode it warns you once, asks you to confirm, and permanently marks the character as unscored; unlike wizard mode its own warning is that the game may crash and the savefile may not survive. It exists to play the game unattended for testing, not to play it for you. If the build does not include the borg, the key does nothing.
+T	p1	Hands the character to the automatic player, if the game was built with it. Like wizard mode it warns you once, asks you to confirm, and permanently marks the character as unscored. Its warning is a different one, though: the game may crash and the savefile may not survive. The borg is there to play the game unattended for testing, not to play it for you. If the build doesn’t include the borg, the key does nothing.
 T	p1	\n
 T	dt0 strong	Toggle Choice Window (‘^e’)
 T	dt0	\n

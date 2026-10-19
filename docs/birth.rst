@@ -136,11 +136,12 @@ calculated right back to first level, just as with constitution and hit points.
 Lastly, each character has a base speed. Speed determines the amount of
 "energy" your character acquires in the game, and therefore how often you
 can take actions which use up energy (like moving or attacking). All
-beginning characters move at normal speed and the only way to increase
-speed is by magical means and equipment bonuses. Characters who are
-carrying too much weight will move more slowly. Extra speed is one of the
-most important boons in the game and therefore one of the rarest and most
-sought after.
+beginning characters move at normal speed. A Sprite, a Klackon and a lightly
+armoured Monk gain a point at level 10 and another every tenth level after;
+otherwise the only way to increase speed is by magical means and equipment
+bonuses. Characters who are carrying too much weight will move more slowly.
+Extra speed is one of the most important boons in the game and therefore one
+of the rarest and most sought after.
 
 Races
 =====
@@ -229,7 +230,7 @@ Dwarf
   In other words, dwarves have a miserable stealth.
 
   From level 5 a dwarf can **examine its surroundings**, finding the traps,
-  doors and stairs nearby. It's the earliest way any character has of seeing
+  doors and stairs nearby. It's the earliest way any race has of seeing
   a floor before walking it.
 
 .. _Half-Orc:
@@ -251,7 +252,8 @@ Half-Orc
 
 Half-Troll
   Half-Trolls are incredibly strong, and have more hit points than any
-  other character race. They are also very stupid and slow. They will make
+  other character race but the Half-Titan and the Zombie. They are also very
+  stupid and slow. They will make
   great warriors and iffy priests. They are bad at searching, disarming,
   perception, and stealth. They are so ugly that a Half-Orc grimaces in
   their presence. Half-trolls always have their strength sustained, and
@@ -464,7 +466,9 @@ Golem
   Its real advantage is that it *is* armour. A Golem has twenty points of armour
   class wearing nothing at all, and gains another point every fifth level, so a
   Golem at 50 is thirty points ahead of any other race before it puts on a
-  single item. Nothing else in the game does this, and it's most of the reason
+  single item. No other race has armour of its own. A Monk earns armour class
+  for the slots it leaves empty and loses it when it fills them, where a Golem
+  keeps all of its own under whatever it wears, and that's most of the reason
   to be one.
 
   Food is nearly useless to it (a twentieth of the good it does anyone else),
@@ -495,11 +499,11 @@ Sprite
   Until 3.124.20 it was the line-of-sight form from level 12, which gave a
   Sprite the whole room thirteen levels early.
 
-  And it's the only race that gets faster as it grows: a point of speed at
-  level 10 and another every tenth level after, so a Sprite at 50 moves five
-  points quicker than anything else in the game before it wears a single item.
-  Nothing else does this, and at 175 experience a level it is most of what
-  you're paying for.
+  And it gets faster as it grows: a point of speed at level 10 and another
+  every tenth level after, so a Sprite at 50 moves five points quicker than a
+  Human before it wears a single item. The Klackon is the only other race that
+  does this, and a Monk does it too while its armour is light. At 175
+  experience a level it is most of what you're paying for.
 
 .. _Half-Titan:
 
@@ -552,7 +556,8 @@ Skeleton
   combination of the four undead: it gets hungry like anyone else and food is
   no use to it. So it starts with two to five scrolls of Remove Hunger instead
   of rations, and will be buying more. From level 30 it can recover lost
-  experience, which no other race can do for itself.
+  experience. A Zombie can too, from the same level, and so can an Amberite
+  walking the Pattern from 40.
 
   And it does not bleed. Nothing that cuts anyone else (a shard breath, an ice
   storm, a blade, the strain of forcing a spell you cannot afford) leaves a
@@ -566,12 +571,12 @@ Zombie
   penalty to both intelligence and wisdom (the heaviest in the game) and
   thirteen hit dice, the second most. Sees the invisible, holds its life,
   immune to poison, resists nether, and fire is its undoing. Cold from level 5,
-  the earliest of the four.
+  five levels before a Skeleton.
 
   It cannot eat but digests slowly, so the hunger scrolls it starts with go
   further than a Skeleton's. From level 30 it too can recover lost experience,
   and from level 12 it stops bleeding. Before that it's still fresh enough to
-  leak, which is the one way the four undead differ on this.
+  leak. A Ghoul bleeds like the living all its life.
 
 .. _Spectre:
 
@@ -607,7 +612,7 @@ Spectre
   Mountains are walls here, and they charge like walls. A range is many blocks
   across and a young Spectre has sixteen hit points, so you'll reach the far
   side empty. Going round is often the better idea. Going through is the thing
-  you can do that nothing else can, so pick your moment.
+  you can do that no other race can, so pick your moment.
 
   And inside rock you see the eight squares around you and nothing else, which
   is its own kind of dangerous: you can be most of the way through a mountain
@@ -872,7 +877,8 @@ Mindcrafter
   A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
   psionic powers that arrive as it grows. It doesn't study them; it just
   becomes able to do them. Wisdom is what makes them work. It is physically
-  frail, with the second worst hit dice in the game, and its attacks go for
+  frail, with hit dice no better than a Priest's, a Druid's or a
+  Necromancer's, and only a Mage and a High-Mage have worse. Its attacks go for
   the mind, which makes it formidable against most things and useless
   against a golem.
   See :ref:`Psionics <psionics>` for the list.
@@ -893,8 +899,9 @@ Chaos-Warrior
 .. _Warrior-Mage:
 
 Warrior-Mage
-  A fighter who casts, and the only class in the game whose first realm is
-  decided for it: Arcane, always, plus any second realm you like. So it gets
+  A fighter who casts, and one of two classes whose first realm is decided for
+  it while the second is left to you: Arcane, always, plus any second realm
+  you like. The Ranger is the other, with Nature. So the Warrior-Mage gets
   the generalist realm, which can be bought outright in town, and one
   specialism on top of it. It fights and shoots respectably and levels
   slowly, because it's paying for both halves.
@@ -905,7 +912,8 @@ High-Mage
   The specialist. It picks one realm out of all seven and gets no second
   choice at all, and in exchange Zangband's table gives it the best figures of
   any caster: it reaches a realm's deepest spells earlier and for less mana than
-  anyone else. It also has the worst hit dice in the game and cannot fight.
+  anyone else. It also shares the worst hit dice in the game with the Mage, and
+  cannot fight.
 
   A High-Mage of Sorcery can do everything except kill things. A High-Mage of
   Chaos can do very little except kill things.

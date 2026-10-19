@@ -16,9 +16,9 @@ page lists what's in the game now, and what isn't.
 
       macOS, Windows, Linux, DOS, Nintendo DS, 3DS and the browser.
 
-      Developed and played on macOS; the rest are built and smoke-tested by CI
-      but not played through. See :doc:`download`, or :doc:`play` to start
-      without installing anything.
+      Developed and played on macOS. CI builds the rest and smoke-tests all
+      but the Nintendo ones, but none of them is played through. See
+      :doc:`download`, or :doc:`play` to start without installing anything.
 
    .. grid-item-card:: Playable
 
@@ -285,7 +285,7 @@ Pets and allies
   Monster, a Mindcrafter's *domination* (a mind attack until level 30, and
   wholesale from 30), a Chaos Lord handing you a servant, a magical figurine
   thrown to let out the monster it holds, or anything your own pets summon.
-  Trump is the realm of pets, and twelve of its spells call something that
+  Trump is the realm of pets, and fifteen of its spells call something that
   serves you. That's all of Zangband's routes; see :doc:`pets`.
 - Walking into one changes places with it, and hurting one turns it against
   you, instead of the game asking you to confirm.
@@ -383,11 +383,12 @@ The commonest reason, and the least interesting: the mechanism exists in
 Zangband and 4.2 has no vocabulary for it.
 
 - Chaos lost three damage types. Zangband's ``hurt_types`` has four
-  projections 4.2 has no counterpart for. Disintegration damaged *and* removed
-  walls, which 4.2 splits into two effects; the other two were mapped onto the
-  nearest thing that exists. Five spell radii that grew with the caster's level
-  are frozen, because 4.2's radius is a constant in the data. Chaos still
-  arrived whole, with all thirty-two spells.
+  projections 4.2 has no counterpart for, and Chaos's own spells cast three of
+  them. Disintegration damaged *and* removed walls, which 4.2 splits into two
+  effects; the other two were mapped onto the nearest thing that exists. Five
+  spell radii that grew with the caster's level are frozen, because 4.2's
+  radius is a constant in the data. Chaos still arrived whole, with all
+  thirty-two spells.
 - Blessing a weapon is an effect of its own. 4.2 has a ``BLESSED`` object flag,
   which a Priest fights better with, but no spell that conferred it, so Life's
   *Bless Weapon* waited until there was one. Swapping in a random brand would
@@ -505,8 +506,7 @@ anywhere, and a judgement had to be made.
 Not yet
 =======
 
-Each of these already has a manual chapter scaffolded, to be filled in when the
-milestone lands.
+Only the Tk front end is left, and its part of the manual is already written.
 
 .. list-table::
    :header-rows: 1
@@ -518,18 +518,21 @@ milestone lands.
      - Chapter
    * - The Tk front end
      - T9
-     - Being finished. Ships from the next release, for Apple Silicon.
+     - Being finished. Ships from the next release, on Windows and Linux as
+       well as Apple Silicon Macs.
      - :doc:`customize`
 
 The world is finished. The towns, services, roads, dungeons and quests are all
-in, which was Phase 2's world work, and the character is most of the way there.
-Twenty-eight races are in, with racial powers for twenty-two of them, and so is
-every class Zangband has: the Monk, the Mindcrafter, the Chaos-Warrior, the
-Warrior-Mage and the High-Mage, which closes that requirement. Virtues are in
-too, eight drawn from eighteen at birth, moved by how you play, and read by the
-Lords of Chaos and by the dream at the inn. So are the mutations, all
+in, which was Phase 2's world work. The character is finished too. Twenty-eight
+races are in, with racial powers for twenty-two of them, and so is every class
+Zangband has: the Monk, the Mindcrafter, the Chaos-Warrior, the Warrior-Mage
+and the High-Mage, which closes that requirement. Virtues are in too, eight
+drawn from eighteen at birth, moved by how you play, and read by the Lords of
+Chaos and by the dream at the inn. So are the mutations, all
 ninety-six of them, which completes M8.
 
 The realms are in as well: all seven, chosen at birth, each with Zangband's own
 thirty-two spells in four books. Trump came last, with pets, because fifteen of
-its spells turn on a creature being *yours*. M9 is closed.
+its spells turn on a creature being *yours*. M9 is closed. Pets and
+nightmare mode followed, the last on 4 October 2026, so the game itself is
+complete.

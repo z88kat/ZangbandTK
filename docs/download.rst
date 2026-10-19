@@ -71,18 +71,19 @@ for their architecture. And up to 3.128.0 every file was named
 application now called ``Zangband.app``. The name ZangbandTK went to the Tk
 front end, the one with Tk in it (see `Two Mac applications`_).
 
-Every release so far is marked as a pre-release. CI builds, signs and verifies
-each one, but no version has been played through before it was tagged. There
-are known bugs and one milestone's worth of unfinished features, and the badge
-on the Releases page tells you so before you download.
+CI builds, signs and verifies each release, but no version has been played
+through before it was tagged, and there are known bugs. The releases up to
+3.94.3 carry a pre-release badge to warn you. The newest, 3.121.0 of 15
+September, came out before nightmare mode was finished, and it has no Tk front
+end. Both arrive with the next release.
 
-CI builds, packages and smoke-tests the Windows, Linux, Nintendo and DOS builds,
-but the game is developed and played on macOS here, and none of the others is
-played through before a release is tagged. Read `Other platforms`_ before you
-rely on one.
+CI builds and packages the Windows, Linux, Nintendo and DOS builds, and
+smoke-tests all of them except the Nintendo ones. The game is developed and
+played on macOS here, though, and none of the others is played through before a
+release is tagged. Read `Other platforms`_ before you rely on one.
 
-The rest of this page is macOS. Mount the image and drag ``Zangband.app``, or
-``ZangbandTK.app``, wherever you keep applications.
+From here to `Before you start`_, this page is about macOS. Mount the image and
+drag ``Zangband.app``, or ``ZangbandTK.app``, wherever you keep applications.
 
 Which Mac build do I want?
 --------------------------
@@ -356,8 +357,8 @@ The tests
    cmake --build build --parallel
    cd build && make alltests
 
-There are 941 unit tests and 5 integration tests. They should all pass, and if
-one doesn't, that's a bug, so please report it.
+There are over 1600 unit tests and 6 integration tests. They should all pass,
+and if one doesn't, that's a bug, so please report it.
 
 
 Before you start
@@ -489,8 +490,10 @@ depends on the locale your session picks up at both ends.
 Nintendo DS and 3DS
 ===================
 
-Yes, really. The DS build is inherited from Angband, and it works well enough to
-ship, but it's the least tested build here by a wide margin.
+Yes, really. The DS build is inherited from Angband, and it's the least tested
+build here by a wide margin. Under the melonDS emulator it boots, reads its data
+off the card, makes a character and generates a world. On DS hardware it has so
+far stopped at "Unable to access filesystem", the DLDI problem described below.
 
 The game reads its data from the card, not from inside the ROM, so you need both
 halves of the zip. Copy the ``zangbandtk`` folder to the *root* of the SD card,
@@ -528,10 +531,13 @@ this port, not of the game.
 .. note::
 
    The DS has 4 MB of memory, and the game asks more of it than Angband does:
-   1013 monsters against Angband's 624 or so. The wilderness isn't the problem,
-   since the whole world costs about 98 KB (it's generated from a seed as you
-   walk, not stored). The bestiary is. If memory runs out, it'll happen while
-   loading, before character creation.
+   1013 monsters against Angband's 624 or so. The world map isn't what fills
+   it, since the whole map costs about 98 KB (it's generated from a seed as you
+   walk, not stored). The game's data is, the bestiary most of all, and what's
+   left isn't enough for the full-size surface around you, which the game holds
+   twice (as it is and as you know it): about 1.8 MB for the pair, in a heap of
+   roughly 3.2 MB. That's why the full-size world gets through character
+   creation and then runs out.
 
    If you have a RAM expansion pak in Slot-2, this port knows how to use it, and
    that's the first thing to try.
@@ -545,7 +551,8 @@ DOS
 ===
 
 This is a 32-bit protected-mode build, cross-compiled with DJGPP. It wants a 386
-or better, and it will run under DOSBox, DOSBox-X, or on the real thing.
+or better. It's tested under DOSBox-X, and should run under DOSBox or on real
+hardware too, though nobody has tried either yet.
 
 .. important::
 
@@ -574,10 +581,12 @@ long filename support expect those to arrive truncated.
 Text is CP437, converted when the archive is built, so the box-drawing and the
 accented letters are the ones the code page has.
 
-CI builds this on every push and then plays it: a character is created under
-DOSBox-X and saved, which proves the build starts, finds its data files and can
-write to its save directory. Nobody has played it through, and it hasn't been
-tried on real hardware. If you do either, a report would be very welcome.
+CI builds this on every push and then runs it under DOSBox-X: a script makes a
+character and quits, which proves the build starts, finds its data files under
+their short names and gets through character creation. It doesn't save, so
+writing to the save directory isn't tested. Nobody has played it through, and
+it hasn't been tried on real hardware. If you do either, a report would be very
+welcome.
 
 
 Other platforms
@@ -600,9 +609,9 @@ ZangbandTK's Windows and Linux downloads are built and checked the same way;
 `ZangbandTK on Windows and Linux`_ says what they lack.
 
 Nobody here plays the game on any of them, though, so they're all untested in
-play. CI proves they build, start and can read their own data, which is not the
-same as playing one through. Reports from any of them are especially welcome
-for that reason.
+play. CI proves they build, and for all but the DS and 3DS that they start and
+can read their own data, which is not the same as playing one through. Reports
+from any of them are especially welcome for that reason.
 
 
 Licence

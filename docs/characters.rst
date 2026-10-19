@@ -32,7 +32,8 @@ those are the ones that didn't make it.
        its scales: fire at 5, cold at 10, acid at 15, lightning at 20 and
        poison at 35.
    * - **Vampire**
-     - Drinks blood to heal from level 5, the earliest power in the game.
+     - Drinks blood to heal from level 5, earlier than any other race can heal
+       itself.
        Immune to darkness and burnt by the sun: anywhere on the surface in
        daylight you take a point a turn and cannot heal. So it carries scrolls
        of Darkness instead of torches, and it is the only character who can put
@@ -52,7 +53,7 @@ those are the ones that didn't make it.
        into a berserk frenzy.
    * - **Klackon**
      - An insect that works: acid-proof, confusion-proof, spits acid, and gets
-       faster as it grows.
+       faster as it grows, the same as a Sprite.
    * - **Nibelung**
      - The only race that resists disenchantment from birth.
    * - **Imp**
@@ -70,9 +71,9 @@ those are the ones that didn't make it.
    * - **Ghoul**
      - Its bare hands paralyse what they hit.
    * - **Sprite**
-     - Flies, and the only race that gets faster as it grows: a point of speed
-       at level 10 and another every tenth after. Fragile, and puts things to
-       sleep.
+     - Flies, and gets faster as it grows: a point of speed at level 10 and
+       another every tenth after. The Klackon is the only other race that does.
+       Fragile, and puts things to sleep.
    * - **Half-Titan**
      - The most expensive thing you can be, at 255 per cent.
    * - **Yeek**
@@ -197,9 +198,9 @@ the level destroyed around you. The class fights nearly as well as a Warrior,
 but the relationship with its Lord is what the class is about.
 
 It also casts. A Chaos-Warrior learns Chaos magic from level 2, all thirty-two
-spells, and it is the only class in the game with exactly one realm and no choice
-about it. Zangband is blunt on the point: they are "not interested in any other form
-of magic". Until the Chaos realm existed there was nothing to give them, and the
+spells, and like a Druid, a Necromancer or a Blackguard it has exactly one realm
+and no choice about it. Zangband is blunt on the point: they are "not
+interested in any other form of magic". Until the Chaos realm existed there was nothing to give them, and the
 class shipped unable to hold spell points at all.
 
 Thirteen is an unlucky level. The odds of the cruel end of the repertoire are

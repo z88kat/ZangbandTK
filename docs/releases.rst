@@ -6,7 +6,8 @@ Release log
 
    **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
    and a source archive. The most recent is **3.121.0**, of 15 September, and all of them are on
-   the `Releases page`_. Every release so far is marked a pre-release.
+   the `Releases page`_. Those up to 3.94.3 are marked as pre-releases;
+   3.111.3 and 3.121.0 aren't.
 
    What follows is the development log, grouped by the milestones the work is
    organised into, newest first, with everything done since the last tag under

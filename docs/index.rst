@@ -22,10 +22,11 @@ Zangband's 2005 code wasn't worth keeping. What it rebuilds is the game's
    **Status: feature-complete.** Everything Zangband is known for is in: the
    wilderness, the towns and their services, thirteen dungeons, the bestiary,
    mutations, chaos patrons, seven realms of magic, pets and nightmare mode.
-   What's left is polish, and a second Mac front end modelled on the original
-   ZangbandTk. :doc:`features` lists what's in and what isn't, and every
-   release so far is still marked as a pre-release. Development happens on
-   `GitHub`_.
+   What's left is polish, and finishing the Tk front end, a second application
+   modelled on the original ZangbandTk, which the next release ships on Windows
+   and Linux as well as the Mac. :doc:`features` lists what's in and what
+   isn't, and no release has been played through before it was tagged.
+   Development happens on `GitHub`_.
 
 .. _GitHub: https://github.com/z88kat/ZangbandTK
 
@@ -94,10 +95,10 @@ forked from. Fights are over in fewer turns, whichever way they were going.
 :doc:`balance` has the full story.
 
 Then there's the world. Angband is a town and a staircase; here there's a
-wilderness 2064 grids square, generated from a seed and never stored, with the
-town standing in it and roads leading out. Deep water can be waded into and
-drowned in, the world ends in open sea, and what you drop in the country stays
-where you left it until somebody finds it. :doc:`wilderness` covers it.
+wilderness 2064 grids square, generated from a seed and never stored, with a
+dozen towns standing in it and roads between them. Deep water can be waded into
+and drowned in, the world ends in open sea, and what you drop in the country
+stays where you left it until somebody finds it. :doc:`wilderness` covers it.
 
 And the monsters aren't all Tolkien's. There are 387 imported from Zangband,
 including the princes of Amber and the Mythos deities, along with 51 artifacts

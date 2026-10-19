@@ -14,9 +14,9 @@ have open.
 What it costs to start
 ======================
 
-About 9 MB on the first visit, and it's cached after that. Roughly 4.6 MB is
-compiled code, 3.8 MB is game data (the monsters, objects, dungeon profiles,
-the help files and four tilesets) and the rest is a little glue. A progress bar
+About 9.5 MB on the first visit, and it's cached after that. Roughly 5 MB is
+compiled code, 4.2 MB is game data (the monsters, objects, dungeon profiles,
+the help files and five tilesets) and the rest is a little glue. A progress bar
 runs while it downloads.
 
 Savefiles
@@ -51,10 +51,11 @@ There's no fullscreen. The canvas already fills the window, and the browser
 reserves Escape for leaving fullscreen. This game needs that key far too often
 to lend it out.
 
-All four tilesets are included, though: the original 8×8, Adam Bolt's, Nomad's
-and David Gervais'. Between them they come to a little over two megabytes,
-which is small enough for a page load, so they're all here. The game lists only
-the tilesets it can find, so a build that leaves one out won't show it.
+All five tilesets are included, though: the original 8×8, Adam Bolt's, Nomad's,
+David Gervais' and Neon, with Neon's colour-blind version. Between them they
+come to about two megabytes, which is small enough for a page load, so they're
+all here. The game lists only the tilesets it can find, so a build that leaves
+one out won't show it.
 
 Everything else is as it is in the native builds: the same wilderness,
 bestiary, lethality and savefile format.

@@ -4,10 +4,13 @@ T	h1	The Realms of Magic
 T	h1	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	All seven realms are playable
-T	p0 note	 — Arcane, Life, Nature, Death, Sorcery, Chaos and Trump, two hundred and twenty-four workings in twenty-eight books, all of them Zangband’s. You choose your realms at birth and your character sheet records them, and that choice decides which books you can open at all.
+T	p0 note	All seven realms are playable: Arcane, Life, Nature, Death, Sorcery, Chaos and Trump. That’s two hundred and twenty-four workings in twenty-eight books, all of them Zangband’s. You choose your realms at birth, your character sheet records them, and that choice decides which books you can open at all.
 T	p0 note	\n
-T	p0 note	Sixteen individual spells across the seven are inert and say so in their own description, each for want of a mechanism this game does not have. They are named in the realm sections below.
+T	p0 note	Three spells across the seven are inert, and their own descriptions say so: 
+T	p0 note em	Detect Enchantment
+T	p0 note	, which Sorcery and Arcane both have, and Death’s 
+T	p0 note em	Raise the Dead
+T	p0 note	. Each needs something this game can’t do yet, and the realm sections below say what.
 T	p0 note	\n
 T	p0	Spellcasters in ZangbandTK choose realms of magic at birth, and that choice defines the character as much as the class does. Angband asks you what you are; Zangband asks you what you 
 T	p0 em	study
@@ -45,32 +48,26 @@ T	p0	 becomes
 T	p0 strong	Death
 T	p0	, and 
 T	p0 em	nature
-T	p0	 keeps its name. Their casting stat, verb and nouns are Angband’s and are unchanged — Zangband kept the same information in scattered per-class constants, and Angband’s way of holding it is better.
+T	p0	 keeps its name. Their casting stat, verb and nouns are still Angband’s. Zangband kept the same information in scattered per-class constants, and Angband’s way of holding it is better.
 T	p0	\n
 T	p0 warn strong	Warning
 T	p0 warn	\n
-T	p0 warn strong	Arcane is Zangband’s Arcane, and that is a change from Angband.
-T	p0 warn	 The two games disagreed about this realm more than any other: Zangband’s Arcane was deliberately the weak generalist, every book buyable in town and no high-level power at all, while Angband’s arcane realm is the Mage’s realm, with two books of attacks and a 
+T	p0 warn	Arcane is Zangband’s Arcane, which is a change from Angband. The two games disagreed about this realm more than any other. Zangband meant its Arcane to be the weak generalist, with every book buyable in town and no high-level power at all. Angband’s arcane realm is the Mage’s realm, with two books of attacks and a 
 T	p0 warn em	Wizard’s Tome of Power
-T	p0 warn	 found only in the dungeon. Having exactly seven realms means folding them together, and the fold went Zangband’s way (DEC-49, DEC-50).
+T	p0 warn	 found only in the dungeon. With exactly seven realms the two had to be folded together, and the fold went Zangband’s way (DEC-49, DEC-50).
 T	p0 warn	\n
-T	p0 warn	So 
-T	p0 warn strong	a Mage no longer learns its attacks from Arcane.
-T	p0 warn	 In thirty-two Arcane spells there is one ball, one bolt and one beam. That is not a mistake: in Zangband a Mage takes 
+T	p0 warn	So, unlike in Angband, a Mage doesn’t learn its attacks from Arcane. There’s one ball, one bolt and one beam in its thirty-two spells. In Zangband a Mage takes 
 T	p0 warn em	two
-T	p0 warn	 realms, and the second is where the damage comes from. Take Chaos alongside it, and the pair is the classic Zangband Mage.
+T	p0 warn	 realms, and the damage comes from the second. Take Chaos alongside Arcane and you have the classic Zangband Mage.
 T	p0 warn	\n
 M	choosing-them
 T	h2	Choosing them
 T	h2	\n
-T	p0	Realm choice is a birth step of its own, after race and class, because which realms you may study is a property of your 
-T	p0 strong	class
-T	p0	. That is what makes the combination mean something rather than merely being wide: a Paladin is offered Life or Death and nothing else, and a Mage is offered all seven, then the six it did not take.
+T	p0	Realm choice is a birth step of its own, after race and class, because your class decides which realms you may study. A Paladin is offered Life or Death and nothing else. A Mage is offered all seven, then the six it didn’t take.
 T	p0	\n
-T	p0	A realm already taken is not offered again. A Mage of Arcane and Arcane would study thirty-two spells where it should study sixty-four, which is not a choice anybody would make on purpose and is therefore not one you are given.
+T	p0	A realm you’ve already taken is not offered again. A Mage of Arcane and Arcane would get thirty-two spells where it should have sixty-four, and nobody would choose that, so you aren’t given the choice.
 T	p0	\n
-T	p0 strong	You begin holding the first book of every realm you study.
-T	p0	 A Mage and a Priest start with two, one for each slot; a Monk or a Chaos-Warrior with one; a Warrior or a Mindcrafter with none, having no realm to hold a book for. The book follows the realm you actually chose, so a Rogue who takes Death starts with a Necromantic Tome and not somebody else’s arcane primer. The second, third and fourth books of a realm are bought or found — the village bookseller exists for exactly that.
+T	p0	You start with the first book of every realm you study. A Mage or a Priest starts with two, one for each slot; a Monk or a Chaos-Warrior with one; a Warrior or a Mindcrafter with none, since they have no realm to hold a book for. The book matches the realm you chose, so a Rogue who takes Death starts with a Necromantic Tome and not somebody else’s arcane primer. The second, third and fourth books of a realm have to be bought or found, which is what the village bookseller is for.
 T	p0	\n
 T	th0	Class          First realm                      Second realm\n
 T	rule0	──────────────────────────────────────────────────────────────────────────────────────\n
@@ -87,23 +84,18 @@ T	tr0 odd	Chaos-Warrior  Chaos                            —\n
 T	tr0	Warrior-Mage   Arcane                           any of the other six\n
 T	tr0 odd	High-Mage      any of the seven                 —\n
 T	tbllast0	\n
-T	p0	That is twelve of the game’s fourteen classes. The other two never reach this step: a Warrior studies nothing, and a Mindcrafter’s psionics are a power list rather than a realm — nothing to choose, nothing to find, and nothing that can be taken away.
+T	p0	That’s twelve of the game’s fourteen classes. The other two never reach this step. A Warrior studies nothing, and a Mindcrafter’s psionics aren’t a realm: they’re a list of powers, with nothing to choose, nothing to find and nothing that can be taken away.
 T	p0	\n
-T	p0	Two of those rows are worth reading twice. 
-T	p0 strong	A Priest’s second realm cannot be Life or Death
-T	p0	 — the first slot offers the two priestly realms and the second offers the other five, so a Priest always ends up with one holy realm and one that is not. And 
-T	p0 strong	a Ranger’s first realm is Nature and there is no choice about it
-T	p0	; you are not asked, because a list of one is not a question.
+T	p0	A Priest’s second realm can’t be Life or Death. The first slot offers the two priestly realms and the second offers the other five, so a Priest always ends up with one holy realm and one that isn’t. A Ranger’s first realm is always Nature, and you aren’t asked, because a list of one isn’t a question.
 T	p0	\n
-T	p0 strong	No class studies the same realm twice.
-T	p0	 Whatever the entitlement table lists, a realm taken in the first slot is struck off the menu the second slot offers, so two slots always mean two realms. That matters for the Mage and the Warrior-Mage, both of which are entitled to realms that overlap between slots; the second question simply has one fewer row than the first.
+T	p0	No class studies the same realm twice. Whatever the entitlement table lists, a realm taken in the first slot is struck off the second slot’s menu, so two slots always mean two realms. This affects the Mage and the Warrior-Mage, which are both entitled to realms that overlap between slots: their second question has one fewer row than the first.
 T	p0	\n
-T	p0	These entitlements are Zangband’s own, taken from the same table Zangband keeps them in, and the game checks itself against that table rather than against anybody’s idea of what a class ought to study.
+T	p0	These entitlements are Zangband’s own, taken from the table Zangband keeps them in, and the game checks itself against that table.
 T	p0	\n
 M	life
 T	h2	Life
 T	h2	\n
-T	p0	The healing realm, and the one Zangband’s own spoiler calls “‘good’ magic”. It is built on cures, blessings and protection, and the handful of attacks in it are there for a single purpose: harming and banishing foul things. No other realm keeps a character alive as well, and no other realm is so uninterested in anything that is not evil.
+T	p0	Life is the healing realm, and the one Zangband’s own spoiler calls “‘good’ magic”. It is built on cures, blessings and protection, and its handful of attacks are there for one purpose: harming and banishing foul things. No other realm keeps a character alive as well, and no other realm cares so little about anything that isn’t evil.
 T	p0	\n
 T	p0	Four books: the 
 T	p0 strong	Book of Common Prayer
@@ -115,7 +107,7 @@ T	p0	 and
 T	p0 strong	Blessings of the Grail
 T	p0	 below.
 T	p0	\n
-T	p0	The cures run the whole length of the realm — 
+T	p0	The cures run the whole length of the realm: 
 T	p0 em	Cure Light Wounds
 T	p0	, 
 T	p0 em	Cure Medium Wounds
@@ -125,9 +117,9 @@ T	p0	, then
 T	p0 em	Healing
 T	p0	 at three hundred points and 
 T	p0 em	Healing True
-T	p0	 at two thousand — and 
+T	p0	 at two thousand. 
 T	p0 em	Holy Word
-T	p0	 heals a thousand while it dispels, which makes it the one prayer that answers both halves of a bad situation at once. The blessings accumulate: 
+T	p0	 heals a thousand while it dispels, so it’s the one prayer that deals with both halves of a bad situation at once. The blessings pile up: 
 T	p0 em	Bless
 T	p0	, then 
 T	p0 em	Prayer
@@ -139,9 +131,9 @@ T	p0	, and
 T	p0 em	Restoration
 T	p0	, which puts back every drained statistic and any lost experience together.
 T	p0	\n
-T	p0	The offence is pointed at evil and almost nowhere else. 
+T	p0	The attacks are aimed at evil and almost nothing else. 
 T	p0 em	Holy Orb
-T	p0	 is a ball of holy force that does double damage to evil creatures, and after it comes a run of dispels that need no target at all — 
+T	p0	 is a ball of holy force that does double damage to evil creatures. After it comes a run of dispels that need no target at all (
 T	p0 em	Exorcism
 T	p0	, 
 T	p0 em	Dispel Undead & Demons
@@ -149,23 +141,22 @@ T	p0	,
 T	p0 em	Dispel Evil
 T	p0	, 
 T	p0 em	Holy Word
-T	p0	 — along with 
+T	p0	), and 
 T	p0 em	Banish
-T	p0	, which teleports every evil creature in sight away rather than killing it. At the end of the fourth book are 
+T	p0	, which teleports every evil creature in sight away without killing it. At the end of the fourth book are 
 T	p0 em	Divine Intervention
 T	p0	, the longest chain of effects in the realm, and 
 T	p0 em	Holy Invulnerability
 T	p0	, which makes you very nearly untouchable for seven to fourteen turns.
 T	p0	\n
-T	p0 strong	Life is the Priest’s own realm, and the figures say so.
-T	p0	 A Priest reaches 
+T	p0	Life is the Priest’s own realm, and the numbers show it. A Priest reaches 
 T	p0 em	Holy Orb
-T	p0	 at level 10, where a Paladin waits until 18, a Monk 19 and a Mage 20; and 
+T	p0	 at level 10, where a Paladin waits until 18, a Monk 19 and a Mage 20, and 
 T	p0 em	Holy Invulnerability
-T	p0	 at 45, where everybody else needs 50. It is also the one realm a High-Mage is not first into — a Priest beats it to both of those, by nine levels and by four. These are Zangband’s own levels and mana costs, class by class, unchanged.
+T	p0	 at 45, where a High-Mage needs 49 and everybody else 50. It’s also the one realm a High-Mage is not first into: a Priest beats it to both of those spells, by nine levels and by four. These are Zangband’s own levels and mana costs, class by class, unchanged.
 T	p0	\n
 T	p0 em	Holy Orb
-T	p0	 goes further and pays the two priestly classes more damage for the same prayer: a Priest or a High-Mage adds three halves of its level to the 3d6, and everybody else adds five quarters. Zangband tested the caster’s class in the spell itself, and two spells elsewhere do the same thing for the two mage classes — Chaos’s 
+T	p0	 also does more damage for the two priestly classes: a Priest or a High-Mage adds three halves of its level to the 3d6, and everybody else adds five quarters. Zangband tested the caster’s class inside the spell itself, and two spells elsewhere do the same for the two mage classes: Chaos’s 
 T	p0 em	Mana Burst
 T	p0	 and Death’s 
 T	p0 em	Orb of Entropy
@@ -174,44 +165,40 @@ T	p0	\n
 T	p0 em	Day of the Dove
 T	p0	 turns every monster in line of sight to your side. It was inert until pets arrived, for the same reason Nature’s 
 T	p0 em	Animal Taming
-T	p0	 was: the whole content of the spell is that the creatures become 
+T	p0	 was: the whole spell is about the creatures becoming 
 T	p0 em	yours
-T	p0	, and until recently there was no side for them to be on (
+T	p0	, and before pets there was no side for them to be on (
 L	p0 link	1	pets	Pets and Allies
 T	p0	).
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Two of the thirty-two used to do nothing, and no longer do.
-T	p0 note	 
+T	p0 note	Two of the thirty-two used to do nothing, and now work. 
 T	p0 note em	Bless Weapon
-T	p0 note	 blesses a melee weapon, giving it the same blessed property a Priest already fights better with, and drives out any curse on it that is not permanent. A permanent curse drives the blessing off instead, and an artifact takes the blessing only one time in three, losing a point of enchantment when it refuses. 
+T	p0 note	 blesses a melee weapon, giving it the same blessed property a Priest already fights better with, and drives out any curse on it that isn’t permanent. A permanent curse drives the blessing off instead, and an artifact takes the blessing only one time in three, losing a point of enchantment when it refuses. 
 T	p0 note em	Holy Vision
-T	p0 note	 tells you everything about an object, which in this game means every rune on it, learned at once — as Sorcery’s 
+T	p0 note	 tells you everything about an object, which in this game means you learn every rune on it at once, as with Sorcery’s 
 T	p0 note em	Identify True
 T	p0 note	, Trump’s 
 T	p0 note em	Trump Lore
 T	p0 note	 and Nature’s 
 T	p0 note em	Stone Tell
-T	p0 note	 do. A rune is yours rather than the object’s, so what the prayer teaches you is known on everything else that carries it too.
+T	p0 note	. Rune knowledge is yours, so a rune the prayer teaches you is known on everything else that has it too.
 T	p0 note	\n
-T	p0 note strong	Three more do something measurably different.
-T	p0 note	 Nothing here dispels demons by name — 4.2 dispels undead, evil, or everything — so 
+T	p0 note	Three more work differently from Zangband’s. 4.2 can dispel undead, evil, or everything, but nothing here dispels demons by name, so 
 T	p0 note em	Exorcism
 T	p0 note	 and 
 T	p0 note em	Dispel Undead & Demons
-T	p0 note	 hit undead by name and demons by being evil, which catches every other evil creature in sight along with them: wider than Zangband’s, not narrower. 
+T	p0 note	 hit undead by name and demons for being evil. That catches every other evil creature in sight along with them, which makes them wider than Zangband’s. Zangband’s 
 T	p0 note em	Warding True
-T	p0 note	 laid a ring of glyphs around the caster and now places the single glyph beneath you, the same as the lesser prayer does. And 
+T	p0 note	 laid a ring of glyphs around the caster; here it places a single glyph beneath you, the same as the lesser prayer does. And 
 T	p0 note em	Divine Intervention
-T	p0 note	 does nine of the ten things Zangband’s did; the tenth is the angel it sent to fight for you, and this game has no angel among its summon types.
+T	p0 note	 does nine of the ten things Zangband’s did. The tenth was the angel it sent to fight for you, and this game has no angel among its summon types.
 T	p0 note	\n
 M	sorcery
 T	h2	Sorcery
 T	h2	\n
-T	p0	The meta-realm, and the first of the three new ones to arrive. Detection, identification, protection, escape, and every convenience a dungeon delver wants — and 
-T	p0 strong	not one direct attack spell in it
-T	p0	. That is Sorcery’s whole character: it makes everything else you do easier and kills nothing itself.
+T	p0	Sorcery is the meta-realm, and the first of the three new realms to arrive. It has detection, identification, protection, escape and every convenience a dungeon delver wants, and not one direct attack spell. It makes everything else you do easier and kills nothing itself.
 T	p0	\n
 T	p0	Four books: the 
 T	p0 strong	Beginner’s Handbook
@@ -224,67 +211,67 @@ T	p0 strong	Grimoire of Power
 T	p0	. The first two are sold in town; the last two are found below.
 T	p0	\n
 T	p0 em	Alchemy
-T	p0	 turns an object into gold, and its terms are worth knowing before you use it, because none of them is recoverable afterwards. You are paid 
-T	p0 strong	a third of what the object is really worth
-T	p0	, not a third of what a shop would offer, capped at thirty thousand gold. Artifacts refuse. A worthless object is destroyed and pays nothing. And the division happens 
-T	p0 strong	before
-T	p0	 the quantity multiplies, so a stack of ten two-gold items pays nothing at all — ten times a third of two, rounded down each time, is zero. The Midas touch mutation works the same way and on the same terms.
+T	p0	 turns an object into gold. Read its terms before you use it, because there’s no undoing it. You’re paid a third of the object’s full value, not a third of what a shop would offer, up to thirty thousand gold. Artifacts refuse. A worthless object is destroyed and pays nothing. And the division happens 
+T	p0 em	before
+T	p0	 the quantity multiplies, so a stack of ten two-gold items pays nothing at all: ten times a third of two, rounded down each time, is zero. The Midas touch mutation works the same way and on the same terms.
 T	p0	\n
-T	p0	Its best workings are the ones no other realm has. 
+T	p0	Each of its best workings has a twin in another realm. Trump has three of the five below, Arcane two, and Life a shorter copy of the last. 
 T	p0 em	Teleport Away
-T	p0	 fires a beam that removes monsters from your path rather than killing them. 
+T	p0	 fires a beam that moves monsters out of your path without killing them. 
 T	p0 em	Telekinesis
-T	p0	 pulls an object to your feet from anywhere you can reach — the strongest of the three versions in the game, lifting a pound and a half a level and needing no sight of what it takes, where the Chaos mutation lifts a pound a level and must see what it takes. 
+T	p0	 pulls an object to your feet from anywhere you can reach. It and Trump’s 
+T	p0 em	Trump Reach
+T	p0	 are the same spell, and stronger than the third version in the game: they lift a pound and a half a level and don’t need to see what they take, where the Chaos mutation lifts a pound a level and must see it. 
 T	p0 em	Recharging
-T	p0	 is four times the strength of Angband’s own spell of that name, which is a large part of why the realm is worth studying — Arcane’s 
+T	p0	 is four times the strength of Angband’s own spell of that name, and that’s a large part of why the realm is worth studying. Arcane’s 
 T	p0 em	Recharging
 T	p0	 is the same spell at the same strength, twenty-one levels later. 
 T	p0 em	Dimension Door
-T	p0	 lets you pick the square you arrive on rather than taking what the dungeon gives you. And 
+T	p0	 lets you pick the square you arrive on. And 
 T	p0 em	Globe of Invulnerability
 T	p0	 makes you very nearly untouchable for eight to sixteen turns.
 T	p0	\n
 T	p0 em	Charm Monster
-T	p0	 turns a single creature to your side and it stays turned. It is the single-target twin of Life’s 
+T	p0	 turns a single creature to your side for good. It’s the single-target twin of Life’s 
 T	p0 em	Day of the Dove
-T	p0	, and like that prayer it was a different and lesser spell until pets arrived — it took a monster over for a while and handed it back, because there was no side for it to change to (
+T	p0	, and like that prayer it was a different, lesser spell until pets arrived: it took a monster over for a while and handed it back, because there was no side for it to change to (
 L	p0 link	2	pets	Pets and Allies
 T	p0	).
 T	p0	\n
-T	p0 strong	A Rogue and a Ranger never learn Globe of Invulnerability.
-T	p0	 Their Grimoire of Power holds seven workings where everyone else’s holds eight; Zangband’s table marks the last one unreachable for both. See 
+T	p0	A Rogue and a Ranger never learn 
+T	p0 em	Globe of Invulnerability
+T	p0	. Their Grimoire of Power holds seven workings where everyone else’s holds eight, because Zangband’s table marks the last one unreachable for both. See 
 L	p0 link	3	#books-short	Books that come up short
 T	p0	.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	One of the thirty-two does nothing, and says so.
-T	p0 note	 
+T	p0 note	One of the thirty-two does nothing, and its description says so. 
 T	p0 note em	Detect Enchantment
-T	p0 note	 would sense which objects are magical before you know them, which Angband 4.2 took away on purpose when an object’s properties became runes, and it will not be brought back. It is in its book with its level and cost, described as beyond what the game can express, rather than quietly missing: a book with a hole in it and a note saying so is honest, and a spell absent without explanation is not.
+T	p0 note	 would sense which objects are magical before you know them. Angband 4.2 dropped that when an object’s properties became runes, and it will not be brought back. The spell is still in its book with its level and cost, described as beyond what the game can express, so the gap in the book is explained.
 T	p0 note	\n
-T	p0 note strong	Explosive Rune is a ward with a sting.
-T	p0 note	 It draws a rune under you that monsters cannot cross until they break it, as a glyph of warding is — but it breaks far more easily, so a deep monster is through it about every other try. If one breaks it while you stand on it, it bursts in a ball of mana around you, which is where the monster that broke it is standing. Broken anywhere else it is simply gone. Your own creatures leave your runes alone.
+T	p0 note em	Explosive Rune
+T	p0 note	 is a ward with a sting. It draws a rune under you that monsters can’t cross until they break it, like a glyph of warding, but it breaks far more easily: a deep monster gets through about every other try. If one breaks it while you’re standing on it, it bursts in a ball of mana around you, which is where the monster that broke it is standing. Broken anywhere else, it’s just gone. Your own creatures leave your runes alone.
 T	p0 note	\n
 T	p0 note em	Identify True
 T	p0 note	 and 
 T	p0 note em	Self Knowledge
-T	p0 note	 used to be beside it. 
+T	p0 note	 used to be inert too. 
 T	p0 note em	Identify True
 T	p0 note	 teaches you every rune on an object at once, where the first book’s 
 T	p0 note em	Identify
 T	p0 note	 teaches one. 
 T	p0 note em	Self Knowledge
-T	p0 note	 teaches you every rune on the equipment you are wearing, which is the part of the old spell the character sheet could not already do.
+T	p0 note	 teaches you every rune on the equipment you’re wearing, which is the part of the old spell the character sheet couldn’t already do.
 T	p0 note	\n
 M	trump
 T	h2	Trump
 T	h2	\n
-T	p0	The last realm to arrive, and the one that had to wait for pets. Fifteen of its thirty-two spells summon a creature, and in Zangband every one of them turns on the same question: cast it well and the creature is 
+T	p0	Trump was the last realm to arrive. It had to wait for pets. Fifteen of its thirty-two spells summon a creature, and in Zangband every one of them turns on the same question: cast it well and the creature is 
 T	p0 em	yours
-T	p0	, cast it badly and an angry group of them appears. Until monsters could take sides, all fifteen would have come out as the bad half — 
+T	p0	, cast it badly and an angry group of them appears. Until monsters could take sides, all fifteen would have come out as the bad half. 
 T	p0 em	Trump Cyberdemon
-T	p0	 would have been sixty mana spent to put a hostile Cyberdemon next to you, which is not a weaker spell but the opposite spell. Pets closed that, and the realm went in whole.
+T	p0	 would have been ninety mana or more spent on putting a hostile Cyberdemon next to you. Pets fixed that, and the realm went in whole.
 T	p0	\n
 T	p0	Four books: 
 T	p0 strong	Conjurings & Tricks
@@ -298,21 +285,19 @@ T	p0	 below.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	A Trump summon that fails simply fails here.
-T	p0 note	 Zangband makes the hostile result the price of the realm — miss the roll and the thing you called arrives angry. In this game only Chaos and Death punish a miscast, so a failed summons costs you the mana and nothing else, and every creature you do call is yours. That is a real softening of the realm rather than a detail of the translation, and it is written down here because the spoiler opens on the risk it removes.
+T	p0 note	A Trump summon that fails just fails here. In Zangband the hostile result is the price of the realm: miss the roll and the thing you called arrives angry. In this game only Chaos and Death punish a miscast, so a failed summons costs you the mana and nothing else, and every creature you do call is yours. That makes the realm a good deal softer than Zangband’s, and Zangband’s spoiler opens on the very risk this removes.
 T	p0 note	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Three of the cards do not fetch what they are named after.
-T	p0 note	 
+T	p0 note	Three of the cards don’t fetch what they’re named after. 
 T	p0 note em	Trump Cyberdemon
-T	p0 note	 summons a greater demon — there are no cyberdemons in this game, and that is a deliberate refusal rather than an omission. 
+T	p0 note	 summons a greater demon: this game has no cyberdemons, by choice. 
 T	p0 note em	Phantasmal Servant
 T	p0 note	 summons an ordinary undead creature, and 
 T	p0 note em	Conjure Elemental
-T	p0 note	 summons a Maia, not an earth elemental. The other eight cards do what they say.
+T	p0 note	 summons a Maia, not an earth elemental. The other twelve cards do what they say.
 T	p0 note	\n
-T	p0	What it is for is reach: a deck that goes places and fetches people. 
+T	p0	Trump is for reach: a deck that goes places and fetches people. 
 T	p0 em	Teleport
 T	p0	, 
 T	p0 em	Teleport Away
@@ -322,11 +307,11 @@ T	p0	,
 T	p0 em	Word of Recall
 T	p0	 and 
 T	p0 em	Phase Door
-T	p0	 are all in it, which makes it the realm of getting out; and the summons run from 
+T	p0	 are all in it, so it’s the realm for getting out. The summons run from 
 T	p0 em	Trump Animal
 T	p0	 up through the hounds, spiders, reptiles, dragons and undead to 
 T	p0 em	Trump Cyberdemon
-T	p0	. 
+T	p0	, and 
 T	p0 em	Mass Trump
 T	p0	 calls several at once. 
 T	p0 em	Living Trump
@@ -334,65 +319,62 @@ T	p0	 makes the caster part of the deck, and
 T	p0 em	Trump Branding
 T	p0	 puts a brand on your weapon, though not one you choose.
 T	p0	\n
-T	p0	It fetches more than people. 
+T	p0	It fetches things as well as people. 
 T	p0 em	Trump Reach
-T	p0	 pulls a distant object to you — the same spell as Sorcery’s 
+T	p0	 pulls a distant object to you. It’s the same spell as Sorcery’s 
 T	p0 em	Telekinesis
 T	p0	, at the same pound and a half a level. 
 T	p0 em	Trump Divination
 T	p0	 detects everything nearby in one casting, and 
 T	p0 em	Banish
-T	p0	 teleports away every creature in sight rather than killing it.
+T	p0	 teleports away every creature in sight without killing it.
 T	p0	\n
-T	p0	And it does have two attacks, which is easy to miss in a realm this busy: 
+T	p0	It also has two attacks, which are easy to miss in a realm this busy: 
 T	p0 em	Mind Blast
-T	p0	 early, a bolt of psychic force that sometimes runs as a beam, and 
+T	p0	 early on, a bolt of psychic force that sometimes runs as a beam, and 
 T	p0 em	Death Dealing
 T	p0	 in the third book, which strikes every living creature in sight at once.
 T	p0	\n
-T	p0 strong	A Ranger loses more here than in any other realm
-T	p0	, and a Rogue is not far behind. Seven of Trump’s thirty-two are unreachable for a Ranger and four for a Rogue, all of them in the last two books — a Ranger’s Five Aces holds four cards of eight. See 
+T	p0	A Ranger loses as much here as in Death, and a Rogue isn’t far behind. Seven of Trump’s thirty-two are out of reach for a Ranger and four for a Rogue. The Rogue’s four are all in the last two books. The Ranger also goes without 
+T	p0 em	Banish
+T	p0	 in the Deck of Many Things, and its Five Aces holds four cards of eight. See 
 L	p0 link	4	#books-short	Books that come up short
 T	p0	.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Every one of the thirty-two does something.
-T	p0 note	 The last to arrive was 
+T	p0 note	Every one of the thirty-two does something. The last to arrive was 
 T	p0 note em	Shuffle
-T	p0 note	, the deck itself: one draw against twenty-one cards, and the bad ones are the common ones. Death calls a crowd of monsters against you, the Devil a demon, and the Hanged Man lays the Ancient Curse; the Fool drains your intelligence and wisdom, and the Wheel of Fortune is the wild magic of a failed Chaos spell. Higher up are teleports, a blessing, the Tower that breaks the walls around you or shakes the ground, Temperance that puts what is next to you to sleep, a creature drawn as a friend, the Lovers’ charm and the Hermit’s wall of granite behind you. At the top are Judgement, which rerolls your hit points and cures every mutation you have; the Sun, which lights and maps the level; and the World, which is experience. A Rogue or a High-Mage, card sharps both, draws higher the more experienced they are.
+T	p0 note	, the deck itself: one draw against twenty-one cards, and the bad ones are the common ones. Death calls a crowd of monsters against you, the Devil a demon, and the Hanged Man lays the Ancient Curse; the Fool drains your intelligence and wisdom, and the Wheel of Fortune is the wild magic of a failed Chaos spell. Higher up are teleports, a blessing, the Tower that breaks the walls around you or shakes the ground, Temperance that puts what’s next to you to sleep, a creature drawn as a friend, the Lovers’ charm and the Hermit’s wall of granite behind you. At the top are Judgement, which rerolls your hit points and cures every mutation you have; the Sun, which lights and maps the level; and the World, which is experience. A Rogue or a High-Mage, card sharps both, draws higher the more experienced they are.
 T	p0 note	\n
 T	p0 note em	Joker Card
 T	p0 note	 and 
 T	p0 note em	Trump Lore
-T	p0 note	 used to do nothing as well. The Joker calls a mold, a bat, a vortex or creeping coins to serve you, and the card decides which. Like every Trump summon it calls at the depth you are on, so a vortex, the shallowest of which lives at 21, will not answer above that. 
+T	p0 note	 used to do nothing as well. The Joker calls a mold, a bat, a vortex or creeping coins to serve you, and the card decides which. Like every Trump summon it calls at the depth you’re on, so a vortex, the shallowest of which lives at 21, won’t answer above that. 
 T	p0 note em	Trump Lore
 T	p0 note	 teaches you every rune on an object at once, as Sorcery’s 
 T	p0 note em	Identify True
 T	p0 note	 does.
 T	p0 note	\n
 T	p0 note em	Dimension Door
-T	p0 note	 was another until recently, and should not have been. It lets you choose the square you arrive on, which this game can do and always could — Sorcery’s copy of the same spell had been doing it since that realm went in. Both now work.
+T	p0 note	 was inert too, and shouldn’t have been. It lets you choose the square you arrive on, which this game has always been able to do: Sorcery’s copy of the same spell did it from the day that realm went in. Both work now.
 T	p0 note	\n
+T	p0 note	So was 
 T	p0 note em	Reset Recall
-T	p0 note	 was another. Each dungeon remembers the level Word of Recall brings you back to, and now the spell can set it: cast in a dungeon, it asks which level, anywhere from the dungeon’s first to the deepest you have reached in it, and offers the deepest. Above ground there is no dungeon to set, and it is not cast.
+T	p0 note	. Each dungeon remembers the level Word of Recall brings you back to, and the spell sets it: cast in a dungeon, it asks which level, anywhere from the dungeon’s first to the deepest you’ve reached in it, and offers the deepest. Above ground there’s no dungeon to set, and it isn’t cast.
 T	p0 note	\n
-T	p0	The guard that used to keep Trump off the birth menu still covers every realm: 
-T	p0 strong	if your class has no books in a realm, you are not offered it.
-T	p0	 That was not true before, and choosing Sorcery in the version before it shipped gave you a character who could never cast anything.
+T	p0	If your class has no books in a realm, you are not offered it. That guard used to keep Trump off the birth menu, and it still covers every realm. Without it, choosing Sorcery in the version before Sorcery shipped gave you a character who could never cast anything.
 T	p0	\n
 M	chaos
 T	h2	Chaos
 T	h2	\n
-T	p0	Sorcery’s opposite in every respect. Sorcery has no attack spell in it; Chaos is almost nothing else. The spoiler calls it “the very element of unmaking”, and what it offers instead of protection is an arsenal that runs from 
+T	p0	Chaos is Sorcery’s opposite in every way. Sorcery has no attack spell in it, and Chaos is almost nothing else. The spoiler calls it “the very element of unmaking”. In place of protection it has an arsenal that runs from 
 T	p0 em	Magic Missile
 T	p0	 in the first book to 
 T	p0 em	Mana Storm
 T	p0	 and 
 T	p0 em	Call the Void
-T	p0	 in the last. 
-T	p0 strong	Chaos has no protective spells at all
-T	p0	 — that is the realm’s own description of itself, and it is the thing to weigh before taking it as your only one.
+T	p0	 in the last. Chaos has no protective spells at all. That’s the realm’s own description of itself, and it’s the thing to weigh before taking Chaos as your only realm.
 T	p0	\n
 T	p0	Four books: the 
 T	p0 strong	Sign of Chaos
@@ -404,27 +386,27 @@ T	p0	 and the
 T	p0 strong	Armageddon Tome
 T	p0	 below.
 T	p0	\n
-T	p0	The damage is the point, and it is everywhere. Bolts of fire, chaos, mana and gravity; 
+T	p0	The damage is everywhere. There are bolts of fire, chaos, mana and gravity; 
 T	p0 em	Fist of Force
 T	p0	, which stuns; 
 T	p0 em	Sonic Boom
 T	p0	 and 
 T	p0 em	Invoke Logrus
-T	p0	 centred on you; 
+T	p0	, centred on you; 
 T	p0 em	Chain Lightning
-T	p0	, which fires beams in every direction at once; and at the bottom of the fourth book 
+T	p0	, which fires beams in every direction at once. At the bottom of the fourth book are 
 T	p0 em	Magic Rocket
 T	p0	, 
 T	p0 em	Mana Storm
 T	p0	 at three hundred plus twice your level, 
 T	p0 em	Breathe Logrus
-T	p0	 — which does damage equal to your 
+T	p0	, which does damage equal to your 
 T	p0 em	current
-T	p0	 hit points, so cast it healthy — and 
+T	p0	 hit points (so cast it while you’re healthy), and 
 T	p0 em	Call the Void
 T	p0	, three volleys of destruction outward in every direction.
 T	p0	\n
-T	p0	It is not purely artillery. 
+T	p0	It isn’t all artillery. 
 T	p0 em	Wonder
 T	p0	 is a hundred-band random table that may clone a monster, heal it, or drop a fireball on it. 
 T	p0 em	Polymorph Other
@@ -436,23 +418,21 @@ T	p0	 clears a whole line of monsters from your path, and
 T	p0 em	Arcane Binding
 T	p0	 recharges a wand at four times the strength of Angband’s own spell.
 T	p0	\n
-T	p0	Nothing was deferred — all thirty-two work — but several do something measurably different from Zangband’s, because 4.2 has no disintegration, no rocket and no radiation, and because a blast radius is a fixed number here rather than one that grows as you do. The trades are in the project’s decision record as DEC-53. Three are worth knowing at the table: 
-T	p0 strong	Call the Void no longer punishes you for casting it beside a wall
-T	p0	, which was the spell’s defining risk; 
-T	p0 strong	Fist of Force keeps its damage and loses its ability to dig
-T	p0	, since the element that did both no longer exists; and 
-T	p0 strong	Chaos Branding gives fire or frost rather than a chaos brand
-T	p0	, because 4.2 has no chaos brand to give.
+T	p0	All thirty-two work, but several behave differently from Zangband’s. 4.2 has no disintegration, no rocket and no radiation, and a blast radius here is a fixed number, where Zangband’s grew as you did. The trades are written up in the project’s decision record as DEC-53. You’ll notice three of them in play. 
+T	p0 em	Call the Void
+T	p0	 doesn’t punish you for casting it beside a wall, though in Zangband that was the spell’s defining risk. 
+T	p0 em	Fist of Force
+T	p0	 keeps its damage and loses its ability to dig, since the element that did both doesn’t exist here. And 
+T	p0 em	Chaos Branding
+T	p0	 gives fire or frost instead of a chaos brand, because 4.2 has no chaos brand to give.
 T	p0	\n
-T	p0	Two more are worth knowing if you are counting on them. 
-T	p0 strong	Call Chaos no longer rolls its damage type.
-T	p0	 Zangband picked one of thirty elements and then one of three shapes; the three shapes are kept and each has been given one element permanently, so the roll still decides what arrives but no longer decides what it is made of. You get a ball of chaos, a scatter of plasma, or a wide sphere of mana, and those are the only three things it can ever be. And 
-T	p0 strong	Magic Rocket is shards.
-T	p0	 It was a rocket, which almost nothing resisted; shards is the element 4.2 has that cuts, so 
-T	p0 strong	shard resistance now blunts it
-T	p0	 — on either side of the fight, which matters more than it sounds, because a good deal of what lives below two thousand feet resists shards and nothing resisted a rocket.
+T	p0	Two more make a difference if you’re counting on them. 
+T	p0 em	Call Chaos
+T	p0	 doesn’t roll its damage type. Zangband picked one of thirty elements and then one of three shapes. Here the three shapes are kept and each has one fixed element, so the roll still decides what arrives but not what it’s made of. You get a ball of chaos, a scatter of plasma or a wide sphere of mana, and those are the only three things it can ever be. 
+T	p0 em	Magic Rocket
+T	p0	 is shards. In Zangband it was a rocket, which almost nothing resisted; shards is the element 4.2 has that cuts, so shard resistance blunts it, on either side of the fight. That’s a bigger deal than it sounds, because a good deal of what lives below two thousand feet resists shards, and nothing resisted a rocket.
 T	p0	\n
-T	p0	The frozen radius is the other thing you will feel rather than read about. Zangband grew five of these blasts as the caster grew; here each is fixed at the size it has the day you learn it, so they never get any wider however high you go: 
+T	p0	You’ll also feel the fixed radius. Zangband grew five of these blasts as the caster grew. Here each is fixed at the size it has the day you learn it, and never gets any wider however high you go: 
 T	p0 em	Flash of Light
 T	p0	 1, 
 T	p0 em	Mana Burst
@@ -462,32 +442,24 @@ T	p0	 3,
 T	p0 em	Sonic Boom
 T	p0	 4, 
 T	p0 em	Invoke Logrus
-T	p0	 6. The damage still climbs. The area does not, and a level-45 
+T	p0	 6. The damage still climbs, but the area doesn’t, and a level-45 
 T	p0 em	Sonic Boom
 T	p0	 covers exactly what a level-25 one did.
 T	p0	\n
-T	p0 strong	And Chaos spells backfire.
-T	p0	 Fail one and you may not simply lose the mana: the realm produces a chaotic effect instead, and how bad it is depends on how deep the spell was. 
+T	p0	Chaos spells also backfire. Fail one and you may lose more than the mana: the realm produces a chaotic effect, and how bad it is depends on how deep the spell was. 
 T	p0 em	Magic Missile
 T	p0	 never backfires. 
 T	p0 em	Call the Void
-T	p0	 almost always does, and what you get ranges from a short teleport, through a room full of doors and traps, a mutation, a forgotten map and an earthquake, down to eight creatures of one strange kind landing on you — molds, bats, vortices, quylthulgs, or things that are not what they seem — and, at the very bottom, the Ancient and Foul Curse. This is Zangband’s own table and its own scaling — the spoiler warns that “Chaos spells are known to backfire easily” — and it is the price of the realm having no protective spells at all.
+T	p0	 almost always does. What you get ranges from a short teleport, through a room full of doors and traps, a mutation, a forgotten map and an earthquake, down to eight creatures of one strange kind landing on you (molds, bats, vortices, quylthulgs, or things that aren’t what they seem) and, at the very bottom, the Ancient and Foul Curse. This is Zangband’s own table and its own scaling, and the spoiler warns that “Chaos spells are known to backfire easily”. It is the price of the realm having no protective spells at all.
 T	p0	\n
 T	p0 em	Summon Demon
-T	p0	 calls a demon of up to half again your level, and 
-T	p0 strong	one time in three it serves you
-T	p0	 — the other two it does not, and says so. That is Zangband’s own roll, restored when pets arrived; it shipped always-hostile for one milestone before there was any side for a demon to be on (
+T	p0	 calls a demon of up to half again your level. One time in three it serves you; the other two it doesn’t, and you’re told so. That is Zangband’s own roll, back since pets arrived. In the milestone before pets it was always hostile, because there was no side for a demon to be on (
 L	p0 link	5	pets	Pets and Allies
 T	p0	).
 T	p0	\n
-T	p0	The 
-T	p0 strong	Chaos-Warrior
-T	p0	 is the realm’s own class: one realm, no choice, every spell, from level 2. Mages, Priests and Rangers may take Chaos as one of two realms; a Chaos-Warrior 
-T	p0 em	is
-T	p0	 one.
+T	p0	The Chaos-Warrior is the realm’s own class: one realm, no choice, every spell, from level 2. A High-Mage may take Chaos as its only realm too, and Mages, Priests, Rangers and Warrior-Mages may take it as one of two.
 T	p0	\n
-T	p0 strong	A Ranger never reaches the realm’s last four spells
-T	p0	 — 
+T	p0	A Ranger never reaches the realm’s last four spells. 
 T	p0 em	Summon Demon
 T	p0	, 
 T	p0 em	Mana Storm
@@ -495,29 +467,29 @@ T	p0	,
 T	p0 em	Breathe Logrus
 T	p0	 and 
 T	p0 em	Call the Void
-T	p0	 are all unreachable for it, which leaves its Armageddon Tome holding five of eight. See 
+T	p0	 are all out of its reach, which leaves its Armageddon Tome holding five of eight. See 
 L	p0 link	6	#books-short	Books that come up short
 T	p0	.
 T	p0	\n
 T	p0 em	Polymorph Self
-T	p0	 is here too — the same effect the Chaos mutation uses, reached from a second place. Chaos is the realm that twists its own caster, and that is the spell that does it.
+T	p0	 is here too, the same effect the Chaos mutation uses, reached another way. Chaos is the realm that twists its own caster, and this is the spell that does it.
 T	p0	\n
 M	arcane
 T	h2	Arcane
 T	h2	\n
-T	p0	The weak generalist, and the one realm where this game and Angband disagree outright. Detection, escape, the four temporary resistances, cures for poison and for light and medium wounds, 
+T	p0	Arcane is the weak generalist, and the one realm where this game and Angband disagree outright. It has detection, escape, the four temporary resistances, cures for poison and for light and medium wounds, 
 T	p0 em	Stone to Mud
 T	p0	, 
 T	p0 em	Satisfy Hunger
-T	p0	, 
+T	p0	 and 
 T	p0 em	Recharging
-T	p0	 — everything a delver wants and almost nothing that kills. Its whole offence is 
+T	p0	: everything a delver wants, and almost nothing that kills. Its whole offence is 
 T	p0 em	Zap
 T	p0	, a weak lightning bolt; 
 T	p0 em	Ray of Light
 T	p0	; and 
 T	p0 em	Elemental Ball
-T	p0	, which throws fire, lightning, frost or acid and does not let you choose which.
+T	p0	, which throws fire, lightning, frost or acid and doesn’t let you choose which.
 T	p0	\n
 T	p0	Four books: 
 T	p0 strong	Cantrips for Beginners
@@ -527,12 +499,9 @@ T	p0	,
 T	p0 strong	Major Arcana
 T	p0	 and the 
 T	p0 strong	Manual of Mastery
-T	p0	 — and 
-T	p0 strong	all four are sold in town
-T	p0	, for 100, 250, 1000 and 2500 gold. That is the realm’s bargain, and it is the reason to take it: no other realm can be bought outright. Every other realm keeps its two best books in the dungeon.
+T	p0	. All four are sold in town, for 100, 250, 1000 and 2500 gold. That’s the realm’s bargain and the reason to take it: no other realm can be bought outright, and every other realm keeps its two best books in the dungeon.
 T	p0	\n
-T	p0 strong	Take it second, not first.
-T	p0	 Arcane collects the useful spells of every other realm, and every other realm sells them cheaper. Nineteen of its thirty-two appear in some realm a Mage might also be studying, and in seventeen of those the other realm asks a lower level and less mana — usually much less. A Mage reads 
+T	p0	Arcane is best taken as a second realm. It collects the useful spells of every other realm, and every other realm sells them cheaper. Nineteen of its thirty-two appear in some realm a Mage might also be studying, and in seventeen of those the other realm asks a lower level and less mana, usually much less. A Mage reads 
 T	p0 em	Identify
 T	p0	 here at level 38 for 30 mana and in Sorcery at level 10 for 7; 
 T	p0 em	Recharging
@@ -542,29 +511,28 @@ T	p0	 at 49 for a hundred mana against Sorcery’s 30 for forty;
 T	p0 em	Stone to Mud
 T	p0	 at 20 against Nature’s 5. Only 
 T	p0 em	Cure Poison
-T	p0	 is genuinely better here. So Arcane is the realm that fills the gaps in another one, and a poor choice as the only realm you have — which is Zangband’s own advice, and it survives the port intact.
+T	p0	 is better here. So Arcane fills the gaps in another realm, and it’s a poor choice as the only realm you have. That is Zangband’s own advice, and it still holds here.
 T	p0	\n
-T	p0	One of the thirty-two does nothing and says so. 
+T	p0	One of the thirty-two does nothing, and its description says so. 
 T	p0 em	Detect Enchantment
-T	p0	 would sense which objects are magical before you know them, which went when an object’s properties became runes you learn one at a time, and it will not be brought back. 
+T	p0	 would sense which objects are magical before you know them. That went when an object’s properties became runes you learn one at a time, and it won’t be brought back. 
 T	p0 em	Phlogiston
-T	p0	 used to be the other: it adds half a full load of fuel to the torch or lantern you are holding.
+T	p0	 used to be the other inert one. It adds half a full load of fuel to the torch or lantern you’re holding.
 T	p0	\n
-T	p0	One more does something else entirely. 
-T	p0 strong	Zangband’s Wizard Lock jammed a door shut and this one makes a door
-T	p0	, because 4.2 has no jamming at all — a door is open, closed, locked or broken, and no spell reaches the lock. Making one along the line you aim serves the same purpose, and works in an empty corridor where the original needed a door to already be there.
+T	p0	One more does something else entirely. Zangband’s 
+T	p0 em	Wizard Lock
+T	p0	 jammed a door shut, and this one makes a door, because 4.2 has no jamming at all: a door is open, closed, locked or broken, and no spell reaches the lock. Making a door along the line you aim does the same job, and it works in an empty corridor, where the original needed a door to be there already.
 T	p0	\n
-T	p0 strong	A Ranger never learns Clairvoyance.
-T	p0	 Its Manual of Mastery holds seven spells where everyone else’s holds eight. That is Zangband’s own table, which marks the spell unreachable for that class rather than merely expensive, and it is not the only place it does so — see below.
+T	p0	A Ranger never learns 
+T	p0 em	Clairvoyance
+T	p0	. Its Manual of Mastery holds seven spells where everyone else’s holds eight. That is Zangband’s own table, which marks the spell unreachable for that class, and it isn’t the only place the table does that (see below).
 T	p0	\n
 M	nature
 T	h2	Nature
 T	h2	\n
-T	p0	The weather at the top and the ground at the bottom, with healing, protection and a pair of bolts in between. 
-T	p0 strong	It holds the only powerful healing spell outside Life
-T	p0	: 
+T	p0	Nature has the weather at the top and the ground at the bottom, with healing, protection and a pair of bolts in between. It holds the only powerful healing spell outside Life. 
 T	p0 em	Herbal Healing
-T	p0	 mends a thousand points and cures stunning, bleeding and poison with it, and no realm but Life has anything of the size. That one spell is a large part of why a character who cannot study Life studies this instead.
+T	p0	 mends a thousand points and cures stunning, bleeding and poison as well, and no realm but Life has anything that size. That one spell is a large part of why a character who can’t study Life studies Nature instead.
 T	p0	\n
 T	p0	Four books: 
 T	p0 strong	Call of the Wild
@@ -574,15 +542,13 @@ T	p0	,
 T	p0 strong	Nature’s Gifts
 T	p0	 and 
 T	p0 strong	Nature’s Wrath
-T	p0	 — the last of which shares its name with the spell inside it.
+T	p0	, which shares its name with the spell inside it.
 T	p0	\n
 T	p0	The protections come in two grades. 
 T	p0 em	Resist Environment
-T	p0	 covers fire, cold and lightning; 
+T	p0	 covers fire, cold and lightning. 
 T	p0 em	Resistance True
-T	p0	 covers those three plus acid 
-T	p0 strong	and poison
-T	p0	, which is the half worth paying for — each of the four elements has a cheap spell of its own somewhere in the game and poison does not. 
+T	p0	 covers those three plus acid and poison, and the poison is the part worth paying for: each of the four elements has a cheap spell of its own somewhere in the game, and poison doesn’t. 
 T	p0 em	Stone Skin
 T	p0	 hardens you for thirty to fifty turns, and 
 T	p0 em	Stone Skin
@@ -592,71 +558,66 @@ T	p0	,
 T	p0 em	Stair Building
 T	p0	 and 
 T	p0 em	Door Building
-T	p0	 between them let you reshape the dungeon rather than fight it.
+T	p0	 between them let you reshape the dungeon.
 T	p0	\n
-T	p0	The offence is weather. 
+T	p0	The attacks are weather. 
 T	p0 em	Lightning Bolt
 T	p0	 and 
 T	p0 em	Frost Bolt
-T	p0	 early, 
+T	p0	 come early, with 
 T	p0 em	Ray of Sunlight
-T	p0	 for what cannot bear light, and then the fourth book: 
+T	p0	 for things that can’t bear light. Then the fourth book has 
 T	p0 em	Earthquake
 T	p0	, 
 T	p0 em	Whirlwind Attack
-T	p0	 — one blow into every square around you — and the three balls, a 
+T	p0	 (one blow into every square around you) and three balls: a 
 T	p0 em	Blizzard
 T	p0	 at seventy plus your level, a 
 T	p0 em	Lightning Storm
 T	p0	 at ninety and a 
 T	p0 em	Whirlpool
-T	p0	 at a hundred, water being the one that batters and confuses as well. 
+T	p0	 at a hundred. The water one batters and confuses as well. 
 T	p0 em	Call Sunlight
 T	p0	 floods the whole level with light and burns everything nearby that hates it. 
 T	p0 em	Elemental Branding
-T	p0	 puts fire or frost on your weapon, and does not let you pick which.
+T	p0	 puts fire or frost on your weapon, and doesn’t let you pick which.
 T	p0	\n
 T	p0	At the end, 
 T	p0 em	Nature’s Wrath
-T	p0	 does three things in one casting: dispels every creature in sight, shakes the level apart with an earthquake, and detonates around you. Zangband’s third part was a disintegration ball, which this game has no projection for; it arrives as the walls coming down and the damage landing separately, which is the same event described twice rather than one effect.
+T	p0	 does three things in one casting: it dispels every creature in sight, shakes the level apart with an earthquake, and detonates around you. Zangband’s third part was a disintegration ball, which this game has no projection for, so here one event arrives as two effects: the walls come down, and the damage lands separately.
 T	p0	\n
-T	p0 strong	Every one of the thirty-two does something.
-T	p0	 The last two to arrive were 
+T	p0	Every one of the thirty-two does something. The last two to arrive were 
 T	p0 em	Stone Tell
 T	p0	, which teaches you every rune on an object at once, and 
 T	p0 em	Protect from Corrosion
-T	p0	, which makes a piece of armour ignore acid for good and undoes what acid has already done to it, unless it is cursed.
+T	p0	, which makes a piece of armour ignore acid for good and undoes what acid has already done to it, unless it’s cursed.
 T	p0	\n
-T	p0	Three others used to be inert and no longer are. 
+T	p0	Three others used to be inert. 
 T	p0 em	Animal Taming
 T	p0	, 
 T	p0 em	Summon Animal
 T	p0	 and 
 T	p0 em	Animal Friendship
-T	p0	 all needed a creature to be able to take your side; pets gave them that, and Nature is now the realm that walks into a fight with company (
+T	p0	 all needed a creature to be able to take your side. Pets gave them that, and made Nature the realm that walks into a fight with company (
 L	p0 link	7	pets	Pets and Allies
 T	p0	).
 T	p0	\n
-T	p0	The 
-T	p0 strong	Druid
-T	p0	 is the first class in the game to cast on borrowed figures. Zangband never had a Druid, so there is no row of levels and mana costs for it to import; it takes Zangband’s 
+T	p0	The Druid is the first class in the game to cast on borrowed figures. Zangband never had a Druid, so there’s no row of levels and mana costs to import for it. It takes Zangband’s 
 T	p0 em	Priest’s
-T	p0	, which is the only class carrying Nature that shares the Druid’s three magic constants. The 
-T	p0 strong	Ranger
-T	p0	, which used to borrow two of the Druid’s books, now gets the whole realm on its own figures.
+T	p0	, the only class with Nature that shares the Druid’s three magic constants. The Ranger used to borrow two of the Druid’s books, and now gets the whole realm on its own figures.
 T	p0	\n
 M	death
 T	h2	Death
 T	h2	\n
-T	p0	The foulest of them, and the one that charges you in blood. Chaos punishes a miscast too, but Death is the realm where 
-T	p0 strong	the spells that work
+T	p0	Death is the foulest of the realms, and it charges you in blood. Chaos punishes a miscast too, but in Death even the spells that 
+T	p0 em	work
 T	p0	 cost you something: 
 T	p0 em	Hellfire
 T	p0	 takes fifty to a hundred hit points to cast, 
 T	p0 em	Genocide
 T	p0	 takes 1d4 for every creature it removes and 
 T	p0 em	Mass Genocide
-T	p0	 1d3, and a failed cast anywhere in the realm draws blood on its own account. Zangband says it plainly — the most powerful spells “need their own blood as the focus”.
+T	p0	 1d3, and a failed cast anywhere in the realm draws blood of its own. In Zangband’s words, the most powerful spells “need their own blood as the focus”.
 T	p0	\n
 T	p0	Four books: 
 T	p0 strong	Black Prayers
@@ -668,15 +629,15 @@ T	p0	 and the
 T	p0 strong	Necronomicon
 T	p0	.
 T	p0	\n
-T	p0	What it does is take life and give it to you. 
+T	p0	Death takes life and gives it to you. 
 T	p0 em	Vampiric Drain
 T	p0	 and 
 T	p0 em	Vampirism True
 T	p0	 pull hit points out of a creature and into you; 
 T	p0 em	Death Ray
-T	p0	 draws the life out of anything living and does nothing at all to what is already dead; 
+T	p0	 draws the life out of anything living and does nothing at all to what’s already dead; 
 T	p0 em	Word of Death
-T	p0	 does it to every living thing in sight at once. Around that sit nether and darkness bolts, 
+T	p0	 does it to every living thing in sight at once. Around those are nether and darkness bolts, 
 T	p0 em	Stinking Cloud
 T	p0	, 
 T	p0 em	Terror
@@ -688,162 +649,132 @@ T	p0	, and two brands for your weapon.
 T	p0 em	Berserk
 T	p0	 and 
 T	p0 em	Battle Frenzy
-T	p0	 make you a fighter rather than a caster — the second hastes you as well — and 
+T	p0	 turn you into a fighter (the second hastes you as well), and 
 T	p0 em	Restore Life
 T	p0	 puts back drained experience. 
 T	p0 em	Invoke Spirits
-T	p0	 is the realm’s dice-roll: the same hundred-band table Chaos’s 
+T	p0	 is the realm’s dice roll: it reads from the same hundred-band table as Chaos’s 
 T	p0 em	Wonder
-T	p0	 reads from, which may as easily summon undead onto you as help.
+T	p0	, and may as easily summon undead onto you as help.
 T	p0	\n
-T	p0	At the bottom of the Necronomicon: 
+T	p0	At the bottom of the Necronomicon are 
 T	p0 em	Evocation
 T	p0	, which blasts, terrifies and banishes everything in sight in one casting, and 
 T	p0 em	Hellfire
-T	p0	 — six hundred and sixty-six points that nothing resists and evil creatures take twice.
+T	p0	: six hundred and sixty-six points that nothing resists and evil creatures take twice.
 T	p0	\n
 T	p0 warn strong	Warning
 T	p0 warn	\n
-T	p0 warn strong	A miscast Death spell hurts.
-T	p0 warn	 Fail one and, on a roll against the spell’s depth in the realm, you take 
+T	p0 warn	A miscast Death spell hurts. Fail one and, on a roll against the spell’s depth in the realm, you take 
 T	p0 warn code	(book + 1)d6
-T	p0 warn	 — so the deeper the book the worse it is. From the second half of the realm you may lose experience with it, one time in six, unless you have Hold Life.
+T	p0 warn	, so the deeper the book, the worse it is. In the second half of the realm you may lose experience with it as well, one time in six, unless you have Hold Life.
 T	p0 warn	\n
-T	p0 warn strong	The Necronomicon is worse.
-T	p0 warn	 Half of its miscasts shake the reader instead: fail a saving throw and you are confused, and one time in three hallucinating badly; make that one and fail the next and you lose a point of intelligence 
+T	p0 warn	The Necronomicon is worse. Half of its miscasts shake the reader instead: fail a saving throw and you’re confused, and one time in three hallucinating badly; make that one and fail the next and you lose a point of intelligence 
 T	p0 warn em	and
-T	p0 warn	 a point of wisdom. It is the only spell failure in the game that can permanently cost a character a statistic, and it is why the fourth book is frightening rather than merely expensive.
+T	p0 warn	 a point of wisdom. It is the only spell failure in the game that can permanently cost a character a statistic, and it’s why the fourth book is frightening as well as expensive.
 T	p0 warn	\n
 T	p0	One of the thirty-two does nothing. 
 T	p0 em	Raise the Dead
-T	p0	 animates the corpses and skeletons actually lying on the floor near you, and 4.2 has no such object — there is nothing lying there to raise. Translating it as “summon undead as pets” would be a different spell wearing this one’s name: this one is paid for by what you have already killed, and that is the whole character of it, so it will stay as it is: corpses are not something this game is going to have.
+T	p0	 animates the corpses and skeletons lying on the floor near you, and 4.2 has no such object, so there’s nothing there to raise. Turning it into “summon undead as pets” would make it a different spell wearing this one’s name. This one is paid for by what you’ve already killed, which is the whole character of it, so it stays as it is. Corpses are not something this game is going to have.
 T	p0	\n
 T	p0 em	Wraithform
 T	p0	 and 
 T	p0 em	Omnicide
-T	p0	 used to be beside it. 
+T	p0	 used to be inert too. 
 T	p0 em	Wraithform
-T	p0	 is the wraith form of the Wraith mutation: you walk through walls, a tenth of every blow lands, and light ends it — and if it ends while you are inside rock, you die there (see 
+T	p0	 is the wraith form of the Wraith mutation: you walk through walls, a tenth of every blow lands, and light ends it. If it ends while you’re inside rock, you die there (see 
 L	p0 link	8	mutations	Mutations
 T	p0	). 
 T	p0 em	Omnicide
-T	p0	 removes every creature on the level but the uniques, your own creatures among them. Each costs you a little health and gives you a point of mana, up to twice your maximum.
+T	p0	 removes every creature on the level except the uniques, your own creatures included. Each costs you a little health and gives you a point of mana, up to twice your maximum.
 T	p0	\n
 T	p0 em	Enslave Undead
-T	p0	 was on that list until pets arrived. It now does what it says, and binds one undead creature to you (
+T	p0	 was inert until pets arrived. It does what it says, and binds one undead creature to you (
 L	p0 link	9	pets	Pets and Allies
 T	p0	).
 T	p0	\n
-T	p0	Three more do something wider than Zangband asked, and for one reason: 4.2’s projections were written for a game whose player is on the other side. There is no dispel-the-good, so 
+T	p0	Three more reach wider than Zangband’s did, all for the same reason: 4.2’s projections were written for a game whose player is on the other side. There’s no dispel-the-good, so 
 T	p0 em	Dispel Good
-T	p0	 blasts everything in sight rather than everything that is not evil; there is no detect-the-unliving, so 
+T	p0	 blasts everything in sight instead of everything that isn’t evil. There’s no detect-the-unliving, so 
 T	p0 em	Detect Unlife
-T	p0	 finds every creature nearby rather than only the ones without life; and 
+T	p0	 finds every creature nearby, not only the ones without life. And 
 T	p0 em	Death Ray
-T	p0	, which in Zangband kills outright or fails, is a heavy drain here, still useless against the nonliving.
+T	p0	, which in Zangband kills outright or fails, is a heavy drain here, and still useless against the nonliving.
 T	p0	\n
-T	p0 strong	A Rogue and a Ranger each lose seven of the thirty-two here
-T	p0	 — the Rogue’s worst realm, and level with Trump for the Ranger. A Rogue’s Necronomicon is the worst book in the game: four rituals of eight, no 
+T	p0	A Rogue and a Ranger each lose seven of the thirty-two here. It’s the Rogue’s worst realm, and level with Trump for the Ranger. A Rogue’s Necronomicon is the worst book in the game: four rituals of eight, no 
 T	p0 em	Hellfire
-T	p0	 among them, and two of the four inert. See 
+T	p0	 among them, and one of the four inert. See 
 L	p0 link	10	#books-short	Books that come up short
 T	p0	.
 T	p0	\n
-T	p0	Both of Death’s classes cast on borrowed figures: Zangband had neither a Necromancer nor a Blackguard. The Necromancer takes Zangband’s Mage and the Blackguard its Paladin.
+T	p0	Both of Death’s classes cast on borrowed figures, because Zangband had neither a Necromancer nor a Blackguard. The Necromancer takes Zangband’s Mage and the Blackguard its Paladin.
 T	p0	\n
 M	casting
 T	h2	Casting
 T	h2	\n
-T	p0	Four rules apply to every realm and none of them is visible from the spell list.
+T	p0	Four rules apply to every realm, and the spell list shows none of them.
 T	p0	\n
-T	p0 strong	Your failure chance has a floor and a ceiling.
-T	p0	 However good you become, most characters never get below 
-T	p0 strong	5 per cent
-T	p0	 — only a class with a zero-failure ability escapes it, and nothing else does, at any level, with any statistic. At the other end no spell ever reads worse than 
-T	p0 strong	50 per cent
-T	p0	 however hopeless the pairing, so a very hard spell cast by a very unsuitable character is a coin flip rather than the impossibility the raw numbers imply. Being stunned is added 
+T	p0	Your failure chance has a floor and a ceiling. However good you get, most characters never go below 5 per cent. Only a class with a zero-failure ability escapes that floor; nothing else does, at any level, with any statistic. At the other end, no spell ever reads worse than 50 per cent however hopeless the pairing, so a very hard spell cast by a very unsuitable character is a coin flip, even where the raw numbers say it’s impossible. Being stunned is added 
 T	p0 em	after
 T	p0	 the cap, so a stunned caster can be worse than fifty.
 T	p0	\n
-T	p0 strong	A Necromancer casts badly in the light.
-T	p0	 A character who draws on unlight — the Necromancer is the one you will meet — takes a flat 
-T	p0 strong	+25
-T	p0	 to its failure chance whenever it is standing on a lit square. Not a penalty for carrying a light source: a penalty for the square under your feet being lit, by your lantern, by someone else’s, or by the room. It is the single largest casting modifier in the game and the spell list gives no sign of it.
+T	p0	A Necromancer casts badly in the light. A character who draws on unlight (the Necromancer is the one you’ll meet) takes a flat +25 to its failure chance whenever it’s standing on a lit square. What counts is the square under your feet being lit, by your lantern, by someone else’s or by the room; carrying a light source isn’t the penalty in itself. It is the largest single casting modifier in the game, and the spell list gives no sign of it.
 T	p0	\n
-T	p0 strong	Armour costs you mana.
-T	p0	 Every spellcasting class has a weight it can carry in armour before its casting suffers, and past that you lose one point of maximum mana for every ten tenths of a pound over. A Mage’s allowance is thirty pounds and a Paladin’s forty — the more a class leans on its spells, the less it may wear. The penalty bites hardest early, when the pool is small and a suit of chain is most of it, and matters little to a character with a hundred points to spend. Weapons, bows, rings, amulets and your light are not counted; everything else you are wearing is.
+T	p0	Armour costs you mana. Every spellcasting class can wear a certain weight of armour before its casting suffers, and past that you lose one point of maximum mana for every ten tenths of a pound over. A Mage’s allowance is thirty pounds and a Paladin’s forty: the more a class leans on its spells, the less it may wear. The penalty bites hardest early, when your pool is small and a suit of chain costs most of it, and makes little difference to a character with a hundred points to spend. Weapons, bows, rings, amulets and your light don’t count; everything else you’re wearing does.
 T	p0	\n
-T	p0 strong	You may cast on an empty pool, and it will cost you.
-T	p0	 Try a spell you cannot pay for and the game says so and asks whether you want to attempt it anyway. If you do:
+T	p0	You can cast on an empty pool, and it will cost you. Try a spell you can’t pay for and the game tells you so and asks whether you want to attempt it anyway. If you do:
 T	p0	\n
 T	li1	•\t
-T	li1	the failure chance rises by 
-T	li1 strong	five percentage points for every point of mana you are short
-T	li1	;
+T	li1	the failure chance rises by five percentage points for every point of mana you’re short;
 T	li1	\n
 T	li1	•\t
-T	li1	you will very likely 
-T	li1 strong	faint
-T	li1	, for longer the further short you were, and free action does not prevent it;
+T	li1	you’ll very likely faint, for longer the further short you were, and free action doesn’t prevent it;
 T	li1	\n
 T	li1	•\t
-T	li1	and about half the time you 
-T	li1 strong	damage your constitution
-T	li1	, which on this path can be permanent.
+T	li1	and about half the time you damage your constitution, which on this path can be permanent.
 T	li1	\n
-T	p0	All of that happens whether or not the spell actually goes off. It is a last-resort mechanism and it is meant to hurt; the one time it is worth it is the one time you would otherwise die.
+T	p0	All of that happens whether or not the spell goes off. It’s a last resort and it’s meant to hurt. The one time it’s worth it is the one time you’d otherwise die.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Gloves do not hinder a caster here.
-T	p0 note	 Zangband, following older Angband, took mana away from an intelligence-based caster wearing anything on their hands unless it granted free action or a dexterity bonus. Angband 4.2 retired that rule and this game has not reinstated it, so a Mage may wear gauntlets with no penalty at all. It is the one casting restriction from the old manual that is simply gone.
+T	p0 note	Gloves do not hinder a caster here. Zangband, following older Angband, took mana away from an intelligence-based caster wearing anything on their hands unless it gave free action or a dexterity bonus. Angband 4.2 dropped that rule and this game hasn’t brought it back, so a Mage can wear gauntlets with no penalty at all. It’s the one casting restriction from the old manual that’s gone completely.
 T	p0 note	\n
 M	who-can-choose-what
 T	h2	Who can choose what
 T	h2	\n
-T	p0 strong	Every class can study every realm Zangband lets it.
-T	p0	 That sounds obvious and was not true until recently: the entitlements were right from the start, but the 
+T	p0	Every class can study every realm Zangband lets it. That sounds obvious, and it wasn’t always true. The entitlements were right from the start, but a realm’s 
 T	p0 em	books
-T	p0	 for a realm were only ever given to classes that already carried that kind of book, so a Mage was allowed six realms and had three. Completing it added forty books and three hundred and five spells (DEC-57).
+T	p0	 only went to classes that already had that kind of book, so a Mage was allowed six realms and had three. Fixing that added forty books and three hundred and five spells (DEC-57).
 T	p0	\n
-T	p0	What it means at the table: 
-T	p0 strong	a Mage can study Death or Life
-T	p0	, and a 
-T	p0 strong	Priest can study Arcane
-T	p0	. That is Zangband’s Mage — a far broader class than Angband’s, with healing at one end and 
+T	p0	In play, that means a Mage can study Death or Life, and a Priest can study Arcane. That’s Zangband’s Mage, a far broader class than Angband’s, with healing at one end and 
 T	p0 em	Hellfire
-T	p0	 at the other — and if you know Angband 4.2, it is the biggest single change in this chapter.
+T	p0	 at the other. If you know Angband 4.2, it’s the biggest single change in this chapter.
 T	p0	\n
-T	p0	One oddity worth knowing, because it looks like a bug and is not. Whether you 
+T	p0	Whether you 
 T	p0 em	choose
-T	p0	 which spell to learn or get a random one is a property of your 
-T	p0 strong	class
-T	p0	, never of the book. So a Mage that studies Life picks its prayers, and a Priest reading the same book takes what it is given. Zangband does exactly this.
+T	p0	 which spell to learn or get a random one depends on your 
+T	p0 em	class
+T	p0	, never on the book. So a Mage that studies Life picks its prayers, and a Priest reading the same book takes what it’s given. It looks like a bug, but Zangband does exactly this.
 T	p0	\n
-T	p0	The two classes carried over from the previous milestone are the ones the realm system exists for:
+T	p0	Two classes had to wait for the realm system, because the realms they may choose are what set them apart:
 T	p0	\n
 T	li1	•\t
 T	li1	A 
 T	li1 strong	Warrior-Mage
-T	li1	 studies 
-T	li1 strong	Arcane
-T	li1	 in its first slot, always, and anything else it likes in the second. Zangband lists Arcane in both slots, but a realm already taken is struck off the menu the next slot offers, so the second question is asked about the other six and a Warrior-Mage always ends up studying two realms rather than one twice.
+T	li1	 always studies Arcane in its first slot, and anything else it likes in the second. Zangband lists Arcane in both slots, but a realm already taken is struck off the next slot’s menu, so the second question is asked about the other six and a Warrior-Mage always ends up with two different realms.
 T	li1	\n
 T	li1	•\t
 T	li1	A 
 T	li1 strong	High-Mage
-T	li1	 chooses 
-T	li1 strong	one
-T	li1	 realm out of seven and gets no second slot, and is paid for it in figures: it reaches a realm’s last spells earlier and more cheaply than any other class, in six realms out of seven. Life is the exception, because Life is the Priest’s own realm and Zangband’s table says so.
+T	li1	 chooses one realm out of seven and gets no second slot. It’s paid back in figures: it reaches a realm’s last spells earlier and more cheaply than any other class, in six realms out of seven. Life is the exception, because in Zangband’s table Life is the Priest’s own realm.
 T	li1	\n
-T	p0	Both are entitled to Trump and both are now offered it; it was the one entitlement in the table that had nothing behind it, and no longer is.
+T	p0	Both are entitled to Trump, and both are offered it. Trump used to be the one entitlement in the table with nothing behind it.
 T	p0	\n
 M	books-that-come-up-short
 M	books-short
 T	h3	Books that come up short
 T	h3	\n
-T	p0 strong	A Rogue and a Ranger do not get all of a borrowed realm.
-T	p0	 Every realm is four books of eight, and for most classes that is thirty-two spells — but Zangband’s table marks some spells unreachable for those two rather than merely expensive, and a book then holds fewer than eight. Sixteen books in the game are short, and all sixteen belong to one of those two classes:
+T	p0	A Rogue and a Ranger don’t get all of a borrowed realm. Every realm is four books of eight, which for most classes is thirty-two spells. Zangband’s table marks some spells as unreachable for those two, not just expensive, and then a book holds fewer than eight. Sixteen books in the game are short, and all sixteen belong to one of those two classes:
 T	p0	\n
 T	th0	Class          Book                 Spells  Realm\n
 T	rule0	───────────────────────────────────────────────────\n
@@ -862,7 +793,7 @@ T	tr0 odd	Ranger         Manual of Mastery    7 of 8  Arcane\n
 T	tr0	Ranger         Deck of Many Things  7 of 8  Trump\n
 T	tr0 odd	Ranger         Chaos Channels       7 of 8  Chaos\n
 T	tbllast0	\n
-T	p0	A Rogue’s Necronomicon is the extreme, and worth spelling out. It holds four rituals of the eight — 
+T	p0	A Rogue’s Necronomicon is the extreme case. It holds four rituals of the eight (
 T	p0 em	Death Ray
 T	p0	, 
 T	p0 em	Raise the Dead
@@ -870,7 +801,7 @@ T	p0	,
 T	p0 em	Esoteria
 T	p0	 and 
 T	p0 em	Wraithform
-T	p0	 — so 
+T	p0	), so 
 T	p0 em	Hellfire
 T	p0	, 
 T	p0 em	Omnicide
@@ -878,38 +809,32 @@ T	p0	,
 T	p0 em	Word of Death
 T	p0	 and 
 T	p0 em	Evocation
-T	p0	 are simply not available to a Rogue at any level. Two of the four it does get are among the realm’s inert spells, which leaves 
-T	p0 strong	two working rituals in a fifty thousand gold book
-T	p0	. The Ranger’s Five Aces is close behind at four cards, one of them inert.
+T	p0	 aren’t available to a Rogue at any level. One of the four it does get, 
+T	p0 em	Raise the Dead
+T	p0	, is the realm’s inert spell, which leaves three working rituals in a fifty thousand gold book. The Ranger’s Five Aces is close behind at four cards, though all four work.
 T	p0	\n
-T	p0	The fourth book of a realm is where its power lives, so this is the price those two classes pay for being entitled to realms they were not built for. It is worth knowing before you buy the book rather than after.
+T	p0	The fourth book of a realm is where its power is, so this is the price those two classes pay for being entitled to realms they weren’t built for. You’ll want to know that before you buy the book.
 T	p0	\n
 M	what-has-changed-and-what-has-not
 T	h2	What has changed, and what has not
 T	h2	\n
-T	p0 strong	All four of the realms Angband already had now hold Zangband’s spells
-T	p0	: Life, Arcane, Nature and Death. Every realm in the game is four books of eight, which is Zangband’s shape throughout. This is DEC-50, taken deliberately, and it has consequences worth stating:
+T	p0	All four of the realms Angband already had now hold Zangband’s spells: Life, Arcane, Nature and Death. Every realm in the game is four books of eight, which is Zangband’s shape throughout. This is DEC-50, and two things follow from it:
 T	p0	\n
 T	li1	•\t
-T	li1 strong	A Priest’s prayers and a Mage’s spells are different spells now
-T	li1	, at different levels, in differently-named books. A Paladin gains most — Angband gave it three of the Priest’s books and sixteen prayers, and Zangband’s table gives it all thirty-two. A Ranger gains nearly as much.
+T	li1	A Priest’s prayers and a Mage’s spells are different spells now, at different levels, in differently named books. A Paladin gains most: Angband gave it three of the Priest’s books and sixteen prayers, and Zangband’s table gives it all thirty-two. A Ranger gains nearly as much.
 T	li1	\n
 T	li1	•\t
-T	li1 strong	Savefiles from before the change do not load.
-T	li1	 A book’s identity is its name, and every old save carries the town temple’s stock, so deleting 
+T	li1	Savefiles from before the change do not load. A book’s identity is its name, and every old save holds the town temple’s stock, so deleting 
 T	li1 em	[Novice’s Handbook]
-T	li1	 made every one of them unreadable. The game is pre-release and this was chosen with the numbers in hand.
+T	li1	 made every one of them unreadable. The game is pre-release, and this was decided with the numbers in hand.
 T	li1	\n
-T	p0 strong	Sorcery, Chaos and Trump took nothing away
-T	p0	, because no class carried them before. Their books go on the 
+T	p0	Sorcery, Chaos and Trump took nothing away, because no class had them before. Their books go on the 
 T	p0 em	end
-T	p0	 of the lists that gain them — a Mage’s four Arcane books are books one to four, with Sorcery’s as five to eight and Chaos’s as nine to twelve.
+T	p0	 of the lists that gain them: a Mage’s four Arcane books are books one to four, with Sorcery’s as five to eight and Chaos’s as nine to twelve.
 T	p0	\n
-T	p0	That ordering is not tidiness. Your known spells are recorded by their position in a flat list across all of your class’s books, so appending leaves every position meaning what it meant, while inserting anywhere else would shift them: the game would load, the sheet would look reasonable, and a Priest who had learned Remove Fear would find they knew something else.
+T	p0	Your known spells are recorded by their position in a flat list across all of your class’s books. Adding books at the end leaves every position meaning what it meant, but inserting one anywhere else would shift every spell a saved character knows one place along: the game would load, the sheet would look reasonable, and a Priest who had learned Remove Fear would find they knew something else instead.
 T	p0	\n
-T	p0	One duplicate is visible and intended: a Mage who takes Arcane and Sorcery has 
+T	p0	One duplicate is visible, and intended: a Mage who takes Arcane and Sorcery has 
 T	p0 em	Phase Door
-T	p0	 in two books, because Zangband put it in both realms and both are that character’s. You will only ever see the books of the realms you chose, so the duplicate is exactly the one Zangband showed.
-T	p0	\n
-T	p0	That is not a courtesy, it is a hazard avoided. A character’s known spells are stored by their position in a flat list across all of their class’s books, so inserting a book anywhere but the end would silently shift every spell a saved character knows one place along — the game would load, the sheet would look reasonable, and a Priest who had learned Remove Fear would find they knew something else instead.
+T	p0	 in two books, because Zangband put it in both realms and that character has both. You only ever see the books of the realms you chose, so the duplicate is exactly the one Zangband showed.
 T	p0	\n

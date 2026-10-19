@@ -5,7 +5,7 @@ Angband is played in a single dungeon beneath a single town. ZangbandTK is
 played across a generated overworld, and the town stands on it.
 
 It changes how the game feels more than anything else, from the first turn. You
-begin, as in Angband, on the down staircase in the middle of town, surrounded by
+begin, as in Angband, on the town's down staircase, a short walk from the
 shops. But the town doesn't end in a wall. Walk to its edge and you keep
 walking, out into whatever country the world put there.
 
@@ -64,7 +64,7 @@ The seven kinds of country, and roughly what each is made of:
    * - Forest
      - Mostly trees, with clearings.
    * - Swamp
-     - Water, mud and scrub. Slow going.
+     - Water, mud and scrub. Mostly mud.
    * - Wasteland
      - Bare earth, rubble and rock.
    * - Mountains
@@ -117,12 +117,13 @@ of over it. It keeps to the land as well. Two towns on either side of an inland
 sea get a causeway, but that's the one exception the sea is opened for. Roads
 don't take short cuts across bays.
 
-Every town is on the network. The roads are laid as a spanning tree over the
-towns first, so there's always a road out of the starting village, and
-following roads from it reaches every other town in the world. Then any two
-towns within ``wild:road-dist`` blocks of each other get a road directly
-between them, which turns the tree into a network in settled country. About
-three blocks of the world in a hundred have a road.
+Every town and every dungeon mouth is on the network. The roads are laid as a
+spanning tree over the towns first, so there's always a road out of the
+starting village, and following roads from it reaches every other town in the
+world. Then any two towns within ``wild:road-dist`` blocks of each other get a
+road directly between them, which turns the tree into a network in settled
+country. Last, every dungeon mouth gets a branch road of its own to the nearest
+town. About three blocks of the world in a hundred have a road.
 
 If you're lost, find a road and walk along it. It goes somewhere, and
 :doc:`towns` covers what you'll find at the other end.
@@ -308,8 +309,10 @@ Leaving the town
 You leave through a gate. There are four, one on each side, and each is two
 tiles wide with a door on it.
 
-The town is Angband 4.2's town, entire: the same clearing, the same streets, the
-same shops, ruins and rubble, and the same rock standing around it. That rock
+The town is laid out by Angband 4.2's own town code: the same clearing, the same
+streets, ruins and rubble, and the same rock standing around it. Your home
+village is the size of Angband's town, but it has only four shops: a general
+store, an alchemist, a bookseller and your home (see :doc:`towns`). That rock
 earns its keep in a world in a way it never had to as a level of its own. It's
 what keeps the wilderness out of the market square, and it's what stops you
 seeing half a county from the staircase.
@@ -332,7 +335,7 @@ a world you can walk out into.
 Going down
 ----------
 
-The down staircase in the middle of town works exactly as it does in Angband:
+The town's down staircase works exactly as it does in Angband:
 stand on it and press ``>``. It leads into the shallowest dungeon there is, so
 a new character has somewhere to go from the first turn.
 
@@ -340,8 +343,8 @@ Dungeon mouths are the other way down. They're scattered across the world,
 drawn as a ``>`` like any staircase, and each leads into a dungeon of its own
 with its own range of depths. :doc:`dungeon` has the details, but the main
 thing is that a dungeon has a bottom, and getting past it means finding another
-one. Roads help: most mouths open on or near a road, because a dungeon nobody
-can find is a dungeon nobody uses.
+one. Roads help: every mouth has a road to it from the nearest town, because a
+dungeon nobody can find is a dungeon nobody uses.
 
 Coming back up puts you where you went down. The world remembers where you left
 it, so a character who walked three days into the hills before finding a way
@@ -358,9 +361,11 @@ week later finds the town as they left it, not blank.
 Where this is narrower than Zangband
 ------------------------------------
 
-Two kinds of townsfolk are missing, and always were. Of Zangband's six, four
-are built; the elf, dwarf and lizardfolk types exist in its own source only as
-unused constants, so there's nothing to port and nothing was lost (DEC-31).
+Three kinds of townsfolk are missing, and always were. Of Zangband's six, the
+three it gave any behaviour to are built (villagers, monsters and abandoned
+towns), and ZangbandTK adds beasts as a fourth. The elf, dwarf and lizardfolk
+types exist in Zangband's source only as unused constants, so there's nothing
+to port and nothing was lost (DEC-31).
 
 Each dungeon has its own depth range, floor, shape, inhabitants and kind of
 treasure (see :doc:`dungeon`), but the inhabitants are named by the kinds of

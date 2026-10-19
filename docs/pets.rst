@@ -4,9 +4,8 @@ Pets and Allies
 .. note::
 
    **Milestone M10 is complete**, all nine phases of it, along with the two pet
-   sources from PLR-28 that the last phase first shipped without. Two of
-   Zangband's routes remain, and both need an object that doesn't exist here
-   yet; they're named at the end.
+   sources from PLR-28 that the last phase first shipped without. Every one of
+   Zangband's routes to a pet is in the game, and `Getting one`_ lists them.
 
    Requirements: PLR-22 to PLR-33.
 
@@ -104,8 +103,8 @@ Saved games
 A monster's side is written into the savefile, so pets survive a save, a load
 and a walk between levels.
 
-Characters saved before this was added still open. Their monsters are all
-hostile, which is what they were.
+A save from a version older than 3.67.0, which had no pets, still opens, and
+every monster in it is hostile.
 
 
 How they fight
@@ -116,8 +115,8 @@ the player: following the sound and scent that spread out from wherever you're
 standing, or running away from the same place, or working with its pack to
 surround you. None of that describes an ally, so allies think differently.
 
-They pick a fight. An ally looks for the nearest thing it's at war with, within
-about twenty squares, that it can reach, and goes for it. Once it has picked
+They pick a fight. An ally looks for something it's at war with, within about
+twenty squares, that it can reach, and goes for it. Once it has picked
 something it stays with it until the fight is over or the target stops being
 worth chasing. It will not drop a wounded enemy because something fresher walked
 into the room.
@@ -192,12 +191,12 @@ Five of them are a leash:
 
 .. note::
 
-   Ten squares is a hard limit on every setting above. A pet more than ten
-   squares from you abandons whatever it's doing and comes back, whichever
-   setting it's on, "Seek and destroy" included. So that setting doesn't mean
-   "go anywhere": it means "go anywhere within ten squares". A pet that seems
-   to give up on a fight across the room hasn't lost its nerve; it has hit the
-   leash.
+   On "Seek and destroy", ten squares is as far as a pet strays once it has
+   nothing left to fight: with no enemy in reach, a pet more than ten squares
+   from you comes back towards you. While it has a fight it keeps going, from
+   one enemy to the next, as long as the next is within about twenty squares
+   of it. The other settings keep their own distances, so a pet on "Stay away"
+   keeps about twenty-five squares off.
 
 The last two are the ones to reach for before you cast something with a radius.
 A pet that's keeping its distance also refuses to start a fight near you. What
@@ -522,14 +521,15 @@ one. Chaos's *Summon Demon* calls one demon in three that will serve you and
 two that won't. If you can grow mould, the eight that come up around you are
 yours, and that's what a wall of mould is for.
 
-Anything your pets summon is yours too, and so is anything a friendly monster
-summons. Read that twice, next to the upkeep: a pet that can summon builds you a
+Anything your pets summon is yours too, and anything a friendly monster
+summons is friendly. Read that twice, next to the upkeep: a pet that can summon builds you a
 stable you're paying for.
 
-Or take up Trump. The seventh realm is a realm of pets: twelve of its spells
-call something that serves you, from an animal at level 24 to one of the great
-undead at 49. The Mage, Priest, Rogue, Ranger, Warrior-Mage and High-Mage may
-all study it.
+Or take up Trump. The seventh realm is a realm of pets: fifteen of its spells
+call something that serves you. A Mage gets the first, the *Joker Card*, at
+level 15, and the last, one of the great undead, at 49. The Mage, Priest,
+Rogue, Ranger, Warrior-Mage and High-Mage may all study it, though a Rogue can
+learn only eleven of the fifteen and a Ranger ten.
 
 Or dominate a mind. A Mindcrafter's *dominate a mind* arrives at level 9, and
 what it does changes at 30. Below that it's a mind attack that confuses what it

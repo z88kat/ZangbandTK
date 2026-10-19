@@ -179,11 +179,10 @@ decided anything. See :doc:`virtues`.
    everybody else the rule is simple. Treat a wall you're standing in as
    somewhere you're passing through, not somewhere you are, and count.
 
-Three that used to be on this list aren't any more. Losing a mutation at
-random works: that's the "strangely normal" one, and it takes a mutation back.
-Wraith form works, and is described above. And the chaos gift was never really
-missing. It has no per-turn roll because it fires when you gain a level,
-through the patron that grants it.
+All twenty-seven work. Losing a mutation at random is the "strangely normal"
+one, and it takes a mutation back. Wraith form is described above. The chaos
+gift has no per-turn roll, because it fires when you gain a level, through the
+patron that grants it.
 
 **Melee** mutations are extra blows and nothing else. There are five: a
 scorpion tail, horns, a beak, an elephantine trunk and a nest of tentacles.

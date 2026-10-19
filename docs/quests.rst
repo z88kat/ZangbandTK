@@ -76,11 +76,11 @@ of the eight, because nobody handed them to you. The number is in
 
 Any building that hires will tell you how far along you are, or pay you when
 you're done. There's no haggling over the reward. It's twenty gold for each
-creature you were asked for, multiplied by how deep that creature lives, with a
-floor of twenty gold so that nothing pays nothing. A job for six of something at
-depth 20 is worth two and a half thousand; the same six at depth 2 are worth
-three hundred and sixty. Taking work you can barely survive is where the money
-is, and that's why you're told the depth before you accept.
+creature you were asked for, multiplied by one more than how deep that creature
+lives, with a floor of twenty gold so that nothing pays nothing. A job for six
+of something at depth 20 is worth two and a half thousand; the same six at
+depth 2 are worth three hundred and sixty. Taking work you can barely survive
+is where the money is, and that's why you're told the depth before you accept.
 
 A bounty picks from anything living down to four levels below the deepest you've
 been. A job down a named dungeon goes to six below that, then is pulled back

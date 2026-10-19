@@ -6,10 +6,9 @@ Towns and Services
    Milestone M5 is complete, and this chapter covers it: WLD-10 to WLD-12,
    WLD-14 to WLD-18, and WLD-16a to WLD-16c.
 
-   WLD-16d is left outstanding. It makes quest-giving a property any building
-   can have, instead of a building type of its own. It's designed and nothing
-   here rules it out, but there are no quests to give until milestone M6, so
-   there's nothing yet to describe.
+   WLD-16d makes quest-giving a property any building can have, instead of a
+   building type of its own. It came with the quests in M6, in 3.23.0, and
+   `Work`_ below describes it.
 
 There are a dozen places in the world. They differ in how much ground they
 cover, how many trades they keep, and which trades those are, so walking to a

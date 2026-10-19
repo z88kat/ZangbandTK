@@ -26,7 +26,7 @@ T	p0	The solid blocks (which may be
 T	p0 code	#
 T	p0	 symbols on some systems) around the edge of the town represent the walls that surround the town. You 
 T	p0 em	can
-T	p0	 walk out of them: unlike Angband, where the town is the whole of the surface, ZangbandTK has a world outside the walls and the gates are how you reach it. See 
+T	p0	 walk out of them. In Angband the town is all there is on the surface, but ZangbandTK has a world outside the walls, and you reach it through the gates. See 
 L	p0 link	1	wilderness	The Wilderness
 T	p0	.
 T	p0	\n

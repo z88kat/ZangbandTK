@@ -4,16 +4,16 @@ T	h1	The Manual
 T	h1	\n
 T	p0	The reference manual: character creation, the dungeon, combat, and the full command and option lists.
 T	p0	\n
-T	p0	These chapters are inherited from Angband, which ZangbandTK is built on, and they describe the mechanics the two games share. Where a chapter here and a page under 
+T	p0	These chapters come from Angband, which ZangbandTK is built on, and they describe the mechanics the two games share. Where a chapter here and a page under 
 L	p0 link	1	differences	What’s Different
-T	p0	 disagree, the latter is correct — those pages are written for this game and these were adapted to it.
+T	p0	 disagree, go with the page: those were written for this game, and these were adapted to it.
 T	p0	\n
-T	p0	All seven have been checked against the game as it stands, and the statements that were Angband’s rather than this game’s have been corrected: the endgame, the map symbols, the keysets, the command and option lists, the file paths and the front ends. What has 
+T	p0	All seven were checked against the game as it is now, and the parts that described Angband instead of this game were fixed: the endgame, the map symbols, the keysets, the command and option lists, the file paths and the front ends. They have 
 T	p0 em	not
-T	p0	 been done is a rewrite — the prose, the examples and the emphasis are still Angband’s, and these chapters do not attempt to explain the wilderness, the towns, pets, mutations, patrons or the realms. Those have pages of their own.
+T	p0	 been rewritten. The prose, the examples and the emphasis are still Angband’s, and these chapters don’t try to explain the wilderness, the towns, pets, mutations, patrons or the realms. Those have pages of their own.
 T	p0	\n
 L	p0 link	2	birth	Creating a Character
-T	p0	 is the furthest from its inherited form: it carries the full race and class tables for all twenty-eight races and fourteen classes, and the racial powers, martial arts, psionics and patrons sections are this game’s own.
+T	p0	 has changed the most. It has the full race and class tables for all twenty-eight races and fourteen classes, and its sections on racial powers, martial arts, psionics and patrons are this game’s own.
 T	p0	\n
 T	p0	\n
 T	li1	•\t

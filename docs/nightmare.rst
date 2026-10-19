@@ -55,8 +55,7 @@ without it.
 What it changes
 ---------------
 
-Monsters, so far. Each of these is what Zangband does, with the source it comes
-from.
+Every change in this section comes from Zangband's own code.
 
 Monsters have twice the hit points: everything you meet has double what it
 would otherwise have. That's on top of the game's own lethality scaling, so a
@@ -126,7 +125,7 @@ little. In a deep one it can end a character who was going shopping.
 And four things it does not do
 ------------------------------
 
-The list above is everything Zangband's nightmare mode does. These four are
+Everything in the list above is Zangband's. These four are
 *ours*: Zangband's spoiler describes a long menu of ideas its code never
 implemented, and these were the four worth building. They're kept apart from
 the list above because that list is a port and this one is a design. None of
@@ -137,7 +136,7 @@ monsters a level will hold goes up from 100 to 255, so a floor of giant white
 lice or mice, left alone, gets very much worse than it ordinarily would.
 Scrolls of Sterilize still work and still stop it.
 
-Your bolts bounce off you half as reliably. A character with reflection
+Your reflection lets twice as many bolts through. A character with reflection
 ordinarily turns aside nine bolts in ten, and here eight in ten. Monsters that
 reflect are unaffected: they bounce your bolts back exactly as often as they
 always did. The property is still worth having, but it isn't close to a

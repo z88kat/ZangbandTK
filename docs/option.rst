@@ -643,7 +643,7 @@ These generate a great many levels and count what comes out.
      - Notes
    * - ``S``
      - Objects and monsters
-     - Generates hundreds of levels and tallies what comes out. This is where the :doc:`balance` figures came from, and it isn't quick.
+     - Generates hundreds of levels and tallies what comes out. It isn't quick.
    * - ``P``
      - Pits
      - 

@@ -9,9 +9,10 @@ The Realms of Magic
    character sheet records them, and that choice decides which books you can
    open at all.
 
-   Sixteen individual spells across the seven are inert, and their own
-   descriptions say so. Each one needs a mechanism this game does not have.
-   They're named in the realm sections below.
+   Three spells across the seven are inert, and their own descriptions say
+   so: *Detect Enchantment*, which Sorcery and Arcane both have, and Death's
+   *Raise the Dead*. Each needs something this game can't do yet, and the
+   realm sections below say what.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;
@@ -197,9 +198,10 @@ turns.
 
 Life is the Priest's own realm, and the numbers show it. A Priest reaches
 *Holy Orb* at level 10, where a Paladin waits until 18, a Monk 19 and a Mage
-20, and *Holy Invulnerability* at 45, where everybody else needs 50. It is also
-the one realm a High-Mage is not first into: a Priest beats it to both of those
-spells, by nine levels and by four. These are Zangband's own levels and mana
+20, and *Holy Invulnerability* at 45, where a High-Mage needs 49 and everybody
+else 50. It's also the one realm a High-Mage is not first into: a Priest beats
+it to both of those spells, by nine levels and by four. These are Zangband's
+own levels and mana
 costs, class by class, unchanged.
 
 *Holy Orb* also does more damage for the two priestly classes: a Priest or a
@@ -257,13 +259,15 @@ A worthless object is destroyed and pays nothing. And the division happens
 at all: ten times a third of two, rounded down each time, is zero. The Midas
 touch mutation works the same way and on the same terms.
 
-Its best workings are the ones no other realm has. *Teleport Away* fires a beam
-that moves monsters out of your path without killing them. *Telekinesis* pulls
-an object to your feet from anywhere you can reach. It is the strongest of the
-three versions in the game: it lifts a pound and a half a level and doesn't
-need to see what it takes, where the Chaos mutation lifts a pound a level and
-must see it. *Recharging* is four times the strength of Angband's own spell of
-that name, and that's a large part of why the realm is worth studying.
+Each of its best workings has a twin in another realm. Trump has three of the
+five below, Arcane two, and Life a shorter copy of the last. *Teleport Away*
+fires a beam that moves monsters out of your path without killing them.
+*Telekinesis* pulls an object to your feet from anywhere you can reach. It and
+Trump's *Trump Reach* are the same spell, and stronger than the third version
+in the game: they lift a pound and a half a level and don't need to see what
+they take, where the Chaos mutation lifts a pound a level and must see it.
+*Recharging* is four times the strength of Angband's own spell of that name,
+and that's a large part of why the realm is worth studying.
 Arcane's *Recharging* is the same spell at the same strength, twenty-one levels
 later. *Dimension Door* lets you pick the square you arrive on. And *Globe of
 Invulnerability* makes you very nearly untouchable for eight to sixteen turns.
@@ -308,9 +312,9 @@ Trump was the last realm to arrive. It had to wait for pets. Fifteen of its
 thirty-two spells summon a creature, and in Zangband every one of them turns on
 the same question: cast it well and the creature is *yours*, cast it badly and
 an angry group of them appears. Until monsters could take sides, all fifteen
-would have come out as the bad half. *Trump Cyberdemon* would have been sixty
-mana spent on putting a hostile Cyberdemon next to you. Pets fixed that, and
-the realm went in whole.
+would have come out as the bad half. *Trump Cyberdemon* would have been ninety
+mana or more spent on putting a hostile Cyberdemon next to you. Pets fixed
+that, and the realm went in whole.
 
 Four books: **Conjurings & Tricks** and the **Deck of Many Things** in town,
 **Trumps of Doom** and **Five Aces** below.
@@ -329,7 +333,7 @@ Four books: **Conjurings & Tricks** and the **Deck of Many Things** in town,
    Three of the cards don't fetch what they're named after. *Trump
    Cyberdemon* summons a greater demon: this game has no cyberdemons, by
    choice. *Phantasmal Servant* summons an ordinary undead creature, and
-   *Conjure Elemental* summons a Maia, not an earth elemental. The other eight
+   *Conjure Elemental* summons a Maia, not an earth elemental. The other twelve
    cards do what they say.
 
 Trump is for reach: a deck that goes places and fetches people. *Teleport*,
@@ -350,10 +354,11 @@ Blast* early on, a bolt of psychic force that sometimes runs as a beam, and
 *Death Dealing* in the third book, which strikes every living creature in sight
 at once.
 
-A Ranger loses more here than in any other realm, and a Rogue isn't far
-behind. Seven of Trump's thirty-two are out of reach for a Ranger and four for
-a Rogue, all of them in the last two books. A Ranger's Five Aces holds four
-cards of eight. See :ref:`books-short`.
+A Ranger loses as much here as in Death, and a Rogue isn't far behind. Seven
+of Trump's thirty-two are out of reach for a Ranger and four for a Rogue. The
+Rogue's four are all in the last two books. The Ranger also goes without
+*Banish* in the Deck of Many Things, and its Five Aces holds four cards of
+eight. See :ref:`books-short`.
 
 .. note::
 
@@ -466,8 +471,8 @@ own roll, back since pets arrived. In the milestone before pets it was always
 hostile, because there was no side for a demon to be on (:doc:`pets`).
 
 The Chaos-Warrior is the realm's own class: one realm, no choice, every spell,
-from level 2. Mages, Priests and Rangers may take Chaos as one of two realms; a
-Chaos-Warrior *is* one.
+from level 2. A High-Mage may take Chaos as its only realm too, and Mages,
+Priests, Rangers and Warrior-Mages may take it as one of two.
 
 A Ranger never reaches the realm's last four spells. *Summon Demon*, *Mana
 Storm*, *Breathe Logrus* and *Call the Void* are all out of its reach, which
@@ -643,7 +648,7 @@ here, and still useless against the nonliving.
 A Rogue and a Ranger each lose seven of the thirty-two here. It's the Rogue's
 worst realm, and level with Trump for the Ranger. A Rogue's Necronomicon is the
 worst book in the game: four rituals of eight, no *Hellfire* among them, and
-two of the four inert. See :ref:`books-short`.
+one of the four inert. See :ref:`books-short`.
 
 Both of Death's classes cast on borrowed figures, because Zangband had neither
 a Necromancer nor a Blackguard. The Necromancer takes Zangband's Mage and the
@@ -721,8 +726,8 @@ Whether you *choose* which spell to learn or get a random one depends on your
 a Priest reading the same book takes what it's given. It looks like a bug, but
 Zangband does exactly this.
 
-Two classes carried over from the previous milestone are the ones the realm
-system exists for:
+Two classes had to wait for the realm system, because the realms they may
+choose are what set them apart:
 
 - A **Warrior-Mage** always studies Arcane in its first slot, and anything else
   it likes in the second. Zangband lists Arcane in both slots, but a realm
@@ -816,9 +821,9 @@ sixteen belong to one of those two classes:
 A Rogue's Necronomicon is the extreme case. It holds four rituals of the eight
 (*Death Ray*, *Raise the Dead*, *Esoteria* and *Wraithform*), so *Hellfire*,
 *Omnicide*, *Word of Death* and *Evocation* aren't available to a Rogue at any
-level. Two of the four it does get are among the realm's inert spells, which
-leaves two working rituals in a fifty thousand gold book. The Ranger's Five
-Aces is close behind at four cards, one of them inert.
+level. One of the four it does get, *Raise the Dead*, is the realm's inert
+spell, which leaves three working rituals in a fifty thousand gold book. The
+Ranger's Five Aces is close behind at four cards, though all four work.
 
 The fourth book of a realm is where its power is, so this is the price those
 two classes pay for being entitled to realms they weren't built for. You'll

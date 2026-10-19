@@ -60,9 +60,10 @@ There's no way to prevent it and no saving throw against it. The only choice you
 get is whether to make the kill at all, and whether to make it in a state fit to
 survive the aftermath.
 
-Zangband filed this under a two-word comment: *don't kill Amberites*. It comes
-out of the books, where a dying prince's curse is a lasting weapon. Corwin lays
-one on Eric at the end of *Nine Princes in Amber*, and it outlives them both.
+Zangband filed this under a three-word comment: *Don't kill Amberites*. It comes
+out of the books, where a prince's curse is a lasting weapon. Corwin lays one
+on Eric at the end of *Nine Princes in Amber*, and it goes on working long
+after Eric is dead: it's partly to blame for the Black Road.
 
 Monsters that talk
 ------------------
@@ -268,7 +269,7 @@ never needs a potion, and deer are common.
 You can kill it, if you want to. It carries nothing, is worth no experience, and
 won't fight back.
 
-Deer are uncommon and live in quiet country, so finding one is luck.
+Deer are commonest in quiet country, where there's less of anything bigger.
 
 And there's one of them that isn't a deer. **The Unicorn of Amber** is
 silver-white, watches you with an interest you have not earned, and is always
