@@ -22,8 +22,8 @@ the keypress queue), "fresh" (dump any pending output to the screen), and
 The options menu
 ================
 
-``=`` opens a menu rather than a single screen, and not everything on it is an
-option in the on/off sense. The whole of it:
+``=`` opens a menu with these entries, and not everything on it is an option in
+the on/off sense:
 
 .. list-table::
    :header-rows: 1
@@ -84,20 +84,19 @@ option in the on/off sense. The whole of it:
      - Save visuals
      - Likewise.
 
-**Sidebar mode** (``=`` then ``o``) is the one that changes the shape of the
-main screen rather than a value in it. It cycles between three positions for
-the block of character information — **Left**, which is where it has always
-been; **Top**, which lays it along the top of the screen and gives the map the
-full width; and **None**, which removes it and gives the map everything. The
-screen names the current mode and any key but ``ESC`` cycles to the next; the
-choice is kept with your other preferences.
+**Sidebar mode** (``=`` then ``o``) is the one entry that changes the shape of
+the main screen. It cycles the block of character information between three
+positions: **Left**, which is where it has always been; **Top**, which lays it
+along the top of the screen and gives the map the full width; and **None**,
+which removes it and gives the map everything. The screen names the current
+mode, and any key but ``ESC`` cycles to the next. The choice is kept with your
+other preferences.
 
-On a wide terminal **Top** is usually the better arrangement, since the
-wilderness and the world map are both wider than they are tall. **None** is
-worth knowing about for screenshots and for very small terminals, but it takes
-the hit point and mana readouts with it — the status line along the bottom
-stays, so you keep your conditions and lose the two numbers that tell you how
-the fight is going.
+On a wide terminal Top is usually the better arrangement, since the wilderness
+and the world map are both wider than they are tall. None is useful for
+screenshots and for very small terminals, but it takes the hit point and mana
+readouts with it. The status line along the bottom stays, so you keep your
+conditions and lose the two numbers that tell you how the fight is going.
 
 User Interface Options
 ======================
@@ -196,8 +195,8 @@ Color: Shimmer multi-colored things ``animate_flicker``
 
   In graphics mode this needs a tileset that can recolour a tile without
   changing the picture on it, which means one that declares ``cycle:`` in
-  ``lib/tiles/list.txt``.  At present that is the Neon set, in both its
-  versions -- the second in colours made for colour-blind players; the four
+  ``lib/tiles/list.txt``.  At present that's the Neon set, in both its
+  versions (the second is in colours made for colour-blind players).  The four
   tilesets inherited from Angband paint colour into their art, so nothing
   shimmers in them and the option has no effect.
 
@@ -312,10 +311,10 @@ Increase gold drops but disable selling ``birth_no_selling``
   balance out income in the game, gold found in the dungeon will be
   increased if this option is on.
 
-  It is off by default.  Zangband always paid for what you sold, and
-  ZangbandTK keeps that; Angband 4.2, which ZangbandTK is built on, turns it
-  on.  Like every birth option it is chosen when a character is created and
-  cannot be changed afterwards, so a character made before this default
+  It's off by default.  Zangband always paid for what you sold, and
+  ZangbandTK does too; Angband 4.2, which ZangbandTK is built on, turns it
+  on.  Like every birth option it's chosen when a character is created and
+  can't be changed afterwards, so a character made before this default
   changed keeps what it was born with.
 
 Start with a kit of useful gear ``birth_start_kit``
@@ -355,19 +354,17 @@ Cheating options
 ================
 
 Press ``=`` then ``x``. These are for testing the game and for looking at how it
-works from the inside — not for winning it.
+works from the inside, and using any of them ends the character's chances of a
+score. Each cheat has a hidden twin that is set the moment the cheat is used and
+is never unset, and on death the game says
+*"Score not registered for cheaters."* Turning the cheat back off afterwards
+doesn't undo that, because the record is of having used it, not of having it on.
 
-**Using any of them ends the character's chances of a score.** Each cheat has a
-hidden twin that is set the moment the cheat is used and is never unset, and on
-death the game says *"Score not registered for cheaters."* Turning the cheat back
-off afterwards does not undo that: the record is of having used it, not of having
-it on.
-
-ZangbandTK also says so at the time. A character who has used any of these — or
-wizard mode, or the debug commands — carries **Cheat** in red at the left of the
-status line, for as long as that character exists. It is not a punishment; it is
-so that a screenshot of a character walking about invulnerable is not mistaken
-for a bug report about hit points, which is exactly what happened once.
+The game shows it while you play, too. A character who has used any of these
+(or wizard mode, or the debug commands) has **Cheat** in red at the left of the
+status line for as long as that character exists. That's so a screenshot of a
+character walking about invulnerable isn't mistaken for a bug report about hit
+points, which is exactly what happened once.
 
 Peek into monster creation ``cheat_hear``
   Cheaters never win. But they can peek at monster creation.
@@ -385,83 +382,80 @@ Gain a pet ``cheat_pet``
    Asks which monster, and puts one beside you as yours. Also on the debug menu
    as *Gain a pet* (``^A`` then ``N``).
 
-   Every route the game offers to a pet is a roll — a Trump summon, a charm
-   that has to beat a saving throw, a Chaos-Warrior's patron in a good mood — so
-   seeing what pets *do* otherwise means playing until one arrives and hoping it
-   is the kind you wanted to look at.
+   Every way the game gives you a pet is a roll: a Trump summon, a charm that
+   has to beat a saving throw, a Chaos-Warrior's patron in a good mood. Without
+   this, seeing what pets *do* means playing until one arrives and hoping it's
+   the kind you wanted to look at.
 
 Racial and mutation powers never fail ``cheat_powers``
    Every racial and mutation power fires, every time. The listing shows ``0% to
-   fail`` and the roll agrees with it — both ask the same function.
+   fail`` and the roll agrees with it, because both ask the same function.
 
-   This exists because some powers used to be almost untestable. A power costs
-   mana, and a character short of mana pays in hit points instead — and the
+   The cheat exists because some powers used to be almost untestable. A power
+   costs mana, and a character short of mana pays in hit points instead. The
    failure chance *also* charged 5% per point of the shortfall, so a class with
    no spell points at all was 100% over budget on a cost-20 power and sat near
    the 95% ceiling. A level 21 Beastman Chaos-Warrior looking at Polymorph saw
    ``20 hp, 95% to fail``.
 
-   **That surcharge is gone** (DEC-56): a power paid for in blood is not also
-   penalised for it, because the condition charging the surcharge was the same
-   condition that made the price blood in the first place. The same character
-   now sees ``20 hp, 7% to fail``, which is what a full pool gives. Spells keep
-   their penalty, and that is not an inconsistency — a spell short of mana is
-   paid for in unconsciousness rather than blood.
+   That surcharge is gone (DEC-56). A power paid for in blood isn't penalised
+   for it as well, since the shortfall that charged the surcharge is the same
+   one that made the price blood in the first place. The same character now
+   sees ``20 hp, 7% to fail``, which is what a full pool gives. Spells keep
+   their penalty, because a spell short of mana is paid for in unconsciousness
+   instead of blood.
 
-   So the cheat is no longer the only way to see a racial power fire. It is kept
-   because it still removes the roll entirely, which is useful when the question
-   is what a power *does* rather than whether it goes off.
+   So the cheat isn't the only way to see a racial power fire any more. It's
+   kept because it still removes the roll entirely, which is useful when the
+   question is what a power *does* rather than whether it goes off.
 
 Take gold ``cheat_gold``
-  Asks how much and puts it in your pocket. This one is ZangbandTK's, added
-  because the :doc:`magetower <towns>` charges a fare and there was no way to
-  test whether the fares were sensible without a purse to test them with.
+  Asks how much and puts it in your pocket. This one is ZangbandTK's. It was
+  added because the :doc:`magetower <towns>` charges a fare, and there was no way
+  to test whether the fares were sensible without a purse to test them with.
 
-  It is a button rather than a switch: select it, give an amount, and it turns
-  itself back off. The record that a cheat was used stays.
+  It works like a button: select it, give an amount, and it turns itself back
+  off. The record that a cheat was used stays.
 
 Take hit points ``cheat_hp``
-  Asks how many and sets them there. Written into the character's hit dice
-  rather than straight into the total, so it survives levelling up and the next
-  step taken — putting it into the total alone would last until the game next
-  recalculated bonuses, which is almost immediately.
+  Asks how many and sets them there. The number is written into the
+  character's hit dice, not straight into the total, so it survives levelling
+  up and the next step taken. Put into the total alone, it would last until the
+  game next recalculated bonuses, which is almost immediately.
 
-  For walking through country that would otherwise kill you on the way to
-  whatever you actually meant to test.
+  Use it for walking through country that would otherwise kill you on the way
+  to whatever you meant to test.
 
 Know every place ``cheat_places``
   Puts every town and every dungeon mouth in the world on the map at once.
 
-  The :doc:`magetower <towns>` carries you only to towns you have stood in and
-  dungeon mouths you have seen, so testing anything that happens in a particular
-  town means walking there first. With this, the magetower becomes a way of
-  getting anywhere in the world immediately.
+  The :doc:`magetower <towns>` only takes you to towns you've stood in and
+  dungeon mouths you've seen, so testing anything that happens in a particular
+  town means walking there first. With this on, the magetower can take you
+  anywhere in the world straight away.
 
 .. _debug-commands:
 
 Debug commands
 ==============
 
-A second and much larger set, reached with ``^A`` — control-A. The game asks for
+A second and much larger set, reached with ``^A`` (control-A). The game asks for
 confirmation the first time, and the character is marked from then on: on death
 it says *"Score not registered for wizards."*
 
-These are not options but commands. There are forty-eight of them in nine
+These are commands, not options. There are forty-eight of them in nine
 submenus: pick a submenu with the movement keys, then a command by its letter.
+They're development tools with no guard rails, and nothing asks whether you're
+sure.
 
-They are development tools and there are no guard rails. Nothing asks whether
-you are sure.
+The cheat options change how the game *behaves*; the debug commands change the
+*state of your game* directly.
 
-Worth knowing which of the two sets you want. The cheat options change how the
-game *behaves*; the debug commands change the *state of your game* directly.
-
-Commands marked ★ are ZangbandTK's. The rest are Angband's, and are documented
-here because they were not documented anywhere.
+Commands marked ★ are ZangbandTK's. The rest are Angband's, and they're
+documented here because they weren't documented anywhere.
 
 Items
 ~~~~~
-
-Making things out of nothing.
 
 .. list-table::
    :widths: 8 32 60
@@ -491,8 +485,6 @@ Making things out of nothing.
 
 Player
 ~~~~~~
-
-Changing the character directly.
 
 .. list-table::
    :widths: 8 32 60
@@ -530,7 +522,7 @@ Changing the character directly.
      - Asks which monster and puts one beside you, already yours. ``N`` because ``p`` and ``P`` are taken elsewhere in the debug lists, which share one key namespace.
    * - ``U``
      - Mutations ★
-     - All ninety-six, with the character's own marked ``[*]``; select one to toggle it, Escape to leave. Chaos hands these out and the player does not choose them, so anything that touches them — Polymorph Self, the patrons, the Chaos Tower — is otherwise close to untestable on purpose. ``U`` because ``m`` and ``M`` were taken, and because ``U`` was Zangband's own key for these. To *read* what a character has, use the third page of the character sheet rather than this.
+     - All ninety-six, with the character's own marked ``[*]``; select one to toggle it, Escape to leave. Chaos hands these out and the player doesn't choose them, so anything that touches them (Polymorph Self, the patrons, the Chaos Tower) is otherwise close to untestable. ``U`` because ``m`` and ``M`` were taken, and because ``U`` was Zangband's own key for these. To *read* what a character has, use the third page of the character sheet instead.
    * - ``B``
      - Learn all monsters ★
      - Fills in the whole bestiary, so every monster's recall reads as though you had met and killed it. The companion to *Learn object kinds*, and what the manual's picture of the bestiary is taken through.
@@ -546,8 +538,6 @@ Changing the character directly.
 
 Teleport
 ~~~~~~~~
-
-Going somewhere without walking.
 
 .. list-table::
    :widths: 8 32 60
@@ -571,8 +561,6 @@ Going somewhere without walking.
 
 Effects
 ~~~~~~~
-
-Firing off game effects by hand.
 
 .. list-table::
    :widths: 8 32 60
@@ -603,8 +591,6 @@ Firing off game effects by hand.
 Summon
 ~~~~~~
 
-Putting monsters in front of you.
-
 .. list-table::
    :widths: 8 32 60
    :header-rows: 1
@@ -629,8 +615,6 @@ Putting monsters in front of you.
 Files
 ~~~~~
 
-Writing things out to disk.
-
 .. list-table::
    :widths: 8 32 60
    :header-rows: 1
@@ -648,7 +632,7 @@ Writing things out to disk.
 Statistics
 ~~~~~~~~~~
 
-Generating a great many levels and counting what comes out.
+These generate a great many levels and count what comes out.
 
 .. list-table::
    :widths: 8 32 60
@@ -659,7 +643,7 @@ Generating a great many levels and counting what comes out.
      - Notes
    * - ``S``
      - Objects and monsters
-     - Generates hundreds of levels and tallies what comes out. This is where the :doc:`balance` figures came from, and it is not quick.
+     - Generates hundreds of levels and tallies what comes out. This is where the :doc:`balance` figures came from, and it isn't quick.
    * - ``P``
      - Pits
      - 
@@ -673,7 +657,7 @@ Generating a great many levels and counting what comes out.
 Query
 ~~~~~
 
-Asking the game what it thinks is where.
+These ask the game what it thinks is where.
 
 .. list-table::
    :widths: 8 32 60
@@ -697,8 +681,6 @@ Asking the game what it thinks is where.
 
 Miscellaneous
 ~~~~~~~~~~~~~
-
-The rest.
 
 .. list-table::
    :widths: 8 32 60

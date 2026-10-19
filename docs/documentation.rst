@@ -18,8 +18,9 @@ The manual, in four parts, plus the developer notes.
       :link: differences
       :link-type: doc
 
-      What ZangbandTK does that Angband does not: the wilderness, the bestiary,
-      the lethality. The authority where it and the manual disagree.
+      What ZangbandTK does that Angband doesn't, including the wilderness, the
+      bestiary and the lethality. Where these pages and the manual disagree,
+      these pages are right.
 
    .. grid-item-card:: The Manual
       :link: manual

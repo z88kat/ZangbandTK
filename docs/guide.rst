@@ -10,23 +10,22 @@ if you have just a little actual gameplay experience.
 
 .. note::
 
-   **This guide is inherited, and it is older than the game.** It was written by
-   an Angband player for Angband 3.5.0 — several versions before the 4.2.6 that
-   ZangbandTK is built on — and has not been revised for ZangbandTK. It knows
-   nothing of the wilderness, and its judgement about when a fight is worth
-   taking is calibrated to Angband's monster numbers, which ZangbandTK changes
-   on purpose: every monster carries 73% of Angband's hit points and 50% of its
-   armour class, so fights resolve faster in both directions. Read
+   This guide is inherited, and it's older than the game. An Angband player
+   wrote it for Angband 3.5.0, several versions before the 4.2.6 that
+   ZangbandTK is built on, and it hasn't been revised for ZangbandTK. It knows
+   nothing of the wilderness. Its sense of when a fight is worth taking comes
+   from Angband's monster numbers, and ZangbandTK changes those: every monster
+   has 73% of Angband's hit points and 50% of its armour class, so fights are
+   over faster in both directions. Read
    :doc:`balance` alongside it.
 
-   Where it named Angband's endgame it has been corrected to this game's, and
-   where it named Angband as the game you are playing it now says "the game".
-   Nothing else has been touched. The character dump below is a real Angband
-   3.5.0 one and its layout is not today's — 4.2 has no Perception line, for
-   instance — and the character advice throughout is written for Angband's nine
-   classes rather than this game's fourteen.
+   Where it named Angband's endgame it now names this game's, and where it
+   named Angband as the game you're playing it says "the game". Nothing else in
+   it has changed. The character dump below is from Angband 3.5.0 and its
+   layout isn't today's (4.2 has no Perception line, for one). The advice on
+   characters is written for Angband's nine classes; this game has fourteen.
 
-   It is still a handy source of hints and habits. Just don't take it as an
+   It's still a handy source of hints and habits. Just don't take it as an
    authority.
 
 The basics
@@ -40,11 +39,12 @@ everything else is optional. Of course, before you can kill Oberon you'll need
 lots of experience and good equipment, but by the time you get that deep you'll
 have both. Just see to it that you don't die along the way.
 
-One thing this guide's original could take for granted and you cannot: depth is
-no longer enough. ZangbandTK has thirteen dungeons, each ending at the bottom of
-its own range, so getting deeper means walking across the world to find one that
-reaches deeper. The Courts of Chaos are where the game ends, and finding their
-entrance is part of the task. See :doc:`dungeon` and :doc:`wilderness`.
+The original guide could take one thing for granted that you can't: here,
+going down isn't enough. ZangbandTK has thirteen dungeons, each ending at the
+bottom of its own range, so to get deeper you have to walk across the world and
+find one that goes further. The Courts of Chaos are where the game ends, and
+finding their entrance is part of the job. See :doc:`dungeon` and
+:doc:`wilderness`.
 
 The one and most important thing you need to get in your head is that you can't
 possibly kill every monster on every level. Think of the game as forays into

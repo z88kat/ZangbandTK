@@ -117,8 +117,9 @@ Walk (``W``) or Walk (``-``)
 
 Walk (with pickup) (``;`` in both keysets)
   Takes a single step in a direction, picking up what you step onto if you
-  normally pick things up. It is what the direction keys already do, named as
-  a command so that it can be given a repeat count or bound to something else.
+  normally pick things up. It's what the direction keys already do, made into
+  a command of its own so that it can be given a repeat count or bound to
+  something else.
   This command may take a count, requires a direction, and takes some energy.
 
 Run (``.``) or Run (``,``)
@@ -136,10 +137,10 @@ Go up staircase (``<``)
   one staircase going up on every level underground (this doesn't mean it's
   easy to find). Going up a staircase will take you to a new dungeon level
   unless you are on the shallowest level of the dungeon you are in, in which
-  case you come out on **the surface of the world, at the mouth you went down
-  by**. That is not the town level: dungeon mouths open wherever they open, and
-  the shallowest level of a dungeon is the top of its own depth range rather
-  than 50 feet. See :doc:`dungeon`. Note that whenever you leave a
+  case you come out on the surface of the world, at the mouth you went down
+  by. That isn't the town level. Dungeon mouths open wherever they open, and
+  the shallowest level of a dungeon is the top of its own depth range, not
+  50 feet. See :doc:`dungeon`. Note that whenever you leave a
   level (not the town), you will never find it again. This means that for
   all intents and purposes, any objects on that level are destroyed. This
   includes artifacts unless the "Lose artifacts when leaving level" option
@@ -157,7 +158,7 @@ Go down staircase (``>``)
   Descends a down staircase you are standing on. There is always at least
   one staircase going down on each level, with three exceptions: the town,
   which has only one; "quest" levels, which have none until the quest monster
-  is killed; and the deepest level of a dungeon, which has none at all — to go
+  is killed; and the deepest level of a dungeon, which has none at all. To go
   further down you must leave and find a dungeon that reaches deeper. Going
   down a staircase will take you to a new dungeon level. See
   "Go Up Staircase" for more info. This command takes some energy. If the
@@ -195,10 +196,10 @@ Get objects (``g``)
   backpack is full.
 
 Do autopickup (``^g`` in both keysets)
-  Takes the gold, and then takes only what you have already said you want —
-  what your inscriptions and pickup options mark as yours — leaving the rest
-  where it lies. Where ``g`` offers you everything on the floor, this offers
-  you nothing: it is the same pass the game makes for you when you walk onto a
+  Takes the gold, then only what you've already said you want (what your
+  inscriptions and pickup options mark as yours), and leaves the rest where it
+  lies. Where ``g`` offers you everything on the floor, this doesn't offer you
+  anything. It's the same pass the game makes for you when you walk onto a
   pile, run by hand. It costs a tenth of a turn an item, up to a full turn.
 
 Rest (``R``)
@@ -208,7 +209,7 @@ Rest (``R``)
   :ref:`disturbing happens <disturb-player>`, or when you press any key.
   To rest, enter the Rest command, followed by the number of turns you want
   to rest; or ``!`` to rest until your hitpoints *or* your mana are restored,
-  ``*`` until both are, or ``&`` -- what the prompt offers -- to rest as
+  ``*`` until both are, or ``&`` (what the prompt offers) to rest as
   needed: until both are restored, every ailment has passed, and a Word of
   Recall or Deep Descent you have read has taken you. This command may take an
   argument (used for the number of turns to rest), and takes some energy.
@@ -287,8 +288,8 @@ Gain new spells (``G``)
   which you may learn, then you may choose to study that book. Most classes
   may actually choose which spell to study, but priests, paladins and monks
   are taught one at random from the book. Every realm has four books of eight
-  spells; the first two are sold in town and the last two are normally found
-  only in the dungeon, and a rogue or a ranger cannot learn every spell in a
+  spells. The first two are sold in town and the last two are normally found
+  only in the dungeon, and a rogue or a ranger can't learn every spell in a
   realm it borrows (see :ref:`books-short`). This command takes some energy.
 
 Cast a spell (``m`` in both keysets)
@@ -304,29 +305,27 @@ Cast a spell (``m`` in both keysets)
   some light present. This command takes some energy.
 
 Use a power (``N``) or Use a power (``&``)
-  Some characters can do things no spellbook teaches. Most of the races —
-  twenty-two of the twenty-eight — carry something they can do by blood, an
-  Amberite walks into shadow, a
-  Draconian breathes, a Vampire drinks — and the Mindcrafter's entire craft is a
-  list of twelve psionic powers rather than a realm of magic. This command lists
-  everything your character can call on from either source, what each costs, and
-  how likely each is to fail. See :ref:`Racial powers <racial-powers>` and
-  :ref:`Psionics <psionics>`.
+  Some characters can do things no spellbook teaches. Most of the races
+  (twenty-two of the twenty-eight) have something they can do by blood: an
+  Amberite walks into shadow, a Draconian breathes, a Vampire drinks. A
+  Mindcrafter has no realm of magic at all, and its whole craft is a list of
+  twelve psionic powers. This command lists everything your character can call
+  on from either source, what each one costs, and how likely each is to fail.
+  See :ref:`Racial powers <racial-powers>` and :ref:`Psionics <psionics>`.
 
-  A power draws on spell points like a spell. A character with none left — and
-  a warrior never has any, having no spells at all — pays in hit points
-  instead, at the same price, and the menu says which before you commit. The
-  price itself is not the figure in the menu: it is rolled each time, somewhere
-  between half that figure and all of it, so a power is never quite something
-  you can budget for. The listed failure chance
-  falls as you gain levels past the level the power arrives at, and falls
-  further as you raise the stat it leans on; being stunned raises it, and so
-  does being afraid. Failing still costs the price;
-  being told you are too junior, too confused, or too spent costs nothing.
+  A power draws on spell points like a spell. A character with none left pays
+  in hit points instead, at the same price (a warrior never has any, having no
+  spells at all), and the menu says which before you commit. The price isn't
+  the figure in the menu. It's rolled each time, somewhere between half that
+  figure and all of it, so you can never quite budget for a power. The listed
+  failure chance falls as you gain levels past the level the power arrives at,
+  and falls further as you raise the stat it leans on. Being stunned raises it,
+  and so does being afraid. A failed power still costs the price, but being
+  told you're too junior, too confused or too spent costs nothing.
 
-  A *racial* power that fails simply fails. A Mindcrafter's psionics are the
+  A *racial* power that fails just fails. A Mindcrafter's psionics are the
   exception: half as often as one of those fails, it goes off inside your head
-  instead — see :ref:`Psionics <psionics>`. This command takes some energy.
+  instead (see :ref:`Psionics <psionics>`). This command takes some energy.
 
 Object Manipulation Commands
 ============================
@@ -430,12 +429,11 @@ Zap a rod (``z``) or Activate a rod (``a``)
   target. This command takes some energy.
 
 Use an item (``U``) or Use an item (``X``)
-  One command for all of the above. Rather than deciding whether the thing in
-  your hand wants quaffing, reading, aiming, using, zapping or activating, pick
-  it from a single list of everything you are carrying that can be used at all,
-  and the game does the right verb for it. The effect, the failure chance and
-  the energy are whatever the specific command would have been; nothing is
-  cheaper or dearer for going through here.
+  One command for all of the above. Pick the item from a single list of
+  everything you're carrying that can be used at all, and the game works out
+  whether it wants quaffing, reading, aiming, using, zapping or activating. The
+  effect, the failure chance and the energy are whatever the specific command
+  would have been, so nothing is cheaper or dearer for going through here.
 
 Throwing and Missile Weapons
 ============================
@@ -476,10 +474,10 @@ Targeting Mode (``*``)
   command uses, see :ref:`Targeting <targeting>`.
 
 Target closest monster (``'`` in both keysets)
-  Targets the nearest thing you can see that is worth shooting at, without
+  Targets the nearest thing you can see that's worth shooting at, without
   opening the targeting interface at all. The cursor jumps to it for a moment
-  so you can see what you got. If there is nothing in sight it does nothing and
-  leaves the old target alone. It is the quick version of ``*`` and costs no
+  so you can see what you got. If there's nothing in sight it does nothing and
+  leaves the old target alone. It's the quick version of ``*``, and costs no
   energy.
 
 Looking Commands
@@ -532,8 +530,8 @@ List visible items (``]``)
 Center map (``^l``) or Center map (``@``)
   Puts your own square back in the middle of the view. Useful after ``L`` has
   left the map looking somewhere else, and on a screen wide enough that the
-  view does not scroll until you reach its edge. It costs no energy and changes
-  nothing but what you are looking at.
+  view doesn't scroll until you reach its edge. It costs no energy and changes
+  nothing but what you're looking at.
 
 Message Commands
 ================
@@ -549,9 +547,9 @@ View previous messages ('^p')
 
 Show previous message ('^o')
   Reprints the most recent message on the top line, marked with ``>``, without
-  taking over the screen the way ``^p`` does. It is for the one line that got
-  overwritten before you had finished reading it. It shows the last message
-  only — pressing it again shows the same one.
+  taking over the screen the way ``^p`` does. Use it for the one line that got
+  overwritten before you'd finished reading it. It only shows the last
+  message, and pressing it again shows the same one.
 
 Take notes (``:``)
   This command allows you to take notes, which will then appear in your
@@ -568,12 +566,12 @@ Game Status Commands
 ====================
 
 View abilities (``S`` in both keysets)
-  Lists what your class and your race give you that is not a spell, a power or
-  a number on the character sheet — the standing properties, class first and
-  race second, each with a description you can read. It is where you find out
-  what *holds its life* or *does not bleed* actually means for the character
-  you are playing, rather than inferring it from a line in this manual. It
-  costs no energy.
+  Lists what your class and your race give you that isn't a spell, a power or
+  a number on the character sheet: the standing properties, class first and
+  race second, each with a description you can read. This is where you find
+  out what *holds its life* or *does not bleed* means for the character you're
+  playing, without having to work it out from a line in this manual. It costs
+  no energy.
 
 Character Description (``C``)
   Brings up a full description of your character, including your skill
@@ -702,12 +700,12 @@ Check knowledge (``~``)
     to bring up the in-game help for the equippable comparison.
 
 Things you have taken on (``J``) or Things you have taken on (``%``)
-  Lists the work you have accepted and not yet handed back: what each job is,
+  Lists the work you've accepted and not yet handed back: what each job is,
   which town it came from, and how far along you are. The two quests the game
-  ends on — Oberon and the Serpent of Chaos — are not listed here, because
-  nobody gave them to you and there is nothing to report back. You can give up
-  a job from this screen; walking back into the building that hired you also
-  works. See :doc:`quests`.
+  ends on, Oberon and the Serpent of Chaos, aren't listed here, because nobody
+  gave them to you and there's nothing to report back. You can give up a job
+  from this screen, or by walking back into the building that hired you.
+  See :doc:`quests`.
 
   In the roguelike keyset the key is ``%``, because ``J`` is one of that
   keyset's eight running keys. This command takes no energy.
@@ -715,10 +713,9 @@ Things you have taken on (``J``) or Things you have taken on (``%``)
 Command pets (``P``) or Command pets (``!``)
   Opens the pet menu. Five orders set how close your animals stay, from *stay
   close* to *stay away*; two switches say whether they may open doors and
-  whether they may pick things up; and two more list what is following you and
-  dismiss it. The orders are a policy rather than instructions to an
-  individual — every pet follows the same one, and it keeps across a save.
-  See :doc:`pets`.
+  whether they may pick things up; and two more list what's following you and
+  dismiss it. An order covers all your pets at once: every pet follows the
+  same one, and it keeps across a save. See :doc:`pets`.
 
   Zangband used ``p``, which is auto-explore here. In the roguelike keyset the
   key is ``!``, because ``P`` is *peruse a book* there. This command takes no
@@ -751,7 +748,7 @@ User Pref File Commands
 Interact with options (``=``)
   Allow you to interact with options. Note that using the "cheat" options
   (``=`` then ``x``) marks the character as unsuitable for the high score list,
-  permanently — see :ref:`cheating options <cheating-options>`, and
+  permanently. See :ref:`cheating options <cheating-options>`, and
   :ref:`debug commands <debug-commands>` for the larger set behind ``^A``. The
   "window" options allow you to specify what should be drawn in any of the
   special sub-windows (not available on all platforms). See the help files
@@ -776,8 +773,8 @@ Interact with colors - option submenu
 
 Load a single pref line (``"`` in both keysets)
   Prompts for one line of user-pref syntax and runs it immediately, exactly as
-  though it had been read out of a pref file. It is for trying a single setting
-  without editing a file and reloading it; nothing is saved, so a line entered
+  though it had been read out of a pref file. Use it to try a single setting
+  without editing a file and reloading it. Nothing is saved, so a line entered
   this way lasts until you quit. ``=`` then ``p`` loads a whole file instead.
   See :doc:`customization <customize>` for the syntax.
 
@@ -792,9 +789,8 @@ Help (``?``)
 
   Elsewhere it brings up the ZangbandTK on-line help system: the command list,
   the map symbols, the towns and their services, the dungeons of the world,
-  and the cheat and debug commands. It is a short reference rather than a
-  manual — this documentation is the long form, and the help system points at
-  it.
+  and the cheat and debug commands. It's a short reference. This documentation
+  is the long form, and the help system points at it.
 
   The help files are just text files in a particular format, in
   ``lib/help/``, so you can add your own.
@@ -831,24 +827,24 @@ Extra Commands
 
 Repeat previous command (``n``) or Repeat previous command ('^v')
   Does the last thing you did again, with the same item, direction and target.
-  It is the one to reach for when you are drinking a stack of potions, firing
-  the same arrows at the same monster, or tunnelling through a wall — and it
-  costs whatever the command it repeats costs.
+  It's the one to reach for when you're drinking a stack of potions, firing
+  the same arrows at the same monster, or tunnelling through a wall. It costs
+  whatever the command it repeats costs.
 
 Toggle wizard mode ('^w' in both keysets)
-  Turns on the debugging mode, which is not a way to play the game. It warns
-  you the first time and asks you to confirm, and once you agree the character
-  is marked as unscored for good — the mark is in the savefile and switching
-  the mode back off does not remove it. See :ref:`debug commands
+  Turns on the debugging mode, which isn't a way to play the game. It warns
+  you the first time and asks you to confirm, and once you agree, the
+  character is marked as unscored for good. The mark is in the savefile, and
+  switching the mode back off doesn't remove it. See :ref:`debug commands
   <debug-commands>` for what it opens up.
 
 Borg commands ('^z' in both keysets)
   Hands the character to the automatic player, if the game was built with it.
   Like wizard mode it warns you once, asks you to confirm, and permanently
-  marks the character as unscored; unlike wizard mode its own warning is that
-  the game may crash and the savefile may not survive. It exists to play the
-  game unattended for testing, not to play it for you. If the build does not
-  include the borg, the key does nothing.
+  marks the character as unscored. Its warning is a different one, though:
+  the game may crash and the savefile may not survive. The borg is there to
+  play the game unattended for testing, not to play it for you. If the build
+  doesn't include the borg, the key does nothing.
 
 Toggle Choice Window ('^e')
   Toggles the display in any sub-windows (if available) which are

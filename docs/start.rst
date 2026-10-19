@@ -2,8 +2,8 @@
 Getting Started
 ===============
 
-If you have never played a roguelike before, read these in order. The
-demonstration walks through an actual character's first few minutes; the guide
+If you've never played a roguelike before, read these in order. The
+demonstration walks through a character's first few minutes, and the guide
 explains what the demonstration skipped over.
 
 .. toctree::

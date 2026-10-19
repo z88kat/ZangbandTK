@@ -259,7 +259,7 @@ stunning, and the power of "free action" prevents magical paralysis (the
 player may still be paralyzed by being "knocked out" in melee or by a stunning
 attack, but this is very rare and can be prevented with protection from
 stunning; paralysis due to fainting from hunger or casting a spell with
-with insufficient mana is also unaffected by having free action). There are
+insufficient mana is also unaffected by having free action). There are
 monsters that can cause status effects such as blindness, paralysis or
 confusion through their melee attack.  Since this is a physical effect and
 not a mental one, the player will not get a saving throw.  However, having
@@ -278,12 +278,12 @@ no saving throw, except to those that would actually teleport him up or
 down one dungeon level. Having resistance to nexus will also prevent being
 level-teleported, but will not help against normal teleportation spell
 attacks. The player may teleport monsters in the same way, with a spell,
-wand or rod — but in ZangbandTK a hundred and two of the imported monsters
-shrug it off. A unique that does is simply unmoved; anything else gets a
-saving throw that a heavy creature usually passes and a light one usually
+wand or rod, though in ZangbandTK a hundred and two of the imported monsters
+shrug it off. A unique among them isn't moved at all. Anything else gets a
+saving throw, which a heavy creature usually passes and a light one usually
 fails, so teleport-other is a reliable escape from a swarm and an unreliable
 one from the thing you most want moved. The monster recall says *cannot be
-teleported* once you have seen it happen. See :doc:`monsters`.
+teleported* once you've seen it happen. See :doc:`monsters`.
 
 Other attacks are usually element-based, including the aforementioned
 example of dragon breath. Many monsters can breathe various attacks or cast
@@ -436,11 +436,11 @@ noticeable improvement as speed goes higher - for instance, (+30) is not
 quite four times normal speed, and higher values than this are largely
 irrelevant. The player may find items which can be worn or wielded that
 provide speed bonuses: these may include boots of speed, rings of speed and
-a few very rare artifacts. Boots and rings of speed are rolled the same way —
-a small base plus a bonus that grows with depth — and they stop at the same
-ceiling, so no single item of either kind will take you past (+10); a ring is
-not the bigger prize the older manuals made it. Two rings together can reach
-(+20), and that is the usual route to serious speed. The figures themselves are
+a few very rare artifacts. Boots and rings of speed are rolled the same way, as
+a small base plus a bonus that grows with depth, and they stop at the same
+ceiling, so no single item of either kind will take you past (+10). A ring
+isn't the bigger prize the older manuals made it out to be. Two rings together
+can reach (+20), and that's the usual route to serious speed. The figures are
 in ``lib/gamedata/object.txt`` and ``lib/gamedata/ego_item.txt``, which is where
 a balance pass would move them.
 
@@ -468,9 +468,9 @@ to continue. Ego weapons are denoted by the following "names":
 
 .. note::
 
-   This list is Angband's. ZangbandTK adds sixteen ego types of its own —
-   ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``, ``(Trump Weapon)`` and the
-   rest — which are described in :doc:`objects` rather than here.
+   This list is Angband's. ZangbandTK adds sixteen ego types of its own, among
+   them ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness`` and ``(Trump Weapon)``,
+   and they're described in :doc:`objects`.
 
 Ego Melee Weapons:
 ------------------
@@ -557,30 +557,30 @@ Launchers of Extra Might
   their type. For instance, a 'Long Bow of Extra Might (x3)(+X,+Y)(+1)'
   is really a Long Bow '(x4)(+X,+Y)' where '(+X,+Y)' is the standard
   to-hit and to-dam. As the damage multiplier with the bow affects
-  **everything** — the base arrow damage and the magical damage bonus on both
-  the bow and the arrow — this makes it a powerful weapon. A brand or slay on
-  the ammunition adds to that multiplier rather than being multiplied by it;
-  see "Ammo of Elemental Brands" below.
+  everything (the base arrow damage and the magical damage bonus on both the
+  bow and the arrow), this makes it a powerful weapon. A brand or slay on the
+  ammunition adds to that multiplier instead of being multiplied by it; see
+  "Ammo of Elemental Brands" below.
 
 Ammo of Wounding
   This ammunition - whether it be pebbles, iron shots, arrows, bolts,
   seeker arrows or seeker bolts - has big bonuses to-hit and to-damage.
 
 Ammo of Elemental Brands, and Ammo of Slaying enemies
-  This does **not** work the way melee weapons of the same type do. On a melee
-  weapon the brand or slay multiplies the damage. On ammo it is *added to the
+  This doesn't work the way melee weapons of the same type do. On a melee
+  weapon the brand or slay multiplies the damage. On ammo it's *added to the
   launcher's own multiplier* instead: fire a branded arrow that would treble
-  damage from an x3 bow and the shot is multiplied by six, not by nine. The
-  effect is still large, but it adds where you might expect it to compound.
+  damage from an x3 bow and the shot is multiplied by six, not by nine. That's
+  still a big effect, but it adds where you might expect it to compound.
 
-  Only the **best** brand or slay applies, and the game looks at the bow and the
+  Only the best brand or slay applies, and the game looks at the bow and the
   arrow together to find it. A brand on your launcher and a different brand on
-  your ammunition do not stack; you get whichever of the two is worth more
-  against the creature in front of you.
+  your ammunition don't stack: you get whichever of the two does more against
+  the creature in front of you.
 
-  Unlike melee weapons, the slays and elemental brands **do** affect the
-  magical damage bonus for ammo — the to-dam of both bow and arrow is added
-  before the multiplier is applied.
+  Unlike melee weapons, the slays and elemental brands do affect the magical
+  damage bonus for ammo. The to-dam of both bow and arrow is added before the
+  multiplier is applied.
 
 These are the most common types of ego-weapon: note that they are not the 
 ONLY ego-items available in the dungeon, there may be more.

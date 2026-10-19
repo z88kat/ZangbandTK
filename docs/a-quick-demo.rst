@@ -44,8 +44,8 @@ the ``@`` symbol.
 
 The solid blocks (which may be ``#`` symbols on some systems) around the
 edge of the town represent the walls that surround the town. You *can* walk
-out of them: unlike Angband, where the town is the whole of the surface,
-ZangbandTK has a world outside the walls and the gates are how you reach it.
+out of them. In Angband the town is all there is on the surface, but
+ZangbandTK has a world outside the walls, and you reach it through the gates.
 See :doc:`wilderness`.
 
 The rectangular blocks of walls with a number on the edge represent stores.

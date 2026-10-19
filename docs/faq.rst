@@ -15,8 +15,8 @@ Issues and problems
 How do I report a bug?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Open an issue on the `issue tracker`_. If you are sure the bug is Angband's
-rather than this game's, it is worth reporting upstream as well.
+Open an issue on the `issue tracker`_. If you're sure the bug comes from
+Angband itself, report it upstream as well.
 
 Bug reports should include:
 
@@ -70,17 +70,17 @@ Development
 Where does development happen?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On GitHub, at https://github.com/z88kat/ZangbandTK — issues, discussion and
-pull requests all in the one place.
+On GitHub, at https://github.com/z88kat/ZangbandTK. Issues, discussion and pull
+requests are all in the one place.
 
 .. note::
 
    This section used to answer questions about contributing to *Angband*: post
-   on their forums, their developers will file it, and a patch that does not
+   on their forums, their developers will file it, and a patch that doesn't
    suit them may mean *"you may just be better off writing a variant"*. All of
-   which is true, and none of which is about this game — it was pointing anyone
-   who wanted to help at the wrong project. Writing a variant is advice this
-   project has already taken.
+   that is true of Angband, and it was sending anyone who wanted to help this
+   game to the wrong project. Writing a variant is advice this project has
+   already taken.
 
 
 .. _issue tracker: https://github.com/z88kat/ZangbandTK/issues

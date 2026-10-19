@@ -71,13 +71,13 @@ After these are complete, the game will try to load (in order):
 
 .. note::
 
-   **There are no per-race or per-class pref files.**  Zangband loaded
-   ``Dwarf.prf`` and ``Paladin.prf`` alongside the character's own file, and
-   Angband 4.2 does not — a ``Mage.prf`` sitting in your user directory will
+   There are no per-race or per-class pref files.  Zangband loaded
+   ``Dwarf.prf`` and ``Paladin.prf`` alongside the character's own file, but
+   Angband 4.2 doesn't, so a ``Mage.prf`` sitting in your user directory will
    never be read.
 
    What replaced them is better, because it works inside a file that *is*
-   loaded.  A pref file can carry conditional lines, so you can put everything
+   loaded.  A pref file can have conditional lines, so you can put everything
    in ``user.prf`` and fence off the parts that should only apply sometimes::
 
        ?:[EQU $CLASS Mage]
@@ -87,7 +87,7 @@ After these are complete, the game will try to load (in order):
 
    ``?:`` takes an expression in brackets and switches the rest of the file on
    or off; ``?:1`` switches it back on again.  The variables are ``$CLASS``,
-   ``$RACE`` and ``$SYS`` (the front end in use — ``x11``, ``sdl2``, ``win``
+   ``$RACE`` and ``$SYS`` (the front end in use: ``x11``, ``sdl2``, ``win``
    and so on), and the operators are ``EQU``, ``IOR``, ``AND`` and ``NOT``, so
    ``?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]`` is how the shipped ``font.prf``
    picks an X11 font.  The game's own files in ``lib/customize/`` are the
@@ -550,10 +550,10 @@ Tcl/Tk
 
 The Tcl/Tk front end, ``ZangbandTK.app``, keeps the map and its panes in one
 window.  Drag the dividers between the panes to change their sizes.  F1 in any
-window opens this manual where it covers that window -- in the main window, at
-Playing the Game.  How the
-window draws is set on the Display page of the Options window (Other ▸
-Preferences ▸ Options, or Preferences in the application menu):
+window opens this manual where it covers that window; from the main window,
+that's Playing the Game.  How the window draws is set on the Display page of
+the Options window (Other ▸ Preferences ▸ Options, or Preferences in the
+application menu):
 
 * **Tile set** chooses the graphical tiles, or None to draw the map in letters.
 * **Tile size** draws the map's tiles Small, Medium or Large.  The overhead map
@@ -561,17 +561,17 @@ Preferences ▸ Options, or Preferences in the application menu):
 * **Fonts** sets the font and size of the map, of the text panes beside and
   below it, and of the overhead map.  A pane's font decides how many rows and
   columns fit in it, so a larger font shows less of the map.  **Window text**
-  sets the size of the text in every other window -- the Character, Items and
+  sets the size of the text in every other window (the Character, Items and
   Knowledge windows, the shops, the Options window itself and the manual in the
-  Help window -- with headings and the rest scaled to match.
-* **Colours** offers the game's colours, a high-contrast palette, a palette
-  made for colour-blind players, and your own.  Click a colour in the row of
-  swatches to change it, which makes the palette your own.  The palettes colour
-  the map when it is drawn in letters, the sidebar, the messages, the lists and
-  the health and mana bars.  A tile set keeps the colours of its tiles -- with
-  one exception: Neon comes in a second version, "Neon tiles, colour-blind
-  safe", the same tiles in colours chosen so that monsters of one kind stay
-  apart for players who are red-green or blue-yellow colour-blind.
+  Help window), with headings and the rest scaled to match.
+* **Colours** chooses between the game's colours, a high-contrast palette, a
+  palette made for colour-blind players, and your own.  Click a colour in the
+  row of swatches to change it, which makes the palette your own.  The palettes
+  colour the map when it's drawn in letters, the sidebar, the messages, the
+  lists and the health and mana bars.  A tile set keeps the colours of its
+  tiles, with one exception.  Neon comes in a second version, "Neon tiles,
+  colour-blind safe", the same tiles in colours chosen so that monsters of one
+  kind stay apart for players who are red-green or blue-yellow colour-blind.
   Choosing the colour-blind palette while the map is in Neon switches to it,
   and choosing the game's or the high-contrast palette switches back.  It can
   be chosen as a tile set of its own as well, and then stays whatever the
@@ -592,5 +592,5 @@ Under them, **Your music** plays music of your own while you play: no music
 comes with the game, so choose a folder of it.  The folders inside it are read
 too, and the tracks play in a shuffled order, with a volume of their own and
 Previous, Pause and Next.  MP3, AAC, FLAC, Ogg, Opus, WAV and AIFF all play.
-Whether it is on, the folder and the volume are kept in ``tk-settings.txt``,
+Whether it's on, the folder and the volume are kept in ``tk-settings.txt``,
 for every character.

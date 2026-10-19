@@ -11,141 +11,133 @@ These are the mechanics most likely to change how you fight, and all three can
 appear on artifacts or on ordinary ego items.
 
 **Vampiric.** Drains life from living creatures to heal you, by the damage each
-blow deals. A killing blow drains nothing — the life has gone with the monster,
-as it had in Zangband — so it is the blows that do not kill that feed you.
-Undead and other non-living creatures give you nothing. Found on artifacts and
-on the ``(Vampiric)`` ego.
+blow deals. A killing blow drains nothing, as in Zangband: the life has gone
+with the monster, so it is the blows that don't kill that feed you. Undead and
+other non-living creatures give you nothing. Found on artifacts and on the
+``(Vampiric)`` ego.
 
 **Vorpal.** One blow in six cuts far deeper than it should, doubling that blow's
-damage. It multiplies the weapon's own contribution rather than your damage
-bonuses, so it favours a large weapon over a heavily enchanted small one. Found
-on artifacts and on weapons ``of Sharpness``.
+damage. It multiplies the weapon's own contribution and leaves your damage
+bonuses alone, so it favours a large weapon over a heavily enchanted small one.
+Found on artifacts and on weapons ``of Sharpness``.
 
 **Chaotic.** One blow in seven discharges an unpredictable effect into whatever
-you hit — confusion, terror, slowing, stunning, or flinging the target out of
-reach entirely. That last one is a genuine drawback and is meant to be: a
-chaotic weapon that only ever helped you would not be chaotic. Found on
-artifacts and on the ``(Chaotic)`` ego.
+you hit: confusion, terror, slowing, stunning, or flinging the target out of
+reach entirely. That last one is a drawback, and it's meant to be, since a
+chaotic weapon that only ever helped you would not be chaotic. Found on artifacts
+and on the ``(Chaotic)`` ego.
 
-All three announce themselves in an item's description, so you will know a
-weapon has them once you have identified it.
+All three announce themselves in an item's description, so you'll know a weapon
+has them once you have identified it.
 
 New artifacts
 -------------
 
-The 51 imported artifacts include the regalia of Amber — **Grayswandir**,
-Corwin's blade, and **Frakir**, the strangling cord — along with Zangband's
-chaos and Mythos artifacts.
+The 51 imported artifacts include Zangband's chaos and Mythos artifacts, and the
+regalia of Amber: Grayswandir, Corwin's blade, and Frakir, the strangling cord.
 
-A few appear on base items Angband no longer has. Angband retired several object
-kinds over the years, and where an artifact's original base was one of them it
-has been rehoused on the nearest surviving equivalent. Grayswandir is a cutlass
-here because Angband no longer has sabres. The artifact's own damage, weight and
-value are unchanged.
+A few were built on base items Angband no longer has. Angband retired several
+object kinds over the years, and where an artifact's original base was one of
+them it has been rehoused on the nearest surviving equivalent. Grayswandir is a
+cutlass here because Angband no longer has sabres. The artifact keeps its own
+damage, weight and value.
 
 New ego types
 -------------
 
-Sixteen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
+There are sixteen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
 ``(Ghoul Touch)``, ``of Immolation``, and the Amber-flavoured
 ``(Trump Weapon)`` and ``(Pattern Weapon)``.
 
-Ego items are where most players will actually meet Zangband's character.
-Artifacts are rare by design; a vampiric long sword is not.
+Ego items are where most players will meet Zangband's character. Artifacts are
+rare, and a vampiric long sword is not.
 
 New objects
 -----------
 
-Eighty-six of Zangband's own object kinds, which is most of what it had that
-Angband does not: thirteen swords including the **Diamond Edge** and the
-**Psiblade**, nine polearms, eight hafted weapons, eighteen pieces of armour
-from the **T-shirt** to the feathered **Hagaromo**, and twenty-five rings and
-amulets. The remaining thirteen are consumables — five potions, four scrolls,
-two rods, a food and an arrow.
+There are eighty-six of Zangband's own object kinds, which is most of what it
+had that Angband does not: thirteen swords including the Diamond Edge and the
+Psiblade, nine polearms, eight hafted weapons, eighteen pieces of armour from the
+T-shirt to the feathered Hagaromo, and twenty-five rings and amulets. The
+remaining thirteen are consumables: five potions, four scrolls, two rods, a food
+and an arrow.
 
-The jewellery is where the interesting things are. An **Amulet of Anti-Magic**
-stops you casting at all; an **Amulet of Anti-Teleportation** roots you where
-you stand, which is a drawback until the day something tries to teleport you
-away. A **Ring of Lordly Protection** is what its name suggests. An **Amulet of
-Destruction** is not.
+The jewellery is where the interesting things are. An Amulet of Anti-Magic stops
+you casting at all, and an Amulet of Anti-Teleportation roots you where you
+stand, which is a drawback until the day something tries to teleport you away. A
+Ring of Lordly Protection is what its name suggests. An Amulet of Destruction is
+not.
 
-A **Ring of Wizardry** gives a caster more mana — and the number on it is per
-level you can cast at, not a flat bonus, so it is worth a little to a novice
-and a great deal to someone who has been at it a while.
+A Ring of Wizardry gives a caster more mana. The number on it is per level you
+can cast at, so it is worth a little to a novice and a great deal to someone who
+has been at it a while. The Ring of Fate has a section of its own, below.
 
-A **Ring of Fate** deserves its own paragraph, below.
+Among the consumables, a Rod of Havoc picks one of twenty-five damage types and
+throws it at whatever you aimed at, as a ball or occasionally as a beam, and is
+never twice the same rod. A Scroll of Mundanity strips an item back to the plain
+thing it was made as: no artifact, no ego, base dice, base armour, and the
+identification forgotten with them. It is the only way to be rid of something
+that will not come off, and it's indiscriminate. Nothing warns you what you're
+about to lose. (A magical figurine keeps its monster, which is what it was made
+as.)
 
-Among the consumables: a **Rod of Havoc**, which picks one of twenty-five
-damage types and throws it at whatever you aimed at, as a ball or occasionally
-as a beam, and is never twice the same rod. And a **Scroll of Mundanity**,
-which strips an item back to the plain thing it was made as — no artifact, no
-ego, base dice, base armour, and the identification forgotten with them. It is
-the only way to be rid of something that will not come off, and it is
-indiscriminate: nothing warns you what you are about to lose. (A magical
-figurine keeps its monster, which is what it was made as.)
-
-Some care went into what *not* to import. Zangband renamed a good deal of what
-it inherited from Angband — its Ring of Skill is Angband's Ring of Accuracy,
-its Scroll of Enchant Weapon Deadliness is Enchant Weapon To-Dam — and
-importing those by name would have put two of each in the game under two names.
-They are compared by the slot they occupy rather than by what they are called,
-so the ten renamed ones are recognised as things Angband already has.
+Zangband renamed a good deal of what it inherited from Angband. Its Ring of Skill
+is Angband's Ring of Accuracy, and its Scroll of Enchant Weapon Deadliness is
+Enchant Weapon To-Dam, so importing those by name would have put two of each in
+the game under two names. They are compared by the slot they occupy instead of by
+what they're called, so the ten renamed ones are recognised as things Angband
+already has.
 
 The Ring of Fate
 ----------------
 
-It sounds like a lucky charm. It is not, quite.
+It sounds like a lucky charm, and it isn't, quite. It sharpens every critical
+hit in the game by half again, including the ones landed on you. And roughly one
+monster in thirteen generated while you wear it comes from deeper than the level
+should produce, sometimes forty levels deeper.
 
-What it actually does is sharpen every critical hit in the game by half again —
-**including the ones landed on you**. And roughly one monster in thirteen
-generated while you wear it comes from deeper than the level should produce,
-sometimes forty levels deeper.
-
-So it is a good ring for a character who kills things quickly and a very bad
-one for a character who does not, and it will eventually introduce you to
-something you were not ready for. Zangband's own source comments the third of
-its four effects with "Luck isn't always good for you...", which is the whole
-item in six words.
+So it is a good ring for a character who kills things quickly and a very bad one
+for a character who doesn't, and it will eventually introduce you to something
+you were not ready for. Zangband's own source comments the third of its four
+effects with "Luck isn't always good for you...", which is the whole item in six
+words.
 
 The Ancient and Foul Curse
 --------------------------
 
-Some equipment carries the Curse of Topi Ylinen, and you will know it: the item
+Some equipment has the Curse of Topi Ylinen, and you'll know it: the item
 describes itself as ancient and foul.
 
-What makes it feared is not any single outcome but its shape. Roughly once every
-hundred turns, a cursed item stirs and one misfortune befalls you — monsters
-woken, something summoned, experience drained, paralysis, a statistic lost, or
-your memory torn away. But each of those has a chance of *falling through* to the
-next, and the next after that, so a woken monster can escalate into a summoning,
-into paralysis, into total amnesia, in a single visitation. When it finishes,
-there is a one-in-three chance it simply begins again.
+Roughly once every hundred turns, a cursed item stirs and one misfortune befalls
+you: monsters woken, something summoned, experience drained, paralysis, a
+statistic lost, or your memory torn away. But each of those has a chance of
+*falling through* to the next, and the next after that, so a woken monster can
+escalate into a summoning, into paralysis, into total amnesia, in a single
+visitation. When it finishes, there's a one-in-three chance it begins again.
+Sometimes the curse stirs and nothing happens at all.
 
 Free action does not make you immune to the paralysis. It gives you a saving
 throw, and shortens the paralysis if you fail.
 
-Sometimes the curse stirs and nothing happens at all.
-
-It is worth carrying cursed equipment only if what it gives you is worth this.
-Often it is.
+Cursed equipment is only worth carrying if what it gives you makes up for all
+this, and often it does.
 
 Activations
 -----------
 
 Zangband scripted its artifact activations in a scripting language ZangbandTK
-does not carry. Each has been matched to the nearest Angband activation
-instead — an artifact that threw a fireball still throws a fireball, and its
-recharge time is preserved, but the effect is Angband's version rather than a
-faithful reproduction of Zangband's.
+doesn't have, so each one uses the nearest Angband activation instead. An
+artifact that threw a fireball still throws a fireball, with the same recharge
+time, but the effect is Angband's version and won't behave exactly like
+Zangband's.
 
 The lotus
 ---------
 
-There is a mushroom that takes your memory.
-
-It looks like every other mushroom you have not identified — some colour and a
-comma on the floor — and eating it says only that you feel a little dizzy. Five
-turns later you forget everything you know:
+There's a mushroom that takes your memory. It looks like every other mushroom
+you haven't identified, some colour and a comma on the floor, and eating it says
+only that you feel a little dizzy. Five turns later you forget everything you
+know:
 
 - the map of the level you are standing on;
 - the world map, and every town and dungeon mouth you had found on it;
@@ -154,25 +146,25 @@ turns later you forget everything you know:
   liquids and have to be drunk to find out what they are;
 - and every spell you had learned, which must be studied again from the book.
 
-It takes nothing you cannot get back. No experience, no levels, no items. But
+It takes nothing you cannot get back: no experience, no levels, no items. But
 none of it comes back quickly, so the price of eating a strange mushroom is
-measured in hours of play rather than in a dead character — which is the point.
-A consumable that could end a run outright is one nobody eats twice.
+measured in hours of play. A consumable that could end a run outright is one
+nobody eats twice.
 
-**One thing survives: you always know where home is.** The village you started
-in stays on the map, along with the country immediately around it, so there is
-always one place you can name and one direction worth walking. That is not
-mercy — the magetower only carries you to places you have found, so a character
-who had forgotten every place including their own would have a blank map, no
-travel and nothing to aim at.
+One thing survives: you always know where home is. The village you started in
+stays on the map, along with the country immediately around it, so there's
+always one place you can name and one direction worth walking. The reason is
+the magetower, which only carries you to places you've found. A character who
+had forgotten every place including their own would have a blank map, no travel
+and nothing to aim at.
 
-Which is also where the idea comes from. The first of Zelazny's Amber novels
-opens on a man who has lost his memory and knows only that there is a place
-called Amber, and that he is of it.
+That's also where the idea comes from. The first of Zelazny's Amber novels opens
+on a man who has lost his memory and knows only that there is a place called
+Amber, and that he is of it.
 
-**The five turns are deliberate.** Something that took your memory the moment
-you swallowed it would be an ordinary bad mushroom. Five turns is long enough to
-work out what you have done and not long enough to do anything about it.
+Something that took your memory the moment you swallowed it would be an ordinary
+bad mushroom. The five turns are long enough to work out what you've done, and
+not long enough to do anything about it.
 
 Seven more from Zangband
 ------------------------
@@ -180,93 +172,90 @@ Seven more from Zangband
 **Returning.** A thrown weapon comes back to your hand, nineteen throws in
 twenty. The twentieth is what keeps it a weapon you can lose.
 
-**Luck.** Improves your saving throw. Zangband wrote this as a flat value
-rather than a bonus, which made a lucky novice better at shrugging things off
-than an unlucky veteran; here it is the bonus the name promises.
+**Luck.** Improves your saving throw. Zangband wrote this as a flat value, which
+made a lucky novice better at shrugging things off than an unlucky veteran. Here
+it's the bonus the name promises.
 
-**A ghoul's touch.** What you strike falls asleep — but only if you strike it
+**A ghoul's touch.** What you strike falls asleep, but only if you strike it
 bare-handed. Gloves of this kind are for someone who fights with their hands,
 and putting a weapon in them turns the property off entirely.
 
 **Easily enchanted.** Takes twice as many enchantment attempts, and an artifact
 so made does not get its usual chance to resist being enchanted at all.
 
-**Weird luck.** The Ring of Fate's property, described above. Both edges of it —
-and a third thing besides: once in about seven levels gained, something in the
-Courts of Chaos notices you and hands down a reward. It will not be a Lord of
-your own, and one that was never yours is gentler than one that is — a passing
-interest rather than a claim.
+**Weird luck.** The Ring of Fate's property, described above, with both its
+edges and a third thing besides. Once in about seven levels gained, something in
+the Courts of Chaos notices you and hands down a reward. It won't be a Lord of
+your own, and one that was never yours is gentler than one that is: it takes a
+passing interest in you, and has no claim on you.
 
 **Magic-powered criticals.** A weapon that spends your mana to land critical
-hits, and to make the ones it lands worse — one to three points each time. The
-**Psiblade** carries it. With an empty mana pool it does nothing at all, which
-makes it a warrior's weapon only in the hands of a warrior who casts.
+hits, and to make the ones it lands worse (one to three points each time). The
+Psiblade has it. With an empty mana pool it does nothing at all, so it's only a
+warrior's weapon in the hands of a warrior who casts.
 
-**An anti-magic shell.** You cannot cast. Not a reduced chance, not a higher
-cost: the spell simply does not happen. Studying and browsing still work, so
-you can keep learning spells you are unable to use.
+**An anti-magic shell.** You cannot cast. There's no reduced chance or higher
+cost: the spell just doesn't happen. Studying and browsing still work, so you
+can keep learning spells you are unable to use.
 
-**A chaos patron.** Carried by the ``(Chaotic)`` ego. A Lord of the Courts
-takes an interest in whoever holds it, and every level you gain from then on
-brings a reward — the same ladder a Chaos-Warrior climbs, from the genuinely
-generous down to the actively hostile. Wearing one is not the same as being
-sworn to one, and the difference runs the way you would not guess: a Lord with
-no claim on you is *less* likely to reach for the bottom of the ladder, not
-more. It is glancing over rather than keeping accounts, and the borrowed reward
-is a smaller thing in both directions.
+**A chaos patron.** The ``(Chaotic)`` ego has it. A Lord of the Courts takes an
+interest in whoever holds it, and every level you gain from then on brings a
+reward from the same ladder a Chaos-Warrior climbs, from the generous down to
+the actively hostile. Wearing one is not the same as being sworn to one, and the
+difference runs the way you wouldn't guess: a Lord with no claim on you is
+*less* likely to reach for the bottom of the ladder. It's only glancing over,
+and the borrowed reward is a smaller thing in both directions.
 
 Not yet implemented
 -------------------
 
 One Zangband object property is recorded but inactive: passing through walls.
-Angband has no form of player wall-movement to hang it on — not a spell, not a
-temporary state, nothing — so carrying it would mean building wall-phasing for
-the player rather than reading a flag. Items with it work in every other
-respect.
+Angband has no form of player wall-movement to hang it on, neither a spell nor a
+temporary state, so supporting it would mean building wall-phasing for the
+player first. Items with it work in every other respect.
 
-Two more object properties are recorded and inactive, and both are the same
-kind of case: each cancels a penalty this game does not impose. ``WILD_SHOT``
-ignores the cover a monster gets from standing in trees, and Angband has no
-terrain term in its combat at all. ``WILD_WALK`` removes the extra effort of
-climbing a mountain and the poison of wading a swamp — but here a mountainside
-is a wall rather than slow ground, and there is no swamp terrain. Building
-either flag alone would do nothing; building what they cancel is a change to
-how the wilderness plays rather than a conversion of a flag. One ego,
-``of the Wild``, waits with them: every property it had was ``WILD_WALK``, so
-importing it would have put a pair of boots in the game that granted nothing at
-all.
+Two more object properties are recorded and inactive, for the same reason: each
+cancels a penalty this game does not impose. ``WILD_SHOT`` ignores the cover a
+monster gets from standing in trees, and Angband has no terrain term in its
+combat at all. ``WILD_WALK`` removes the extra effort of climbing a mountain and
+the poison of wading a swamp, but here a mountainside is a wall, not slow
+ground, and there's no swamp terrain. Building either flag alone would do
+nothing. Building what they cancel would change how the wilderness plays, which
+is a bigger job than converting a flag. One ego, ``of the Wild``, waits with
+them: every property it had was ``WILD_WALK``, so importing it would have put a
+pair of boots in the game that granted nothing at all.
 
 Two of Zangband's object kinds are likewise recorded but not imported:
 
-- **A Scroll of Artifact Creation**, which makes a new artifact out of an
-  ordinary item during play. Angband generates its random artifacts once, at
-  birth, and stores an artifact in the savefile by name — so one invented
-  mid-game would not be there when the character was loaded again.
-- **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
-  resistance halves it — and adding an element changes the savefile layout.
+- A Scroll of Artifact Creation, which makes a new artifact out of an ordinary
+  item during play. Angband generates its random artifacts once, at birth, and
+  stores an artifact in the savefile by name, so one invented mid-game would not
+  be there when the character was loaded again.
+- A Wand of Rockets, whose damage is its own element (it stuns, and shard
+  resistance halves it), and adding an element changes the savefile layout.
 
-Thirteen that used to be on this list have since arrived. The **Wand of Tame
-Monster** waited on pets and now has them (:doc:`pets`). The **Potion of New
-Life** strips every mutation you carry (:doc:`mutations`); Zangband's version
-also re-rolled your hit points, and that half of it is still not built. The
-**Magical Figurine** waited on an object that could name a monster: *a Magical
-Figurine of a cave spider*, thrown, breaks and leaves the cave spider behind as
-your pet (:doc:`pets`).
+Thirteen more had to wait for something else in the game, and all thirteen are
+in. The Wand of Tame Monster
+needed pets, and has them (:doc:`pets`). The Potion of New Life strips every
+mutation you carry (:doc:`mutations`); Zangband's version also re-rolled your
+hit points, and that half of it isn't built yet. The Magical Figurine needed an
+object that could name a monster: *a Magical Figurine of a cave spider*, thrown,
+breaks and leaves the cave spider behind as your pet (:doc:`pets`).
 
-And the **ten statues**, which needed the same thing and then a reason. A
-statue is a monster rendered in a material — *a Golden Statue of Smeagol*, any
-monster at all, uniques included — and it does nothing. It is treasure: worth
+The other ten are statues, which needed the same thing and then a reason. A
+statue is a monster rendered in a material (*a Golden Statue of Smeagol*; any
+monster at all, uniques included), and it does nothing. It is treasure, worth
 what its material is worth, from 75 gold for wood to 10,000 for mithril, and
-heavy, twenty pounds for the wooden one and fifty for the rest. They are found
-from level 9 down, never stack, and no monster will pick one up. The **Statue
-Store**, which Zangband's great cities had and this game turned away while it
-had no statues to sell, buys and sells them, and the general store and the
-black market will take one too (:doc:`towns`).
+it's heavy: twenty pounds for the wooden one and fifty for the rest. Statues are
+found from level 9 down, never stack, and no monster will pick one up. The
+**Statue Store**, which Zangband's great cities had and this game turned away
+while it had no statues to sell, buys and sells them, and the general store and
+the black market will take one too (:doc:`towns`).
 
-One more is not waiting at all. **The Scroll of Rumour is dropped**, not
-deferred. Zangband's 647 rumours are in the archive and Angband already has the
-machinery to hold a list like it, so the mechanism was never the obstacle — but
-a good many of the lines name things this game does not have or contradict what
-it does, and a scroll whose whole purpose is to tell you something true is the
-wrong place for text that is not. Sorting the true from the false is 647
-judgements for one flavour scroll, and it is not worth them.
+The Scroll of Rumour is dropped for good. Zangband's 647 rumours are in the
+archive, and Angband already has the machinery to hold a list like it, so the
+mechanism was never the obstacle. But a good many of the lines name things this
+game doesn't have or contradict what it does, and a scroll whose whole purpose
+is to tell you something true is the wrong place for text that isn't. Sorting
+the true from the false is 647 judgements for one flavour scroll, and it is not
+worth them.

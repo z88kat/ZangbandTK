@@ -2,21 +2,20 @@ Races and Classes
 =================
 
 Angband gives you eleven races and nine classes. ZangbandTK has twenty-eight and
-fourteen, and the new ones are not variations on the old — they are the reason
-the game feels different from the first screen.
+fourteen. The new ones aren't variations on the old, and they're the reason the
+game feels different from the first screen.
 
-:doc:`birth` has the full descriptions and the tables. This page is what is
+:doc:`birth` has the full descriptions and the tables. This page covers what's
 different from Angband, and why.
 
 Seventeen new races
 -------------------
 
-Curated, not imported. Zangband has twenty-one races Angband does not;
-**seventeen are in** and four are turned down on the evidence — the near-
-duplicates. None are waiting. The rule was
-that a race has to add a decision rather than a line on the menu — three of
-Zangband's are a Half-Troll with one resistance swapped, and those are the ones
-that did not make it.
+Zangband has twenty-one races that Angband doesn't. Seventeen are in, and four
+were turned down on the evidence as near-duplicates. None are waiting. The rule
+was that a race has to add a decision. Three of Zangband's are a Half-Troll with
+one resistance swapped, which adds a line on the menu and nothing else, and
+those are the ones that didn't make it.
 
 .. list-table::
    :widths: 18 82
@@ -30,16 +29,16 @@ that did not make it.
        after these people.
    * - **Draconian**
      - Breathes. The second most expensive thing you can be, and it grows into
-       its scales — fire at 5, cold at 10, acid at 15, lightning at 20 and
+       its scales: fire at 5, cold at 10, acid at 15, lightning at 20 and
        poison at 35.
    * - **Vampire**
-     - Drinks blood to heal, from level 5 — the earliest power in the game.
-       Immune to darkness, and burnt by the sun: anywhere on the surface in
-       daylight you take a point a turn and cannot heal — so it carries
-       scrolls of Darkness instead of torches, and is the only character who
-       can put out daylight to shelter in it. Food is nearly useless to it, at
-       a tenth of the good it does anyone else, and it begins the game just
-       after midnight.
+     - Drinks blood to heal from level 5, the earliest power in the game.
+       Immune to darkness and burnt by the sun: anywhere on the surface in
+       daylight you take a point a turn and cannot heal. So it carries scrolls
+       of Darkness instead of torches, and it is the only character who can put
+       out daylight to shelter in it. Food is nearly useless to it, at a tenth
+       of the good it does anyone else, and it begins the game just after
+       midnight.
    * - **Mindflayer**
      - Enormous intelligence and wisdom, a feeble body, and it attacks minds
        directly. Sees the invisible at 15 and reads minds at 30.
@@ -77,66 +76,63 @@ that did not make it.
    * - **Half-Titan**
      - The most expensive thing you can be, at 255 per cent.
    * - **Yeek**
-     - Immune to acid above 19, and otherwise feeble, cowardly, and cheap —
-       it levels as fast as a human, which is the only kindness it is shown.
+     - Immune to acid above 19, and otherwise feeble, cowardly and cheap. It
+       levels as fast as a human, which is the only kindness it's shown.
    * - **Beastman**
      - Chaos-touched and born wrong, and the one race that mutates without
        being made to: one mutation at birth and a one-in-five chance at every
        level after.
 
-**Experience cost is a real dial here.** Angband flattened it — nearly every
-race costs 120 per cent and the field barely matters. Zangband ran it from 100
-to 255 and used it to price what a race can do, and ZangbandTK keeps Zangband's
-figures. So a Half-Titan is slow to level because it is a Half-Titan, and a Yeek
-is not because it is a Yeek. Read the XP column in :doc:`birth` as part of the
-race, not as a footnote.
+Experience cost means something here. Angband flattened it: nearly every race
+costs 120 per cent, and the field hardly makes a difference. Zangband ran it
+from 100 to 255 and used it to price what a race can do, and ZangbandTK keeps
+Zangband's figures. So a Half-Titan is slow to level because it's a Half-Titan,
+and a Yeek isn't because it's a Yeek. Read the XP column in :doc:`birth` as part
+of the race.
 
 Racial powers
 -------------
 
-New mechanism. Angband has no such thing: a race there is a set of adjustments
-and flags, and everything a character *does* comes from a spell, an object or a
-shape.
+Angband has nothing like these. A race there is a set of adjustments and flags,
+and everything a character *does* comes from a spell, an object or a shape.
 
-Twenty-two of the twenty-eight races can do something no class will ever teach —
-press ``N`` for the list. An Amberite shifts into shadow and, thirty levels later,
-walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek screams,
-a Half-Titan sizes up what it is looking at.
+Twenty-two of the twenty-eight races can do something no class will ever teach.
+Press ``N`` for the list. An Amberite shifts into shadow and, thirty levels
+later, walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek
+screams, a Half-Titan sizes up what it is looking at.
 
-Powers cost mana where there is any and **hit points where there is not**, which
-is what keeps them worth having whatever class you chose. The levels, costs and
-failure rates are Zangband's own numbers. See :ref:`Racial powers
-<racial-powers>`.
+Powers cost mana if you have any and hit points if you don't, so they're worth
+having whatever class you chose. The levels, costs and failure rates are
+Zangband's own numbers. See :ref:`Racial powers <racial-powers>`.
 
 The Monk, and martial arts
 --------------------------
 
-The first of Zangband's five classes, and the one that needed a mechanism
+The Monk is the first of Zangband's five classes, and it needed a mechanism
 Angband does not have.
 
 In Angband, fighting bare-handed is a punishment: one point of damage a blow,
-criticals skipped outright. A Monk turns that on its head. It carries no weapon
-because it does not need one, and unarmed it climbs a ladder of seventeen
-techniques — a punch at level 1 up to a crushing blow at 48 — throwing two
-strikes a turn at the start and **eight** by the end, which is more than a
-Warrior gets out of any weapon in the game.
+with criticals skipped outright. A Monk turns that on its head. It carries no
+weapon because it doesn't need one. Unarmed, it climbs a ladder of seventeen
+techniques, from a punch at level 1 up to a crushing blow at 48. It throws two
+strikes a turn at the start and eight by the end, which is more than a Warrior
+gets out of any weapon in the game.
 
 Which technique lands is decided fresh on every swing, so a Grand Master usually
-— but never reliably — throws something from the top of the ladder. Some strikes
-stun; a knee doubles a male opponent up; a kick to the ankle leaves anything
+throws something from the top of the ladder, but never reliably. Some strikes
+stun, a knee doubles a male opponent up, and a kick to the ankle leaves anything
 that walks limping.
 
-And it is the one class in the game that is **punished for wearing armour**.
-Over the weight limit and the strikes halve and every bonus withdraws; under it,
-each empty armour slot is worth armour class in its own right. See
-:ref:`Martial arts <martial-arts>`.
+It's also the one class in the game that is punished for wearing armour. Over
+the weight limit, the strikes halve and every bonus is withdrawn. Under it, each
+empty armour slot is worth armour class in its own right. See :ref:`Martial arts
+<martial-arts>`.
 
-Two more things hang off that limit. A Monk **speeds up** from level 10, by one
-point for every ten levels, and **cannot be held** from level 25 — and both of
-them go away the moment it is carrying too much armour, along with the blows and
-the armour class. Nothing else in the game gates an intrinsic on what you are
-wearing. It is the clearest statement of what the class is: a Monk's advantages
-are all things that stop being true when it puts something on.
+Two more things hang off that limit. A Monk speeds up from level 10, by one
+point for every ten levels, and cannot be held from level 25. Both go away the
+moment it's carrying too much armour, along with the blows and the armour class.
+Nothing else in the game gates an intrinsic on what you're wearing. Every one of
+a Monk's advantages stops being true when it puts something on.
 
 .. _class-gates:
 
@@ -161,85 +157,85 @@ Paladin         resistance to fear                    40
 =============== ================================= ======
 
 A Warrior's immunity to fear at 30 is Angband's own and works the same way. The
-four above are Zangband's, and were missing until 3.118.1.
+four above are Zangband's, and they arrived in 3.118.1.
 
 The Mindcrafter, and psionics
 -----------------------------
 
-The second of Zangband's classes, and the opposite kind of thing to the Monk.
+The Mindcrafter is the second of Zangband's classes, and the opposite kind of
+thing to the Monk.
 
 A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
-powers that arrive as it levels — and they are deliberately **not a realm of
-magic**: nothing to study, nothing to choose at birth, nothing that can be
-taken away. That distinction is the whole requirement, not a detail of how it
-was built.
+powers that arrive as it levels, and they aren't a realm of magic: there's
+nothing to study, nothing to choose at birth, and nothing that can be taken
+away.
 
 Most of the twelve grow into something else as the character does, which is
-worth knowing because it is unlike anything in Angband. *See what is coming*
-spots monsters at level 2, finds traps and doors at 5, sees invisibility at 15,
-maps the level at 20, grants telepathy from 25, detects everything at 30 and
-lights the whole level at 45 — one power, one key, for a whole career.
+unlike anything in Angband. *See what is coming* spots monsters at level 2,
+finds traps and doors at 5, sees invisibility at 15, maps the level at 20,
+grants telepathy from 25, detects everything at 30 and lights the whole level at
+45. That's one power on one key for a whole career.
 
-**And psionic force is a new kind of damage.** Every damaging type Angband has
-is an element, resisted with a flag or with armour. This one asks whether there
-is a mind there to hurt: a golem, a mould or an animated weapon is completely
+Psionic force is a new kind of damage, too. Every damaging type Angband has is
+an element, resisted with a flag or with armour. This one asks whether there's a
+mind there to hurt. A golem, a mould or an animated weapon is completely
 unaffected however hard it is hit, and a strange or feeble mind takes a third.
 Against anything else, nothing resists it. See :ref:`Psionics <psionics>`.
 
 The Chaos-Warrior, and who owns it
 ----------------------------------
 
-The third of Zangband's classes, and the only one in the game that belongs to
-somebody.
+The Chaos-Warrior is the third of Zangband's classes, and the only one in the
+game that belongs to somebody.
 
 At birth a Chaos-Warrior is sworn to one of nine Lords of the Courts of Chaos.
-It does not choose which, it cannot leave, and every time it gains a level its
-Lord looks up and decides how it feels about the servant it has. Usually that is
-a gift — a healing, a raised stat, experience, an object out of nothing. Sometimes
-it is a cursed weapon, a ruined stat, monsters dropped on top of you, or the
-level destroyed around you. The class fights nearly as well as a Warrior, and
-the relationship *is* the class.
+It doesn't choose which, it can't leave, and every time it gains a level its
+Lord looks up and decides how it feels about the servant it has. Usually that's
+a gift: a healing, a raised stat, experience, an object out of nothing.
+Sometimes it's a cursed weapon, a ruined stat, monsters dropped on top of you, or
+the level destroyed around you. The class fights nearly as well as a Warrior,
+but the relationship with its Lord is what the class is about.
 
-**It also casts.** A Chaos-Warrior learns Chaos magic from level 2 — all
-thirty-two spells, and it is the only class in the game with exactly one realm
-and no choice about it. Zangband is blunt on the point: they are "not interested
-in any other form of magic". Until the Chaos realm existed there was nothing to
-give them and the class shipped unable to hold spell points at all.
+It also casts. A Chaos-Warrior learns Chaos magic from level 2, all thirty-two
+spells, and it is the only class in the game with exactly one realm and no choice
+about it. Zangband is blunt on the point: they are "not interested in any other form
+of magic". Until the Chaos realm existed there was nothing to give them, and the
+class shipped unable to hold spell points at all.
 
-**And thirteen is an unlucky level.** The odds of the cruel end of the repertoire
-are normally about one in six; on reaching level 13 they are one in two. Every
-other thirteenth level is one in three, and every fourteenth is one in twelve —
-the safest a Chaos-Warrior ever gets. It is nowhere in the interface and a player
-can only learn it by living through it.
+Thirteen is an unlucky level. The odds of the cruel end of the repertoire are
+normally about one in six; on reaching level 13 they're one in two. Every other
+thirteenth level is one in three, and every fourteenth is one in twelve, the
+safest a Chaos-Warrior ever gets. The interface never shows it, and you can only
+learn it by living through it.
 
-**The nine Lords are Zelazny's.** This is the clearest case in the game of the
-drift this project exists to undo. Zangband's sixteen patrons were Moorcock's
-Elric gods — Slortar, Arioch, Xiombarg, Mabelode — with Khorne, Slaanesh, Nurgle
-and Tzeentch from Warhammer among them, and not one had any connection to Amber.
-They are replaced by Swayvill the King of Chaos, Suhuy who keeps the Logrus,
+The nine Lords are Zelazny's. Zangband's sixteen patrons were Moorcock's Elric
+gods (Slortar, Arioch, Xiombarg, Mabelode) with Khorne, Slaanesh, Nurgle and
+Tzeentch from Warhammer among them, and not one had any connection to Amber.
+It's the clearest case in the game of the drift this project exists to undo.
+They have been replaced by Swayvill the King of Chaos, Suhuy who keeps the Logrus,
 Mandor, Dara, Gramble, Jurt, Despil, Borel and Gilva. Four of them are already
 walking around in the bestiary, so you can be gifted by a Lord you later meet.
 
 What every class costs
 ----------------------
 
-Some classes learn more slowly than others, and in this game that is a real
-price rather than a formality. A Warrior needs the least experience of anyone
-to reach a level; a Warrior-Mage needs half again as much.
+Some classes learn more slowly than others, and in this game you'll feel the
+difference. A Warrior needs the least experience of anyone to reach a level; a
+Warrior-Mage needs half again as much.
 
-The arrangement is Zangband's and it is not the one most people expect. It is
-not that casters are expensive — the pure casters are among the *cheapest*
-after the Warrior, because a Mage is already paying in hit points and strength.
-What costs is having **two things at once**. The Warrior-Mage fights and casts,
-and pays 150 per cent. The Monk fights unarmed and casts, and pays 140. The
-Paladin and the Chaos-Warrior pay 135. The Priest, who only prays, pays 120.
+The arrangement is Zangband's, and it isn't the one most people expect. Casters
+aren't the expensive ones. The pure casters are among the *cheapest* after the
+Warrior, because a Mage is already paying in hit points and strength. What costs
+is doing two things at once. The Warrior-Mage fights and casts, and pays 150 per
+cent. The Monk fights unarmed and casts, and pays 140. The Paladin and the
+Chaos-Warrior pay 135. The Priest, who only prays, pays 120.
 
 Ten of the eleven classes Zangband has pay something. Only the Warrior is free,
-and that is the whole of what a Warrior gets for having no magic at all.
+and that's all a Warrior gets for having no magic at all.
 
 Still to come
 -------------
 
-All twenty-one of Zangband's races have now been considered: seventeen are in,
-four were turned down as near-duplicates of races already present. Nothing is
-outstanding — the Spectre's pass-wall, the last piece, is built (DEC-74).
+Nothing is outstanding. Of Zangband's twenty-one races, seventeen are in and four
+were turned down as near-duplicates of races already in the game. The Spectre's
+pass-wall was the last piece, and it's built (DEC-74).

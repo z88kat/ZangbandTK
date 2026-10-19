@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flags page, level 27 kit</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#000080}a:hover{color:#b03060}
+::selection{background:#c3c3c3;color:#000000}
+.tkscroll::-webkit-scrollbar{width:15px}
+.tkscroll::-webkit-scrollbar-track{background:#c3c3c3;box-shadow:inset 1px 1px 0 #828282}
+.tkscroll::-webkit-scrollbar-thumb{background:#d9d9d9;box-shadow:inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282, inset 2px 2px 0 #ececec, inset -2px -2px 0 #a3a3a3}
+@supports not selector(::-webkit-scrollbar){.tkscroll{scrollbar-color:#b0b0b0 #c3c3c3}}
+</style>
+</helmet>
+
+<div style="position:relative;width:960px;box-sizing:border-box;padding:20px;background-color:#5f6b74;background-image:repeating-conic-gradient(#68757e 0 25%, #5f6b74 0 50%);background-size:4px 4px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.25;color:#000000">
+
+<sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeMenu }}" style="position:fixed;inset:0;z-index:25"></div>
+</sc-if>
+
+<div ref="{{ winRef }}" style="position:relative;width:920px;box-sizing:border-box;padding:5px;background:#9fb0c0;box-shadow:inset 2px 2px 0 #dce4ec, inset -2px -2px 0 #56636f, 0 0 0 1px #000000">
+
+  <div style="display:flex;gap:2px;height:24px">
+    <div style="flex:none;width:24px;display:grid;place-items:center;box-shadow:inset 2px 2px 0 #dce4ec, inset -2px -2px 0 #56636f">
+      <div style="width:12px;height:4px;box-shadow:inset 1px 1px 0 #dce4ec, inset -1px -1px 0 #56636f"></div>
+    </div>
+    <div style="flex:1;min-width:0;display:grid;place-items:center;box-shadow:inset 2px 2px 0 #dce4ec, inset -2px -2px 0 #56636f;white-space:nowrap;overflow:hidden">Zangband: Character</div>
+    <div style="flex:none;width:24px;display:grid;place-items:center;box-shadow:inset 2px 2px 0 #dce4ec, inset -2px -2px 0 #56636f">
+      <span style="width:4px;height:4px;box-shadow:inset 1px 1px 0 #dce4ec, inset -1px -1px 0 #56636f"></span>
+    </div>
+    <div style="flex:none;width:24px;display:grid;place-items:center;box-shadow:inset 2px 2px 0 #dce4ec, inset -2px -2px 0 #56636f">
+      <span style="width:12px;height:12px;box-shadow:inset 1px 1px 0 #dce4ec, inset -1px -1px 0 #56636f"></span>
+    </div>
+  </div>
+
+  <div style="margin-top:4px;background:#d9d9d9;box-shadow:0 0 0 1px #56636f">
+
+    <div style="position:relative;z-index:30;display:flex;flex-wrap:wrap;gap:2px;padding:2px;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+      <sc-for list="{{ menus }}" as="m" hint-placeholder-count="3">
+        <div style="position:relative">
+          <button onClick="{{ m.toggle }}" style="padding:4px 10px;font:inherit;color:#000000;background:{{ m.bg }};border:0;cursor:pointer;box-shadow:{{ m.relief }}"><span style="text-decoration:underline">{{ m.first }}</span>{{ m.rest }}</button>
+          <sc-if value="{{ m.isOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:100%;left:0;min-width:220px;padding:2px;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+              <div style="margin:5px 6px;border-top:1px dashed #000000"></div>
+              <sc-for list="{{ m.entries }}" as="e" hint-placeholder-count="3">
+                <sc-if value="{{ e.sep }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin:4px 2px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+                </sc-if>
+                <sc-if value="{{ e.item }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ e.run }}" style="display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:6px;width:100%;padding:4px 8px 4px 6px;font:inherit;text-align:left;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+                    <span style="display:grid;place-items:center"><span style="width:8px;height:8px;transform:rotate(45deg);background:{{ e.dotFill }};box-shadow:{{ e.dotBevel }}"></span></span>
+                    <span>{{ e.label }}</span>
+                    <span style="font-weight:400">{{ e.accel }}</span>
+                  </button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;gap:12px;padding:10px 10px 0">
+      <div style="position:relative;flex:1 1 470px;min-width:0;margin-top:10px;padding:16px 10px 10px;display:flex;align-items:flex-start;gap:16px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+        <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Character</span>
+        <span style="flex:none;width:64px;height:64px;display:grid;place-items:center;background:#000000;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:44px;font-weight:700;line-height:1;color:#ffffff">@</span>
+        <div style="flex:1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px">
+          <sc-for list="{{ ident }}" as="f" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:6px;visibility:{{ f.vis }}">
+              <span style="font-weight:400;text-align:right">{{ f.k }}:</span>
+              <span style="padding:2px 6px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="position:relative;flex:1 1 380px;min-width:0;margin-top:10px;padding:16px 10px 10px;display:flex;flex-direction:column;gap:9px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+        <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Condition</span>
+        <sc-for list="{{ meters }}" as="mt" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:70px minmax(0,1fr) 64px;align-items:center;gap:8px">
+            <span style="font-weight:400;text-align:right">{{ mt.k }}:</span>
+            <div style="height:14px;padding:2px;background:#c3c3c3;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+              <div style="width:{{ mt.pct }}%;height:100%;background:{{ mt.color }};box-shadow:inset 1px 1px 0 rgba(255,255,255,.55), inset -1px -1px 0 rgba(0,0,0,.35)"></div>
+            </div>
+            <span style="padding:1px 6px;text-align:right;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap">{{ mt.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:12px 10px 0">
+      <span>Page:</span>
+      <sc-for list="{{ pages }}" as="p" hint-placeholder-count="6">
+        <button onClick="{{ p.pick }}" style="display:flex;align-items:center;gap:6px;padding:2px 4px;font:inherit;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec">
+          <span style="width:9px;height:9px;margin:0 2px;transform:rotate(45deg);background:{{ p.fill }};box-shadow:{{ p.bevel }}"></span>
+          <span>{{ p.a }}<span style="text-decoration:underline">{{ p.u }}</span>{{ p.b }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="height:340px;box-sizing:border-box;padding:4px 10px 10px;display:flex;flex-direction:column">
+
+      <sc-if value="{{ isFlags }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;flex:1;min-height:0;margin-top:10px;padding:14px 10px 8px;display:flex;flex-direction:column;gap:6px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">What you have, and what is giving it to you</span>
+
+          <div style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px">
+            <span>Show:</span>
+            <sc-for list="{{ shows }}" as="sh" hint-placeholder-count="4">
+              <button onClick="{{ sh.pick }}" onMouseEnter="{{ sh.enter }}" style="display:flex;align-items:center;gap:6px;padding:1px 4px;font:inherit;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec">
+                <span style="width:9px;height:9px;margin:0 2px;transform:rotate(45deg);background:{{ sh.fill }};box-shadow:{{ sh.bevel }}"></span>
+                <span>{{ sh.label }} <span style="font-weight:400;color:#3a3a3a">({{ sh.count }})</span></span>
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ showNote }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none;display:flex;align-items:center;gap:8px;font-weight:400">
+              <span aria-hidden="true" style="flex:none;width:12px;text-align:center;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;line-height:1">i</span>
+              <span>{{ noteText }}</span>
+            </div>
+          </sc-if>
+
+          <div onMouseLeave="{{ leaveGrid }}" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:2px;background:#ffffff;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff">
+            <div class="tkscroll" style="flex:none;overflow:hidden;scrollbar-gutter:stable;background:#d9d9d9">
+              <div style="display:grid;grid-template-columns:minmax(132px,1fr) 92px repeat(14,44px);height:44px">
+                <div style="display:flex;align-items:flex-end;padding:0 8px 5px;box-shadow:inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282">Property</div>
+                <div onMouseEnter="{{ resultHeadEnter }}" style="display:flex;align-items:flex-end;padding:0 8px 5px;box-shadow:inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282">Result</div>
+                <sc-for list="{{ heads }}" as="h" hint-placeholder-count="14">
+                  <button onClick="{{ h.pick }}" onDoubleClick="{{ h.inspect }}" onMouseEnter="{{ h.enter }}" aria-label="{{ h.aria }}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;padding:0 0 4px;font:inherit;color:#000000;background:{{ h.bg }};border:0;border-left:{{ h.bl }};cursor:pointer;box-shadow:{{ h.bevel }}">
+                    <span style="width:20px;height:20px;display:grid;place-items:center;background:#000000;box-shadow:inset 1px 1px 0 #5a5a5a;font-family:'Courier New',Courier,monospace;font-size:15px;font-weight:700;line-height:1;color:{{ h.gc }}">
+                      <sc-if value="{{ h.isTimed }}" hint-placeholder-val="{{ false }}">
+                        <svg width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M1 1h8M1 13h8M2 1c0 4 6 4 6 6s-6 2-6 6M8 1c0 4-6 4-6 6s6 2 6 6" fill="none" stroke="#8fb0ff" stroke-width="1.4"></path><path d="M3.5 12.2h3l-1.5-2.4z" fill="#8fb0ff"></path></svg>
+                      </sc-if>
+                      <sc-if value="{{ h.isGlyph }}" hint-placeholder-val="{{ true }}">{{ h.glyph }}</sc-if>
+                    </span>
+                    <span style="font-size:11px;font-weight:400;white-space:nowrap">{{ h.name }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div class="tkscroll" onScroll="{{ onScroll }}" style="flex:1;min-height:0;overflow-y:scroll;scrollbar-gutter:stable;font-weight:400">
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+                <sc-if value="{{ r.band }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ r.fold }}" onMouseEnter="{{ r.enter }}" aria-expanded="{{ r.open }}" style="display:grid;grid-template-columns:minmax(132px,1fr) 92px repeat(14,44px);align-items:center;width:100%;height:20px;padding:0;font:inherit;text-align:left;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff, inset 0 -1px 0 #828282">
+                    <span style="display:flex;align-items:center;gap:5px;padding-left:6px;font-weight:700">
+                      <span aria-hidden="true" style="flex:none;width:10px;font-size:10px;line-height:1;text-align:center">{{ r.arrow }}</span>
+                      {{ r.title }}
+                    </span>
+                    <span style="grid-column:2 / -1;padding-left:8px;font-weight:400;color:#2e2e2e;white-space:nowrap;overflow:hidden">{{ r.summary }}</span>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ r.line }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:grid;grid-template-columns:minmax(132px,1fr) 92px repeat(14,44px);height:18px">
+                    <button onClick="{{ r.pick }}" onMouseEnter="{{ r.enterLabel }}" style="height:18px;padding:0 8px;font:inherit;font-weight:400;font-style:{{ r.fs }};text-align:left;white-space:nowrap;overflow:hidden;color:{{ r.lc }};background:{{ r.lbg }};border:0;border-bottom:1px solid #ececec;cursor:pointer;box-shadow:{{ r.lsh }}">{{ r.label }}</button>
+                    <div onMouseEnter="{{ r.enterResult }}" style="display:flex;align-items:center;gap:6px;padding:0 8px;color:{{ r.rfg }};background:{{ r.rbg }};border-bottom:1px solid #ececec;border-left:1px solid #d0d0d0;box-shadow:{{ r.rsh }}">
+                      <span style="font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:700">{{ r.rm }}</span>
+                      <span style="font-weight:{{ r.rwt }}">{{ r.rw }}</span>
+                    </div>
+                    <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="14">
+                      <div onMouseEnter="{{ c.enter }}" style="display:grid;place-items:center;font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:700;color:{{ c.fg }};background:{{ c.bg }};border-left:{{ c.bl }};border-bottom:1px solid #ececec;box-shadow:{{ c.sh }}">{{ c.m }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ r.msg }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:10px 10px;font-family:'Courier New',Courier,monospace;font-size:13px;color:#6e6e6e">{{ r.text }}</div>
+                </sc-if>
+              </sc-for>
+              <div onMouseEnter="{{ footEnter }}" style="max-width:780px;padding:10px 10px 12px;color:#5a5a5a;line-height:1.4">Not on this page: your race's and class's own abilities, which nothing can add or take away; mutations and shapes; and a weapon's brands, which belong to its blows and are listed on the weapon.</div>
+            </div>
+          </div>
+
+          <div style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;font-weight:400">
+            <sc-for list="{{ legend }}" as="l" hint-placeholder-count="9">
+              <span onMouseEnter="{{ l.enter }}" style="display:flex;align-items:center;gap:4px">
+                <span style="width:18px;height:14px;display:grid;place-items:center;font-family:'Courier New',Courier,monospace;font-size:12px;font-weight:700;color:{{ l.fg }};background:{{ l.bg }};box-shadow:inset 0 0 0 1px #b8b8b8">{{ l.m }}</span>
+                <span style="font-style:{{ l.fs }};color:{{ l.tc }}">{{ l.w }}</span>
+              </span>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isOther }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;flex:1;margin-top:10px;padding:16px 10px 10px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">{{ otherTitle }}</span>
+          <div style="font-weight:400;color:#5a5a5a">This page is unchanged; it is in the Character window handoff. Choose Flags to return.</div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="margin:0 2px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+
+    <div style="display:flex;align-items:center;gap:10px;padding:10px">
+      <button onClick="{{ rename }}" style="min-width:110px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff">Change <span style="text-decoration:underline">N</span>ame&#8230;</button>
+      <button onClick="{{ dump }}" style="min-width:110px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">D</span>ump to File&#8230;</button>
+      <span style="flex:1"></span>
+      <div style="padding:3px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+        <button onClick="{{ closeWin }}" style="min-width:96px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">C</span>lose</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:4px;padding:0 4px 4px">
+      <span style="flex:1;min-width:0;padding:2px 6px;font-weight:400;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ status }}</span>
+      <span style="flex:none;padding:2px 8px;font-weight:400;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap">{{ turn }}</span>
+    </div>
+  </div>
+
+  <sc-if value="{{ tip.on }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:{{ tip.x }}px;top:{{ tip.y }}px;z-index:20;width:{{ tip.w }}px;box-sizing:border-box;padding:6px 8px 7px;background:#ffffe0;box-shadow:0 0 0 1px #000000, 3px 3px 0 rgba(0,0,0,.28);font-weight:400;line-height:1.35;pointer-events:none">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span style="font-weight:700">{{ tip.title }}</span>
+        <span style="flex:none;color:#5a5a5a">{{ tip.aside }}</span>
+      </div>
+      <sc-if value="{{ tip.hasNote }}" hint-placeholder-val="{{ false }}">
+        <div style="font-style:italic;color:#4a4a4a">{{ tip.note }}</div>
+      </sc-if>
+      <sc-if value="{{ tip.hasDesc }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:3px">{{ tip.desc }}</div>
+      </sc-if>
+      <sc-if value="{{ tip.hasLines }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:5px;padding-top:4px;border-top:1px solid #c9c79a">
+          <sc-for list="{{ tip.lines }}" as="ln" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:18px {{ tip.keyW }}px minmax(0,1fr);align-items:baseline;gap:6px;padding:1px 2px;background:{{ ln.hbg }};font-weight:{{ ln.wt }}">
+              <span style="display:grid;place-items:center;height:14px;font-family:'Courier New',Courier,monospace;font-size:12px;font-weight:700;color:{{ ln.fg }};background:{{ ln.bg }};box-shadow:inset 0 0 0 1px #b8b8b8">{{ ln.m }}</span>
+              <span style="color:#3a3a3a">{{ ln.key }}</span>
+              <span>{{ ln.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ tip.hasFoot }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:5px;padding-top:4px;border-top:1px solid #c9c79a">{{ tip.foot }}</div>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"kit":{"editor":"enum","options":["Level 27 kit","New character (level 1)"],"default":"Level 27 kit","tsType":"string"},"$preview":{"width":960,"height":692}}'>
+const MINUS = "−", DOT = "·", ARROW = "→", DASH = "—";
+const RAISED1 = "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282";
+const SUNK1 = "inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff";
+const RAISED2 = "inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282";
+const SEL = "#b03060";
+const NEW_KIT = "New character (level 1)";
+const NUM = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+
+/* Every state a cell or a result can be in: a mark AND a colour, never colour alone. */
+const STYLE = {
+  has:      { m: "+",   fg: "#0b5e0b", bg: "#d6ecd6" },
+  immune:   { m: "*",   fg: "#063f06", bg: "#a9d6a9" },
+  timed:    { m: "~",   fg: "#1a3a96", bg: "#dbe3f7" },
+  against:  { m: MINUS, fg: "#9c1414", bg: "#f5d6d6" },
+  drawback: { m: "!",   fg: "#9c1414", bg: "#f5d6d6" },
+  unknown:  { m: "?",   fg: "#6b4f00", bg: "#f7ecc4" },
+  none:     { m: DOT,   fg: "#9a9a9a", bg: "#ffffff" },
+  empty:    { m: "",    fg: "#000000", bg: "#e4e4e4" },
+  na:       { m: "",    fg: "#000000", bg: "#ffffff" },
+  same:     { m: "=",   fg: "#4a4a4a", bg: "#ffffff" }
+};
+
+/* Columns: the twelve slots in the game's order, then you, then what is timed. */
+const SLOTS = [
+  { id: "weapon", name: "Weapon", full: "Weapon", sym: "|" },
+  { id: "bow", name: "Bow", full: "Bow", sym: "}" },
+  { id: "ringr", name: "Ring R", full: "Ring (right hand)", sym: "=" },
+  { id: "ringl", name: "Ring L", full: "Ring (left hand)", sym: "=" },
+  { id: "amulet", name: "Amulet", full: "Amulet", sym: "\"" },
+  { id: "light", name: "Light", full: "Light", sym: "~" },
+  { id: "body", name: "Body", full: "Body", sym: "(" },
+  { id: "cloak", name: "Cloak", full: "Cloak", sym: "(" },
+  { id: "shield", name: "Shield", full: "Shield", sym: ")" },
+  { id: "helm", name: "Helm", full: "Helm", sym: "]" },
+  { id: "gloves", name: "Gloves", full: "Gloves", sym: "]" },
+  { id: "boots", name: "Boots", full: "Boots", sym: "]" }
+];
+const COLS = SLOTS.concat([
+  { id: "you", name: "You", full: "You" },
+  { id: "timed", name: "Timed", full: "Timed effects" }
+]);
+const COL = {};
+COLS.forEach(c => { COL[c.id] = c; });
+
+/* Rows: id, label (proposed), label in the game data today, noun for sentences, help. */
+function R(id, label, old, el, help, extra) { return Object.assign({ id, label, old, el, help }, extra || {}); }
+const GROUPS = [
+  { id: "res", title: "Resistances", kind: "res", rows: [
+    R("acid", "Acid", "Acid", "acid", "Acid attacks hurt you less, and are less likely to damage what you carry."),
+    R("elec", "Lightning", "Elec", "lightning", "Lightning attacks hurt you less, and are less likely to destroy what you carry."),
+    R("fire", "Fire", "Fire", "fire", "Fire attacks hurt you less, and are less likely to burn what you carry."),
+    R("cold", "Cold", "Cold", "cold", "Cold attacks hurt you less, and are less likely to shatter what you carry."),
+    R("pois", "Poison", "Poison", "poison", "Poison attacks hurt you less, and can't leave you poisoned."),
+    R("light", "Light", "Light", "light", "Bright light hurts you less, and can't blind you."),
+    R("dark", "Darkness", "Dark", "darkness", "Darkness attacks hurt you less, and can't blind you."),
+    R("sound", "Sound", "Sound", "sound", "Sound attacks hurt you less, and can't stun you."),
+    R("shard", "Shards", "Shard", "shards", "Shard attacks hurt you less, and can't cut you."),
+    R("nexus", "Nexus", "Nexus", "nexus", "Nexus attacks hurt you less, and can't teleport you, pull you to a monster or swap your stats around."),
+    R("nether", "Nether", "Nether", "nether", "Nether attacks hurt you less, and can't drain your experience."),
+    R("chaos", "Chaos", "Chaos", "chaos", "Chaos attacks hurt you less, and can't confuse you, make you see things or drain your experience."),
+    R("disen", "Disenchantment", "Disenchant", "disenchantment", "Disenchantment can't strip the bonuses from your equipment.")
+  ]},
+  { id: "abil", title: "Abilities", kind: "abil", rows: [
+    R("luck", "Luck", "Luck", "", ""),
+    R("eaura", "Electric aura", "Electric aura", "", ""),
+    R("faura", "Fiery aura", "Fiery aura", "", ""),
+    R("ghoul", "Ghoul touch", "Ghoul touch", "", ""),
+    R("passwall", "Pass wall", "Pass wall", "", "You can walk through solid rock."),
+    R("reflect", "Reflection", "Reflection", "", ""),
+    R("cut", "Cut resistance", "Prot. cut", "", "Protects you from cuts."),
+    R("fear", "Fear resistance", "Fear resistance", "", "You can't be frightened, so you can always fight back."),
+    R("blind", "Blindness resistance", "Blindess resistance", "", "You can't be blinded, so you can still read scrolls and see what's around you."),
+    R("conf", "Confusion resistance", "Confusion resistance", "", "You can't be confused, so you can still read scrolls and walk where you mean to."),
+    R("stun", "Stun resistance", "Stun resistance", "", "You can't be stunned or knocked out."),
+    R("holdlife", "Hold life", "Hold life", "", "Protects your experience from being drained."),
+    R("regen", "Regeneration", "Regeneration", "", "You recover hit points and mana faster, but get hungry faster too."),
+    R("esp", "Telepathy", "ESP", "", "You sense the minds of nearby monsters, even through walls. Mindless monsters stay hidden."),
+    R("seeinv", "See invisible", "See invisible", "", "You can see invisible monsters, such as ghosts, when they are in view."),
+    R("freeact", "Free action", "Free action", "", "You can't be paralysed. Deeper down, monsters that paralyse with a touch or a spell are among the most dangerous."),
+    R("feather", "Feather falling", "Feather falling", "", "You drift down trapdoors and into pits instead of falling, and take no damage."),
+    R("slowdig", "Slow digestion", "Slow digestion", "", "You get hungry more slowly."),
+    R("trapimm", "Trap immunity", "Trap immunity", "", "Traps can't hurt you."),
+    R("bless", "Bless", "Bless", "", "Blessed: your armour class and chance to hit are raised.")
+  ]},
+  { id: "draw", title: "Drawbacks", kind: "draw", rows: [
+    R("noeat", "Cannot eat", "Cannot eat", "", ""),
+    R("antimagic", "Anti-magic", "Anti-magic", "", ""),
+    R("impairhp", "Slow healing", "Impaired HP recovery", "", "You recover hit points more slowly."),
+    R("impairsp", "Slow mana recovery", "Impaired mana recovery", "", "You recover mana more slowly."),
+    R("afraid", "Afraid", "Fear", "", "You are always afraid, so you can't fight in melee."),
+    R("aggr", "Aggravation", "Aggravate", "", "Wakes nearby monsters and makes them angry."),
+    R("noteleport", "No teleportation", "No teleportation", "", "You can't teleport: Phase Door, Teleportation and the like won't work on you."),
+    R("drainxp", "Drains experience", "Drain experience", "", "Slowly drains your experience while you wear it."),
+    R("sticky", "Can't be removed", "Sticky curse", "", "Once it's on, you can't take it off until the curse is broken.", { itemOnly: true }),
+    R("fragile", "Fragile", "Fragile", "", "", { itemOnly: true })
+  ]},
+  { id: "mod", title: "Modifiers", kind: "mod", rows: [
+    R("mana", "Mana", "Mana", "", ""),
+    R("stealth", "Stealth", "Stealth", "", "How quietly you move. The higher it is, the less often monsters wake up."),
+    R("search", "Searching", "Search", "", "How readily you notice traps, secret doors and hidden things."),
+    R("infra", "Infravision", "Infravision", "", "Lets you see warm-blooded monsters in the dark, 10 ft for each point."),
+    R("tunnel", "Tunneling", "Tunneling", "", "How quickly you dig through rubble, mineral veins and rock."),
+    R("speed", "Speed", "Speed", "", "How often you act. At +10 you act twice as often as a normal-speed monster."),
+    R("blows", "Attack speed", "Attack speed", "", ""),
+    R("shots", "Shooting speed", "Shooting speed", "", ""),
+    R("might", "Shooting power", "Shooting power", "", ""),
+    R("lightr", "Light radius", "Light", "", "How far your light reaches, in squares."),
+    R("dred", "Damage reduction", "Damage reduction", "", ""),
+    R("moves", "Movement speed", "Movement speed", "", "")
+  ]}
+];
+GROUPS.forEach(g => g.rows.forEach(r => { r.kind = g.kind; r.group = g.title; r.gid = g.id; }));
+const ALL_ROWS = [].concat.apply([], GROUPS.map(g => g.rows));
+const UNLEARNED_NOTE = "You haven't learned this rune yet. You'll recognise it on an item the first time you notice it.";
+
+/* Sample data. Values: 1 has it, 3 immune, -1 against you, numbers for modifiers;
+   [value, detail] where the game can say more (a curse, or which part of you). */
+const L27 = {
+  ident: [["Name", "Telch"], ["Level", "27"], ["Race", "Dwarf"], ["Gold", DASH], ["Class", "Warrior"], ["Depth", "1250' (L25)"], ["Title", DASH], ["", ""]],
+  meters: [
+    { k: "Hit points", v: DASH, pct: 0, color: "#38a038" },
+    { k: "Mana", v: "0 / 0", pct: 0, color: "#4060d0" },
+    { k: "Experience", v: DASH, pct: 0, color: "#c09020" }
+  ],
+  turn: "Turn " + DASH,
+  you: "a Dwarf Warrior, level 27",
+  worn: {
+    weapon: { n: "a Broad Sword (2d5) (+8,+10) (Defender) <+2>", s: "Broad Sword (Defender)", g: "|", c: "#ffffff" },
+    bow:    { n: "a Light Crossbow (x3) (+5,+6)", s: "Light Crossbow", g: "}", c: "#c88a44" },
+    ringr:  { n: "a Ring of Resist Poison", s: "Ring of Resist Poison", g: "=", c: "#5fd75f" },
+    ringl:  { n: "a Ring of Digging <+4>", s: "Ring of Digging", g: "=", c: "#e0a050" },
+    amulet: { n: "an Amulet of Trickery", s: "Amulet of Trickery", g: "\"", c: "#ffd75f" },
+    light:  { n: "a Lantern (7500 turns)", s: "Lantern", g: "~", c: "#ffff60" },
+    body:   { n: "Metal Scale Mail of Resistance [38,+12]", s: "Metal Scale Mail of Resistance", g: "[", c: "#b0b0b0" },
+    cloak:  { n: "a Cloak of Protection [1,+8]", s: "Cloak of Protection", g: "(", c: "#5faf5f", curse: "burning up" },
+    shield: { n: "a Leather Shield of Elvenkind [8,+9] <+1>", s: "Leather Shield of Elvenkind", g: ")", c: "#c88a44", unknown: true },
+    helm:   { n: "a Metal Cap of Seeing <+3>", s: "Metal Cap of Seeing", g: "]", c: "#b0b0b0", curse: "anti-teleportation" },
+    gloves: null,
+    boots:  { n: "a Pair of Leather Boots of Speed <+6>", s: "Leather Boots of Speed", g: "]", c: "#c88a44" }
+  },
+  unlearned: ["nether", "chaos", "disen", "ghoul", "passwall", "antimagic", "drainxp"],
+  v: {
+    acid: { weapon: 1, body: 1, shield: 1 },
+    elec: { weapon: 1, body: 1, shield: 1 },
+    fire: { weapon: 1, body: 1, cloak: [-1, "curse: burning up"], shield: 1, timed: [1, "Resist heat"] },
+    cold: { weapon: 1, body: 1, cloak: [1, "curse: burning up"], shield: 1 },
+    pois: { ringr: 1, amulet: 1 },
+    shard: { cloak: 1 },
+    nexus: { amulet: 1 },
+    blind: { helm: 1, you: [1, "as a Dwarf"] },
+    regen: { weapon: 1 },
+    seeinv: { weapon: 1, helm: 1 },
+    freeact: { weapon: 1 },
+    feather: { weapon: 1 },
+    bless: { timed: [1, "Blessing"] },
+    noteleport: { helm: [1, "curse: anti-teleportation"] },
+    stealth: { weapon: 2, amulet: 2, shield: 1 },
+    search: { amulet: 3, helm: 3 },
+    infra: { amulet: 2, you: [5, "as a Dwarf"] },
+    tunnel: { ringl: 4, you: [2, "as a Dwarf"] },
+    speed: { amulet: 1, boots: 6 }
+  },
+  idle: "Point at a row, a cell or a heading to see what it means. Click a heading to mark its column."
+};
+
+const L1 = {
+  ident: [["Name", "Telch"], ["Level", "1"], ["Race", "Dwarf"], ["Gold", "88"], ["Class", "Warrior"], ["Depth", "Deiga"], ["Title", "Rookie"], ["", ""]],
+  meters: [
+    { k: "Hit points", v: "21 / 21", pct: 100, color: "#38a038" },
+    { k: "Mana", v: "0 / 0", pct: 0, color: "#4060d0" },
+    { k: "Experience", v: "3 / 12", pct: 25, color: "#c09020" }
+  ],
+  turn: "Turn 24313",
+  you: "a Dwarf Warrior, level 1",
+  worn: {
+    weapon: { n: "a Dagger (1d4) (+0,+0)", s: "Dagger", g: "|", c: "#ffffff" },
+    bow: null, ringr: null, ringl: null, amulet: null,
+    light:  { n: "a Wooden Torch (5000 turns)", s: "Wooden Torch", g: "~", c: "#c88a44" },
+    body:   { n: "Soft Leather Armour [8,+0]", s: "Soft Leather Armour", g: "(", c: "#c88a44" },
+    cloak: null, shield: null, helm: null, gloves: null, boots: null
+  },
+  unlearned: ALL_ROWS.map(r => r.id).filter(id => id !== "blind"),
+  v: {
+    blind: { you: [1, "as a Dwarf"] },
+    infra: { you: [5, "as a Dwarf"] },
+    tunnel: { you: [2, "as a Dwarf"] }
+  },
+  idle: "You've learned 1 rune so far. Point at anything on this page to see what it means."
+};
+
+function signed(n) { return n > 0 ? "+" + n : n < 0 ? MINUS + Math.abs(n) : "0"; }
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function join(a) { return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1]; }
+function isSlot(id) { return id !== "you" && id !== "timed"; }
+function unlearned(kit, row) { return kit.unlearned.indexOf(row.id) >= 0; }
+
+function cellOf(kit, row, colId) {
+  if (isSlot(colId) && !kit.worn[colId]) return { k: "empty" };
+  if (!isSlot(colId) && row.itemOnly) return { k: "na" };
+  const raw = (kit.v[row.id] || {})[colId];
+  const v = raw == null ? 0 : Array.isArray(raw) ? raw[0] : raw;
+  const d = Array.isArray(raw) ? raw[1] : "";
+  if (!v) {
+    if (isSlot(colId) && kit.worn[colId].unknown && unlearned(kit, row)) return { k: "unknown" };
+    return { k: "none" };
+  }
+  if (row.kind === "mod") return { k: colId === "timed" ? "timed" : v > 0 ? "has" : "against", v, d, num: true };
+  if (colId === "timed") return { k: "timed", v, d };
+  if (v < 0) return { k: "against", v, d };
+  if (row.kind === "draw") return { k: "drawback", v, d };
+  if (row.kind === "res" && v >= 3) return { k: "immune", v, d };
+  return { k: "has", v, d };
+}
+
+/* What the row adds up to, the way the game counts it: a resistance and a
+   vulnerability cancel; a timed effect counts, but is reported as "for now". */
+function resultOf(kit, row, without) {
+  let perm = 0, sum = 0, tsum = 0;
+  const vul = [], pos = [], t = [], unk = [];
+  COLS.forEach(c => {
+    if (c.id === without) return;
+    const cell = cellOf(kit, row, c.id);
+    if (cell.k === "unknown") { unk.push(c.id); return; }
+    if (!cell.v) return;
+    if (c.id === "timed") { tsum += cell.v; t.push(cell.d); return; }
+    if (row.kind === "mod") { sum += cell.v; pos.push(c.id); return; }
+    if (cell.v < 0) vul.push(c.id);
+    else { pos.push(c.id); if (cell.v > perm) perm = cell.v; }
+  });
+  const out = (k, w, extra) => Object.assign({ k, w, m: STYLE[k].m, perm, vul, pos, t, unk, n: 0 }, extra || {});
+  if (row.kind === "mod") {
+    const n = sum + tsum;
+    if (!n) return unk.length ? out("unknown", "Unknown") : out("none", "");
+    return out(tsum ? "timed" : n > 0 ? "has" : "against", "", { n, m: signed(n) });
+  }
+  if (row.kind === "res") {
+    let lvl = perm;
+    if (vul.length && lvl < 3) lvl -= 1;
+    const tl = lvl + (tsum > 0 ? 1 : 0);
+    const cancel = vul.length > 0 && perm >= 1 && perm < 3;
+    if (lvl >= 3) return out("immune", "Immune");
+    if (lvl >= 1) return out("has", "Resist");
+    if (tl >= 1) return out("timed", "For now", { cancel });
+    if (tl < 0) return out("against", "Vulnerable");
+    if (unk.length) return out("unknown", "Unknown", { cancel });
+    return out("none", "no", { cancel });
+  }
+  if (row.kind === "abil") {
+    if (vul.length) return out("against", "Blocked");
+    if (pos.length) return out("has", "Yes");
+    if (tsum) return out("timed", "For now");
+    if (unk.length) return out("unknown", "Unknown");
+    return out("none", "no");
+  }
+  if (pos.length) return out("drawback", "Affected");
+  if (tsum) return out("timed", "For now");
+  if (unk.length) return out("unknown", "Unknown");
+  return out("none", "no");
+}
+
+const RANK = {
+  res:  { against: 0, none: 1, unknown: 1, timed: 2, has: 3, immune: 4 },
+  abil: { against: 0, none: 1, unknown: 1, timed: 2, has: 3 },
+  draw: { drawback: 0, timed: 1, unknown: 2, none: 2 }
+};
+function gainOf(row, a, b) { return row.kind === "mod" ? b.n - a.n : RANK[row.kind][b.k] - RANK[row.kind][a.k]; }
+
+function srcPhrase(kit, row, id) {
+  if (id === "you") {
+    const cell = cellOf(kit, row, "you");
+    return cell.d || "from your race, class or level";
+  }
+  return "from your " + kit.worn[id].s;
+}
+function unknownSentence(kit, res) {
+  const its = res.unk.map(id => "your " + kit.worn[id].s);
+  return "Not known. " + cap(join(its)) + (its.length > 1 ? " have" : " has") + " a rune you haven't learned, and it could be this one.";
+}
+function howMany(kit, row, res) {
+  if (res.pos.length > 1) return " " + cap(NUM[res.pos.length]) + " things give it, so you could lose one and keep it.";
+  if (res.pos.length === 1) return ", " + srcPhrase(kit, row, res.pos[0]) + ". It's the only source.";
+  return ".";
+}
+
+/* The last line of a row's card: the answer, in words. */
+function sentence(kit, row, res) {
+  const x = row.el || row.label.toLowerCase();
+  if (res.k === "unknown") return unknownSentence(kit, res);
+  if (row.kind === "res") {
+    if (res.k === "immune") return "You're immune to " + x + ".";
+    if (res.k === "has") return "You resist " + x + (res.pos.length > 1 ? "." : "") + howMany(kit, row, res);
+    if (res.k === "timed") {
+      const by = "Resisted for now, by " + join(res.t) + ". ";
+      if (res.cancel) return by + "Your " + kit.worn[res.vul[0]].s + " makes you vulnerable, which cancels the resistance from the other " + NUM[res.pos.length] + ", so once it wears off you won't resist " + x + ".";
+      return by + "Nothing you wear resists " + x + ".";
+    }
+    if (res.k === "against") return "You take extra damage from " + x + ", because of your " + kit.worn[res.vul[0]].s + ".";
+    if (res.cancel) return "Not resisted. Your " + kit.worn[res.vul[0]].s + " makes you vulnerable, which cancels the resistance from the other " + NUM[res.pos.length] + ".";
+    return "You don't resist " + x + ".";
+  }
+  if (row.kind === "abil") {
+    if (res.k === "has") return "You have it" + (res.pos.length > 1 ? "." : "") + howMany(kit, row, res);
+    if (res.k === "timed") return "You have it for now, from " + join(res.t) + ". It wears off.";
+    if (res.k === "against") return "You don't have it: your " + kit.worn[res.vul[0]].s + " takes it away.";
+    return "You don't have it.";
+  }
+  if (row.kind === "draw") {
+    if (res.k === "drawback") {
+      const id = res.pos[0];
+      const cell = cellOf(kit, row, id);
+      return "It affects you, " + srcPhrase(kit, row, id) + (cell.d ? " (" + cell.d + ")" : "") + ".";
+    }
+    if (res.k === "timed") return "It affects you for now, from " + join(res.t) + ".";
+    return row.itemOnly ? "Nothing you wear has it. Only items can." : "Nothing does this to you.";
+  }
+  if (res.k === "none") return "Nothing changes it.";
+  let s = "Total " + res.m;
+  if (row.id === "infra" && res.n > 0) s += ", so you see warm-blooded monsters up to " + res.n * 10 + " ft away";
+  return s + "." + (res.pos.length > 1 ? " It comes from " + NUM[res.pos.length] + " things." : "");
+}
+
+/* One line in the status bar for a single cell. */
+function cellStatus(kit, row, colId) {
+  const c = COL[colId];
+  const cell = cellOf(kit, row, colId);
+  const x = row.el || row.label.toLowerCase();
+  if (cell.k === "empty") return c.full + ": nothing worn.";
+  if (cell.k === "na") return row.label + " · " + c.full + ": doesn't apply. Only items can have this.";
+  const src = colId === "you" ? "You" : colId === "timed" ? (cell.d || "Timed effects") : kit.worn[colId].s;
+  const head = row.label + " · " + src + ": ";
+  if (cell.k === "none") return head + "nothing.";
+  if (cell.k === "unknown") return head + "not known. It has a rune you haven't learned, and this could be it.";
+  const det = cell.d ? (colId === "you" ? ", " + cell.d : " (" + cell.d + ")") : "";
+  if (colId === "timed") return head + (row.kind === "mod" ? signed(cell.v) + ", " : "") + "for now. It wears off.";
+  if (row.kind === "mod") return head + signed(cell.v) + det + ".";
+  if (row.kind === "res") {
+    if (cell.k === "against") return head + "makes you vulnerable to " + x + det + ".";
+    if (cell.k === "immune") return head + "makes you immune to " + x + det + ".";
+    return head + "resists " + x + det + ".";
+  }
+  if (cell.k === "against") return head + "takes it away" + det + ".";
+  if (row.kind === "draw") return head + "gives you this drawback" + det + ".";
+  return head + "gives you this" + det + ".";
+}
+
+function line(kind, mark, key, text, hl) {
+  const st = STYLE[kind];
+  return { m: mark, fg: st.fg, bg: st.bg, key, text, hbg: hl ? "#f0e08c" : "transparent", wt: hl ? 700 : 400 };
+}
+
+/* The card for a row: what it is, every source, then the answer. */
+function rowCard(kit, row, hl) {
+  const res = resultOf(kit, row);
+  const lines = [];
+  COLS.forEach(c => {
+    const cell = cellOf(kit, row, c.id);
+    if (cell.k === "none" || cell.k === "empty" || cell.k === "na") return;
+    let text;
+    if (c.id === "you") text = cap(cell.d || "your race, class or level");
+    else if (c.id === "timed") text = cell.d + ", wears off";
+    else text = kit.worn[c.id].s + (cell.k === "unknown" ? ": not identified" : cell.d ? " (" + cell.d + ")" : "");
+    lines.push(line(cell.k, cell.num ? signed(cell.v) : STYLE[cell.k].m, c.name, text, c.id === hl));
+  });
+  return {
+    w: 360, keyW: 50, title: row.label, aside: row.group,
+    note: unlearned(kit, row) ? UNLEARNED_NOTE : "", desc: row.help || "",
+    lines, foot: sentence(kit, row, res)
+  };
+}
+
+/* The card for a column: the item, then what taking it off would change. */
+function colCard(kit, colId) {
+  const c = COL[colId];
+  if (colId === "you" || colId === "timed") {
+    const lines = [];
+    ALL_ROWS.forEach(row => {
+      const cell = cellOf(kit, row, colId);
+      if (!cell.v) return;
+      const text = colId === "you" ? row.label + (cell.num ? " " + signed(cell.v) : "") : cell.d + ": " + row.label + (cell.num ? " " + signed(cell.v) : "");
+      lines.push(line(cell.k, cell.num ? signed(cell.v) : STYLE[cell.k].m, "", text, false));
+    });
+    return colId === "you"
+      ? { w: 340, keyW: 0, title: "You: " + kit.you, aside: "", note: "", desc: "What your race, class and level give you. You can't take these off.", lines, foot: lines.length ? "" : "Nothing yet." }
+      : { w: 340, keyW: 0, title: "Timed effects", aside: "", note: "", desc: "What potions, scrolls and spells are giving you right now. They wear off on their own.", lines, foot: lines.length ? "" : "Nothing timed is active." };
+  }
+  const it = kit.worn[colId];
+  if (!it) return { w: 300, keyW: 0, title: c.full + ": nothing worn", aside: "", note: "", desc: "Wear something here and this column fills in.", lines: [], foot: "", summary: "" };
+  const lose = [], gain = [], same = [], loseNames = [], lowerNames = [], gainNames = [], liftNames = [];
+  let unk = 0;
+  ALL_ROWS.forEach(row => {
+    const cell = cellOf(kit, row, colId);
+    if (cell.k === "unknown") { unk++; return; }
+    if (!cell.v) return;
+    const a = resultOf(kit, row), b = resultOf(kit, row, colId);
+    const d = gainOf(row, a, b);
+    const txt = row.kind === "mod" ? row.label + " " + a.m + " " + ARROW + " " + b.m : row.label + ": " + a.w.toLowerCase() + " " + ARROW + " " + b.w.toLowerCase();
+    if (d < 0) { lose.push(txt); (row.kind === "mod" ? lowerNames : loseNames).push(row.label); }
+    else if (d > 0) { gain.push(txt); (row.kind === "draw" ? liftNames : gainNames).push(row.label); }
+    else same.push(row.label);
+  });
+  const lines = [];
+  lose.forEach((t, i) => lines.push(line("against", MINUS, i ? "" : "You'd lose", t, false)));
+  gain.forEach((t, i) => lines.push(line("has", "+", i ? "" : "You'd gain", t, false)));
+  if (same.length) lines.push(line("same", "=", "No change", join(same), false));
+  if (unk) lines.push(line("unknown", "?", "Unknown", "whatever it has that you haven't learned yet", false));
+  const notes = [];
+  if (it.curse) notes.push("Cursed: " + it.curse + ".");
+  if (it.unknown) notes.push("It has runes you haven't learned.");
+  let foot = "Click to mark this column; double-click to inspect the item.";
+  if (!lines.length) foot = "Nothing on this page comes from it. " + foot;
+  else if (!lose.length && !gain.length && !unk) foot = "Taking it off would change nothing here: other things you wear cover all of it. " + foot;
+  const effects = [];
+  if (loseNames.length) effects.push("loses " + join(loseNames));
+  if (lowerNames.length) effects.push("lowers " + join(lowerNames));
+  if (gainNames.length) effects.push("improves " + join(gainNames));
+  if (liftNames.length) effects.push("lifts " + join(liftNames));
+  const summary = effects.length ? "Taking it off " + join(effects) + "." : lines.length && !unk ? "Taking it off changes nothing on this page." : "";
+  return { w: 380, keyW: 64, title: c.full + ": " + it.n, aside: "", note: notes.join(" "), desc: lines.length ? "If you take it off:" : "", lines, foot, summary };
+}
+
+function colStatus(kit, colId) {
+  const c = COL[colId];
+  if (colId === "you") return "You: what your race, class and level give you. Nothing here can be taken off.";
+  if (colId === "timed") return "Timed effects: what potions, scrolls and spells are giving you now. They wear off.";
+  const it = kit.worn[colId];
+  if (!it) return c.full + ": nothing worn.";
+  const card = colCard(kit, colId);
+  return c.full + ": " + it.n + "." + (card.summary ? " " + card.summary : "");
+}
+
+function bandSummary(g, list) {
+  const n = list.length;
+  const count = k => list.filter(r => r.res.k === k).length;
+  const parts = [];
+  if (g.kind === "mod") {
+    const up = list.filter(r => r.res.n > 0).length, down = list.filter(r => r.res.n < 0).length;
+    if (up) parts.push(up + " raised");
+    if (down) parts.push(down + " lowered");
+    if (count("unknown")) parts.push(count("unknown") + " not known");
+    return parts.length ? parts.join("  ·  ") : "nothing changed";
+  }
+  if (g.kind === "draw") {
+    parts.push((count("drawback") || "none") + " affecting you");
+  } else {
+    parts.push((count("has") + count("immune")) + " of " + n + (g.kind === "res" ? " resisted" : ""));
+  }
+  if (count("timed")) parts.push(count("timed") + " for now");
+  if (count("against")) parts.push(count("against") + (g.kind === "res" ? " vulnerable" : " blocked"));
+  if (count("unknown")) parts.push(count("unknown") + " not known");
+  return parts.join("  ·  ");
+}
+
+const SHOWS = [
+  ["all", "All", "Every row."],
+  ["effect", "In effect", "Only the rows where something is in effect, good or bad."],
+  ["against", "Against you", "Only the rows where something works against you: a vulnerability or a drawback."],
+  ["unknown", "Not yet learned", "Only the rows whose rune you haven't learned, or where something isn't identified."]
+];
+const EMPTY = {
+  effect: "Nothing is in effect yet.",
+  against: "Nothing is working against you.",
+  unknown: "You've learned every rune on this page."
+};
+const LEGEND = [
+  ["has", "+", "has it", "Has it: this gives you the property for as long as you wear it."],
+  ["immune", "*", "immune", "Immune: stronger than resisting. Resistances only."],
+  ["timed", "~", "timed", "Timed: from a potion, scroll or spell. It wears off."],
+  ["against", MINUS, "against you", "Against you: makes you vulnerable, or takes the property away."],
+  ["drawback", "!", "drawback", "Drawback: gives you a hindrance, usually from a curse."],
+  ["unknown", "?", "not identified", "Not identified: the item has a rune you haven't learned, and it could be this one."],
+  ["none", DOT, "nothing", "Nothing: this doesn't give it."],
+  ["empty", "", "empty slot", "Empty slot: nothing is worn there."],
+  ["unl", "Ab", "rune not learned", "A grey, slanted name: you haven't learned that rune yet. What the row shows is still true."]
+];
+const PAGES = [["info", "Info", 0], ["flags", "Flags", 0], ["history", "History", 0], ["virtues", "Virtues", 0], ["mutations", "Mutations", 0], ["notes", "Notes", 1]];
+
+class Component extends DCLogic {
+  winRef = React.createRef();
+  state = { page: "flags", menu: null, show: "all", folded: {}, hover: null, tip: false, hx: 0, hy: 0, msg: null, note: null, selRow: null, selCol: null };
+  tipTimer = null;
+
+  componentWillUnmount() { clearTimeout(this.tipTimer); }
+  kit() { return (this.props.kit ?? "Level 27 kit") === NEW_KIT ? L1 : L27; }
+
+  hoverAt(e, info, status) {
+    const box = this.winRef.current ? this.winRef.current.getBoundingClientRect() : { left: 0, top: 0 };
+    const next = { hover: info, hx: e.clientX - box.left, hy: e.clientY - box.top, msg: typeof status === "function" ? status() : status };
+    clearTimeout(this.tipTimer);
+    if (!info.card) { this.setState(Object.assign(next, { tip: false })); return; }
+    if (this.state.tip) { this.setState(next); return; }
+    this.setState(next);
+    this.tipTimer = setTimeout(() => this.setState({ tip: true }), 450);
+  }
+  clearHover() { clearTimeout(this.tipTimer); this.setState({ hover: null, tip: false, msg: null }); }
+
+  renderVals() {
+    const s = this.state, kit = this.kit();
+    const hov = s.hover;
+    const dot = on => on ? [SEL, "inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff"] : ["#d9d9d9", "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282"];
+    const close = fn => () => { this.setState({ menu: null }); fn(); };
+    const setNote = note => this.setState({ note, menu: null });
+    const setPage = page => this.setState({ page, menu: null, hover: null, tip: false });
+    const foldAll = on => { const f = {}; GROUPS.forEach(g => { f[g.id] = on; }); this.setState({ folded: f, menu: null }); };
+
+    const MENUS = [
+      ["File", [["Change Name…", "Alt+N", () => setNote("Change Name… is unchanged; see the Character window handoff.")], ["Dump to File…", "Ctrl+S", () => setNote("Character dump written to telch.txt.")], null, ["Close", "Esc", () => setNote("The window closes.")]]],
+      ["View", PAGES.map(([id, label]) => [label, "", () => setPage(id), id === s.page]).concat([null, ["Fold All Groups", "", () => foldAll(true)], ["Unfold All Groups", "", () => foldAll(false)]])],
+      ["Help", [["On Flags…", "F1", () => setNote("Each row is a property, each column is where it comes from, and Result is what it adds up to. Point at anything to see more.")], ["About Zangband…", "", () => setNote("Zangband: a variant of Angband.")]]]
+    ];
+    const menus = MENUS.map(([name, entries]) => {
+      const open = s.menu === name;
+      return {
+        first: name[0], rest: name.slice(1), isOpen: open,
+        bg: open ? "#ececec" : "transparent", relief: open ? RAISED2 : "none",
+        toggle: () => this.setState(st => ({ menu: st.menu === name ? null : name, tip: false })),
+        entries: entries.map(e => {
+          if (!e) return { sep: true, item: false };
+          const [fill, bevel] = e.length > 3 ? dot(e[3]) : ["transparent", "none"];
+          return { sep: false, item: true, label: e[0], accel: e[1], run: e[2], dotFill: fill, dotBevel: bevel };
+        })
+      };
+    });
+    const pages = PAGES.map(([id, label, u]) => {
+      const [fill, bevel] = dot(id === s.page);
+      return { a: label.slice(0, u), u: label[u], b: label.slice(u + 1), fill, bevel, pick: () => setPage(id) };
+    });
+
+    /* The grid. */
+    const all = [];
+    GROUPS.forEach(g => g.rows.forEach(row => {
+      const cells = COLS.map(c => cellOf(kit, row, c.id));
+      const res = resultOf(kit, row);
+      all.push({
+        g, row, cells, res,
+        effect: res.k !== "none" && res.k !== "unknown",
+        against: cells.some(c => c.k === "against" || c.k === "drawback"),
+        unknown: unlearned(kit, row) || cells.some(c => c.k === "unknown")
+      });
+    }));
+    const counts = { all: all.length, effect: 0, against: 0, unknown: 0 };
+    all.forEach(r => { ["effect", "against", "unknown"].forEach(k => { if (r[k]) counts[k]++; }); });
+    const pass = r => s.show === "all" || r[s.show];
+
+    const rows = [];
+    GROUPS.forEach(g => {
+      const mine = all.filter(r => r.g === g);
+      const vis = mine.filter(pass);
+      if (!vis.length) return;
+      const folded = !!s.folded[g.id];
+      const summary = bandSummary(g, mine);
+      rows.push({
+        key: "band-" + g.id, band: true, line: false, msg: false,
+        title: g.title, summary, open: folded ? "false" : "true",
+        arrow: folded ? "▶" : "▼",
+        fold: () => this.setState(st => ({ folded: Object.assign({}, st.folded, { [g.id]: !st.folded[g.id] }) })),
+        enter: e => this.hoverAt(e, { kind: "band", card: false }, g.title + ": " + summary + ". Click to " + (folded ? "unfold." : "fold."))
+      });
+      if (folded) return;
+      vis.forEach(r => {
+        const id = r.row.id;
+        const hr = hov && hov.row === id;
+        const sr = s.selRow === id;
+        const learned = !unlearned(kit, r.row);
+        const rst = STYLE[r.res.k];
+        const rails = sr ? ["inset 0 1px 0 " + SEL, "inset 0 -1px 0 " + SEL] : [];
+        const rowStatus = () => r.row.label + ": " + sentence(kit, r.row, r.res);
+        rows.push({
+          key: id, band: false, line: true, msg: false,
+          label: r.row.label, fs: learned ? "normal" : "italic", lc: learned ? "#000000" : "#6e6e6e",
+          lbg: sr ? "#c3c3c3" : hr ? "#ececec" : "#ffffff", lsh: rails.join(", ") || "none",
+          rm: r.res.m, rw: r.res.w, rfg: rst.fg, rbg: rst.bg, rwt: r.res.k === "none" ? 400 : 700, rsh: rails.join(", ") || "none",
+          pick: () => this.setState(st => ({ selRow: st.selRow === id ? null : id, note: st.selRow === id ? null : "Marked the " + r.row.label + " row. Click its name again to clear." })),
+          enterLabel: e => this.hoverAt(e, { kind: "label", row: id, card: true }, rowStatus),
+          enterResult: e => this.hoverAt(e, { kind: "result", row: id, card: true }, rowStatus),
+          cells: COLS.map((c, i) => {
+            const cell = r.cells[i], st = STYLE[cell.k];
+            const sh = rails.slice();
+            if (s.selCol === c.id) sh.push("inset 2px 0 0 " + SEL, "inset -2px 0 0 " + SEL);
+            if (hov && hov.kind === "cell" && hov.row === id && hov.col === c.id) sh.push("inset 0 0 0 1px #000000");
+            return {
+              m: cell.num ? signed(cell.v) : st.m, fg: st.fg, bg: st.bg,
+              bl: c.id === "weapon" || c.id === "you" ? "2px solid #a3a3a3" : "1px solid #ececec",
+              sh: sh.join(", ") || "none",
+              enter: e => this.hoverAt(e, { kind: "cell", row: id, col: c.id, card: true }, () => cellStatus(kit, r.row, c.id))
+            };
+          })
+        });
+      });
+    });
+    if (!rows.length) rows.push({ key: "empty", band: false, line: false, msg: true, text: EMPTY[s.show] || "" });
+
+    const heads = COLS.map(c => {
+      const it = isSlot(c.id) ? kit.worn[c.id] : null;
+      const sel = s.selCol === c.id, hot = hov && hov.col === c.id;
+      return {
+        name: c.name,
+        isTimed: c.id === "timed", isGlyph: c.id !== "timed",
+        glyph: c.id === "you" ? "@" : it ? it.g : c.sym || "",
+        gc: c.id === "you" ? "#ffffff" : it ? it.c : "#3a3a3a",
+        bg: sel ? "#c3c3c3" : hot ? "#ececec" : "#d9d9d9",
+        bevel: sel ? SUNK1 : RAISED1,
+        bl: c.id === "weapon" || c.id === "you" ? "2px solid #a3a3a3" : "0",
+        aria: c.full + (it ? ": " + it.n : isSlot(c.id) ? ": nothing worn" : ""),
+        pick: () => this.setState(st => ({ selCol: st.selCol === c.id ? null : c.id, note: st.selCol === c.id ? null : "Marked the " + c.full + " column. Click its heading again to clear." })),
+        inspect: () => { if (it) this.setState({ note: "Inspect: " + it.n + ". (Opens the item's description, as Inspect does in the Items window.)" }); },
+        enter: e => this.hoverAt(e, { kind: "head", col: c.id, card: true }, () => colStatus(kit, c.id))
+      };
+    });
+
+    const shows = SHOWS.map(([id, label, hint]) => {
+      const [fill, bevel] = dot(s.show === id);
+      return { label, count: counts[id], fill, bevel, pick: () => this.setState({ show: id, hover: null, tip: false }), enter: e => this.hoverAt(e, { kind: "show", card: false }, "Show " + label.toLowerCase() + ": " + hint) };
+    });
+
+    const legend = LEGEND.map(([k, m, w, hint]) => {
+      const st = STYLE[k] || { fg: "#6e6e6e", bg: "#ffffff" };
+      return { m, w, fg: k === "unl" ? "#6e6e6e" : st.fg, bg: st.bg, fs: k === "unl" ? "italic" : "normal", tc: k === "unl" ? "#6e6e6e" : "#000000", enter: e => this.hoverAt(e, { kind: "legend", card: false }, hint) };
+    });
+
+    /* The card under the pointer. */
+    let tip = { on: false, x: 0, y: 0, w: 360, keyW: 44, title: "", aside: "", note: "", desc: "", lines: [], foot: "", hasNote: false, hasDesc: false, hasLines: false, hasFoot: false };
+    if (s.tip && hov && hov.card && s.page === "flags") {
+      const row = hov.row ? ALL_ROWS.find(r => r.id === hov.row) : null;
+      const card = hov.kind === "head" ? colCard(kit, hov.col) : row ? rowCard(kit, row, hov.kind === "cell" ? hov.col : null) : null;
+      if (card) {
+        const wrap = (t, per) => t ? Math.ceil(t.length / per) : 0;
+        const per = Math.floor(card.w / 6.3);
+        const est = 26 + wrap(card.note, per) * 16 + wrap(card.desc, per) * 16 + (card.lines.length ? 10 + card.lines.reduce((a, l) => a + Math.max(1, wrap(l.text, per - 14)) * 17, 0) : 0) + (card.foot ? 10 + wrap(card.foot, per) * 16 : 0);
+        const winW = 920, winH = this.winRef.current ? this.winRef.current.offsetHeight : 700;
+        let x = s.hx + 16, y = s.hy + 20;
+        if (x + card.w > winW - 6) x = Math.max(6, s.hx - card.w - 16);
+        if (y + est > winH - 6) y = Math.max(6, s.hy - est - 12);
+        tip = Object.assign({}, card, { on: true, x: Math.round(x), y: Math.round(y), hasNote: !!card.note, hasDesc: !!card.desc, hasLines: card.lines.length > 0, hasFoot: !!card.foot });
+      }
+    }
+
+    const learnedCount = ALL_ROWS.length - kit.unlearned.length;
+    const otherTitle = (PAGES.find(p => p[0] === s.page) || ["", ""])[1];
+    return {
+      winRef: this.winRef,
+      menus, menuOpen: !!s.menu, closeMenu: () => this.setState({ menu: null }),
+      ident: kit.ident.map(([k, v]) => ({ k, v, vis: k ? "visible" : "hidden" })),
+      meters: kit.meters,
+      pages, isFlags: s.page === "flags", isOther: s.page !== "flags", otherTitle,
+      shows, rows, heads, legend, tip,
+      showNote: kit.unlearned.length > ALL_ROWS.length / 2,
+      noteText: "You've learned " + learnedCount + " of " + ALL_ROWS.length + " runes. Grey rows are ones you haven't noticed yet; you'll learn each the first time it shows itself.",
+      leaveGrid: () => this.clearHover(),
+      onScroll: () => { if (this.state.hover || this.state.tip) this.clearHover(); },
+      resultHeadEnter: e => this.hoverAt(e, { kind: "rhead", card: false }, "Result: what each row adds up to, the way the game counts it. A resistance and a vulnerability cancel out."),
+      footEnter: e => this.hoverAt(e, { kind: "foot", card: false }, "What the grid leaves out, and why."),
+      rename: () => setNote("Change Name… is unchanged; see the Character window handoff."),
+      dump: () => setNote("Character dump written to telch.txt."),
+      closeWin: () => setNote("The window closes."),
+      status: s.msg || s.note || kit.idle,
+      turn: kit.turn
+    };
+  }
+}
+
+</script>
+</body>
+</html>

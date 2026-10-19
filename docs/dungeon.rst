@@ -77,15 +77,15 @@ Features that block line of sight
 Out in the country
 ------------------
 
-The wilderness has terrain the dungeon does not. None of it blocks line of
+The wilderness has terrain the dungeon doesn't. None of it blocks line of
 sight except the trees.
 
 ===== ==========================    =====  ==================================
-``.``   Grass (green)               ``~``    Shallow water — wadeable
-``.``   Bare earth (brown)          ``~``    Deep water — you can drown in it
+``.``   Grass (green)               ``~``    Shallow water (wadeable)
+``.``   Bare earth (brown)          ``~``    Deep water you can drown in
 ``.``   Sand (yellow)               ``~``    Open sea, where the world ends
-``.``   Mud — slow going, unlit     ``:``    A mountainside — impassable
-``%``   A tree — blocks sight
+``.``   Mud (slow going, unlit)     ``:``    A mountainside (impassable)
+``%``   A tree (blocks sight)
 ===== ==========================    =====  ==================================
 
 Note that ``%`` is a tree above ground and a mineral vein below it, and that
@@ -143,10 +143,10 @@ Monsters
 ``z``     Zombie/Mummy        ``Z``    Zephyr Hound
 =====   ===================   =====  ====================================
 
-Two more classes are ZangbandTK's, and display as punctuation because Angband
-has no letter for them: ``#`` is a wall monster — sentient stone and the mists
-that drift between it — and ``|`` is an animated weapon. Both look exactly like
-the terrain and the treasure they sit among, which is the point. Other monsters
+Two more classes are ZangbandTK's, and they show as punctuation because
+Angband has no letter for them. ``#`` is a wall monster (sentient stone, and the
+mists that drift between it) and ``|`` is an animated weapon. Both are meant to
+look exactly like the terrain and the treasure they sit among. Other monsters
 disguise themselves as objects and take that object's symbol; :doc:`monsters`
 has the list.
 
@@ -154,21 +154,22 @@ The Dungeons
 ============
 
 Angband has one dungeon, and depth is the only thing that tells its fortieth
-level from its fourth. ZangbandTK has several, and they are places.
+level from its fourth. ZangbandTK has several, and each one is a different
+place.
 
-Each dungeon covers a **range of depths**, and it ends at the bottom of that
-range. When you reach the deepest level of a dungeon there is no way further
-down from it; to go deeper you must leave, cross the world, and find a dungeon
-that reaches deeper. This is deliberate, and it is what the world is for.
+Each dungeon covers a range of depths, and it ends at the bottom of that range.
+When you reach the deepest level of a dungeon there's no way further down. To go
+deeper you have to leave, cross the world and find a dungeon that reaches
+deeper, and that's what the world is for.
 
-Each also remembers **its own depth**. Word of recall returns you to how far down
-you had got in the dungeon you were last in — not to the deepest level you have
-ever reached anywhere, which might be on the far side of the world and, worse,
-deeper than the dungeon you are standing on goes.
+Each one also remembers its own depth. Word of recall takes you back to how far
+down you'd got in the dungeon you were last in, not to the deepest level you've
+ever reached anywhere. That might be on the far side of the world and, worse,
+deeper than the dungeon you're standing on goes.
 
-And each has a **character**: its own floor underfoot, and its own preference in
-how its levels are laid out, so the caverns under Kolvir are caverns and the city
-in the sky is a maze.
+Each has its own character too: its own floor underfoot, and its own preference
+in how its levels are laid out, so the caverns under Kolvir are caverns and the
+city in the sky is a maze.
 
 What lives there
 ----------------
@@ -176,21 +177,21 @@ What lives there
 Each dungeon is home to some kinds of creature and not others, and most of what
 you meet is what lives there. The Caverns of Kolvir run to trolls, giants and
 golems; Tir-na Nog'th to vortices, wraiths and ghosts; Arden to animals and
-trees. Something from elsewhere turns up now and then — a dungeon is not sealed —
-but it is the exception, and measurement puts it at rather less than a fifth of
-what is met.
+trees. Something from elsewhere turns up now and then, since a dungeon isn't
+sealed, but it's the exception: measurement puts it at rather less than a fifth
+of what you meet.
 
-This is worth knowing before you dive. A dungeon whose inhabitants you are badly
-equipped for is more dangerous than its depth suggests; one you are well equipped
-for is less. Fire is a poor idea in Arden.
+A dungeon whose inhabitants you're badly equipped for is more dangerous than its
+depth suggests, and one you're well equipped for is less so. Fire is a poor idea
+in Arden.
 
-Zangband said this by putting a habitat flag for each of its dungeons on every
-one of its nine hundred monsters. ZangbandTK says it through Angband 4.2's own
-taxonomy instead — the monster *kinds* a dungeon is home to, and the flags it
-claims — which is a dozen lines per dungeon rather than a flag field on a
-thousand monsters, and covers the monsters Angband brought as well as the ones
-Zangband did. What it cannot express is that one particular creature belongs in
-one particular place; that is a finer grain than this mechanism has.
+Zangband said where things lived by putting a habitat flag for each of its
+dungeons on every one of its nine hundred monsters. ZangbandTK uses Angband
+4.2's own taxonomy instead: each dungeon names the monster *kinds* it's home to
+and the flags it claims. That's a dozen lines per dungeon instead of a flag
+field on a thousand monsters, and it covers the monsters Angband brought as
+well as the ones Zangband did. What it can't say is that one particular
+creature belongs in one particular place.
 
 What is found there
 -------------------
@@ -203,10 +204,10 @@ Rebma is rich and Garnath is not. The Grove of the Unicorn and Tir-na Nog'th
 yield around three quarters magic and almost nothing to fight with, against a
 game-wide half and a fifth. The Caverns of Kolvir, being a mine, yield tools.
 
-Nothing is impossible anywhere — a sword can still be found in the Grove. It is
-a matter of proportion, and of where it is worth going to look. The proportions
-change *what* a dungeon yields and not *how much*: a lopsided dungeon is not a
-poorer one.
+Nothing is impossible anywhere, and a sword can still be found in the Grove.
+It's a matter of proportion, and of where it's worth going to look. The
+proportions change *what* a dungeon yields and not *how much*, so a lopsided
+dungeon isn't a poorer one.
 
 .. list-table:: The dungeons of the world
    :header-rows: 1
@@ -258,8 +259,8 @@ poorer one.
 Where a dungeon opens follows from the country: the Caverns of Kolvir open high
 in settled land, the Abyss in empty lowland. Most open on or near a road, since a
 dungeon nobody can find is a dungeon nobody uses. The staircase in your home
-village leads into the Vaults of Amber, so you need not find anything before your
-first descent.
+village leads into the Vaults of Amber, so you don't have to find anything
+before your first descent.
 
 The Town Level
 ==============
@@ -269,7 +270,7 @@ shops (each with an entrance), some townspeople, and a wall around it with gates
 in it. The first time you are in town it will be daytime, but note that the sun
 rises and falls (rather instantly) as time passes.
 
-Not every town holds all ten shops — see :doc:`towns`.
+Not every town has all ten shops; see :doc:`towns`.
 
 Townspeople
 ===========
@@ -318,15 +319,15 @@ but some do not, especially those which involve "using" objects.
 
 Stores do not always have everything in stock. As the game progresses, they
 may get new items so check from time to time. Stores restock after 10000
-game turns have passed, and a shop's shelves will not change while you stand
-in front of them — walking out of a shop and back in does not re-roll it.
+game turns have passed, and a shop's shelves won't change while you stand in
+front of them: walking out of a shop and back in doesn't re-roll it.
 
-That turn count is the rule you will meet least often, though. **The rule that
-actually governs what is on the shelves is which town you are in.** A trade
-restocks when you carry your custom to a *different* town, at that town's own
-standard, so a general store in a great city holds better things than the one in
-the village you started in — and coming home again restocks it back down. See
-:doc:`towns`. Also, if you sell them an item, it may get sold
+That turn count is the rule you'll meet least often, though. In practice, what's
+on the shelves depends on which town you're in. A trade restocks when you take
+your custom to a *different* town, at that town's own standard, so a general
+store in a great city has better things than the one in the village you started
+in. Coming home again restocks it back down. See :doc:`towns`. Also, if you
+sell them an item, it may get sold
 to a customer while you are adventuring, so don't always expect to be able
 to get back everything you have sold. If you have a lot of spare gold, you
 can purchase every item in a store, which will induce the store owner to
@@ -419,11 +420,11 @@ Your Home (``8``)
 The Statue Store (``0``)
   The Statue Store deals in statues: likenesses of monsters in wood, clay,
   stone, iron, copper, silver, gold, ivory and mithril, and the odd ornate one.
-  A statue does nothing; it is worth what its material is worth, and this is
+  A statue does nothing. It's worth what its material is worth, and this is
   where it fetches the most. The cheap ones are sold by the handful. Only the
-  great cities and the most crowded cities keep one, and a better one --
-  Expert or Arcane -- reaches for the precious metals. The general store and
-  the black market will take a statue off your hands too.
+  great cities and the most crowded cities keep one, and a better one (Expert
+  or Arcane) reaches for the precious metals. The general store and the black
+  market will take a statue off your hands too.
 
 .. index::
    single: figurine store
@@ -432,8 +433,8 @@ The Statue Store (``0``)
 The Figurine Store (``0``, in light green)
   The Figurine Store deals in magical figurines: monsters in miniature, which
   become your pets when thrown (:doc:`pets`). Its figurines hold monsters up to
-  about the twenty-sixth level, now and then deeper, and an Expert or Arcane
-  one's reach further down.
+  about the twenty-sixth level, now and then deeper, and the figurines in an
+  Expert or Arcane one reach further down.
   Cities and great cities keep one where the country around them is magical.
 
 Within The Dungeon
@@ -444,8 +445,8 @@ weapons, they are ready to enter the dungeon. Move on top of the ``>`` symbol
 and use the "Down" command (``>``).
 
 Your character will enter a maze of interconnecting staircases and finally
-arrive somewhere on the shallowest level of that dungeon — which is the top of
-its own depth range and not necessarily 50 feet, since a dungeon may begin well
+arrive somewhere on the shallowest level of that dungeon. That's the top of its
+own depth range, and not necessarily 50 feet, since a dungeon may begin well
 below the surface. Each level of the
 dungeon is fifty feet high (thus dungeon level "Lev 1" is often called "50
 ft"), and is divided into (large) rectangular regions (several times larger
@@ -454,7 +455,7 @@ you will never again find your way back to that region of that level, but
 there are an infinite number of other regions at that same "depth" that you
 can explore later. Monsters, of course, can use the stairs, and you may
 eventually encounter them again, but they will not chase you up or down
-stairs. Your pets are the exception and do follow you — see :doc:`pets`.
+stairs. Your pets are the exception: they do follow you (see :doc:`pets`).
 
 In the dungeon, there are many things to find, but your character must
 survive many horrible and challenging encounters to find the treasure lying
@@ -535,13 +536,13 @@ Recall" can be found within the dungeon, or bought at the alchemist in town.
 All classes start with one of these scrolls in their inventory, unless you
 began the game with the "Word of Recall has no effect" birth option, in which
 case you are given none. It acts in two manners, depending upon your current
-location. If read underground, it lifts you out to **the surface of the world
-at the mouth you went down by** — not to a town, which may be days away across
-the map. If read on the surface, it takes you back down to the deepest level
-you had reached in **the dungeon you were last in**, as described under
-`The Dungeons`_ above; it is not a way into a dungeon you have never entered,
-and not a way to the deepest level you have ever reached anywhere. This makes
-the scroll very useful for getting back to the deeper levels of ZangbandTK.
+location. If read underground, it lifts you out to the surface of the world at
+the mouth you went down by, not to a town, which may be days away across the
+map. If read on the surface, it takes you back down to the deepest level you
+had reached in the dungeon you were last in, as described under
+`The Dungeons`_ above. It won't take you into a dungeon you've never entered,
+or to the deepest level you've ever reached anywhere. This makes the scroll
+very useful for getting back to the deeper levels of ZangbandTK.
 Once the scroll has been read it takes a while for the spell to act, so don't
 expect it to save you in a crisis. During this time the word 'recall' will
 appear on the bottom of the screen below the dungeon. Reading a second scroll before the first takes
@@ -672,9 +673,9 @@ commands to use them. A ``<`` represents an up staircase and a ``>``
 represents a down staircase. You must move your character over the
 staircase before you can use it.
 
-Most levels carry one to three down staircases and one or two up. The deepest
-level of a dungeon is the exception and carries no way down at all, because
-there is nothing below it — see `The Dungeons`_. You may have trouble finding
+Most levels have one to three down staircases and one or two up. The deepest
+level of a dungeon is the exception: it has no way down at all, because there's
+nothing below it (see `The Dungeons`_). You may have trouble finding
 some well hidden secret doors, or you may have to dig through obstructions to
 get to them, but you can always find the stairs if you look hard enough.  Stairs, like permanent rock, and shop entrances,
 cannot be destroyed by any means.
@@ -758,25 +759,24 @@ of the treasures present in the dungeon.
 Winning The Game
 ================
 
-The game ends in Amber, not in Angband. There are two things to kill and you
-are on both quests from the moment you are born; nobody offers them to you and
-there is nothing to report back.
+The game ends in Amber, not in Angband. There are two things to kill, and you're
+on both quests from the moment you're born. Nobody offers them to you and
+there's nothing to report back.
 
-Both are in **the Courts of Chaos**, which runs from level 75 to level 110, so
-the last part of the game is a matter of crossing the world to find its
-entrance rather than of going down far enough. Depth alone will not do it: the
-Abyss also reaches past level 100, and the hundredth level of the Abyss has
-nothing on it to kill.
+Both are in the Courts of Chaos, which runs from level 75 to level 110, so the
+last part of the game is about crossing the world to find its entrance. Going
+down far enough won't do it on its own: the Abyss also reaches past level 100,
+and the hundredth level of the Abyss has nothing on it to kill.
 
-**Oberon, King of Amber** is on level 99 (4950') of the Courts. You will not be
-able to go below his level until you have killed him. When he dies a magical
-staircase appears, which is how you reach level 100.
+Oberon, King of Amber, is on level 99 (4950') of the Courts. You can't go below
+his level until you've killed him. When he dies a magical staircase appears,
+and that's how you reach level 100.
 
-**The Serpent of Chaos** lurks on level 100, and holds that level the same way.
-It is the older thing: the Unicorn of Order fought with the Serpent and stole
-one of its eyes, the Jewel of Judgement, and with the Jewel Dworkin drew the
-Pattern and gave birth to the infinite worlds of shadow. Killing it is the end
-of the game.
+The Serpent of Chaos lurks on level 100, and holds that level the same way.
+It's the older of the two: the Unicorn of Order fought with the Serpent and
+stole one of its eyes, the Jewel of Judgement, and with the Jewel Dworkin drew
+the Pattern and gave birth to the infinite worlds of shadow. Killing it is the
+end of the game.
 
 If you should actually survive that, you will receive the status of WINNER. You
 may continue to explore, and may even save the game and play more later, but
@@ -785,8 +785,8 @@ point.
 
 .. note::
 
-   Sauron and Morgoth are still in the bestiary as deep uniques. They are no
-   longer what the game is about, and killing them ends nothing. See
+   Sauron and Morgoth are still in the bestiary as deep uniques, but here
+   they aren't what the game is about, and killing them ends nothing. See
    :doc:`quests`.
 
 When you are ready to retire, press the ``Q`` key to have your character
