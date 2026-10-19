@@ -85,14 +85,25 @@ exec "$HERE/usr/bin/zangband" "$@"
 APPRUN
 chmod a+x "$APPRUN_DIR/AppRun"
 
-# SDL2_image and SDL2_mixer reach their format support through dlopen, which
-# linuxdeploy cannot see by following the link-time dependencies, so the codecs
-# the game actually needs are named here: PNG for the tilesets, and the audio
-# formats for the sounds.  Missing ones are skipped rather than fatal, because
-# which of them a distribution ships as separate libraries varies.
+# A distribution's SDL2_image and SDL2_mixer reach their format support through
+# dlopen, which linuxdeploy cannot see by following the link-time dependencies,
+# so the codecs the game needs are named here: PNG for the tilesets, and the
+# audio formats for the sounds.  Missing ones are skipped rather than fatal,
+# because which of them a distribution ships as separate libraries varies.
+#
+# Only the ones the game's own SDL2_image and SDL2_mixer name, though.  The
+# release links the SDL that scripts/build-sdl2 makes, which decodes all of it
+# itself and names none, and a codec bundled beside that is dead weight -- and
+# on the release's Ubuntu 18.04, a 2018 libpng shipped for nothing.
+SDL_CODEC_USERS=$(ldd build/game/angband | awk '/libSDL2_(image|mixer)/ { print $3 }')
 EXTRA_LIBS=""
 for pattern in libpng16 libjpeg libwebp libvorbisfile libvorbis libogg \
 		libmpg123 libopusfile libopus libFLAC ; do
+	# Unquoted: it is a list of the two libraries, one word each.
+	# shellcheck disable=SC2086
+	if [ -z "$SDL_CODEC_USERS" ] || ! grep -q "$pattern\.so" $SDL_CODEC_USERS; then
+		continue
+	fi
 	for found in /usr/lib/x86_64-linux-gnu/$pattern.so.* ; do
 		if [ -e "$found" ]; then
 			EXTRA_LIBS="$EXTRA_LIBS --library=$found"

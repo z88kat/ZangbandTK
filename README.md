@@ -216,6 +216,10 @@ needs GCC or clang and not MSVC — and the last one is `scripts/pkg_linux_tcltk
 (an AppImage, with linuxdeploy) or `scripts/pkg_win_tcltk` (a zip) in place of
 `pkg_macos_tcltk`. On Linux the bridge test wants a display; `xvfb-run` gives
 it one. [tk.yaml](.github/workflows/tk.yaml) is the worked example of both.
+An AppImage built like that runs on your distribution's glibc and newer; the
+release's run back to Ubuntu 18.04, because CI makes them inside an 18.04
+container with SDL2 built from source — `scripts/in-oldest-linux` in front of
+each step, after `scripts/build-sdl2`. That needs Docker, and nothing else.
 
 None of the original's front-end C is being compiled in — the survey concluded
 it loses to Tk 9 and Angband 4.2 on the merits, file by file, so the front end is

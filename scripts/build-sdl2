@@ -1,0 +1,175 @@
+#!/bin/sh
+#
+# Build SDL2 and the three libraries beside it that the game uses -- SDL2_image,
+# SDL2_ttf and SDL2_mixer -- from their release tarballs, into a project-local
+# prefix that the Linux AppImages link against and carry.
+#
+# Use in the root directory of the game, like so:
+#    scripts/build-sdl2 [prefix]
+#
+# The prefix defaults to sdl2/local; the tarballs and the object trees go in
+# sdl2/ beside it, and all of it is gitignored.  Point cmake at the result with
+# PKG_CONFIG_PATH=<prefix>/lib/pkgconfig.
+#
+# This is for the release's Linux builds, which are made on Ubuntu 18.04 so that
+# they start on everything since (scripts/oldest-linux/Dockerfile).  18.04's own
+# SDL is 2.0.8, from 2017: older than the SDL2 front end compiles against -- it
+# handles SDL_WINDOWEVENT_ICCPROF_CHANGED, which is 2.0.18 -- and an AppImage
+# carries whatever it was built with to every player who runs it.
+#
+# Each library decodes its formats itself rather than through others: PNG with
+# stb_image, MP3, Ogg Vorbis and FLAC with minimp3, stb_vorbis and dr_flac, and
+# fonts with the FreeType that SDL2_ttf's tarball includes.  The alternative is
+# a dozen codec libraries from 18.04 bundled into the AppImage, each as old as
+# the SDL this replaces.  HarfBuzz is left out: the game draws fixed-width text,
+# which needs no shaping.
+#
+# Opus is the exception, because SDL_mixer has no decoder of its own for it and
+# the Tk front end's music player offers it (lib/tcl/music.tcl).  So libogg,
+# libopus and opusfile are built here too, as static archives, and linked into
+# SDL2_mixer itself: still nothing beside it in the AppImage.
+#
+# SDL2 itself loads X11, OpenGL, ALSA, PulseAudio and the rest from the player's
+# system at run time, as a distribution's SDL does, so none of that is bundled.
+# Wayland is off, because SDL 2.32 wants libwayland 1.18 and 18.04 has 1.16; SDL2
+# prefers X11 wherever both are available, so that costs nothing unless a
+# player sets SDL_VIDEODRIVER=wayland.
+#
+# The tarballs are checked against the SHA-256 recorded here before anything is
+# unpacked.  To move to a new release, change the URL and the checksum
+# together; the cache key in the workflows is a hash of this file, so that is
+# also what makes CI build it again.
+set -o errexit
+
+SDL=https://github.com/libsdl-org
+XIPH=https://github.com/xiph
+
+SDL2_URL=$SDL/SDL/releases/download/release-2.32.10/SDL2-2.32.10.tar.gz
+SDL2_SHA256=5f5993c530f084535c65a6879e9b26ad441169b3e25d789d83287040a9ca5165
+SDL2_IMAGE_URL=$SDL/SDL_image/releases/download/release-2.8.12/SDL2_image-2.8.12.tar.gz
+SDL2_IMAGE_SHA256=393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381
+SDL2_TTF_URL=$SDL/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-2.24.0.tar.gz
+SDL2_TTF_SHA256=0b2bf1e7b6568adbdbc9bb924643f79d9dedafe061fa1ed687d1d9ac4e453bfd
+SDL2_MIXER_URL=$SDL/SDL_mixer/releases/download/release-2.8.2/SDL2_mixer-2.8.2.tar.gz
+SDL2_MIXER_SHA256=938dff531d00ace2296557a6599abe6f34599e2f34f0a4a08a397e2ccac8b8f7
+
+# The same checksums as Xiph's own SHA256SUMS on downloads.xiph.org.
+OGG_URL=$XIPH/ogg/releases/download/v1.3.6/libogg-1.3.6.tar.gz
+OGG_SHA256=83e6704730683d004d20e21b8f7f55dcb3383cdf84c0daedf30bde175f774638
+OPUS_URL=$XIPH/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz
+OPUS_SHA256=65c1d2f78b9f2fb20082c38cbe47c951ad5839345876e46941612ee87f9a7ce1
+OPUSFILE_URL=$XIPH/opusfile/releases/download/v0.12/opusfile-0.12.tar.gz
+OPUSFILE_SHA256=118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+PREFIX=${1:-$ROOT/sdl2/local}
+WORK=$ROOT/sdl2
+JOBS=$(nproc 2>/dev/null || echo 4)
+
+# Each library finds the ones before it through pkg-config, and the satellites
+# find SDL2 through sdl2-config as well; both have to answer with what was
+# built here, not anything the system has.
+PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+PATH=$PREFIX/bin:$PATH
+export PKG_CONFIG_PATH PATH
+
+# fetch <url> <sha256>: download once, check, and unpack afresh into sdl2/src.
+fetch() {
+	tarball=$WORK/download/$(basename "$1")
+	if [ ! -f "$tarball" ]; then
+		mkdir -p "$WORK/download"
+		curl -fsSL -o "$tarball.part" "$1"
+		mv "$tarball.part" "$tarball"
+	fi
+	echo "$2  $tarball" | sha256sum -c - >/dev/null || {
+		echo "$tarball does not match the checksum in $0." >&2
+		exit 1
+	}
+	mkdir -p "$WORK/src"
+	rm -rf "$WORK/src/$(basename "$1" .tar.gz)"
+	tar -xzf "$tarball" -C "$WORK/src"
+}
+
+# build <url> [configure arguments...]: out of tree, in sdl2/build.
+build() {
+	name=$(basename "$1" .tar.gz)
+	shift
+	echo "==> $name -> $PREFIX"
+	rm -rf "$WORK/build/$name"
+	mkdir -p "$WORK/build/$name"
+	cd "$WORK/build/$name"
+	"$WORK/src/$name/configure" --prefix="$PREFIX" "$@" >configure.log
+	make -j"$JOBS" >make.log
+	make install >install.log
+}
+
+for pair in "$OGG_URL $OGG_SHA256" "$OPUS_URL $OPUS_SHA256" \
+		"$OPUSFILE_URL $OPUSFILE_SHA256" "$SDL2_URL $SDL2_SHA256" \
+		"$SDL2_IMAGE_URL $SDL2_IMAGE_SHA256" "$SDL2_TTF_URL $SDL2_TTF_SHA256" \
+		"$SDL2_MIXER_URL $SDL2_MIXER_SHA256"; do
+	# shellcheck disable=SC2086
+	fetch $pair
+done
+
+# Static, and position independent so that they can go inside a shared
+# library.  opusfile's HTTP support would want OpenSSL, for streams nobody
+# plays here.
+STATIC='--enable-static --disable-shared --with-pic'
+# shellcheck disable=SC2086
+build "$OGG_URL" $STATIC
+# shellcheck disable=SC2086
+build "$OPUS_URL" $STATIC --disable-doc --disable-extra-programs
+# shellcheck disable=SC2086
+build "$OPUSFILE_URL" $STATIC --disable-http --disable-examples --disable-doc
+
+build "$SDL2_URL" --disable-static --disable-video-wayland
+
+build "$SDL2_IMAGE_URL" --disable-static --enable-stb-image \
+	--disable-avif --disable-jxl --disable-tif --disable-webp
+
+build "$SDL2_TTF_URL" --disable-static --enable-freetype-builtin --disable-harfbuzz
+
+# pkg-config --static, so that opusfile brings libopus and libogg with it:
+# their .pc files list them as private, which an ordinary query leaves out,
+# and a shared SDL2_mixer linked without them would build, and then fail to
+# load anywhere for want of opus_decode.
+PKG_CONFIG='pkg-config --static' build "$SDL2_MIXER_URL" --disable-static \
+	--enable-music-mp3-minimp3 --disable-music-mp3-mpg123 \
+	--enable-music-ogg-stb --disable-music-ogg-vorbis --disable-music-ogg-tremor \
+	--enable-music-flac-drflac --disable-music-flac-libflac \
+	--enable-music-opus --disable-music-opus-shared \
+	--disable-music-mod --disable-music-midi \
+	--disable-music-gme --disable-music-wavpack
+
+# Prove the result is what this script says it is, rather than trusting that a
+# green build means it: the right versions are what pkg-config finds; SDL2 can
+# open a window on X11; none of the libraries reaches for a codec library the
+# AppImage would have to carry; and Opus is inside SDL2_mixer, not merely
+# promised by it.
+echo "==> Checking the result"
+for m in sdl2 SDL2_image SDL2_ttf SDL2_mixer; do
+	printf '%-11s %s\n' "$m" "$(pkg-config --modversion $m)"
+done
+if ! grep -q '^Video drivers.*x11' \
+		"$WORK/build/$(basename "$SDL2_URL" .tar.gz)/configure.log"; then
+	echo "SDL2 was configured without X11, so it could open no window." >&2
+	exit 1
+fi
+for lib in "$PREFIX"/lib/libSDL2*.so; do
+	if objdump -p "$lib" | awk '$1 == "NEEDED" { print $2 }' |
+			grep -E 'png|jpeg|webp|tiff|vorbis|ogg|opus|FLAC|mpg123|freetype|harfbuzz|stdc\+\+'; then
+		echo "$lib links a library the AppImage would have to carry." >&2
+		exit 1
+	fi
+done
+if ! grep -q -- '-DMUSIC_OPUS' \
+		"$WORK/build/$(basename "$SDL2_MIXER_URL" .tar.gz)/Makefile"; then
+	echo "SDL2_mixer was configured without Opus." >&2
+	exit 1
+fi
+if nm -D --undefined-only "$PREFIX/lib/libSDL2_mixer.so" | grep -E ' (op|opus|ogg)_'; then
+	echo "SDL2_mixer leaves Opus symbols for something else to provide." >&2
+	exit 1
+fi
+
+echo "==> Done.  Configure the game with PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig"

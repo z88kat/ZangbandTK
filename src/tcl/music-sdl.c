@@ -29,9 +29,10 @@
  * through, and play says so.
  *
  * How far into a track, and how long it is, SDL_mixer can say from 2.6 on.
- * Before that -- Ubuntu 22.04 has 2.0.4, and the Linux build is made there for
- * the glibc it asks for -- the length is not known and is given as 0, and the
- * position is the time played, counted here.
+ * The release's Linux build has 2.8, from scripts/build-sdl2.  Before 2.6 --
+ * Ubuntu 22.04's is 2.0.4, which a build against the system's SDL there gets
+ * -- the length is not known and is given as 0, and the position is the time
+ * played, counted here.
  */
 #include <stdbool.h>
 

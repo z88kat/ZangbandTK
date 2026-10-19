@@ -519,10 +519,13 @@ jobs:
   linux:
     needs: [setup, docconvert]
     name: Linux (AppImage, 64-bit)
-    # Deliberately not ubuntu-latest.  A binary is bound to the glibc it was
-    # built against and will not start on anything older, so the oldest runner
-    # still supported puts the floor as low as is available rather than
-    # excluding every distribution that is not current.
+    # A binary is bound to the glibc it was built against and will not start on
+    # anything older, so the build runs on Ubuntu 18.04, inside the container
+    # scripts/in-oldest-linux starts, rather than on the runner: the oldest
+    # runner GitHub has is 22.04, and glibc 2.35 shut out a player on an older
+    # distribution who wanted to play.  That puts the floor at 2.27.  The
+    # runner itself only holds the container and the steps that need GitHub's
+    # own actions.
     runs-on: ubuntu-22.04
     steps:
       - name: Download Artifact with Configuration Information
@@ -537,21 +540,6 @@ jobs:
           echo "name=$name" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
           echo "version=$version" >> $GITHUB_OUTPUT
-
-      - name: Install Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build gcc git \
-            libx11-dev libncurses-dev \
-            libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev \
-            libfuse2 file
-
-      - name: Install linuxdeploy
-        run: |
-          curl -sSLo /usr/local/bin/linuxdeploy \
-            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod a+x /usr/local/bin/linuxdeploy
-          linuxdeploy --version
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
@@ -570,6 +558,21 @@ jobs:
         run: |
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
+      # SDL2 and the three libraries beside it, built from source: 18.04's own
+      # are 2017's, older than the SDL2 front end compiles against.  Keyed on
+      # the image they are built in as well as the script, as tk.yaml keys its
+      # toolchain, so that nothing built on a newer base is restored here.
+      - name: Cache SDL2
+        id: cache-sdl2
+        uses: actions/cache@v4
+        with:
+          path: sdl2/local
+          key: sdl2-oldest-linux-${{ hashFiles('scripts/oldest-linux/Dockerfile') }}-${{ runner.arch }}-${{ hashFiles('scripts/build-sdl2') }}
+
+      - name: Build SDL2
+        if: steps.cache-sdl2.outputs.cache-hit != 'true'
+        run: scripts/in-oldest-linux scripts/build-sdl2
+
       # One binary carrying three front ends, chosen at run time with -m: SDL2
       # for tiles, X11 for a plain window, and GCU so the game is playable over
       # a terminal with no display at all.  Linux is the only platform here
@@ -583,25 +586,32 @@ jobs:
       # score and panic directories to the user's home instead.  CMake only
       # defines that for READONLY_INSTALL, which cannot be used here because it
       # is the mode with the absolute paths.
+      #
+      # GCU_STATIC_CURSES as the terminal download has it, so the curses front
+      # end in here is that one exactly, and 18.04's ncurses is not one more
+      # library from 2018 for the image to carry.
       - name: Build
         run: |
-          cmake -S . -B build -G Ninja \
+          scripts/in-oldest-linux env PKG_CONFIG_PATH="$PWD/sdl2/local/lib/pkgconfig" \
+            cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSC_INSTALL=ON \
             -DSUPPORT_SDL2_FRONTEND=ON \
             -DSUPPORT_SDL2_SOUND=ON \
             -DSUPPORT_X11_FRONTEND=ON \
-            -DSUPPORT_GCU_FRONTEND=ON
-          cmake --build build --parallel
+            -DSUPPORT_GCU_FRONTEND=ON \
+            -DGCU_STATIC_CURSES=ON
+          scripts/in-oldest-linux cmake --build build --parallel
 
       # Confirm all three front ends really are in the binary before packaging
       # one that silently has fewer, since CMake reports a missing front end as
       # a status message and carries on.
       - name: Check the Front Ends
         run: |
+          help=$(scripts/in-oldest-linux ./build/game/angband -h 2>&1 || true)
           for m in sdl2 x11 gcu ; do
-            if ! ./build/game/angband -h 2>&1 | grep -q -- "$m" ; then
+            if ! echo "$help" | grep -q -- "$m" ; then
               echo "Front end $m is missing from the build." >&2
               exit 1
             fi
@@ -611,18 +621,38 @@ jobs:
         id: create_linux_archive
         run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          scripts/pkg_appimage $archive_prefix ${archive_prefix}-linux64.AppImage
+          scripts/in-oldest-linux scripts/pkg_appimage $archive_prefix ${archive_prefix}-linux64.AppImage
           echo "archive_file=${archive_prefix}-linux64.AppImage" >> $GITHUB_OUTPUT
 
       # An AppImage that cannot start is indistinguishable from a broken
-      # download, so run the one front end that needs no display and confirm it
-      # gets far enough to read its own data files.
+      # download, so start it -- on a stock Ubuntu 18.04, the oldest system it
+      # promises to run on, with nothing installed but what any desktop has.
+      # The curses front end plays into the dungeon; the SDL2 one opens its
+      # window on a virtual display and has to still be running when looked at
+      # again, which it would not be if the SDL it carries could not find a
+      # video driver, its font or its PNG decoder.  And every file in the
+      # image is checked against the glibc the download page promises.
       - name: Smoke Test
         run: |
           ./${{ steps.create_linux_archive.outputs.archive_file }} --appimage-extract >/dev/null
           test -f squashfs-root/usr/share/ZangbandTK/lib/gamedata/constants.txt
           test -x squashfs-root/usr/bin/zangband
           file squashfs-root/usr/bin/zangband | grep -q "x86-64"
+          scripts/check-glibc-floor squashfs-root
+          docker run --rm \
+            -v "$PWD/squashfs-root:/game:ro" \
+            -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
+            ubuntu:18.04 \
+            sh -c 'apt-get update -qq >/dev/null && \
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+                python3 libx11-6 libgl1-mesa-dri xvfb xauth >/dev/null && \
+              cp -R /game /play && python3 /smoke-tty /play AppRun && \
+              LANG=C.UTF-8 SDL_AUDIODRIVER=dummy xvfb-run -a sh -c "
+                /play/AppRun -msdl2 -n -uWindowTest & pid=\$!
+                sleep 15
+                kill -0 \$pid || { echo The SDL2 front end did not stay up. >&2; exit 1; }
+                echo The SDL2 front end is up.
+                kill \$pid"'
 
       - name: Create Artifact with Linux Archive Path
         run: |
@@ -645,10 +675,9 @@ jobs:
   linux-terminal:
     needs: [setup, docconvert]
     name: Linux (terminal, 64-bit)
-    # Deliberately not ubuntu-latest, and for the same reason the AppImage job
-    # is not: the executable is bound to the glibc it was built against, so the
-    # oldest runner still supported puts the floor as low as it can go.  Here
-    # that is glibc 2.35, which the README in the archive states.
+    # Built on Ubuntu 18.04 through scripts/in-oldest-linux, for the reason the
+    # AppImage job gives: the executable is bound to the glibc it was built
+    # against.  That is 2.27, which the README in the archive states.
     runs-on: ubuntu-22.04
     steps:
       - name: Download Artifact with Configuration Information
@@ -663,14 +692,6 @@ jobs:
           echo "name=$name" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
           echo "version=$version" >> $GITHUB_OUTPUT
-
-      # libncurses-dev carries the static archives as well as the shared
-      # libraries, which is what GCU_STATIC_CURSES needs.  Nothing here wants
-      # X11 or SDL2: that is the point of this build.
-      - name: Install Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build gcc git libncurses-dev file
 
       # Need commit history and tags for scripts/version.sh to work as expected
       # so use 0 for fetch-depth.
@@ -705,21 +726,22 @@ jobs:
       # ncurses on the machine that built it: it will not start at all on a
       # Debian system without libncursesw.so.6, and on the RPM distributions it
       # starts but prints "no version information available" on every launch.
+      # Nothing here wants X11 or SDL2: that is the point of this build.
       - name: Build
         run: |
-          cmake -S . -B build -G Ninja \
+          scripts/in-oldest-linux cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSC_INSTALL=ON \
             -DSUPPORT_GCU_FRONTEND=ON \
             -DGCU_STATIC_CURSES=ON
-          cmake --build build --parallel
+          scripts/in-oldest-linux cmake --build build --parallel
 
       - name: Create Linux Terminal Archive
         id: create_linux_terminal_archive
         run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          scripts/pkg_linux_tty $archive_prefix
+          scripts/in-oldest-linux scripts/pkg_linux_tty $archive_prefix
           echo "archive_file=${archive_prefix}-linux64-terminal.tar.gz" >> $GITHUB_OUTPUT
           echo "package_name=$archive_prefix" >> $GITHUB_OUTPUT
 
@@ -740,24 +762,28 @@ jobs:
             exit 1
           fi
           file $root/zangband | grep -q "x86-64"
+          scripts/check-glibc-floor $root
 
-      # Play it, on a distribution that is not the one it was built on and has
-      # no ncurses of its own.  Debian's base image has no libncursesw.so.6 at
-      # all, which is exactly the machine a dynamically linked build fails on,
-      # so it is the one worth testing against.
-      - name: Smoke Test on Another Distribution
+      # Play it, on two distributions that are not the one it was built on:
+      # the oldest it promises to run on, and a current one.  That the curses
+      # library is linked in is the step above's to prove, not this one's --
+      # installing python3 brings Debian's libncursesw.so.6 in with it.
+      - name: Smoke Test on Other Distributions
         run: |
           root=unpacked/${{ steps.create_linux_terminal_archive.outputs.package_name }}
           test -f $root/lib/gamedata/constants.txt
           test -f $root/README.txt
           test -n "$(ls -A $root/docs)"
-          docker run --rm \
-            -v "$PWD/$root:/game:ro" \
-            -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
-            debian:12 \
-            sh -c 'apt-get update -qq >/dev/null && \
-              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3 >/dev/null && \
-              cp -R /game /play && python3 /smoke-tty /play'
+          for distribution in ubuntu:18.04 debian:12; do
+            echo "== $distribution"
+            docker run --rm \
+              -v "$PWD/$root:/game:ro" \
+              -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
+              $distribution \
+              sh -c 'apt-get update -qq >/dev/null && \
+                DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3 >/dev/null && \
+                cp -R /game /play && python3 /smoke-tty /play'
+          done
 
       - name: Create Artifact with Linux Terminal Archive Path
         run: |
@@ -1497,11 +1523,11 @@ jobs:
           retention-days: 1
 
   # ZangbandTK for Linux, as tk.yaml builds and checks it on every push:
-  # ZangbandTK-<version>-linux64-tk.AppImage, from Tcl and Tk built here on
-  # ubuntu-22.04, whose glibc is the oldest the AppImage runs on, as the other
-  # Linux downloads' is.  The bridge test runs on this build too, under Xvfb,
-  # and the AppImage is started through its own AppRun and asked where Tcl,
-  # Tk and its scripts came from.
+  # ZangbandTK-<version>-linux64-tk.AppImage, from Tcl, Tk and SDL2 built here
+  # on Ubuntu 18.04 through scripts/in-oldest-linux, whose glibc is the oldest
+  # the AppImage runs on, as the other Linux downloads' is.  The bridge test
+  # runs on this build too, under Xvfb, and the AppImage is started through its
+  # own AppRun on 18.04 and asked where Tcl, Tk and its scripts came from.
   linux-tk:
     needs: [setup, docconvert]
     name: Linux (Tk)
@@ -1541,55 +1567,58 @@ jobs:
         run: |
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
 
-      - name: Install Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libx11-dev libxft-dev \
-            libfontconfig1-dev zip xvfb xauth libfuse2 file \
-            libsdl2-dev libsdl2-mixer-dev
-
+      # Both keyed on the image they are built in, as tk.yaml's are, so that
+      # nothing built on a newer base is restored here.
       - name: Restore the Tcl/Tk toolchain
         id: cache
         uses: actions/cache@v4
         with:
           path: tcltk/local
-          key: tcltk-9.0.4-ubuntu-22.04-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+          key: tcltk-9.0.4-oldest-linux-${{ hashFiles('scripts/oldest-linux/Dockerfile') }}-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Restore SDL2
+        id: cache-sdl2
+        uses: actions/cache@v4
+        with:
+          path: sdl2/local
+          key: sdl2-oldest-linux-${{ hashFiles('scripts/oldest-linux/Dockerfile') }}-${{ runner.arch }}-${{ hashFiles('scripts/build-sdl2') }}
 
       - name: Build Tcl and Tk
         if: steps.cache.outputs.cache-hit != 'true'
-        run: scripts/build-tcltk
+        run: scripts/in-oldest-linux scripts/build-tcltk
+
+      - name: Build SDL2
+        if: steps.cache-sdl2.outputs.cache-hit != 'true'
+        run: scripts/in-oldest-linux scripts/build-sdl2
 
       - name: Build the game
         run: |
-          cmake -S . -B build -G Ninja \
+          scripts/in-oldest-linux env PKG_CONFIG_PATH="$PWD/sdl2/local/lib/pkgconfig" \
+            cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSUPPORT_TCL_FRONTEND=ON \
             -DSUPPORT_SDL2_SOUND=ON \
             -DTCLTK_PREFIX="$PWD/tcltk/local"
-          cmake --build build --parallel
+          scripts/in-oldest-linux cmake --build build --parallel
 
       - name: Scripted session
-        run: xvfb-run -a -s "-screen 0 1600x1200x24" scripts/run-tcl-bridge-test build
-
-      - name: Install linuxdeploy
         run: |
-          curl -sSLo /usr/local/bin/linuxdeploy \
-            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod a+x /usr/local/bin/linuxdeploy
-          linuxdeploy --version
+          scripts/in-oldest-linux \
+            xvfb-run -a -s "-screen 0 1600x1200x24" scripts/run-tcl-bridge-test build
 
       - name: Create Tk Linux Archive
         id: create_linux_tk_archive
         run: |
           package_name=${{ steps.store_config.outputs.tkapp }}-${{ steps.store_config.outputs.version }}
-          scripts/pkg_linux_tcltk build "$package_name"
+          scripts/in-oldest-linux scripts/pkg_linux_tcltk build "$package_name"
           echo "archive_file=${package_name}-linux64-tk.AppImage" >> $GITHUB_OUTPUT
 
       - name: The AppImage runs on what it carries
         run: |
           ./${{ steps.create_linux_tk_archive.outputs.archive_file }} --appimage-extract >/dev/null
-          xvfb-run -a -s "-screen 0 1600x1200x24" \
+          scripts/check-glibc-floor squashfs-root
+          scripts/in-oldest-linux xvfb-run -a -s "-screen 0 1600x1200x24" \
             scripts/run-tcl-package-test squashfs-root squashfs-root/AppRun
 
       - name: Create Artifact with Tk Linux Archive Path

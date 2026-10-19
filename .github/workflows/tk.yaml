@@ -39,6 +39,11 @@ on:
       - 'scripts/run-tcl-package-test'
       - 'scripts/pkg_linux_tcltk'
       - 'scripts/pkg_win_tcltk'
+      # What the Linux job builds in and with.
+      - 'scripts/oldest-linux/**'
+      - 'scripts/in-oldest-linux'
+      - 'scripts/build-sdl2'
+      - 'scripts/check-glibc-floor'
       - 'src/main.c'
       - 'lib/icons/zangbandtk.desktop'
       - 'scripts/portraits/**'
@@ -230,10 +235,12 @@ jobs:
         run: scripts/run-tcl-bridge-test build
 
   # Linux, on X11.  Decision 13 of the Phase 3 plan: macOS through development,
-  # all three platforms before release.  ubuntu-22.04 rather than latest, as
-  # the release's Linux jobs are, because its glibc is the oldest the AppImage
-  # will run on.  One job where the Mac has two: on a cache hit the toolchain
-  # step has nothing to do.
+  # all three platforms before release.  Built as the release builds it, on
+  # Ubuntu 18.04 through scripts/in-oldest-linux, because that is what sets
+  # the oldest Linux the AppImage runs on -- and so that GCC 7 sees every
+  # change here before a release does.  The runner only holds the container:
+  # every step that builds or starts the game runs inside it.  One job where
+  # the Mac has two: on a cache hit the toolchain steps have nothing to do.
   linux:
     name: Linux (X11) and AppImage
     runs-on: ubuntu-22.04
@@ -248,29 +255,31 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v6
 
-      # X11 and Xft for Tk; zip for Tk's own build (scripts/build-tcltk says
-      # why); Xvfb, a display for the game to open its window on; and libfuse2
-      # to run linuxdeploy.
-      - name: Install Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libx11-dev libxft-dev \
-            libfontconfig1-dev zip xvfb xauth libfuse2 file \
-            libsdl2-dev libsdl2-mixer-dev
-
-      # Keyed on the image, not on runner.os as the Mac's is: a toolchain built
-      # on a newer Ubuntu and restored here would carry its newer glibc into
-      # the AppImage.
+      # Keyed on the image the toolchains are built in, not on runner.os as
+      # the Mac's is: one built anywhere newer and restored here would carry
+      # its newer glibc into the AppImage.
       - name: Cache the toolchain
         id: cache
         uses: actions/cache@v4
         with:
           path: tcltk/local
-          key: tcltk-9.0.4-ubuntu-22.04-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+          key: tcltk-9.0.4-oldest-linux-${{ hashFiles('scripts/oldest-linux/Dockerfile') }}-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Cache SDL2
+        id: cache-sdl2
+        uses: actions/cache@v4
+        with:
+          path: sdl2/local
+          key: sdl2-oldest-linux-${{ hashFiles('scripts/oldest-linux/Dockerfile') }}-${{ runner.arch }}-${{ hashFiles('scripts/build-sdl2') }}
 
       - name: Build Tcl and Tk
         if: steps.cache.outputs.cache-hit != 'true'
-        run: scripts/build-tcltk
+        run: scripts/in-oldest-linux scripts/build-tcltk
+
+      # For the sound and the music: 18.04's own SDL_mixer is 2.0.2.
+      - name: Build SDL2
+        if: steps.cache-sdl2.outputs.cache-hit != 'true'
+        run: scripts/in-oldest-linux scripts/build-sdl2
 
       # The same headers the Mac job asks for, and an X11 Tk with Xft: without
       # Xft, Tk draws with the X server's core fonts, a few fixed sizes of
@@ -285,11 +294,12 @@ jobs:
               exit 1
             fi
           done
-          ldd tcltk/local/lib/libtcl9tk9.0.so
-          ldd tcltk/local/lib/libtcl9tk9.0.so | grep -q libXft || {
-            echo "Tk was built without Xft." >&2
-            exit 1
-          }
+          scripts/in-oldest-linux sh -c '
+            ldd tcltk/local/lib/libtcl9tk9.0.so
+            ldd tcltk/local/lib/libtcl9tk9.0.so | grep -q libXft || {
+              echo "Tk was built without Xft." >&2
+              exit 1
+            }'
 
       # -Werror, as the other Linux builds have: GCC warns where the Mac's
       # clang does not, and this is the only GCC build of main-tcl.c.
@@ -297,20 +307,22 @@ jobs:
       # to ~/.angband/ZangbandTK, as the other AppImage's do.
       - name: Configure and build
         run: |
-          cmake -S . -B build -G Ninja \
+          scripts/in-oldest-linux env PKG_CONFIG_PATH="$PWD/sdl2/local/lib/pkgconfig" \
+            cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSUPPORT_TCL_FRONTEND=ON \
             -DSUPPORT_SDL2_SOUND=ON \
             -DTCLTK_PREFIX="$PWD/tcltk/local"
-          cmake --build build --parallel
+          scripts/in-oldest-linux cmake --build build --parallel
 
       # The X11 front end coming back is the Mac job's worry too, and here it
       # would be the first module tried; Tk links X11 itself, so ask the cache
       # rather than the executable.
       - name: Check the Tcl front end is the one that is in there
         run: |
-          ldd build/game/angband | grep -q libtcl9tk || {
+          deps=$(scripts/in-oldest-linux ldd build/game/angband)
+          echo "$deps" | grep -q libtcl9tk || {
             echo "The executable does not link Tk." >&2
             exit 1
           }
@@ -320,30 +332,28 @@ jobs:
           fi
 
       - name: Tcl tests
-        run: scripts/run-tcl-tests
+        run: scripts/in-oldest-linux scripts/run-tcl-tests
 
       - name: Scripted session
-        run: xvfb-run -a -s "-screen 0 1600x1200x24" scripts/run-tcl-bridge-test build
-
-      - name: Install linuxdeploy
         run: |
-          curl -sSLo /usr/local/bin/linuxdeploy \
-            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod a+x /usr/local/bin/linuxdeploy
-          linuxdeploy --version
+          scripts/in-oldest-linux \
+            xvfb-run -a -s "-screen 0 1600x1200x24" scripts/run-tcl-bridge-test build
 
       - name: Package the AppImage
         run: |
           version=$(sed -n 's/^#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' src/buildid.h)
-          scripts/pkg_linux_tcltk build "ZangbandTK-$version"
+          scripts/in-oldest-linux scripts/pkg_linux_tcltk build "ZangbandTK-$version"
 
       # The AppImage's own contents, started through its own AppRun, asked
       # where Tcl, Tk and the front end's scripts came from -- the check the
-      # bridge session cannot make, since it runs the build tree.
+      # bridge session cannot make, since it runs the build tree.  On 18.04,
+      # so it is also the proof that the oldest system it promises to start on
+      # does; and every file in it checked against that promise.
       - name: The AppImage runs on what it carries
         run: |
           ./ZangbandTK-*-linux64-tk.AppImage --appimage-extract >/dev/null
-          xvfb-run -a -s "-screen 0 1600x1200x24" \
+          scripts/check-glibc-floor squashfs-root
+          scripts/in-oldest-linux xvfb-run -a -s "-screen 0 1600x1200x24" \
             scripts/run-tcl-package-test squashfs-root squashfs-root/AppRun
 
       - name: Upload the AppImage
