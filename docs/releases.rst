@@ -105,6 +105,19 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Older Linux — 19 October 2026
+-----------------------------
+
+- **The Linux downloads run on older distributions** (DEC-158). All three,
+  ``Zangband-<version>-linux64.AppImage``, the terminal tarball and
+  ``ZangbandTK-<version>-linux64-tk.AppImage``, need glibc 2.27 now, down from
+  2.35. Ubuntu 18.04, Debian 10 and RHEL 8 can run them, and so can anything
+  newer. A player asked for this after having to compile the game themselves.
+  There's still one download of each.
+- **SDL 2.32 in the Linux AppImages**, built from source for them. On Linux,
+  ZangbandTK's music player now shows how long a track is, as it does on the
+  Mac and Windows.
+
 Statues, and the Statue Store — 16 October 2026
 ------------------------------------------------
 

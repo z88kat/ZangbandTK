@@ -31,6 +31,38 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+19 October 2026 — older Linux, and no second download
+=====================================================
+
+A player wrote that they liked it harder, and that they had had to compile it
+themselves because their Linux was too old for ours. Every Linux download was
+built on ubuntu-22.04, the oldest runner GitHub still has, and a binary needs the
+glibc it was built against or newer: 2.35. The terminal build's executable asked
+for 2.34 for exactly two symbols, ``__libc_start_main`` and ``stat``. Everything
+else it used was older than 2.14.
+
+My first thought was a second set of downloads, current and legacy. I turned it
+down. A build made against an older glibc runs on a newer one exactly as it
+would have, so the "current" download would only be the legacy one with fewer
+machines able to start it, and everybody would be asked a question only a few
+of them need to answer. The player also suggested PkgForge's AppImages, which
+carry their own glibc; I kept that as the fallback and did not need it. The
+three Linux downloads are now built on Ubuntu 18.04 instead, in a container,
+which puts the floor at glibc 2.27.
+
+What it cost was mostly finding out what 22.04 had been doing for us. 18.04's
+SDL is 2.0.8 and the SDL2 front end needs 2.0.18, so SDL and its companion
+libraries are built from source now, as Tcl and Tk already were. That gives
+Linux a newer SDL than it had, and the music player finally knows how long a
+track is. Two curses problems that 22.04 had hidden: on 18.04 the wide-character
+header is only in ``include/ncursesw``, and the static archive calls the
+console mouse server directly. Opus nearly disappeared: SDL_mixer has no
+decoder of its own for it, and the music player offers it. And the smoke test
+had only ever passed because Python 3.7 and later quietly give a child process a
+UTF-8 locale when none is set. 18.04's Python is 3.6, which does not, so the
+game quit, correctly, saying it needed UTF-8.
+
+
 16 October 2026 — statues, and a shop I turned away
 ===================================================
 

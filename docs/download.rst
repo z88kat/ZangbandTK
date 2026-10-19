@@ -406,7 +406,9 @@ launch, as it does for ``Zangband.exe``, and the ``README.txt`` in the zip says
 how to get past it.
 
 On Linux it's one file, and it needs nothing installed but an X11 desktop, or
-Wayland through XWayland:
+Wayland through XWayland. Like the other Linux downloads, it runs on x86-64
+with glibc 2.27 or newer: Ubuntu 18.04, Debian 10, RHEL 8 and anything after
+them.
 
 .. code-block:: sh
 
@@ -435,11 +437,11 @@ The AppImage needs no installation and nothing installed alongside it:
    chmod +x Zangband-<version>-linux64.AppImage
    ./Zangband-<version>-linux64.AppImage
 
-It bundles its own SDL2, X11 and ncurses libraries, so it doesn't care which
-distribution it's on. It is built against an older glibc than the current one, so
-that it runs on more than just the newest releases. Older distributions may need
-``libfuse2`` installed for AppImages to mount; failing that,
-``--appimage-extract`` unpacks it into a directory you can run from.
+It bundles its own SDL2 and ncurses, so it doesn't care which distribution
+it's on. It is built on Ubuntu 18.04, so it runs on x86-64 with glibc 2.27 or
+newer: Ubuntu 18.04, Debian 10, RHEL 8 and everything after them. Older
+distributions may need ``libfuse2`` installed for AppImages to mount; failing
+that, ``--appimage-extract`` unpacks it into a directory you can run from.
 
 Saves go to ``~/.angband/ZangbandTK``, outside the image, which is read only.
 The path comes from Angband and stays as it is so that nothing has to move
@@ -469,7 +471,7 @@ It's the executable, its data, and nothing else. Keep the ``lib`` directory
 beside the executable and start the game from inside the unpacked folder,
 because that's where it looks for its data.
 
-It needs x86-64 and glibc 2.35 or newer: Ubuntu 22.04, Debian 12, RHEL 9 and
+It needs x86-64 and glibc 2.27 or newer: Ubuntu 18.04, Debian 10, RHEL 8 and
 anything after those. Nothing needs to be installed alongside it. ncurses is
 linked in statically, because a dynamically linked build does not start at all
 on a system with no ``libncursesw.so.6`` (a stock Debian container is one), and

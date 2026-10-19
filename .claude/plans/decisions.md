@@ -8709,3 +8709,127 @@ passed **238 of 238 with no failures at all**, Birth included. The
 character-creation failure this machine has shown for days is therefore
 *intermittent* locally, not deterministic -- I have been describing it as
 though it always failed here. It still has never failed on CI.
+
+---
+
+**DEC-158 — The Linux downloads are built on Ubuntu 18.04, and there is no
+second, legacy set (19 October 2026).** (Release. Asked for by a player.)
+
+**The request.** A player liked the game, found it harder, and had had to
+compile it on their own machine because no download would start there. They
+asked for glibc 2.27, or for AppImages built PkgForge's way, which run from
+Arch back to Ubuntu 14.
+
+**Why nothing ran.** Every Linux download was built on `ubuntu-22.04`, the
+oldest runner GitHub still has, and a binary needs the glibc it was linked
+against or a newer one: 2.35. Measured on the 3.121.0 terminal executable, it
+asked for 2.34 for two symbols, `__libc_start_main` and `stat`, and for 2.14 or
+older for everything else.
+
+**One download of each, not two.** The owner asked whether to split the Linux
+downloads into a current set and a legacy one. No: glibc is backwards
+compatible, so a build made against 2.27 runs on a current system exactly as
+one made against 2.35 does, and the current set would only be the legacy one
+with fewer machines able to start it. The cost of splitting is real -- six
+Linux downloads and their jobs instead of three, and a question for every
+player that most cannot answer, since few know their glibc. **Revisit only if
+something the AppImage needs will not build on the old base**; then split that
+one download, never the terminal tarball, which depends on glibc and nothing
+else.
+
+**PkgForge's approach is the fallback, not the plan.** Its AppImages carry
+their own glibc loader (sharun), which reaches further back and onto musl
+distributions. It was not taken because it replaces linuxdeploy with
+third-party tooling fetched at build time, does nothing for the terminal
+tarball, and its reach is self-reported. Nothing so far has needed it.
+
+**What moved.** `scripts/oldest-linux/Dockerfile` is Ubuntu 18.04 with the
+toolchain (GCC 7.5), Kitware's CMake 3.31 (18.04's 3.10 has neither `-S`/`-B`
+nor `--parallel`, which every workflow uses) and an unpacked linuxdeploy,
+whose tools are statically linked. `scripts/in-oldest-linux` runs a step in
+it with the repository mounted at its own path, so cached prefixes and their
+rpaths mean the same inside and out. Not a workflow `container:`: GitHub's
+own actions bring a Node that needs glibc 2.28. The release's three Linux jobs,
+`linux.yaml`'s terminal job and `tk.yaml`'s Linux job build through it, and
+`linux.yaml` gains an `appimage` job, because until now the SDL2 and X11 front
+ends met GCC 7 and the new SDL only at a tag.
+
+**SDL is built from source**, by `scripts/build-sdl2`, from pinned tarballs
+checked against recorded SHA-256s: SDL2 2.32.10, SDL2_image 2.8.12, SDL2_ttf
+2.24.0, SDL2_mixer 2.8.2. 18.04's SDL is 2.0.8, and the SDL2 front end handles
+`SDL_WINDOWEVENT_ICCPROF_CHANGED`, which is 2.0.18. Each decodes its formats
+itself -- stb_image, minimp3, stb_vorbis, dr_flac, the FreeType in SDL2_ttf's
+tarball -- so no 2018 codec library is bundled. **Opus is the exception**:
+SDL_mixer has no decoder of its own and `music.tcl` offers `.opus` on Linux,
+so libogg, libopus and opusfile are built too, static, and linked into
+SDL2_mixer; dropping them would have left the music player offering a format
+it could not play. HarfBuzz is left out (fixed-width text needs no shaping).
+Wayland is off: SDL 2.32 wants libwayland 1.18 and 18.04 has 1.16, and SDL2
+prefers X11 anyway, so it costs only `SDL_VIDEODRIVER=wayland`. A side effect
+worth having: SDL_mixer 2.8 knows track lengths, so the Linux music player
+stops reporting 0.
+
+**What 22.04 had been hiding.**
+- 18.04's wide-character `ncurses.h` is only in `include/ncursesw`; the static
+  curses target now adds that directory, which on 22.04 holds a link to the
+  same header.
+- 18.04's `libncursesw.a` calls GPM directly, so `libgpm.a` follows it when
+  installed; an archive nothing calls pulls nothing in, which 22.04 confirms.
+- `scripts/smoke-tty` had only ever passed because Python 3.7 and later coerce
+  an unset locale to C.UTF-8 and pass it to children (PEP 538). 18.04's Python
+  is 3.6, the game quit "requires UTF-8 support", and the harness now sets
+  `LC_CTYPE` itself when nothing is set.
+- The terminal smoke test's comment said Debian 12's image has no
+  `libncursesw.so.6`. Installing python3 brings it in, so that run never
+  tested a machine without ncurses; the `ldd` check is what does, and the
+  comment now says so.
+
+**The promise is checked, not just written.** `scripts/check-glibc-floor`
+holds the number the download page and the terminal README state, 2.27, and
+fails if any ELF file in a package asks for newer, naming the symbols. Each
+package is also started on a stock `ubuntu:18.04`: the terminal tarball and
+the AppImage's curses front end play into the dungeon, the AppImage's SDL2
+front end opens a window under Xvfb and must still be running fifteen seconds
+later, and the Tk AppImage runs `run-tcl-package-test`. The terminal tarball
+is played on `debian:12` as well.
+
+**Negative controls, per DEC-156.** The floor check fails on the 3.121.0
+executable, naming `stat` and `__libc_start_main`, including from a path with
+spaces. The window check fails with `SDL_VIDEODRIVER=nosuchdriver`.
+`build-sdl2`'s four checks each fire on a bad input: a configure summary
+without X11, `libXft` (which needs FreeType), SDL2_image's Makefile (no
+`MUSIC_OPUS`), and opusfile linked into a shared library without libopus and
+libogg. `pkg_appimage`'s codec filter, run over 22.04's own SDL2_image and
+SDL2_mixer, still keeps every codec they name. The locale and curses fixes
+were each seen failing before they were made.
+
+**Run, under x86-64 emulation on the Mac** (Docker Desktop, so roughly ten
+times slower than a runner): all three packages built with the release's
+flags, `-Werror` clean on GCC 7, and every check above passing; the SDL2
+AppImage also on `ubuntu:24.04`; SDL2_mixer loading MP3, Ogg, FLAC, Opus and
+WAV and reporting each length; the bridge session (all checks) and the Tcl
+tests on 18.04; the static curses build on 22.04 unchanged in effect;
+actionlint over the three workflows with no finding the old ones lacked;
+shellcheck clean on the new scripts; the manual with `-W`;
+`check-build-lists`. **Not run:** any of it on a real GitHub runner -- the
+workflows are unexecuted until pushed, and a release dry run should precede
+the next tag -- and the game played by hand on a real 18.04 desktop. Locally,
+linuxdeploy cannot write into a Docker Desktop bind mount (known since
+2026-10-15), so packaging was done from a copy inside the container; on a
+runner the workspace is an ordinary directory.
+
+**What the AppImages carry shrank.** The Tk AppImage from `tk.yaml`'s run of
+87ba5d9f1, built on 22.04 against the distribution's SDL, bundled 60
+libraries from the build machine -- libsystemd, GLib, PulseAudio, D-Bus,
+fluidsynth and libsndfile among them, most of them pulled in by Ubuntu's SDL
+and SDL_mixer, and the usual way an AppImage breaks on somebody else's
+distribution.
+The new one bundles 12; the SDL2 AppImage 7. SDL loads the system's audio,
+D-Bus and X11 libraries at run time instead, as a distribution's own SDL does.
+
+**Costs.** Every Linux job builds the image first (a minute or two of apt);
+SDL and Tcl/Tk are cached on the Dockerfile's and their scripts' hashes, so
+a change to the image rebuilds both. The Tk AppImage still bundles a
+`libpng16` that nothing loads, pulled in by linuxdeploy following
+`libfreetype`'s dependencies; the 22.04 build above carries it too, so it is
+noted rather than fixed.

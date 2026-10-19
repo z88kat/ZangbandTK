@@ -151,30 +151,30 @@ jobs:
   # end, but it builds it the ordinary way and stops at the link; this is the
   # one that has to produce something a stranger can download and run on a
   # machine that is not this one, so it packages the archive and then plays the
-  # game inside it on a different distribution.
+  # game inside it on different distributions.  Built on Ubuntu 18.04 through
+  # scripts/in-oldest-linux, as the release builds it, which is also what puts
+  # GCC 7 in front of every change to the core before a release does.
   terminal-package:
     name: Terminal package
     runs-on: ubuntu-22.04
     steps:
-      - name: Install Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc cmake ninja-build libncurses-dev file
-
       - name: Clone Project
         uses: actions/checkout@v6
 
       - name: Build and Package
         run: |
-          cmake -S . -B build -G Ninja \
+          scripts/in-oldest-linux cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSC_INSTALL=ON \
             -DSUPPORT_GCU_FRONTEND=ON \
             -DGCU_STATIC_CURSES=ON
-          cmake --build build --parallel
-          scripts/pkg_linux_tty Zangband-ci
+          scripts/in-oldest-linux cmake --build build --parallel
+          scripts/in-oldest-linux scripts/pkg_linux_tty Zangband-ci
 
+      # On the oldest distribution the download promises, and on a current
+      # one.  That the curses library is linked in is the ldd check's to
+      # prove: installing python3 brings Debian's libncursesw.so.6 with it.
       - name: Check and Play the Archive
         run: |
           mkdir -p unpacked
@@ -185,15 +185,76 @@ jobs:
             echo "The executable depends on a library it should not." >&2
             exit 1
           fi
-          # Debian's base image has no libncursesw.so.6, which is precisely the
-          # machine a dynamically linked build cannot start on.
+          scripts/check-glibc-floor unpacked/Zangband-ci
+          for distribution in ubuntu:18.04 debian:12; do
+            echo "== $distribution"
+            docker run --rm \
+              -v "$PWD/unpacked/Zangband-ci:/game:ro" \
+              -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
+              $distribution \
+              sh -c 'apt-get update -qq >/dev/null && \
+                DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3 >/dev/null && \
+                cp -R /game /play && python3 /smoke-tty /play'
+          done
+
+  # The released AppImage, built as the release builds it, on every push.  Until
+  # the Linux downloads moved to Ubuntu 18.04 only the release made it, and the
+  # SDL2 and X11 front ends were never compiled by GCC 7 or against the SDL that
+  # scripts/build-sdl2 makes anywhere but there.  A tag is a poor time to learn
+  # that either has stopped working.
+  appimage:
+    name: AppImage
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Cache SDL2
+        id: cache-sdl2
+        uses: actions/cache@v4
+        with:
+          path: sdl2/local
+          key: sdl2-oldest-linux-${{ hashFiles('scripts/oldest-linux/Dockerfile') }}-${{ runner.arch }}-${{ hashFiles('scripts/build-sdl2') }}
+
+      - name: Build SDL2
+        if: steps.cache-sdl2.outputs.cache-hit != 'true'
+        run: scripts/in-oldest-linux scripts/build-sdl2
+
+      - name: Build and Package
+        run: |
+          scripts/in-oldest-linux env PKG_CONFIG_PATH="$PWD/sdl2/local/lib/pkgconfig" \
+            cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSC_INSTALL=ON \
+            -DSUPPORT_SDL2_FRONTEND=ON \
+            -DSUPPORT_SDL2_SOUND=ON \
+            -DSUPPORT_X11_FRONTEND=ON \
+            -DSUPPORT_GCU_FRONTEND=ON \
+            -DGCU_STATIC_CURSES=ON
+          scripts/in-oldest-linux cmake --build build --parallel
+          scripts/in-oldest-linux scripts/pkg_appimage Zangband-ci
+
+      # As the release's smoke test: on a stock 18.04, the curses front end
+      # plays into the dungeon and the SDL2 one opens its window and stays up.
+      - name: Check and Start the AppImage
+        run: |
+          ./Zangband-ci-linux64.AppImage --appimage-extract >/dev/null
+          scripts/check-glibc-floor squashfs-root
           docker run --rm \
-            -v "$PWD/unpacked/Zangband-ci:/game:ro" \
+            -v "$PWD/squashfs-root:/game:ro" \
             -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
-            debian:12 \
+            ubuntu:18.04 \
             sh -c 'apt-get update -qq >/dev/null && \
-              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3 >/dev/null && \
-              cp -R /game /play && python3 /smoke-tty /play'
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+                python3 libx11-6 libgl1-mesa-dri xvfb xauth >/dev/null && \
+              cp -R /game /play && python3 /smoke-tty /play AppRun && \
+              LANG=C.UTF-8 SDL_AUDIODRIVER=dummy xvfb-run -a sh -c "
+                /play/AppRun -msdl2 -n -uWindowTest & pid=\$!
+                sleep 15
+                kill -0 \$pid || { echo The SDL2 front end did not stay up. >&2; exit 1; }
+                echo The SDL2 front end is up.
+                kill \$pid"'
 
   sdl2:
     name: SDL2
