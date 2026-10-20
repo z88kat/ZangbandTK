@@ -10,9 +10,10 @@ This replaces the Flags page (`before-flags-*.png`), the one page the Character 
 - **Timed effects get their own column**, so lasting and temporary never share a cell.
 - **Help everywhere**: a one-line status-bar hint for whatever is under the pointer, and a card with the full story on a cell, row name, Result or heading.
 - The heading card answers **"what do I lose if I take this off?"** directly.
+- A **Flags Help window** (640 × 485, tabs plus a scrollbar) explains the page to players. A **Help…** button on the Show row, Help ▸ On Flags… and F1 all open it.
 
 ## About the design files
-`Flags Tk.dc.html` is an **HTML prototype**, not production code. Rebuild it in Tcl/Tk with stock widgets. Open it in a browser with `support.js` beside it. Its Tweaks switch between the **level 27 sample kit** from the brief and **Telch's real level 1 grid**. It is drawn at 1:1 with the 920-pt window, so the page area is the real 860 × 340.
+`Flags Tk.dc.html` and `Flags Help Tk.dc.html` are **HTML prototypes**, not production code. Rebuild them in Tcl/Tk with stock widgets. Open them in a browser with `support.js` beside them; the page's **Help…** button opens the help window, and its **Close** comes back. The page's Tweaks switch between the **level 27 sample kit** from the brief and **Telch's real level 1 grid**. Both are drawn at 1:1 in points, so the page area is the real 860 × 340.
 
 ## Fidelity
 **High fidelity** for layout, marks, colours, behaviour and copy. The grid data is the brief's sample kit. Header values the brief didn't give for level 27 (Gold, Title, Hit points, Experience) show as `—`.
@@ -39,6 +40,7 @@ This replaces the Flags page (`before-flags-*.png`), the one page the Character 
 └─ labelframe .lf  -text "What you have, and what is giving it to you"
     ├─ frame .show    label "Show:" + 4 × radiobutton -variable ::character(flagshow)
     │                 -value all|effect|against|unknown, text "All (55)", "In effect (19)" …
+    │                 + button "Help…" packed -side right, -command flags_help (same as F1)
     ├─ frame .note    only while more runes are unlearned than learned:
     │                 label -bitmap info -compound left -text "You've learned 1 of 55 runes. …"
     ├─ frame .grid    -relief sunken -bd 2
@@ -151,6 +153,33 @@ A small borderless toplevel: `#ffffe0`, 1 px black border, `{Helvetica 12}`.
 
 To build the card, work out each row's Result twice: once as it is and once without that column, then compare them (resistances: Vulnerable < no = Unknown < For now < Resist < Immune).
 
+### Part 3: the Flags Help window
+The status bar and the cards explain one thing at a time. The help window explains the page as a whole, for a player who wants to read about it. It is sized for a laptop: **640 × 485** by default, resizable, minimum 480 × 360.
+
+```
+.flagshelp                 toplevel -title "Zangband: Flags Help", wm minsize 480 360
+├─ ttk::notebook .nb       ttk::notebook::enableTraversal .nb  (Ctrl+Tab, Alt+underlined letter)
+│   └─ one frame per tab:  text -wrap word -state disabled -bg white -padx 14 -pady 10
+│                          -font {Helvetica 12} -spacing3 6  +  scrollbar
+└─ frame .btm              label (one-line summary of the tab, normal weight)  <spacer>
+                           button "Close" -default active -underline 0
+```
+
+| Tab | What it covers |
+|---|---|
+| The **G**rid | What rows, columns and Result are. A small example grid (an embedded canvas, drawn by the same cell code) showing the cancelled-fire case. How to get an explanation. Show, folding, marking, double-click to inspect, F1 and Esc. |
+| **M**arks | Every cell mark, with its swatch, name and meaning in player words. Swatches are text tags (`-background`, `-foreground`, `{Courier 12 bold}`). |
+| **R**esults | The words each group's Result can say, and the three rules: a vulnerability cancels a resistance; For now; Unknown. |
+| **C**olumns | The slots in order, empty slots, You and Timed, and how to use the heading card to decide what to take off. |
+| **L**earning | Runes: grey names, why `?` is on every unlearned row, and why a new character's page starts out grey. |
+| **P**roperties | Every row's description, grouped like the page. Built from the same data as the cards, so the two can't disagree. |
+
+- One window at a time: F1 or Help… again raises it. It remembers its tab and size while the game runs.
+- It isn't modal, so it can stay open beside the Character window. Esc or Close closes it.
+- Optional: F1 while pointing at a row opens **Properties**, scrolled to that row.
+- The prototype shows "[Description to come.]" against rows that have no copy yet, so the gaps are visible. In the game, leave those rows out until they're written.
+- The big reference sheet on the design canvas is for whoever builds this. It is not a window in the game.
+
 ### Help copy for the rows in the sample
 Second person; say what it does for you; one or two short sentences. Where the data has only a fragment ("fear", "blindness"), use "Protects you from {fragment}."
 
@@ -243,6 +272,7 @@ The labels come from the data files, so these are cheap:
 | Double-click a heading | Inspect that item, as the Items window's Inspect does. |
 | Click a band, or View ▸ Fold All / Unfold All | Fold or unfold. |
 | Show radiobutton | Filter the rows; the counts in brackets don't change. |
+| Help… button, Help ▸ On Flags…, or F1 | Open (or raise) the Flags Help window on its last tab. |
 | Mouse wheel over the grid | Scroll the body. |
 | Any key | Hides the card and goes to the game as now. The canvases take no focus. Esc closes the window. |
 
@@ -277,7 +307,9 @@ Empty slots no longer read as "has it"; unlearned rows show their values with a 
 - `—` in the header where the brief gave no value.
 
 ## Files
-- `Flags Tk.dc.html`: the interactive prototype (needs `support.js` beside it).
+- `Flags Tk.dc.html`: the interactive page prototype (needs `support.js` beside it).
+- `Flags Help Tk.dc.html`: the interactive help window prototype.
 - `support.js`: the prototype runtime, the same file as in the other Tk handoffs.
 - `after-1-level27.png` … `after-6-level1.png`: the new page, from the prototype.
+- `after-7-help-grid.png`, `after-8-help-properties.png`: the help window.
 - `before-flags-1-top.png`, `before-flags-2-abilities.png`, `before-flags-3-bottom.png`: the page as it is today.

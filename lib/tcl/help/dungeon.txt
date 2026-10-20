@@ -68,7 +68,7 @@ T	p0	\n
 T	tr0	.  Grass (green)          ~  Shallow water (wadeable)\n
 T	tr0 odd	.  Bare earth (brown)     ~  Deep water you can drown in\n
 T	tr0	.  Sand (yellow)          ~  Open sea, where the world ends\n
-T	tr0 odd	.  Mud (unlit)            :  A mountainside (impassable)\n
+T	tr0 odd	.  Mud (light brown)      :  A mountainside (impassable)\n
 T	tr0	%  A tree (blocks sight)\n
 T	tbllast0	\n
 T	p0	Note that 

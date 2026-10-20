@@ -118,6 +118,8 @@ a{color:#000080}a:hover{color:#b03060}
                 <span>{{ sh.label }} <span style="font-weight:400;color:#3a3a3a">({{ sh.count }})</span></span>
               </button>
             </sc-for>
+            <span style="flex:1"></span>
+            <a href="Flags Help Tk.dc.html" style="display:inline-block;padding:2px 10px;font:inherit;color:#000000;text-decoration:none;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec;color:#000000" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff">Help&#8230;</a>
           </div>
 
           <sc-if value="{{ showNote }}" hint-placeholder-val="{{ false }}">
@@ -753,7 +755,7 @@ class Component extends DCLogic {
     const MENUS = [
       ["File", [["Change Name…", "Alt+N", () => setNote("Change Name… is unchanged; see the Character window handoff.")], ["Dump to File…", "Ctrl+S", () => setNote("Character dump written to telch.txt.")], null, ["Close", "Esc", () => setNote("The window closes.")]]],
       ["View", PAGES.map(([id, label]) => [label, "", () => setPage(id), id === s.page]).concat([null, ["Fold All Groups", "", () => foldAll(true)], ["Unfold All Groups", "", () => foldAll(false)]])],
-      ["Help", [["On Flags…", "F1", () => setNote("Each row is a property, each column is where it comes from, and Result is what it adds up to. Point at anything to see more.")], ["About Zangband…", "", () => setNote("Zangband: a variant of Angband.")]]]
+      ["Help", [["On Flags…", "F1", () => setNote("F1 opens the Flags Help window. In this prototype, use the Help… button on the Show row.")], ["About Zangband…", "", () => setNote("Zangband: a variant of Angband.")]]]
     ];
     const menus = MENUS.map(([name, entries]) => {
       const open = s.menu === name;

@@ -35,8 +35,8 @@ T	tr0	Klackon     An insect that works: acid-proof, confusion-proof, spits acid,
 T	tr0	            grows, the same as a Sprite.\n
 T	tr0 odd	Nibelung    The only race that resists disenchantment from birth.\n
 T	tr0	Imp         A minor demon. Throws fire, and the cheapest race worth being.\n
-T	tr0 odd	Skeleton    Bones. Cannot eat at all and digests normally, which is the hardest bargain of the\n
-T	tr0 odd	            four undead; recovers lost experience.\n
+T	tr0 odd	Skeleton    Bones. Cannot eat at all and digests normally, the hardest bargain any undead has,\n
+T	tr0 odd	            shared only with the Ghoul; recovers lost experience.\n
 T	tr0	Zombie      Immensely strong, very nearly mindless, thirteen hit dice.\n
 T	tr0 odd	Spectre     Barely there: the best stealth in the game, saves and devices matched by nothing but\n
 T	tr0 odd	            a High-Elf and a Mindflayer, and seven hit dice. Walks through walls and mountain\n

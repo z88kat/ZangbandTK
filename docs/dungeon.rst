@@ -84,7 +84,7 @@ sight except the trees.
 ``.``   Grass (green)               ``~``    Shallow water (wadeable)
 ``.``   Bare earth (brown)          ``~``    Deep water you can drown in
 ``.``   Sand (yellow)               ``~``    Open sea, where the world ends
-``.``   Mud (unlit)                 ``:``    A mountainside (impassable)
+``.``   Mud (light brown)           ``:``    A mountainside (impassable)
 ``%``   A tree (blocks sight)
 ===== ==========================    =====  ==================================
 

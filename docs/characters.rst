@@ -59,8 +59,8 @@ those are the ones that didn't make it.
    * - **Imp**
      - A minor demon. Throws fire, and the cheapest race worth being.
    * - **Skeleton**
-     - Bones. Cannot eat at all and digests normally, which is the hardest
-       bargain of the four undead; recovers lost experience.
+     - Bones. Cannot eat at all and digests normally, the hardest bargain any
+       undead has, shared only with the Ghoul; recovers lost experience.
    * - **Zombie**
      - Immensely strong, very nearly mindless, thirteen hit dice.
    * - **Spectre**

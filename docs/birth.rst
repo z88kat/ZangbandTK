@@ -251,9 +251,8 @@ Half-Orc
 .. _Half-Troll:
 
 Half-Troll
-  Half-Trolls are incredibly strong, and have more hit points than any
-  other character race but the Half-Titan and the Zombie. They are also very
-  stupid and slow. They will make
+  Half-Trolls are incredibly strong, and only a Half-Titan or a Zombie has
+  more hit points. They are also very stupid and slow. They will make
   great warriors and iffy priests. They are bad at searching, disarming,
   perception, and stealth. They are so ugly that a Half-Orc grimaces in
   their presence. Half-trolls always have their strength sustained, and
@@ -552,9 +551,9 @@ Skeleton
   Bones, animated. It sees the invisible, holds its life against draining, is
   immune to poison and resists shards, and acid eats it. Cold from level 10.
 
-  It can't eat, and it digests at the ordinary rate, which is the worst
-  combination of the four undead: it gets hungry like anyone else and food is
-  no use to it. So it starts with two to five scrolls of Remove Hunger instead
+  It can't eat, and it digests at the ordinary rate, the worst combination
+  any undead has, and one only the Ghoul shares: it gets hungry like anyone
+  else and food is no use to it. So it starts with two to five scrolls of Remove Hunger instead
   of rations, and will be buying more. From level 30 it can recover lost
   experience. A Zombie can too, from the same level, and so can an Amberite
   walking the Pattern from 40.
@@ -576,7 +575,7 @@ Zombie
   It cannot eat but digests slowly, so the hunger scrolls it starts with go
   further than a Skeleton's. From level 30 it too can recover lost experience,
   and from level 12 it stops bleeding. Before that it's still fresh enough to
-  leak. A Ghoul bleeds like the living all its life.
+  leak. A Ghoul and a Vampire bleed like the living all their lives.
 
 .. _Spectre:
 
@@ -759,9 +758,9 @@ Mage
   A Mage must live by their wits. They cannot hope to simply hack their way
   through the dungeon, and so must therefore use his magic to defeat,
   deceive, confuse, and escape. A mage is not really complete without an
-  assortment of magical devices to use in addition to his spells. They can
-  master the higher level magical devices far easier than anyone else, and
-  has the excellent saving throws to resist effects of spells cast at him.
+  assortment of magical devices to use in addition to his spells. No class is
+  better with magical devices, though a Necromancer and a High-Mage are as
+  good, and their saving throw is about average.
   However, they are incredibly weak, getting few hit dice and suffering strong
   penalties to strength and constitution. Intelligence is their primary stat
   and at high levels they can cast many spells without a chance of failure.
@@ -773,9 +772,8 @@ Mage
 
 Druid
   A Druid is a lover of nature, and at one with the natural world.  Druids
-  have control of their environment and direct power over creatures, leading
-  even to the ability to take their forms. Druid skills are moderate, and
-  they have some fighting ability, especially when transformed.  A druid will
+  have control of their environment and direct power over creatures. Druid
+  skills are moderate, and they have some fighting ability. A druid will
   usually seek to shape the flow of events to their purpose rather than
   using devices or missiles, but at high levels they do gain access to
   potent nature-based magic.  Druids rely on their wisdom, and have good
@@ -804,16 +802,17 @@ Necromancer
   shadows and hate light, automatically shrouding themselves in darkness.
   Their spells require high intelligence, and frequently harm the caster or
   place them in danger.  In return they achieve awesome power at high levels.
-  The ultimate aim of the necromancer is to supplant the Dark Enemy and set
-  up a tyranny in his place.
+  The ultimate aim of the necromancer is to supplant Oberon and set up a
+  tyranny in Amber in his place.
 
 .. _Paladin:
 
 Paladin
-  A Paladin is a warrior/priest. Paladins are very good fighters, second
-  only to the warrior class, but not very good at missile weapons. They
-  receive prayers at a slower pace than the priest, but can use all but the
-  most powerful prayers. A paladin lacks much in the way of abilities.
+  A Paladin is a warrior/priest. Paladins are very good fighters, though a
+  Warrior and a Chaos-Warrior are better, and so is a Warrior-Mage from about
+  level 15. They are not very good at missile weapons. They receive prayers
+  at a slower pace than the priest, but can learn every one of them, the last
+  at level 50. A paladin lacks much in the way of abilities.
   Paladins have poor stealth, perception, searching, and magical device use.
   They have a decent saving throw due to their divine alliance. Their
   primary stats are strength and wisdom.
@@ -839,8 +838,10 @@ Rogue
 
 Ranger
   A Ranger is at home in nature, and good at turning the environment to
-  good use. Rangers are good fighters, and the best of all the classes with
-  missile weapons, especially bows. The ranger learns chiefly spells of
+  good use. Rangers are good fighters, and the best shots in the game: only a
+  Ranger gets extra shots as it gains levels, about one and a half more by
+  level 50, with any launcher. A Warrior-Mage aims better from about level 6,
+  but shoots less often. The ranger learns chiefly spells of
   survival and forest craft. A ranger has good stealth, good perception,
   good searching, a good saving throw, and is good with magical devices.
   Their primary stats are strength, wisdom and dexterity.
@@ -911,9 +912,10 @@ Warrior-Mage
 High-Mage
   The specialist. It picks one realm out of all seven and gets no second
   choice at all, and in exchange Zangband's table gives it the best figures of
-  any caster: it reaches a realm's deepest spells earlier and for less mana than
-  anyone else. It also shares the worst hit dice in the game with the Mage, and
-  cannot fight.
+  any caster: in every realm but Life it reaches the deepest spells earlier and
+  for less mana than anyone else, and in Life a Priest gets there sooner and
+  more cheaply. It also shares the worst hit dice in the game with the Mage,
+  and cannot fight.
 
   A High-Mage of Sorcery can do everything except kill things. A High-Mage of
   Chaos can do very little except kill things.
