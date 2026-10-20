@@ -342,3 +342,22 @@ name:Sworn to Chaos
 desc:You belong to one of the Lords of the Courts of Chaos.  You did not
 desc: choose which and you cannot leave.  Each time you gain a level your
 desc: Lord takes notice of you, and decides how it feels about what it owns.
+
+# ZangbandTK: Zangband's do_cmd_destroy paid these two classes for burning the
+# rare spellbooks (cmd3.c:378).  4.2 has no destroy command, so the burning is a
+# choice at the foot of the ignore menu, offered only for a book that pays.
+
+type:player
+code:HATES_MAGIC
+name:Book Burner
+desc:You have no use for magic and less for the people who read it.  Burning
+desc: a spellbook that is only found in the dungeon is worth experience to you:
+desc: ignore it with k and choose to burn it.
+
+type:player
+code:BURNS_HERESY
+name:Burner of Heresy
+desc:Your faith has enemies, and their books burn.  A Paladin of Life gains
+desc: experience for burning any spellbook only found in the dungeon, except
+desc: one of Life's own; a Paladin of Death, for burning one of Life's.  Ignore
+desc: the book with k and choose to burn it.

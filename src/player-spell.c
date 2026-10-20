@@ -282,6 +282,50 @@ const struct class_book *object_kind_to_book(const struct object_kind *kind)
 }
 
 /**
+ * What burning one copy of this book is worth to this character, or 0 if
+ * burning it would earn nothing (ZangbandTK).
+ *
+ * Zangband's destroy_item_aux() ([cmd3.c:383](../archive/zangband/src/cmd3.c#L383))
+ * paid three attitudes to other people's magic, and only for the rare books:
+ * the two of each realm found in the dungeon and never sold.  A Warrior is
+ * paid for any of them; a Paladin of Life for any but Life's; a Paladin of
+ * Death for Life's alone.  Arcane has no dungeon books here or there, so it
+ * never pays.
+ *
+ * The sum is Zangband's: a twentieth of the character's maximum experience,
+ * no more than 10,000, a quarter of that for the first of a realm's two
+ * dungeon books (its `sval < 3`, counted from 0), and never less than 1.
+ * Nothing at all once experience is at its limit, as there.
+ */
+int32_t player_book_burn_exp(const struct player *p, const struct object *obj)
+{
+	const struct class_book *book;
+	int32_t exp;
+
+	if (!p || !obj || !obj->kind || !tval_is_book_k(obj->kind)) return 0;
+	book = object_kind_to_book(obj->kind);
+	if (!book || !book->dungeon || !book->realm) return 0;
+
+	if (player_has(p, PF_HATES_MAGIC)) {
+		/* Any realm's */
+	} else if (player_has(p, PF_BURNS_HERESY)) {
+		/* Zangband asks only whether the first realm is Life */
+		bool own_life = p->realm[0] && streq(p->realm[0]->name, "life");
+		bool life_book = streq(book->realm->name, "life");
+
+		if (own_life == life_book) return 0;
+	} else {
+		return 0;
+	}
+
+	if (p->exp >= PY_MAX_EXP) return 0;
+
+	exp = MIN(p->max_exp / 20, 10000);
+	if (obj->kind->sval < obj->kind->base->num_svals) exp /= 4;
+	return MAX(exp, 1);
+}
+
+/**
  * Get the spellbook structure from an object which is a book the player can
  * cast from
  */

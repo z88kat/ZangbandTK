@@ -231,8 +231,41 @@ is doing two things at once. The Warrior-Mage fights and casts, and pays 150 per
 cent. The Monk fights unarmed and casts, and pays 140. The Paladin and the
 Chaos-Warrior pay 135. The Priest, who only prays, pays 120.
 
-Ten of the eleven classes Zangband has pay something. Only the Warrior is free,
-and that's all a Warrior gets for having no magic at all.
+Ten of the eleven classes Zangband has pay something. Only the Warrior is free.
+That, and the books it can burn (below), are all a Warrior gets for having no
+magic at all.
+
+.. _burning-books:
+
+Burning books
+-------------
+
+A Warrior or a Paladin can burn a spellbook for experience. Zangband did this
+in its command for destroying things. Angband 4.2 has no such command, so here
+it's a choice in the ignore menu.
+
+Only the rare books count: the two in each realm that are found in the dungeon
+and never sold. Arcane has none, so an Arcane book never counts. Who gets paid
+for which depends on the class:
+
+- A Warrior, for any of them.
+- A Paladin of Life, for any except Life's own.
+- A Paladin of Death, for Life's and nobody else's.
+
+A book is worth a twentieth of your maximum experience, never more than 10,000
+and never less than 1. The first of a realm's two dungeon books is worth a
+quarter of that. A Warrior with 200,000 experience gets 2,500 for Book of the
+Unicorn and 10,000 for Blessings of the Grail, and burning a stack pays for each
+book in it. No other class gets anything for burning a book, so no other class
+is offered it.
+
+To burn one, ignore it with ``k`` while it's in your pack or under your feet,
+and pick *Burn this book* at the bottom of the menu. You're asked how many if
+there's more than one, and then whether you really mean it. It takes a turn.
+
+Your :doc:`virtues` notice, too. A Life book burnt moves you towards Unlife and
+away from Vitality, a Death book the other way, and a book worth more than
+10,000 gold counts as a sacrifice.
 
 Still to come
 -------------

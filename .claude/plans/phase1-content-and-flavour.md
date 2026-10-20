@@ -408,7 +408,12 @@ monster groupings.
 
    Found while checking the Ancient Curse spoiler (14 September 2026); the reasoning is in
    the development diary under that date.
-7. **Should a Warrior gain experience for burning a spellbook?** Zangband's `do_cmd_destroy`
+7. ~~Should a Warrior gain experience for burning a spellbook?~~ **Settled by DEC-161
+   (20 October 2026): yes, as a branch of the ignore menu.** The owner chose the first of
+   the two routes below. The sum given here was short of Zangband's: the first of a realm's
+   two dungeon books pays a quarter (`sval < 3`), and a stack pays for each book in it.
+
+   Zangband's `do_cmd_destroy`
    ([cmd3.c:340](../../archive/zangband/src/cmd3.c#L340)) rewards destroying one of the
    *rare* spellbooks — the two per realm found in the dungeon — with `max_exp / 20`, capped
    at ten thousand. Who gets it is the characterful part:

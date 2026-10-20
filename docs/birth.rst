@@ -750,7 +750,8 @@ Warrior
   dexterity, and they will strike more blows with melee weapons than any
   other class. A Warrior will be excellent at fighting, shooting and
   throwing, but bad at most other skills. A warrior has bad stealth and
-  cannot learn any spells.
+  cannot learn any spells, but gains experience for burning the rare
+  spellbooks other people learn from (see :ref:`burning-books`).
 
 .. _Mage:
 
@@ -815,7 +816,8 @@ Paladin
   at level 50. A paladin lacks much in the way of abilities.
   Paladins have poor stealth, perception, searching, and magical device use.
   They have a decent saving throw due to their divine alliance. Their
-  primary stats are strength and wisdom.
+  primary stats are strength and wisdom. A paladin gains experience for
+  burning the rare books of a faith it opposes (see :ref:`burning-books`).
 
 .. _Rogue:
 

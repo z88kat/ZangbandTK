@@ -1,4 +1,5 @@
 TESTPROGS += player/birth \
+             player/book-burning \
              player/calc-inventory \
              player/class \
              player/combine-pack \

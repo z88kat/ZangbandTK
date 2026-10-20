@@ -384,7 +384,9 @@ T	p0	\n
 M	warrior
 T	dt0 strong	Warrior
 T	dt0	\n
-T	p1	A Warrior is a hack-and-slash character, who solves most problems by cutting them to pieces, but will occasionally fall back on the help of a magical device. Their prime stats are strength, constitution, and dexterity, and they will strike more blows with melee weapons than any other class. A Warrior will be excellent at fighting, shooting and throwing, but bad at most other skills. A warrior has bad stealth and cannot learn any spells.
+T	p1	A Warrior is a hack-and-slash character, who solves most problems by cutting them to pieces, but will occasionally fall back on the help of a magical device. Their prime stats are strength, constitution, and dexterity, and they will strike more blows with melee weapons than any other class. A Warrior will be excellent at fighting, shooting and throwing, but bad at most other skills. A warrior has bad stealth and cannot learn any spells, but gains experience for burning the rare spellbooks other people learn from (see 
+L	p1 link	2	characters#burning-books	Burning books
+T	p1	).
 T	p1	\n
 M	mage
 T	dt0 strong	Mage
@@ -409,7 +411,9 @@ T	p1	\n
 M	paladin
 T	dt0 strong	Paladin
 T	dt0	\n
-T	p1	A Paladin is a warrior/priest. Paladins are very good fighters, though a Warrior and a Chaos-Warrior are better, and so is a Warrior-Mage from about level 15. They are not very good at missile weapons. They receive prayers at a slower pace than the priest, but can learn every one of them, the last at level 50. A paladin lacks much in the way of abilities. Paladins have poor stealth, perception, searching, and magical device use. They have a decent saving throw due to their divine alliance. Their primary stats are strength and wisdom.
+T	p1	A Paladin is a warrior/priest. Paladins are very good fighters, though a Warrior and a Chaos-Warrior are better, and so is a Warrior-Mage from about level 15. They are not very good at missile weapons. They receive prayers at a slower pace than the priest, but can learn every one of them, the last at level 50. A paladin lacks much in the way of abilities. Paladins have poor stealth, perception, searching, and magical device use. They have a decent saving throw due to their divine alliance. Their primary stats are strength and wisdom. A paladin gains experience for burning the rare books of a faith it opposes (see 
+L	p1 link	3	characters#burning-books	Burning books
+T	p1	).
 T	p1	\n
 M	rogue
 T	dt0 strong	Rogue
@@ -434,14 +438,14 @@ T	dt0	\n
 T	p1	A Monk carries no weapon because it doesn’t need one. Every other class fighting bare-handed does a single point of damage a blow. A Monk strikes with a trained technique, and strikes far more often than a Warrior with a sword ever will. It is dextrous, quick, poor with a bow it has no reason to carry, and expensive: a Monk costs 40 per cent more experience for every level, which is Zangband’s price for what the class can do.
 T	p1	\n
 T	p1	A Monk is the one class in the game that is punished for wearing armour. See 
-L	p1 link	2	#martial-arts	Martial arts
+L	p1 link	4	#martial-arts	Martial arts
 T	p1	 for what it gains by going without, and what it loses by not.
 T	p1	\n
 M	mindcrafter
 T	dt0 strong	Mindcrafter
 T	dt0	\n
 T	p1	A Mindcrafter has no spellbooks and will never find any. Its craft is twelve psionic powers that arrive as it grows. It doesn’t study them; it just becomes able to do them. Wisdom is what makes them work. It is physically frail, with hit dice no better than a Priest’s, a Druid’s or a Necromancer’s, and only a Mage and a High-Mage have worse. Its attacks go for the mind, which makes it formidable against most things and useless against a golem. See 
-L	p1 link	3	#psionics	Psionics
+L	p1 link	5	#psionics	Psionics
 T	p1	 for the list.
 T	p1	\n
 M	chaos-warrior
@@ -450,9 +454,9 @@ T	dt0	\n
 T	p1	A Chaos-Warrior is a fighter who belongs to somebody. At birth it is sworn to one of the nine Lords of the Courts of Chaos. It doesn’t choose which, and it can’t leave. Every time it gains a level its Lord looks up and decides how it feels. Usually that’s a gift. Sometimes it isn’t.
 T	p1	\n
 T	p1	It fights nearly as well as a Warrior, and it casts Chaos: every spell in the realm, from level 2, and no other realm ever. There’s no realm choice to make at birth because there is nothing to choose between. See 
-L	p1 link	4	#patrons	Patrons
+L	p1 link	6	#patrons	Patrons
 T	p1	 and 
-L	p1 link	5	realms	The Realms of Magic
+L	p1 link	7	realms	The Realms of Magic
 T	p1	.
 T	p1	\n
 M	warrior-mage

@@ -117,6 +117,7 @@ page	What a class grows into	characters#what-a-class-grows-into
 page	The Mindcrafter, and psionics	characters#the-mindcrafter-and-psionics
 page	The Chaos-Warrior, and who owns it	characters#the-chaos-warrior-and-who-owns-it
 page	What every class costs	characters#what-every-class-costs
+page	Burning books	characters#burning-books
 page	Still to come	characters#still-to-come
 stop
 book	Resistances and Abilities	flags

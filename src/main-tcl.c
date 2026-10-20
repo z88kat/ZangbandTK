@@ -1541,6 +1541,7 @@ static const char *cmd_code_name[] = {
 	"CMD_PICKUP",
 	"CMD_AUTOPICKUP",
 	"CMD_IGNORE",
+	"CMD_BURN",
 	"CMD_DISARM",
 	"CMD_REST",
 	"CMD_TUNNEL",
@@ -6437,7 +6438,8 @@ static bool item_act(struct object *obj, int id)
 		return false;
 
 	if (id == CMD_IGNORE) {
-		textui_cmd_ignore_menu(obj);
+		/* True when it queued a book's burning, which wants the nudge */
+		pushed = textui_cmd_ignore_menu(obj);
 	} else if (id == CMD_BROWSE_SPELL) {
 		textui_book_browse(obj);
 	} else if (id == CMD_CAST) {

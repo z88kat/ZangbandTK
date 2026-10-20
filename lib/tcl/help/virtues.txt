@@ -38,6 +38,11 @@ T	li1	\n
 T	li1	•\t
 T	li1	Collecting a bounty is the one obviously just thing most characters ever do.
 T	li1	\n
+T	li1	•\t
+T	li1	Burning a rare spellbook, which only a Warrior or a Paladin does, moves Unlife and Vitality if it’s a Life or a Death book, and is a sacrifice if the book was costly. See 
+L	li1 link	2	characters#burning-books	Burning books
+T	li1	.
+T	li1	\n
 T	p0	A standing runs from 125 for to 125 against, and reads on a ladder: neutral, then somewhat virtuous, virtuous, very virtuous, a champion, a great champion, and at the top the living embodiment of the thing. Downward it runs from straying, through sinning, to enemy, bitter enemy, arch-enemy and finally the polar opposite.
 T	p0	\n
 M	what-reads-them

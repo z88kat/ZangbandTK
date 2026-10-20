@@ -168,6 +168,10 @@ Races, classes and racial powers
   out of a book, most of which grow into something else as the character does.
   With them comes a kind of damage Angband doesn't have, psionic force, which
   asks whether there's a mind there to hurt and does nothing at all to a golem.
+- Book burning. A Warrior is paid experience for burning any rare spellbook,
+  a Paladin of Life for any but Life's, and a Paladin of Death for Life's
+  alone. Zangband paid for it when you destroyed one. Angband can't destroy
+  anything, so the burning is a choice in the ignore menu.
 
 See :doc:`characters` for what's different, and :doc:`birth` for the tables.
 

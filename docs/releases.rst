@@ -106,6 +106,20 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Book burning — 20 October 2026
+------------------------------
+
+- **3.137.0** — **A Warrior or a Paladin burns spellbooks for experience**
+  (DEC-161), as in Zangband. Only the rare books count, the two in each realm
+  found in the dungeon. A Warrior is paid for any of them, a Paladin of Life
+  for any but Life's, and a Paladin of Death for Life's alone. A book is worth
+  a twentieth of your maximum experience, up to 10,000, and the first of a
+  realm's two is worth a quarter of that. Ignore the book with ``k`` and pick
+  *Burn this book* at the bottom of the menu. It works in the Tk front end's
+  ignore menu too. Your virtues notice: a Life book burnt is a step towards
+  Unlife, a Death book a step away, and a costly book a sacrifice. The birth
+  screen and the abilities page say which classes do it.
+
 Older Linux — 19 October 2026
 -----------------------------
 

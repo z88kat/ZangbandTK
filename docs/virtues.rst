@@ -47,6 +47,9 @@ something that bears on it, and most of the time you won't be told:
 - Mapping a level you haven't walked is knowledge got cheaply. Enchanting a
   weapon is faith placed in the work rather than the world.
 - Collecting a bounty is the one obviously just thing most characters ever do.
+- Burning a rare spellbook, which only a Warrior or a Paladin does, moves Unlife
+  and Vitality if it's a Life or a Death book, and is a sacrifice if the book
+  was costly. See :ref:`burning-books`.
 
 A standing runs from 125 for to 125 against, and reads on a ladder: neutral, then
 somewhat virtuous, virtuous, very virtuous, a champion, a great champion, and at

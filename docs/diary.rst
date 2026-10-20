@@ -31,6 +31,37 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+20 October 2026 — burning books, and a crash I nearly counted as a pass
+=======================================================================
+
+Steven asked whether we'd ever done the Warrior's book burning. We hadn't. It
+had sat as open question 7 since I found it in September, because 4.2 has no
+destroy command to hang it on. I gave him two ways to do it, a choice in the
+ignore menu or a destroy command just for books, and he took the menu.
+
+Rereading Zangband's code for it, I found my September note was wrong in two
+places. It had the twentieth of your experience and the 10,000 cap, but it
+missed that the first of a realm's two dungeon books pays only a quarter, and
+that burning a stack pays for every book in it. The rule itself is the nice
+part: a Warrior burns anyone's books, a Paladin of Life burns everyone's but
+Life's, and a Paladin of Death burns only Life's. It's two flags on the classes
+now, so the birth screen says so, where Zangband never told you at all.
+
+The choice goes at the bottom of the menu, on purpose. Enter takes the first
+entry, and the borg ignores things by pressing ``a``, so anything put on top
+would have taken the place of the choice people pick without looking.
+
+The bit I'll remember is the negative control. I broke the feature seven ways
+and ran the tests after each one. Six went red as they should. The seventh,
+taking out the check that the book is in your pack or under your feet, came
+back "0 failing", and for a moment that looked like a test that couldn't fail.
+It was a crash. With the check gone, burning a book across the room (which the
+look command's ignore menu can reach) broke the floor's object list badly
+enough that the game stopped itself. My script only counted lines that said
+"Failed", and a run that dies says nothing. So the check matters more than I'd
+thought, and a script that can't tell a crash from a pass isn't checking
+anything.
+
 20 October 2026 — the Flags page, and every empty hand resisting blindness
 ==========================================================================
 

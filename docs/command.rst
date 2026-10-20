@@ -80,6 +80,11 @@ Ignore an item (``k``) or Ignore an item ('^d')
   items regardless of whether they are ignored, you can use ``K`` (``O``
   in the roguelike keyset) to toggle the ignore setting on and off.
 
+  A Warrior or a Paladin sometimes gets one more choice at the bottom of the
+  menu, *Burn this book*, for a rare spellbook in the pack or underfoot that
+  it would be paid experience for burning. Burning it takes a turn, and the
+  book is gone for good. See :ref:`burning-books` for which books count.
+
 Wear/Wield equipment (``w``)
   To wear or wield an object in your inventory, use this command. Since
   only one object can be in each slot at a time, if you wear or wield an

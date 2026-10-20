@@ -8943,3 +8943,75 @@ past the early game. The curse and timed-effect attribution in C is covered
 by review and by that data, not yet by a live cursed item or potion.
 GCC 16 with -Wshadow -Werror clean on both C files; sphinx-build -W clean;
 slop_lint 9.3 on the new page.
+
+**DEC-161 — A Warrior or a Paladin burns a rare spellbook for experience, from
+the ignore menu (20 October 2026).** (Game, data. Settles open question 7 in
+phase1-content-and-flavour.md; the owner chose the ignore menu over a destroy
+command of its own. 3.137.0.)
+
+**The rule is Zangband's destroy_item_aux()** (cmd3.c:383). Its
+`high_level_book()` is `sval > 1` in the six realms other than Arcane, which
+here are the twelve books class.txt marks `dungeon`; Arcane's four are all town
+books in both games. A Warrior is paid for any of them. A Paladin whose first
+realm is Life is paid for any but Life's, and any other Paladin, which here
+means Death, for Life's alone. The sum is `max_exp / 20`, at most 10,000, a
+quarter of that for the first of a realm's two (Zangband's `sval < 3`; here the
+sval below the tval's last), never less than 1, times the number burnt, and
+nothing once experience is at PY_MAX_EXP. The September note gave the cap and
+missed the quarter and the stack.
+
+**The virtues move as Zangband's did for such a book**: Life burnt is Unlife +1
+and Vitality -1, Death the reverse, and Sacrifice +2 for a book worth more than
+30,000 and +1 over 10,000. The third books cost 30,000 and the fourth 50,000,
+so that is +1 and +2. destroy_item_aux()'s Enchant and Harmony moves are for an
+object with to-hit, to-dam or armour bonuses, which a book never has, so they
+are left out.
+
+**Who is a flag, not a class name.** `HATES_MAGIC` on the Warrior and
+`BURNS_HERESY` on the Paladin, in list-player-flags.h and class.txt, with
+player_property.txt entries, so the birth screen and the abilities page tell a
+player the class does this. Nothing in the code names a class.
+player_book_burn_exp() in player-spell.c is the whole rule. The Paladin's half
+names the Life realm, as spell_backfire_kind() names Chaos and Death.
+
+**The command is CMD_BURN**, do_cmd_burn() in cmd-obj.c, after CMD_IGNORE in
+the enum and in main-tcl.c's name table. It takes a turn, as destroying did,
+and reads the pack and the floor. The item prompt's filter is the rule itself,
+and cmd_get_item() applies it to an item handed in as an argument too, so a
+book that pays nothing is refused whoever queued it. What cmd_get_item() never
+asks is where the item is, so the command asks whether the book is in reach.
+That check is load-bearing: the look command opens the ignore menu on a book across
+the room, and with the check removed a burn of such a book trips the pile
+integrity check.
+
+**The menu.** textui_cmd_ignore_menu() adds *Burn this book* last, only for a
+known book in reach that pays. Last, so that Enter's default and the borg's
+`k - a a` still take "This item only". Choosing it asks the quantity, then
+"Really burn ...?", then queues CMD_BURN with both set. The menu now returns
+whether it queued anything: the Tk front end's item_act() uses that to nudge the
+game loop, as it does for every command it pushes, and look mode ends so the
+burn can happen. The text UI's context menu and the store's `k` reach the same
+menu and need nothing more.
+
+Run: player/book-burning, ten cases, each failing first (DEC-156) under seven
+deliberate breaks: the Paladin rule inverted, the quarter dropped, town books
+paying, every class paying, the reach check removed (a crash on the pile check,
+which the mutation script first misread as a pass because it counted only
+"Failed" lines), Unlife left unmoved, and the Warrior's flag taken out of
+class.txt.
+An eleventh case, a new character's single point, was added after the Tk
+check below. 1628/1628 unit, 6/6 integration (the Hu-Wa and Dw-Pa births
+among them). GCC 16 with -Wshadow -Werror clean on every changed non-Tk file,
+after it caught a `prompt` local in ui-object.c shadowing a file-scope one,
+which clang never reports. main-tcl.c is checked by the clang Tk build only.
+sphinx-build -W clean; lib/tcl/help regenerated; slop_lint 10.3 on the new
+Burning books section.
+
+Tk, live: a scripted session made a Human Warrior in the Birth window, created
+a Blessings of the Grail with CMD_WIZ_CREATE_OBJ, picked it up, and opened its
+Ignore action in the Choice pane. The menu offered This item only, All ... and
+Burn this book, in that order; the question read "Really burn a Holy Book of
+Prayers [Blessings of the Grail]?"; the book went, and experience rose by the
+one point a new character is owed. The first reading said 0, because the
+probe read experience while the game was still at the -more- after "You feel
+more experienced.", which is logged before the experience is added.
