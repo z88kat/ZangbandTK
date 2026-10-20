@@ -8860,3 +8860,86 @@ errors in the whole tree, before the fix -- all four building clean after
 it and `alltests` passing; GCC 7.5 on 18.04 and Apple clang 21 on both
 files, with CI's warnings, clean. The jobs pinned to `ubuntu-22.04` and the
 18.04 container never saw the error and are unaffected.
+
+**DEC-160 — The Flags page is rebuilt to its design, its help lives in the
+manual, and the newer rows sort after the originals (20 October 2026).**
+(Tk front end, data. Builds design_handoff_flags_tk; fixes two bugs on the
+old page and one in ui_entry.txt.)
+
+The page is the design's: a Result column first, named slot headings, one
+mark and tint per state, a Timed column, bands that sum up and fold, four
+Show filters, a status-bar line for whatever is under the pointer and a card
+with the whole story after a pause. lib/tcl/flags.tcl draws it on two
+canvases; character.tcl only builds the frame and calls in.
+
+**The rules are the game's, not the page's.** angband_flags now sends each
+row's Result, worked out by the entry's own combiner, and the same Result
+once per slot with that slot left out, which is what the heading card's "if
+you take it off" lists. Two helpers in ui-entry.c take the combined values
+apart again: describe_ui_entry_player_origin() says whether the character's
+own value comes from the race, the class, a level gain or the shape, and which
+timed effects feed the aux; find_ui_entry_curse_for_object() names the known
+curse behind an item's value. The first walks the same inputs as
+compute_ui_entry_values_for_player() and has to be kept in step with it; a
+bridge check fails when a value in the character's column has no origin.
+
+**Sentinels go out as words.** The iterator marks "nothing worn", "not known"
+and "resist and vulnerable" with integers near INT_MAX. The old page read the
+first as a large bonus and drew every empty slot as a source of every
+property. They now reach a script as none, unknown and both.
+
+**An unlearned rune dims the row; it doesn't hide it.** The old page replaced
+the whole row with ?, which hid things the character knows about themselves
+(a Dwarf's infravision and tunnelling). The game's own text-mode screen only
+dims the label, and the page now does the same. A ? goes only in a cell the
+game itself reports as unknown, which is every unlearned row of an item whose
+runes aren't all known: the game knows the item has unlearned runes, not
+which.
+
+**The help is in the manual, not in a window of its own.** The design drew a
+six-tab Flags Help window. Every other Tk window's F1 opens the Help window at
+a manual section, so this one does too: docs/flags.rst, under What's
+Different. Its list of what each property does is also where the cards get
+their descriptions. flags_description() reads the built help page, so the
+manual and the cards can't disagree, and a bridge check fails for a row the
+manual doesn't describe. The fourteen rows the designer left unwritten were
+written from the code, not guessed: Reflection fails one time in ten, the
+auras do 2d6, Luck is +10 to the saving throw, Anti-magic also stops most
+random mutations. Bless turned out to be the blessed-weapon flag, not the
+timed prayer, so the row is now Blessed weapon.
+
+**The marks are the design's, and differ from the text-mode screen's.** There
+! is a timed bonus and ~ is resist-plus-vulnerable; here ! is a drawback and ~
+is timed, because a ! that reads as good is the confusion the old page had.
+The manual describes the two screens separately.
+
+**Labels.** Fifteen renamed in ui_entry.txt for plainer words (Lightning,
+Darkness, Telepathy, Slow healing, Can't be removed and so on). The text-mode
+screen and the equipment comparison use the short forms, so where a rename
+would have changed one of those -- Elec, Dark, ESP and Fear -- the old form is
+pinned with label5.
+
+**Priorities.** DEC-152's ten rows were given positive priorities in the
+belief that lower sorts first. Higher does, so Luck and the auras led the
+abilities and the originals were the first the text-mode screen dropped for
+room. They now sort after the originals, with Cut resistance beside the
+three protections, as the comment always said they did.
+
+**Readability, beyond the design.** Slot columns are measured, not fixed:
+Tk scales points by a third on this Mac, and fourteen 44-pixel columns don't
+hold "Weapon". Each slot is as wide as its own name, and the headings step
+from 11 down to 9 points until the row fits. An item with unlearned runes
+gets a small ? on its heading, so the cause of a column of ? is visible above
+it.
+
+Run: the bridge suite, with six new Flags checks and five rewritten for the
+new format. The six new ones and the rewritten page check were each made to
+fail first (DEC-156), by an empty slot read as a source, a vulnerability that
+doesn't cancel, a sign lost to expr, raw sentinels sent to scripts, an origin
+helper that attributes nothing, a manual entry renamed and a page that
+doesn't draw; each went red naming what broke. Telch (level 1 Dwarf) checked live; the design's level 27 kit
+checked as data in angband_flags' own format, since none of the savefiles is
+past the early game. The curse and timed-effect attribution in C is covered
+by review and by that data, not yet by a live cursed item or potion.
+GCC 16 with -Wshadow -Werror clean on both C files; sphinx-build -W clean;
+slop_lint 9.3 on the new page.

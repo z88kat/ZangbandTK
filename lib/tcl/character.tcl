@@ -163,7 +163,7 @@ proc character_refresh {} {
     character_text $w.page.history.f.t \
         [expr {$have ? [regsub -all {\s+} [string trim [dict get $v history]] " "] : ""}]
     character_refresh_virtues $have
-    character_refresh_flags $have
+    flags_refresh $have
     character_refresh_mutations $have
     character_refresh_notes $have
 
@@ -224,94 +224,6 @@ proc character_text {t text} {
     $t insert end $text
     $t configure -state disabled
     $t yview moveto 0
-}
-
-# One cell of the grid.
-#
-# Numbers, not the term screen's symbols. ui_entry_renderer_apply draws
-# straight to the Term and cannot be asked for a character, so the choice was
-# between reimplementing its index arithmetic for five renderer kinds and
-# saying plainly what the values are. Reimplementing it is how this grid
-# would come to disagree with the screen it copies, so it says what it knows:
-# a mark for a flag, a signed number for a modifier.
-#
-# The aux channel is what the game is giving you temporarily, and it is kept
-# visibly apart -- "~" rather than "+" -- because a page that added the two
-# together would tell a player they resist fire when what they have is four
-# turns of a potion.
-proc character_flag_cell {value aux renderer} {
-    if {[string match "*stat_mod*" $renderer]
-            || [string match "*numeric*" $renderer]} {
-        if {$aux != 0 && $value == 0} { return "~" }
-        if {$value == 0} { return "." }
-        if {$value > 9}  { return "+" }
-        if {$value < -9} { return "-" }
-        return [expr {$value > 0 ? $value : "-"}]
-    }
-    if {$value > 0} { return "+" }
-    if {$value < 0} { return "-" }
-    if {$aux != 0}  { return "~" }
-    return "."
-}
-
-proc character_refresh_flags {have} {
-    global character
-
-    set t .character.f.page.flags.f.t
-    $t configure -state normal
-    $t delete 1.0 end
-
-    if {!$have || [catch {angband_flags columns} cols]} {
-        $t insert end "No character yet."
-        $t configure -state disabled
-        return
-    }
-
-    # The heading: one character per equipment slot, then the character's own
-    # column. The term screen heads these with the equippy glyphs and so does
-    # this, for the same reason -- the slot names are far too wide to be a
-    # column each.
-    set head [string repeat " " 22]
-    foreach c $cols { append head [expr {[lindex $c 2] ne "" ? [lindex $c 2] : "-"}] }
-    append head "@"
-    $t insert end "$head\n" head
-
-    foreach group [angband_flags categories] {
-        if {[catch {angband_flags rows $group} rows] || ![llength $rows]} continue
-        $t insert end "\n[string totitle $group]\n" head
-        foreach row $rows {
-            lassign $row label known values auxs renderer
-            set line [format "  %-20s" $label]
-            if {!$known} {
-                # Not "you do not have it": the character has not learned the
-                # rune, so the honest answer is that this is not known yet.
-                append line [string repeat "?" [llength $values]]
-            } else {
-                foreach v $values a $auxs {
-                    append line [character_flag_cell $v $a $renderer]
-                }
-            }
-            $t insert end "$line\n"
-        }
-    }
-
-    # Said on the page, because a grid that is not everything and does not
-    # admit it is worse than no grid. What is left out is now a short and
-    # deliberate list rather than "everything without a bindui line"
-    # (DEC-152): ten of those were bound and these are the ones that were
-    # left, each for a reason.
-    $t insert end "\n  + has it   - takes it away   ~ temporary only\
-         ? not yet known\n" note
-    $t insert end "  The last column is you: race, class and the grants that\
-        arrive with a level.\n" note
-    $t insert end "  Your race's and class's own abilities have no row here:\
-        nothing can grant or take\n" note
-    $t insert end "  them, so a row would say the same in every column.\
-        Mutations and shapes likewise.\n" note
-    $t insert end "  A weapon's brands belong to its blows rather than to\
-        you, and are on the weapon.\n" note
-
-    $t configure -state disabled
 }
 
 proc character_refresh_virtues {have} {
@@ -436,6 +348,7 @@ proc character_switch {} {
             grid remove .character.f.page.$key
         }
     }
+    if {$character(page) eq "flags"} { flags_say_idle }
     character_refresh
 }
 
@@ -530,6 +443,7 @@ proc character_dump {} {
 # status line, how to use the window, which the manual does not cover.
 proc character_help {} {
     global character
+    if {$character(page) eq "flags"} { flags_help ; return }
     set where {
         info      birth#character-characteristics
         history   birth#character-characteristics
@@ -569,6 +483,9 @@ proc character_menus {} {
         $mb.view add radiobutton -label $label -underline $under \
             -variable character(page) -value $key -command character_switch
     }
+    $mb.view add separator
+    $mb.view add command -label "Fold All Groups" -command {flags_fold_all 1}
+    $mb.view add command -label "Unfold All Groups" -command {flags_fold_all 0}
 
     # Not $mb.help: on macOS Tk treats a menu with that name as the platform's
     # own Help menu and fills it with things this window does not have.
@@ -576,6 +493,7 @@ proc character_menus {} {
     $mb add cascade -label Help -underline 0 -menu $mb.about
     $mb.about add command -label "On Character..." -underline 0 \
         -accelerator F1 -command character_help
+    $mb.about add command -label "On Flags..." -underline 3 -command flags_help
 }
 
 # A row of label and value, the label on the left and the value sunken.
@@ -764,29 +682,21 @@ proc character_window {} {
     ttk::labelframe $pg.virtues.f -text Virtues -padding 8
     pack $pg.virtues.f -fill both -expand 1
 
-    # Flags: the resistance grid, in the terminal font because it is a grid
-    # of single characters and a proportional one would not line up.  Filled
-    # in by character_refresh_flags.
-    set ff $pg.flags.f
-    ttk::labelframe $ff -text "What you have, and what is giving it to you" \
-        -padding 6
-    pack $ff -fill both -expand 1
-    text $ff.t -height 16 -width 80 -wrap none -font termfont \
-        -background $field -foreground black \
-        -relief sunken -borderwidth 2 -highlightthickness 1 \
-        -highlightcolor black -highlightbackground $ground \
-        -padx 4 -pady 4 -state disabled \
-        -yscrollcommand [list $ff.sb set]
-    ttk::scrollbar $ff.sb -orient vertical -command [list $ff.t yview]
-    pack $ff.sb -side right -fill y
-    pack $ff.t -side left -fill both -expand 1
-    $ff.t tag configure head -font [uifont Courier 12 bold]
-    $ff.t tag configure note -foreground #606060
+    # Flags: the grid of what you have and where it comes from, drawn by
+    # flags.tcl, which says why it is two canvases rather than widgets.
+    flags_build $pg.flags
 
     # Keys typed here still play the game.  Without this the window would have
     # to be dismissed before the next step could be taken, which would make it
     # something to put away rather than something to leave open.
     bind .character <Key> { angband_key [key_sym %N %k] %s %A }
+    bind .character <Key> {+ flags_tip_hide }
+    bind .character <Destroy> {
+        if {"%W" eq ".character"} {
+            destroy .flagtip
+            set flags(sig) ""
+        }
+    }
     bind .character <Escape> { destroy .character ; break }
     bind .character <Control-s> { character_dump ; break }
     bind .character <F1> { character_help ; break }

@@ -1,0 +1,366 @@
+H	Resistances and Abilities
+M	resistances-and-abilities
+T	h1	Resistances and Abilities
+T	h1	\n
+T	p0	A lot of what keeps your character alive isn’t a number on the character sheet. It’s a property: a resistance to fire, the ability to see invisible monsters, a curse that stops you teleporting. Your race and class give you a few of these, the things you wear give you most of them, and potions and spells give you some for a while.
+T	p0	\n
+T	p0	ZangbandTK lists them all on one page of the Character window, the Flags page. The text-mode game shows the same information on the second view of the character sheet, which 
+L	p0 link	1	command	Command Descriptions
+T	p0	 describes under Character Description. The list of properties at the end of this page applies to both.
+T	p0	\n
+M	the-flags-page
+T	h2	The Flags page
+T	h2	\n
+T	p0	Open the Character window with 
+T	p0 code	C
+T	p0	 and choose Flags. Press F1, or the Help… button on the page, to come back here.
+T	p0	\n
+M	reading-the-grid
+T	h3	Reading the grid
+T	h3	\n
+T	p0	Every row is something that can protect you, help you or hold you back. Every column is somewhere it can come from: the twelve things you can wear, in the order the Items window shows them, then You (your race, your class and what you’ve gained with your levels), then Timed (potions, scrolls and spells, which wear off).
+T	p0	\n
+T	p0	The Result column, next to each name, is what the row adds up to. Start there. It answers “am I protected against this?” without you having to read across the row.
+T	p0	\n
+T	p0	For example:
+T	p0	\n
+T	th0	Property          Result      Weapon  Body  Cloak  Shield  Timed\n
+T	rule0	────────────────────────────────────────────────────────────────\n
+T	tr0	Fire              ~ For now   +       +     −      +       ~\n
+T	tr0 odd	Shards            + Resist    ·       ·     +      ·       ·\n
+T	tr0	No teleportation  ! Affected  ·       ·     ·      ·       ·\n
+T	tbllast0	\n
+T	p0	Here three items resist fire, but a cursed cloak makes you vulnerable to it, and a vulnerability cancels a resistance. Only the potion in the Timed column is protecting you, and only until it wears off.
+T	p0	\n
+T	p0	The rows come in four groups: resistances, abilities, drawbacks and modifiers. Click a group’s band to fold it away, and click it again to open it. Each band also sums up its group, for instance “6 of 13 resisted, 1 for now, 3 not known”.
+T	p0	\n
+M	marks
+T	h3	Marks
+T	h3	\n
+T	p0	Each mark has its own colour as well, so you can tell them apart in any palette.
+T	p0	\n
+T	th0	Mark     Meaning\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	+        This gives it to you, for as long as you wear it.\n
+T	tr0 odd	*        This makes you immune. Resistances only.\n
+T	tr0	~        You have it for now, from a potion, scroll or spell. Timed column only.\n
+T	tr0 odd	−        This works against you: it makes you vulnerable, or takes the property away.\n
+T	tr0	!        This puts a drawback on you. Drawbacks only.\n
+T	tr0 odd	?        Not known. The item has a rune you haven’t learned, and this could be it.\n
+T	tr0	·        You’re wearing something here, and it doesn’t give this.\n
+T	tr0 odd	(blank)  A grey column is an empty slot. A blank cell means the column can’t give this at all,\n
+T	tr0 odd	         such as You on a row only items can have.\n
+T	tbllast0	\n
+T	p0	A grey, sloping name means you haven’t learned that row’s rune yet. Its values are still shown.
+T	p0	\n
+M	results
+T	h3	Results
+T	h3	\n
+T	p0	The Result column says, in a word, where each row ends up.
+T	p0	\n
+T	th0	Group        What the Result can say\n
+T	rule0	─────────────────────────────────────────────────────────────\n
+T	tr0	Resistances  Immune, Resist, For now, Unknown, Vulnerable, no\n
+T	tr0 odd	Abilities    Yes, For now, Unknown, Blocked, no\n
+T	tr0	Drawbacks    Affected, For now, Unknown, no\n
+T	tr0 odd	Modifiers    the total, such as +7\n
+T	tbllast0	\n
+T	p0	Three rules decide it:
+T	p0	\n
+T	li1	•\t
+T	li1	A resistance and a vulnerability cancel each other out, so one cursed item can undo three good ones. An immunity isn’t cancelled.
+T	li1	\n
+T	li1	•\t
+T	li1	A timed effect adds one level on top. When that’s what makes the difference, the Result says For now, and it’ll change back when the effect wears off.
+T	li1	\n
+T	li1	•\t
+T	li1	Unknown means nothing you know about gives you the property, but an item you’re wearing has a rune you haven’t learned and might. The Result only ever counts what you know, so it can’t give away an unidentified property.
+T	li1	\n
+M	columns
+T	h3	Columns
+T	h3	\n
+T	p0	The slot columns are headed by the item’s own symbol, in its colour, with the slot’s name under it: Weapon, Bow, Ring R, Ring L, Amulet, Light, Body, Cloak, Shield, Helm, Gloves and Boots. An empty slot shows the symbol for that kind of item, dimmed. A small 
+T	p0 code	?
+T	p0	 on a heading means that item has runes you haven’t learned yet.
+T	p0	\n
+T	p0	The You column is what your race, your class and your levels give you. You can’t take these off. The Timed column is what potions, scrolls and spells are giving you right now, with the turns left.
+T	p0	\n
+T	p0	To decide what to take off, point at an item’s heading. The card that comes up lists what you’d lose, what you’d gain and what wouldn’t change if you took it off, row by row: “Shards: resist → no”, “Fire: for now → resist”. If nothing would change, the card tells you that whatever else you’re wearing covers all of it.
+T	p0	\n
+M	runes-you-haven-t-learned
+T	h3	Runes you haven’t learned
+T	h3	\n
+T	p0	A property is a rune, and you learn each rune the first time you notice it on an item, usually by being hit with the thing it protects against. Until then the row’s name is grey, and an item that might have it shows 
+T	p0 code	?
+T	p0	 in that row.
+T	p0	\n
+T	p0	The game knows that an item has runes you haven’t learned, but not which. So the 
+T	p0 code	?
+T	p0	 goes in that item’s column on every row whose rune you haven’t learned. Putting it on the one row the item really has would give the answer away.
+T	p0	\n
+T	p0	A new character has learned very few runes, so most of the page starts out grey. A note above the grid says how many you’ve learned so far.
+T	p0	\n
+M	finding-out-more
+T	h3	Finding out more
+T	h3	\n
+T	p0	Point at anything on the grid and the status bar at the bottom of the Character window explains it straight away. Leave the pointer still for a moment and a card comes up with the whole story:
+T	p0	\n
+T	li1	•\t
+T	li1	On a row’s name, its Result or one of its cells, the card says what the property does, lists everything that gives it or works against it, and ends with the answer. When two or more things give it, it says you could lose one and keep the property.
+T	li1	\n
+T	li1	•\t
+T	li1	On a column heading, it names the item and any curse on it, and says what you’d lose or gain by taking it off.
+T	li1	\n
+T	p0	The card goes away when you move off the grid, scroll, click or press a key. Keys still go to the game, so you can leave the window open while you play.
+T	p0	\n
+T	p0	The Show buttons above the grid narrow it down: All; In effect (rows where the Result isn’t no or Unknown); Against you (rows with a 
+T	p0 code	−
+T	p0	 or 
+T	p0 code	!
+T	p0	); and Not yet learned (rows whose rune you haven’t learned, or with a 
+T	p0 code	?
+T	p0	). The numbers beside them don’t change as you switch.
+T	p0	\n
+T	p0	Click a row’s name to mark it, or a heading to mark its column, so you can follow it across or down. Click again to clear it. Double-click a heading to inspect that item, as the Items window’s Inspect does. View ▸ Fold All Groups and Unfold All Groups fold or open every band at once.
+T	p0	\n
+T	p0	Not on this page: your race’s and class’s own abilities, which nothing can add or take away (the 
+T	p0 code	S
+T	p0	 command lists those); mutations and shapes; and a weapon’s brands, which belong to its blows and are listed on the weapon.
+T	p0	\n
+M	what-each-property-does
+T	h2	What each property does
+T	h2	\n
+T	p0	These are the rows of the Flags page, in the order it shows them. The card for a row quotes its entry here.
+T	p0	\n
+M	resistances
+T	h3	Resistances
+T	h3	\n
+T	dt0 strong	Acid
+T	dt0	\n
+T	p1	Acid attacks hurt you less, and are less likely to damage what you carry.
+T	p1	\n
+T	dt0 strong	Lightning
+T	dt0	\n
+T	p1	Lightning attacks hurt you less, and are less likely to destroy what you carry.
+T	p1	\n
+T	dt0 strong	Fire
+T	dt0	\n
+T	p1	Fire attacks hurt you less, and are less likely to burn what you carry.
+T	p1	\n
+T	dt0 strong	Cold
+T	dt0	\n
+T	p1	Cold attacks hurt you less, and are less likely to shatter what you carry.
+T	p1	\n
+T	dt0 strong	Poison
+T	dt0	\n
+T	p1	Poison attacks hurt you less, and can’t leave you poisoned.
+T	p1	\n
+T	dt0 strong	Light
+T	dt0	\n
+T	p1	Bright light hurts you less, and can’t blind or dazzle you.
+T	p1	\n
+T	dt0 strong	Darkness
+T	dt0	\n
+T	p1	Darkness hurts you less, and can’t blind you. Unresisted darkness from a powerful monster can also drain your experience, slow you and make you forget things. Resisting it stops all of that.
+T	p1	\n
+T	dt0 strong	Sound
+T	dt0	\n
+T	p1	Sound attacks hurt you less, and can’t stun or confuse you.
+T	p1	\n
+T	dt0 strong	Shards
+T	dt0	\n
+T	p1	Shard attacks hurt you less, and can’t cut you.
+T	p1	\n
+T	dt0 strong	Nexus
+T	dt0	\n
+T	p1	Nexus attacks hurt you less, and can’t teleport you, pull you to a monster or scramble your stats.
+T	p1	\n
+T	dt0 strong	Nether
+T	dt0	\n
+T	p1	Nether attacks hurt you less, and can’t drain your experience.
+T	p1	\n
+T	dt0 strong	Chaos
+T	dt0	\n
+T	p1	Chaos attacks hurt you less, and can’t confuse you, make you see things or drain your experience.
+T	p1	\n
+T	dt0 strong	Disenchantment
+T	dt0	\n
+T	p1	Disenchantment hurts you less, and can’t strip the bonuses from your equipment.
+T	p1	\n
+M	abilities
+T	h3	Abilities
+T	h3	\n
+T	dt0 strong	Fear resistance
+T	dt0	\n
+T	p1	You can’t be frightened, so you can always fight back.
+T	p1	\n
+T	dt0 strong	Blindness resistance
+T	dt0	\n
+T	p1	You can’t be blinded, so you can still read scrolls and see what’s around you.
+T	p1	\n
+T	dt0 strong	Confusion resistance
+T	dt0	\n
+T	p1	You can’t be confused, so you can still read scrolls and walk where you mean to.
+T	p1	\n
+T	dt0 strong	Stun resistance
+T	dt0	\n
+T	p1	You can’t be stunned or knocked out.
+T	p1	\n
+T	dt0 strong	Cut resistance
+T	dt0	\n
+T	p1	You can’t be cut, so you never bleed.
+T	p1	\n
+T	dt0 strong	Hold life
+T	dt0	\n
+T	p1	Protects your experience from being drained.
+T	p1	\n
+T	dt0 strong	Regeneration
+T	dt0	\n
+T	p1	You recover hit points and mana faster, but get hungry faster too.
+T	p1	\n
+T	dt0 strong	Telepathy
+T	dt0	\n
+T	p1	You sense the minds of nearby monsters, even through walls. Mindless monsters stay hidden.
+T	p1	\n
+T	dt0 strong	See invisible
+T	dt0	\n
+T	p1	You can see invisible monsters, such as ghosts, when they’re in view.
+T	p1	\n
+T	dt0 strong	Free action
+T	dt0	\n
+T	p1	You can’t be paralysed. Deeper down, monsters that paralyse with a touch or a spell are among the most dangerous there are.
+T	p1	\n
+T	dt0 strong	Feather falling
+T	dt0	\n
+T	p1	You drift down trapdoors and into pits instead of falling, and take no damage.
+T	p1	\n
+T	dt0 strong	Slow digestion
+T	dt0	\n
+T	p1	You get hungry more slowly.
+T	p1	\n
+T	dt0 strong	Trap immunity
+T	dt0	\n
+T	p1	Traps can’t hurt you.
+T	p1	\n
+T	dt0 strong	Blessed weapon
+T	dt0	\n
+T	p1	A priest or a paladin gets +2 damage with a blessed weapon, as with any hafted one. Other classes get nothing from it.
+T	p1	\n
+T	dt0 strong	Reflection
+T	dt0	\n
+T	p1	Most bolt spells fired at you bounce away, back towards whoever cast them. It fails one time in ten, and balls and breaths can’t be reflected.
+T	p1	\n
+T	dt0 strong	Pass wall
+T	dt0	\n
+T	p1	You can walk through solid rock.
+T	p1	\n
+T	dt0 strong	Ghoul touch
+T	dt0	\n
+T	p1	A monster you hit with your bare hands may fall asleep. It gets a saving throw, and monsters that never sleep aren’t affected.
+T	p1	\n
+T	dt0 strong	Fiery aura
+T	dt0	\n
+T	p1	A monster that hits you in melee takes 2d6 fire damage, unless it’s immune to fire.
+T	p1	\n
+T	dt0 strong	Electric aura
+T	dt0	\n
+T	p1	A monster that hits you in melee takes 2d6 lightning damage, unless it’s immune to lightning.
+T	p1	\n
+T	dt0 strong	Luck
+T	dt0	\n
+T	p1	Raises your saving throw by 10, so you shrug off more of the spells and attacks a saving throw protects against.
+T	p1	\n
+M	drawbacks
+T	h3	Drawbacks
+T	h3	\n
+T	dt0 strong	Slow healing
+T	dt0	\n
+T	p1	You recover hit points more slowly.
+T	p1	\n
+T	dt0 strong	Slow mana recovery
+T	dt0	\n
+T	p1	You recover mana more slowly.
+T	p1	\n
+T	dt0 strong	Afraid
+T	dt0	\n
+T	p1	You’re always afraid, so you can’t fight in melee.
+T	p1	\n
+T	dt0 strong	Aggravation
+T	dt0	\n
+T	p1	Wakes nearby monsters and makes them angry.
+T	p1	\n
+T	dt0 strong	No teleportation
+T	dt0	\n
+T	p1	You can’t teleport. Phase Door, Teleportation and the like won’t work on you.
+T	p1	\n
+T	dt0 strong	Drains experience
+T	dt0	\n
+T	p1	Slowly drains your experience while you wear it.
+T	p1	\n
+T	dt0 strong	Can’t be removed
+T	dt0	\n
+T	p1	Once it’s on, you can’t take it off until the curse is broken.
+T	p1	\n
+T	dt0 strong	Fragile
+T	dt0	\n
+T	p1	The item may be destroyed if you try to break its curses.
+T	p1	\n
+T	dt0 strong	Anti-magic
+T	dt0	\n
+T	p1	You can’t cast spells, pray or use mental powers, and most of your mutations stop going off.
+T	p1	\n
+T	dt0 strong	Cannot eat
+T	dt0	\n
+T	p1	Food does you almost no good: you get a twentieth of the nourishment from anything you eat.
+T	p1	\n
+M	modifiers
+T	h3	Modifiers
+T	h3	\n
+T	dt0 strong	Stealth
+T	dt0	\n
+T	p1	How quietly you move. The higher it is, the less often monsters wake up.
+T	p1	\n
+T	dt0 strong	Searching
+T	dt0	\n
+T	p1	How readily you notice traps, secret doors and hidden things.
+T	p1	\n
+T	dt0 strong	Infravision
+T	dt0	\n
+T	p1	Lets you see warm-blooded monsters in the dark, 10 ft for each point.
+T	p1	\n
+T	dt0 strong	Tunneling
+T	dt0	\n
+T	p1	How quickly you dig through rubble, mineral veins and rock.
+T	p1	\n
+T	dt0 strong	Speed
+T	dt0	\n
+T	p1	How often you act. At +10 you act twice as often as a normal-speed monster.
+T	p1	\n
+T	dt0 strong	Attack speed
+T	dt0	\n
+T	p1	Extra blows with your weapon each round. +1 is one more blow.
+T	p1	\n
+T	dt0 strong	Shooting speed
+T	dt0	\n
+T	p1	Extra shots with your launcher, in tenths of a shot. +10 would double how often you fire.
+T	p1	\n
+T	dt0 strong	Shooting power
+T	dt0	\n
+T	p1	Adds to your launcher’s multiplier, so each missile does more damage.
+T	p1	\n
+T	dt0 strong	Light radius
+T	dt0	\n
+T	p1	Adds this many squares to how far your light reaches.
+T	p1	\n
+T	dt0 strong	Damage reduction
+T	dt0	\n
+T	p1	Takes this much off the damage of every hit you take.
+T	p1	\n
+T	dt0 strong	Movement speed
+T	dt0	\n
+T	p1	Lets you move faster than you act. At +1, a step takes half a turn.
+T	p1	\n
+T	dt0 strong	Mana
+T	dt0	\n
+T	p1	Raises your maximum mana, by this much for every level at which you can cast spells.
+T	p1	\n

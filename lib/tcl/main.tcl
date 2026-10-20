@@ -336,6 +336,7 @@ source [file join [file dirname [info script]] portrait.tcl]
 # Then the windows, which are Tk's own widgets in Tk's classic theme and
 # nothing else (decision 18).
 source [file join [file dirname [info script]] character.tcl]
+source [file join [file dirname [info script]] flags.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
 source [file join [file dirname [info script]] pet.tcl]
 source [file join [file dirname [info script]] items.tcl]

@@ -14,6 +14,7 @@ milestone closed on 4 October 2026.
 
    balance
    characters
+   flags
    monsters
    objects
    wilderness

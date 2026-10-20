@@ -31,6 +31,48 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+20 October 2026 — the Flags page, and every empty hand resisting blindness
+==========================================================================
+
+Steven said the Flags page was hard to read and told him nothing, and he was
+right, but it was worse than hard to read. While I was writing the brief for
+the designer I dumped the grid as data, and every empty slot came back as
+2147483646. That is how the game says "nothing worn here", and the page drew
+anything above nought as "has it". So in his screenshot Telch's empty ring
+fingers, neck and feet all resisted blindness. A second thing was hiding in the
+same dump: a dwarf's infravision and tunnelling were in the character's column,
+and the page showed them as question marks, because it blanked any row whose
+rune hadn't been learned. The game's own text screen only greys the name.
+
+The designer's answer was good, and most of the work was making the game supply
+what it needed. The Result column is the point of the page, and I didn't want
+the page deciding when a vulnerability cancels a resistance, so the game works
+it out with its own combiners and sends it over, once as things are and once
+for each slot with that slot taken off. That second list is the whole of "what
+do I lose if I take this off?". The help the designer drew as a window of its
+own went into the manual instead, where every other window's F1 already goes,
+and the cards quote it, so the two can't drift apart. Writing the fourteen
+descriptions the designer had left blank meant reading the code for each one,
+and the Bless row turned out not to be the prayer at all but the blessed-weapon
+flag. It's called Blessed weapon now.
+
+Two surprises came out of the building. "Weapon" doesn't fit in a 44-pixel
+column here, because Tk scales points up by a third on this Mac, so the columns
+are measured and the headings step down a size until the row fits. And the ten
+rows added last week were sorted backwards: the comment said positive
+priorities put them after the originals, and higher sorts first, so Luck and
+the auras had been leading the abilities and pushing the old rows off the text
+screen.
+
+The one I'll remember is the negative control. The rule now is that a new
+check isn't done until it has been made to fail, so I broke the page on purpose
+in the scratch build and ran the suite, and it passed. The suite wasn't reading
+the scratch build at all; a development build takes its scripts from the
+source tree. Broken there instead, every check went red and named what it was
+looking at. If I'd stopped at the first green I'd have had seven checks that
+couldn't fail and wouldn't have known.
+
+
 19 October 2026 — older Linux, and no second download
 =====================================================
 

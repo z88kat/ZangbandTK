@@ -39,6 +39,7 @@
 #include "obj-gear.h"
 #include "obj-power.h"
 #include "obj-knowledge.h"
+#include "obj-curse.h"
 #include "obj-util.h"
 #include "player-history.h"
 #include "player-timed.h"
@@ -58,6 +59,7 @@
 #include "ui-display.h"
 #include "ui-entry.h"
 #include "ui-entry-renderers.h"
+#include "ui-entry-combiner.h"
 #include "ui-game.h"
 #include "ui-help.h"
 #include "main.h"
@@ -4685,10 +4687,19 @@ static int objcmd_home(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * screen's second page draws it.
  *
  *    angband_flags categories     the four groups, with no character
- *    angband_flags columns        {slot name glyph colour} per equipment
- *                                 slot, in the game's order
- *    angband_flags rows <group>   {label known values auxs renderer} per
- *                                 entry
+ *    angband_flags columns        {slot name glyph colour short full
+ *                                 runesknown curses} per equipment slot, in
+ *                                 the game's order
+ *    angband_flags rows <group>   {label known values auxs renderer result
+ *                                 without curses origin timed} per entry
+ *
+ * Values are numbers, or one of the words none (nothing worn, or nothing
+ * that could give it), unknown (not yet known to the character) and both
+ * (a resistance and a vulnerability, which cancel). `result` is {value aux}
+ * over every column; `without` is that, once per equipment slot, with the
+ * slot left out; `curses` names the known curse, if any, behind each slot's
+ * value; `origin` is a name/value list of race, racelevel, class, classlevel
+ * and shape; `timed` is {name desc turns} per timed effect feeding the aux.
  *
  * Built on ui-entry.h's iterator, which is what `character.tcl` said it was
  * waiting for. That is deliberate rather than convenient: the term screen's
@@ -4741,6 +4752,61 @@ static bool flags_in_group(const struct ui_entry *entry, const void *closure)
 
 	return ui_entry_has_category(entry, "CHAR_SCREEN1")
 		&& ui_entry_has_category(entry, group);
+}
+
+/**
+ * One value from the ui_entry machinery, as a script should see it.
+ *
+ * The iterator reports three conditions as sentinel integers near INT_MAX --
+ * nothing worn there, not known, and resist-plus-vulnerable -- and a script
+ * handed the raw number has no way to tell them from a large bonus. The first
+ * Flags page did exactly that and drew every empty slot as "has it". So they
+ * go out as words, and only real values go out as numbers.
+ */
+static Tcl_Obj *flags_value_obj(int v)
+{
+	if (v == UI_ENTRY_VALUE_NOT_PRESENT) return Tcl_NewStringObj("none", -1);
+	if (v == UI_ENTRY_UNKNOWN_VALUE) return Tcl_NewStringObj("unknown", -1);
+	if (v == UI_ENTRY_RESIST0_RES_VUL) return Tcl_NewStringObj("both", -1);
+	return Tcl_NewIntObj(v);
+}
+
+/**
+ * A row's combined result, with slot `skip` left out (-1 for none).
+ *
+ * The entry's own combiner does the combining, so a resistance and a
+ * vulnerability cancel here exactly as they do in the game. One rule is added
+ * on top: the combiners let any known value, a known nought included, beat an
+ * unknown one, so "the sword gives nothing and the shield might" comes out as
+ * nothing. When nothing known gives the property and some cell is unknown,
+ * the honest answer is "unknown", and that is what this returns.
+ */
+static Tcl_Obj *flags_result_obj(const struct ui_entry *entry, int n,
+		const int *vals, const int *auxs, int skip)
+{
+	struct ui_entry_combiner_funcs f;
+	int *v = mem_alloc(n * sizeof(*v));
+	int *a = mem_alloc(n * sizeof(*a));
+	int acc = UI_ENTRY_VALUE_NOT_PRESENT, acc_aux = UI_ENTRY_VALUE_NOT_PRESENT;
+	bool unknown = false;
+	int j;
+	Tcl_Obj *res = Tcl_NewListObj(0, NULL);
+
+	for (j = 0; j < n; j++) {
+		v[j] = (j == skip) ? UI_ENTRY_VALUE_NOT_PRESENT : vals[j];
+		a[j] = (j == skip) ? UI_ENTRY_VALUE_NOT_PRESENT : auxs[j];
+		if (v[j] == UI_ENTRY_UNKNOWN_VALUE) unknown = true;
+	}
+	if (!ui_entry_combiner_get_funcs(get_ui_entry_combiner_index(entry), &f))
+		(*f.vec_func)(n, v, a, &acc, &acc_aux);
+	if (unknown && (acc == 0 || acc == UI_ENTRY_VALUE_NOT_PRESENT))
+		acc = UI_ENTRY_UNKNOWN_VALUE;
+
+	Tcl_ListObjAppendElement(NULL, res, flags_value_obj(acc));
+	Tcl_ListObjAppendElement(NULL, res, flags_value_obj(acc_aux));
+	mem_free(v);
+	mem_free(a);
+	return res;
 }
 
 static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
@@ -4798,13 +4864,54 @@ static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			 * columns, and an empty one for a slot with nothing in it.
 			 */
 			if (obj) {
+				char        oname[120];
+				Tcl_Obj    *cl = Tcl_NewListObj(0, NULL);
+				int         ci;
+
 				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(glyph,
 						Tcl_UniCharToUtf((int)object_glyph(obj), glyph)));
 				Tcl_ListObjAppendElement(ip, row,
 						Tcl_NewStringObj(object_colour(obj), -1));
+
+				/*
+				 * Two names: the short one ("Cloak of Protection") for a
+				 * status line and a source list, and the full one, with its
+				 * article, numbers and inscription, for a card's title.
+				 */
+				object_desc(oname, sizeof(oname), obj, ODESC_BASE, player);
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(oname, -1));
+				object_desc(oname, sizeof(oname), obj,
+						ODESC_PREFIX | ODESC_FULL, player);
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(oname, -1));
+
+				/*
+				 * Whether the character knows every rune on it. When not,
+				 * its unknown cells are the reason a row reads "unknown",
+				 * and the page says so on the heading.
+				 */
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewBooleanObj(object_runes_known(obj)));
+
+				/* The curses the character knows are on it, by name. */
+				if (obj->curses && obj->known && obj->known->curses) {
+					for (ci = 1; ci < z_info->curse_max; ci++) {
+						if (obj->curses[ci].power
+								&& obj->known->curses[ci].power
+								&& curses[ci].name)
+							Tcl_ListObjAppendElement(ip, cl,
+									Tcl_NewStringObj(curses[ci].name, -1));
+					}
+				}
+				Tcl_ListObjAppendElement(ip, row, cl);
 			} else {
 				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
 				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewListObj(0, NULL));
 			}
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
@@ -4897,8 +5004,8 @@ static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 					vals + n, auxs + n);
 
 			for (j = 0; j <= n; j++) {
-				Tcl_ListObjAppendElement(ip, vl, Tcl_NewIntObj(vals[j]));
-				Tcl_ListObjAppendElement(ip, al, Tcl_NewIntObj(auxs[j]));
+				Tcl_ListObjAppendElement(ip, vl, flags_value_obj(vals[j]));
+				Tcl_ListObjAppendElement(ip, al, flags_value_obj(auxs[j]));
 			}
 
 			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
@@ -4924,6 +5031,75 @@ static int objcmd_flags(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				Tcl_ListObjAppendElement(ip, row,
 						Tcl_NewStringObj(rn ? rn : "", -1));
 			}
+
+			/*
+			 * The answer to "am I protected?", from the entry's own
+			 * combiner over every column, and the same answer with each
+			 * equipment slot left out in turn, which is "what do I lose if
+			 * I take this off?". Worked out here rather than in a script so
+			 * that the page and the game cannot disagree about a rule.
+			 */
+			Tcl_ListObjAppendElement(ip, row,
+					flags_result_obj(entry, n + 1, vals, auxs, -1));
+			{
+				Tcl_Obj *wl = Tcl_NewListObj(0, NULL);
+
+				for (j = 0; j < n; j++)
+					Tcl_ListObjAppendElement(ip, wl,
+							flags_result_obj(entry, n + 1, vals, auxs, j));
+				Tcl_ListObjAppendElement(ip, row, wl);
+			}
+
+			/* Which known curse, if any, puts each slot's value there. */
+			{
+				Tcl_Obj *cl = Tcl_NewListObj(0, NULL);
+
+				for (j = 0; j < n; j++) {
+					int ci = find_ui_entry_curse_for_object(entry, worn[j],
+							player);
+
+					Tcl_ListObjAppendElement(ip, cl, Tcl_NewStringObj(
+							(ci > 0 && curses[ci].name)
+								? curses[ci].name : "", -1));
+				}
+				Tcl_ListObjAppendElement(ip, row, cl);
+			}
+
+			/*
+			 * Where the character's own value comes from, and which timed
+			 * effects are feeding the aux, with their turns left.
+			 */
+			{
+				struct ui_entry_player_origin o;
+				Tcl_Obj *ol = Tcl_NewListObj(0, NULL);
+				Tcl_Obj *tl = Tcl_NewListObj(0, NULL);
+				int t;
+
+				describe_ui_entry_player_origin(entry, player, &o);
+				table_put(ip, ol, "race", Tcl_NewBooleanObj(o.race));
+				table_put(ip, ol, "racelevel", Tcl_NewIntObj(o.race_level));
+				table_put(ip, ol, "class", Tcl_NewBooleanObj(o.cls));
+				table_put(ip, ol, "classlevel", Tcl_NewIntObj(o.class_level));
+				table_put(ip, ol, "shape", Tcl_NewBooleanObj(o.shape));
+				Tcl_ListObjAppendElement(ip, row, ol);
+
+				for (t = 0; t < o.n_timed; t++) {
+					int k = o.timed[t];
+					Tcl_Obj *te = Tcl_NewListObj(0, NULL);
+
+					Tcl_ListObjAppendElement(ip, te, Tcl_NewStringObj(
+							timed_effects[k].name
+								? timed_effects[k].name : "", -1));
+					Tcl_ListObjAppendElement(ip, te, Tcl_NewStringObj(
+							timed_effects[k].desc
+								? timed_effects[k].desc : "", -1));
+					Tcl_ListObjAppendElement(ip, te,
+							Tcl_NewIntObj(player->timed[k]));
+					Tcl_ListObjAppendElement(ip, tl, te);
+				}
+				Tcl_ListObjAppendElement(ip, row, tl);
+			}
+
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 

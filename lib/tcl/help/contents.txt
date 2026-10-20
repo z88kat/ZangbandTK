@@ -119,6 +119,10 @@ page	The Chaos-Warrior, and who owns it	characters#the-chaos-warrior-and-who-own
 page	What every class costs	characters#what-every-class-costs
 page	Still to come	characters#still-to-come
 stop
+book	Resistances and Abilities	flags
+page	The Flags page	flags#the-flags-page
+page	What each property does	flags#what-each-property-does
+stop
 book	Monsters	monsters
 page	Where the new monsters come from	monsters#where-the-new-monsters-come-from
 page	Monsters that are not what they appear	monsters#monsters-that-are-not-what-they-appear

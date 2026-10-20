@@ -502,7 +502,9 @@ T	dt0 strong	Character Description (
 T	dt0 strong code	C
 T	dt0 strong	)
 T	dt0	\n
-T	p1	Brings up a full description of your character, including your skill levels, your current and potential stats, and various other information. From this screen, you can change your name or use the file character description command to save your character status to a file. That command saves additional information, including your background, your inventory, and the contents of your house. The command to change the mode switches what’s displayed back and forth from the original view to one that shows how your current equipment and the player’s innate characteristics affect certain attributes. The default symbols used within that view are ‘.’ for nothing equipped or no known effect on the attribute, ‘?’ if your character does not know if there’s an effect on the attribute, ‘+’ if your character knows that there is a positive effect on the attribute, ‘-’ if your character knows that there is a negative effect on the attribute, ‘!’ if a timed effect positively affects the attribute, or ‘=’ if a timed effect negatively affects the attribute. For elemental resistances (the block of attributes on the far left), ‘*’, to indicate an immunity, and ‘~’ to indicate that something provides both a ‘+’ and ‘-’, are also possible. The color of the label for the attribute will indicate the sum of the different sources for your character. Those colors default to be: slate for when your character does not know the rune associated with that attribute, white if there is no combined effect (excluding timed effects) known to the character, light blue if the known combined effect (excluding timed effects) is positive, red if the known combined effect (excluding timed effects) is negative, and green if the known combined effect is an elemental immunity.
+T	p1	Brings up a full description of your character, including your skill levels, your current and potential stats, and various other information. From this screen, you can change your name or use the file character description command to save your character status to a file. That command saves additional information, including your background, your inventory, and the contents of your house. The command to change the mode switches what’s displayed back and forth from the original view to one that shows how your current equipment and the player’s innate characteristics affect certain attributes. The default symbols used within that view are ‘.’ for nothing equipped or no known effect on the attribute, ‘?’ if your character does not know if there’s an effect on the attribute, ‘+’ if your character knows that there is a positive effect on the attribute, ‘-’ if your character knows that there is a negative effect on the attribute, ‘!’ if a timed effect positively affects the attribute, or ‘=’ if a timed effect negatively affects the attribute. For elemental resistances (the block of attributes on the far left), ‘*’, to indicate an immunity, and ‘~’ to indicate that something provides both a ‘+’ and ‘-’, are also possible. The color of the label for the attribute will indicate the sum of the different sources for your character. Those colors default to be: slate for when your character does not know the rune associated with that attribute, white if there is no combined effect (excluding timed effects) known to the character, light blue if the known combined effect (excluding timed effects) is positive, red if the known combined effect (excluding timed effects) is negative, and green if the known combined effect is an elemental immunity. ZangbandTK shows the same information on the Flags page of its Character window, which 
+L	p1 link	19	flags	Resistances and Abilities
+T	p1	 describes along with what each property does.
 T	p1	\n
 T	dt0 strong	Check knowledge (
 T	dt0 strong code	~
@@ -565,7 +567,7 @@ T	dt0 strong code	%
 T	dt0 strong	)
 T	dt0	\n
 T	p1	Lists the work you’ve accepted and not yet handed back: what each job is, which town it came from, and how far along you are. The two quests the game ends on, Oberon and the Serpent of Chaos, aren’t listed here, because nobody gave them to you and there’s nothing to report back. You can give up a job from this screen, or by walking back into the building that hired you. See 
-L	p1 link	19	quests	Quests
+L	p1 link	20	quests	Quests
 T	p1	.
 T	p1	\n
 T	p1	In the roguelike keyset the key is 
@@ -585,7 +587,7 @@ T	p1 em	stay close
 T	p1	 to 
 T	p1 em	stay away
 T	p1	; two switches say whether they may open doors and whether they may pick things up; and two more list what’s following you and dismiss it. An order covers all your pets at once: every pet follows the same one, and it keeps across a save. See 
-L	p1 link	20	pets	Pets and Allies
+L	p1 link	21	pets	Pets and Allies
 T	p1	.
 T	p1	\n
 T	p1	Zangband used 
@@ -627,15 +629,15 @@ T	p1 code	=
 T	p1	 then 
 T	p1 code	x
 T	p1	) marks the character as unsuitable for the high score list, permanently. See 
-L	p1 link	21	option#cheating-options	cheating options
+L	p1 link	22	option#cheating-options	cheating options
 T	p1	, and 
-L	p1 link	22	option#debug-commands	debug commands
+L	p1 link	23	option#debug-commands	debug commands
 T	p1	 for the larger set behind 
 T	p1 code	^A
 T	p1	. The “window” options allow you to specify what should be drawn in any of the special sub-windows (not available on all platforms). See the help files for 
-L	p1 link	23	customize	customization
+L	p1 link	24	customize	customization
 T	p1	 and 
-L	p1 link	24	option	options
+L	p1 link	25	option	options
 T	p1	 for more information. You can also interact with keymaps under this menu.
 T	p1	\n
 T	dt0 strong	Interact with keymaps - option submenu
@@ -659,7 +661,7 @@ T	p1 code	=
 T	p1	 then 
 T	p1 code	p
 T	p1	 loads a whole file instead. See 
-L	p1 link	25	customize	customization
+L	p1 link	26	customize	customization
 T	p1	 for the syntax.
 T	p1	\n
 M	help-commands
@@ -713,7 +715,7 @@ T	p1	\n
 T	dt0 strong	Toggle wizard mode (‘^w’ in both keysets)
 T	dt0	\n
 T	p1	Turns on the debugging mode, which isn’t a way to play the game. It warns you the first time and asks you to confirm, and once you agree, the character is marked as unscored for good. The mark is in the savefile, and switching the mode back off doesn’t remove it. See 
-L	p1 link	26	option#debug-commands	debug commands
+L	p1 link	27	option#debug-commands	debug commands
 T	p1	 for what it opens up.
 T	p1	\n
 T	dt0 strong	Borg commands (‘^z’ in both keysets)
@@ -739,7 +741,7 @@ T	li2	html, suitable for viewing in a web browser.
 T	li2	\n
 T	li2	•\t
 T	li2	forum embedded html for vBulletin, suitable for pasting in web forums like 
-L	li2 link	27	https://angband.live/forums/	https://angband.live/forums/
+L	li2 link	28	https://angband.live/forums/	https://angband.live/forums/
 T	li2	.
 T	li2	\n
 M	special-keys
@@ -786,7 +788,7 @@ M	id2
 T	h2	Command Counts
 T	h2	\n
 T	p0	Some commands can be executed a fixed number of times by preceding them with a count. Counted commands will execute until the count expires, until you type any character, or until 
-L	p0 link	28	playing#disturb-player	something significant happens
+L	p0 link	29	playing#disturb-player	something significant happens
 T	p0	, such as being attacked. Thus, a counted command doesn’t work to attack another creature. While the command is being repeated, the number of times left to be repeated will flash by on the line at the bottom of the screen.
 T	p0	\n
 T	p0	To give a count to a command, type 

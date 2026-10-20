@@ -598,6 +598,8 @@ Character Description (``C``)
   blue if the known combined effect (excluding timed effects) is positive, red
   if the known combined effect (excluding timed effects) is negative, and
   green if the known combined effect is an elemental immunity.
+  ZangbandTK shows the same information on the Flags page of its Character
+  window, which :doc:`flags` describes along with what each property does.
 
 Check knowledge (``~``)
   This command allows you to ask about the knowledge possessed by your

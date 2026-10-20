@@ -18,6 +18,11 @@
 #   colour   <the game's name>  #rrggbb
 #   role     good|fair|poor|mana|food|exp  #rrggbb
 #
+# The Flags page's marks are roles too, with defaults in display.tcl:
+# flaghas, flagimm, flagtimed, flagbad, flagunk and flagnone for a mark's ink,
+# the same with "tint" added for its cell, flagempty for an empty slot and
+# flagrune for a rune not learned.  A palette may leave them all out.
+#
 # Fields are separated by tabs.
 
 palette	contrast	High contrast

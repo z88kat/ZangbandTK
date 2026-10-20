@@ -49,6 +49,12 @@ set display(scales) {1 Small 2 Medium 3 Large}
 set display(roles,game) {
     good #38a038  fair #c8a000  poor #c03030
     mana #3050d0  food #a04848  exp  #c09020
+    flaghas   #0b5e0b  flaghastint   #d6ecd6
+    flagimm   #063f06  flagimmtint   #a9d6a9
+    flagtimed #1a3a96  flagtimedtint #dbe3f7
+    flagbad   #9c1414  flagbadtint   #f5d6d6
+    flagunk   #6b4f00  flagunktint   #f7ecc4
+    flagnone  #9a9a9a  flagempty     #e4e4e4  flagrune #6e6e6e
 }
 
 # --- fonts ------------------------------------------------------------------------
