@@ -106,6 +106,12 @@ Constant: CMD_AUTOPICKUP
 Arguments:
 - none
 
+"burn"
+Constant: CMD_BURN
+Arguments:
+- 'item' (type item): the stack of spellbooks to burn; refused unless burning it is worth experience to the character
+- 'quantity' (type number): the number of books to burn
+
 "buy"
 Constant: CMD_BUY
 Arguemnts:

@@ -4,324 +4,322 @@ Mutations
 Exposure to chaos changes you, permanently and not always for the better.
 
 There are ninety-six ways it can, and you do not choose between them. A
-mutation arrives because something happened to you — a spell went wrong, a
-Lord of Chaos took an interest, you were standing in the wrong place when
-something breathed — and what you get is what the roll gives you.
+mutation arrives because something happened to you: a spell went wrong, a
+Lord of Chaos took an interest, or you were standing in the wrong place when
+something breathed. What you get is whatever the roll gives you.
 
 
 The four kinds
 --------------
 
-**Continuous.** Simply true of you from the moment you have them. Superhuman
-strength, a moronic mind, skin turned to steel, wings, a rotting body, good
-luck, bad luck. Thirty-two of them, and twelve are purely bad.
+**Continuous** mutations are true of you from the moment you have them:
+superhuman strength, a moronic mind, skin turned to steel, wings, a rotting
+body, good luck, bad luck. There are thirty-two of them, and twelve are purely
+bad.
 
-These act on your character directly, the way a shapechange does rather than
-the way a ring does — there is nothing to wear and nothing to take off. They
-show up on your character sheet under **Mutations** — press ``C``, then ``h``
-twice to reach that page — and in your stats, armour, speed, saving throw and
-resistances without being labelled.
+These act on your character directly, like a shapechange. Unlike a ring,
+there's nothing to wear and nothing to take off. They show up on your
+character sheet under **Mutations** (press ``C``, then ``h`` twice to reach
+that page), and in your stats, armour, speed, saving throw and resistances
+without being labelled.
 
 .. warning::
 
-   **A mutation is rarely only what it is called.** Superhuman strength is
-   +4 STR and also -1 INT and -1 WIS; being puny is -4 STR and *+2 DEX*; a
-   moronic mind is -4 INT and -4 WIS and makes you immune to fear and
-   confusion; iron skin is +25 AC and -3 DEX. The Zangband spoiler gives the
-   headline of each and stops, and the headline is generally the good half.
-   What this game implements is what Zangband's code did, which is harsher on
-   the good mutations and kinder on the bad ones.
+   A mutation is rarely only what it's called. Superhuman strength is +4 STR
+   and also -1 INT and -1 WIS; being puny is -4 STR and *+2 DEX*; a moronic
+   mind is -4 INT and -4 WIS and makes you immune to fear and confusion; iron
+   skin is +25 AC and -3 DEX. The Zangband spoiler gives the headline of each
+   and stops there, and the headline is usually the good half. This game does
+   what Zangband's code did, which is harsher on the good mutations and kinder
+   on the bad ones.
 
-   **Your character sheet tells you all of it.** Everything in the bracket
-   after a mutation's description is generated from what the mutation actually
-   does, so the two cannot come apart: every stat it moves, every resistance
-   it grants, every vulnerability it opens, and everything it takes away. It
-   was not always so — a living computer brain used to advertise its four
-   points of intelligence and wisdom and say nothing about the vulnerability
-   to electricity that comes with it.
+   Your character sheet tells you all of it. Everything in the bracket after a
+   mutation's description is generated from what the mutation does, so the two
+   cannot come apart: every stat it moves, every resistance it grants, every
+   vulnerability it opens, and everything it takes away. It was not always so.
+   A living computer brain used to advertise its four points of intelligence
+   and wisdom and say nothing about the vulnerability to electricity that
+   comes with it.
 
-Three mutations take something away rather than adding anything. Rotting flesh
-stops you regenerating — including the regeneration from a ring you are wearing
-— and the panic-hit power and the warning mutation both stop you resisting fear,
-however you came by the resistance. Three more make ordinary food barely feed
-you: a beak, a mouth that eats rock, and a taste for blood all leave you a
-twentieth of what you swallow. Potions still work normally.
+Three mutations only take something away. Rotting flesh stops you
+regenerating, even the regeneration from a ring you're wearing, and the
+panic-hit power and the warning mutation both stop you resisting fear, however
+you came by the resistance. Three more make ordinary food barely feed you: a
+beak, a mouth that eats rock and a taste for blood all leave you a twentieth of
+what you swallow. Potions still work normally.
 
 Three of the thirty-two do nothing at all, and will stay that way. A silly
 voice and an illusory normal appearance changed only your charisma, and there
-is no charisma in Angband
-4.2 — the stat was removed in 4.2.0. **Bad luck** is the third: everything it
-did happened at the moment an object was identified, and 4.2 has no such
-moment — you learn what a thing is one rune at a time by carrying and using it,
-so it never stops being unknown and there is nothing for the curse to hang on.
-You can still gain all three, they are still described on your sheet, and they
-have no effect. They were left in rather than dropped because a mutation that
+is no charisma in Angband 4.2; the stat was removed in 4.2.0. Bad luck is the
+third. Everything it did happened at the moment an object was identified, and
+4.2 has no such moment. You learn what a thing is one rune at a time by
+carrying and using it, so it never stops being unknown and there's nothing for
+the curse to hang on. You can still gain all three, they're still described on
+your sheet, and they have no effect. They were left in because a mutation that
 vanishes from a savefile is worse than one that does nothing.
 
-Its twin, **good luck**, does work — but only half of it. One time in thirteen
-an object generated near you rolls against a level twenty deeper than it should,
-which is a real if occasional gift. The other half made your sense of an
-object's worth reliable, and that is the same wall bad luck ran into: there is
+Its twin, good luck, does work, but only half of it. One time in thirteen an
+object generated near you rolls against a level twenty deeper than it should,
+which is a gift, if an occasional one. The other half made your sense of an
+object's worth reliable, and that runs into the same wall as bad luck: there's
 no such sense here to make reliable.
 
-**Activatable.** Powers you invoke, at a cost in mana — or in blood, if you
-are not a caster. Spitting acid, breathing fire, eating rock, turning objects
-to gold, teleporting at will. Thirty-two, each with its own level, price, and
-a stat it is rolled against.
+**Activatable** mutations are powers you invoke, at a cost in mana, or in blood
+if you aren't a caster: spitting acid, breathing fire, eating rock, turning
+objects to gold, teleporting at will. There are thirty-two, each with its own
+level, price, and a stat it's rolled against.
 
 They appear in the same list as your racial and class powers, after them, and
-work the same way — the same failure roll, the same fall back to hit points
-when you are short of mana. Some grow with you: spitting acid throws a wider
-ball from level 30, breathing fire from level 40, and hardening yourself
+work the same way, with the same failure roll and the same fall back to hit
+points when you're short of mana. Some grow with you: spitting acid throws a
+wider ball from level 30, breathing fire from level 40, and hardening yourself
 against the elements resists more of them the higher you go.
 
-**One of the thirty-two cannot be used, and will not be.** *Detect curses* is
-listed with *dropped* beside it rather than hidden, because your character
-sheet describes it and you would come looking. It would tell you which of your
-things are cursed before you know them, and Angband 4.2 took that kind of
-early warning away on purpose: a curse is a rune you learn by carrying the
-thing.
+One of the thirty-two cannot be used, and will not be. *Detect curses* is listed
+with *dropped* beside it instead of being hidden, because your character sheet
+describes it and you'd come looking. It would tell you which of your things are
+cursed before you know them, and Angband 4.2 took that kind of early warning
+away: a curse is a rune you learn by carrying the thing.
 
-Every other power works, and several came off a list of powers that could not
+Every other power works, and several came off a list of powers that couldn't
 be used yet:
 
-- **Weigh magic** tells you how long each magic on you has left — the status
-  line names them but does not say for how long — in Zangband's words, from
-  *for a short time* to *for an incredibly long time*.
+- **Weigh magic** tells you how long each magic on you has left, in Zangband's
+  words, from *for a short time* to *for an incredibly long time*. The status
+  line names them but doesn't say for how long.
 - **Launcher** throws an object as hard as a sling would loose it: twice the
   damage of an ordinary throw, three times from level 30. It asks for the
   object and the direction, as throwing always does.
-- **Swap position** — you and the monster change places, unless it is one of
-  the things that will not be teleported, in which case neither of you moves.
+- **Swap position** makes you and the monster change places, unless it's one
+  of the things that won't be teleported, in which case neither of you moves.
 - **Sterility** stops every breeder on the level and gives you a headache worth
-  seventeen to thirty-four hit points. That is not permanent, and it was not in
-  Zangband either — breeding starts again once enough breeders have died.
-- **The Midas touch** turns objects into gold. It was once marked *dropped*, as
-  needing a mechanic too big for one mutation; Sorcery's *Alchemy* spell and a
-  random-artifact power want the same thing, so it was built once for all three
-  (DEC-52).
+  seventeen to thirty-four hit points. It isn't permanent, and it wasn't in
+  Zangband either: breeding starts again once enough breeders have died.
+- **The Midas touch** turns objects into gold. It was once marked *dropped*,
+  because it needed a mechanic too big for one mutation, but Sorcery's
+  *Alchemy* spell and a random-artifact power want the same thing, so it was
+  built once for all three (DEC-52).
 
-**Random.** Things that happen to you without being asked for. Berserker fits,
-a body that brews its own alcohol, attracting demons, occasionally becoming
-invulnerable, occasionally dropping your weapon. Twenty-seven, most of them
-rare — one turn in three thousand up to one in twelve thousand.
+**Random** mutations are things that happen to you without being asked for:
+berserker fits, a body that brews its own alcohol, attracting demons,
+occasionally becoming invulnerable, occasionally dropping your weapon. There
+are twenty-seven, most of them rare, from one turn in three thousand up to one
+in twelve thousand.
 
-Each is rolled separately, every turn, so three of these are three chances and
-not one. Almost all of them stop while you are under an anti-magic effect —
-cowardice is the exception, because being too frightened to act is not magic,
-and Zangband is specific about that.
+Each is rolled separately, every turn, so having three of these means three
+separate chances. Almost all of them stop while you're under an anti-magic
+effect. Cowardice is the exception, because being too frightened to act isn't
+magic, and Zangband is specific about that.
 
-Three of them came late. **Warning** now and then tells you how dangerous the
-level is — every creature against you at your level or above adds to it,
-and you feel anything from *lonely* to *utterly terrified*. Your own creatures
-do not count. **Magical healing** turns spell points into hit points to close
-your wounds, and **painful clarity** does the reverse, filling your mana from
-your hit points — all of them, if that is what it takes, which leaves you alive
-on none.
+Three of them came late. The warning mutation now and then tells you how
+dangerous the level is: every creature against you at your level or above adds
+to it, and you feel anything from *lonely* to *utterly terrified*. Your own
+creatures do not count. Magical healing turns spell points into hit points to
+close your wounds, and painful clarity does the reverse, filling your mana from
+your hit points. It takes all of them if that's what it needs, which leaves you
+alive on none.
 
-**Occasional invulnerability is not free, twice over.** Carrying it costs two
-points of wisdom permanently, in the same way wraith form costs constitution.
-And every time it fires — which it does unasked, by definition — the game
-charges it against your virtues as though you had chosen it: five points off
-Temperance, five off Honour, five off Sacrifice and ten off Valour, twenty-five
-points in all, which is the largest single virtue charge anywhere in the game.
-A character who happens to have this mutation will slide down four scales
-without ever having decided anything. See :doc:`virtues`.
+Occasional invulnerability costs you twice over. Carrying it costs two points
+of wisdom permanently, the same way wraith form costs constitution. And every
+time it fires, which by definition it does unasked, the game charges it against
+your virtues as though you'd chosen it: five points off Temperance, five off
+Honour, five off Sacrifice and ten off Valour. That's twenty-five points in
+all, the largest single virtue charge anywhere in the game. A character who
+happens to have this mutation will slide down four scales without ever having
+decided anything. See :doc:`virtues`.
 
 .. topic:: Wraith form, and the way it kills you
 
    .. warning::
 
-      **If wraith form ends while you are inside rock, you die.** Not "you are
-      hurt" — you are solid again with stone on every side, you cannot move in
-      any direction, and you are crushed where you stand until you are dead.
-      There is no floor under that damage the way there is for a Spectre. At
-      two thousand five hundred feet it is six hit points a turn; on the
-      surface it is one. The death is recorded as *an expired wraith form*, so
-      you will know.
+      If wraith form ends while you are inside rock, you die. Not "you are
+      hurt": you're solid again with stone on every side, you cannot move in
+      any direction, and you're crushed where you stand until you're dead.
+      There's no floor under that damage the way there is for a Spectre. At
+      two thousand five hundred feet it's six hit points a turn; on the
+      surface it's one. The death is recorded as *an expired wraith form*, so
+      you'll know.
 
-   One of the twenty-seven turns you incorporeal, and it is the strongest thing
+   One of the twenty-seven turns you incorporeal, and it's the strongest thing
    on this page by a wide margin. You walk through walls. Nine tenths of every
    blow passes through you. You gain a hundred points of armour and bolts
    bounce off you. Darkness heals you instead of hurting you. You pay nothing
    for standing inside rock, where a Spectre pays a point a turn.
 
    It arrives without being asked for, roughly one turn in three thousand.
-   Death's *Wraithform* spell gives the same form on purpose, for as long, and
-   everything below holds for it too (:doc:`realms`).
+   Death's *Wraithform* spell gives you the same form when you ask for it, for
+   as long, and everything below holds for it too (:doc:`realms`).
 
-   **It also costs you three points of constitution for as long as you have
-   it** — not while the form is running, but permanently, from the moment the
-   mutation arrives until something takes it away. You fade in and out of
-   physical reality and your body is the thing that suffers for it. On a frail
-   character that is a meaningful share of the hit points, and it is the reason
-   this is not simply the best mutation in the game.
+   The mutation also costs you three points of constitution for as long as
+   you have it. That isn't tied to the form running: it's permanent, from the
+   moment the mutation arrives until something takes it away. You fade in and
+   out of physical reality and your body is what suffers for it. On a frail
+   character that's a meaningful share of the hit points, and it's the reason
+   this isn't the best mutation in the game outright.
 
-   **How long you have is the whole of the calculation, and you can do it.**
-   The form lasts somewhere between half your character level and your level,
-   in turns, rolled when it arrives — so a character at level 20 gets between
-   10 and 20 turns, and must assume 10. That is the number to count against
-   before you step into a wall, because it is the number that decides whether
-   you come out the other side. A vault wall is one or two grids thick and
-   costs nothing worth worrying about. A mountain range is many grids, and a
-   low-level wraith cannot cross one.
+   Everything comes down to how long you have, and you can work that out. The
+   form lasts somewhere between half your character level and your level, in
+   turns, rolled when it arrives, so a character at level 20 gets between 10
+   and 20 turns and must assume 10. That's the number to count against before
+   you step into a wall, because it decides whether you come out the other
+   side. A vault wall is one or two grids thick and costs nothing worth
+   worrying about. A mountain range is many grids, and a low-level wraith
+   cannot cross one.
 
-   **Two things end it early, and neither asks.** Light ends it immediately and
-   wherever you are — including light you are otherwise immune to, and
-   including your own. A wraith reading a scroll of light inside a mountain has
-   made a decision they will not get to revisit. And any monster that breathes
-   light at you will do the same thing from across the room.
+   Two things end it early, and neither asks first. Light ends it immediately
+   and wherever you are, even light you're otherwise immune to, and even your
+   own. A wraith reading a scroll of light inside a mountain has made a
+   decision they won't get to revisit. And any monster that breathes light at
+   you will do the same thing from across the room.
 
-   **A Spectre is safe from all of this.** The form ending leaves it still able
-   to walk through rock, so it drops back to the ordinary Spectre's point a turn
-   and strolls out. Nothing else in the game confers that safety: no item grants
+   A Spectre is safe from all of this. When the form ends it can still walk
+   through rock, so it drops back to the ordinary Spectre's point a turn and
+   strolls out. Nothing else in the game gives that safety: no item grants
    passing walls, and since 3.124.23 no random ego can roll it either. For
-   everybody else the rule is simple. Treat a wall you are standing in as
-   somewhere you are passing through rather than somewhere you are, and count.
+   everybody else the rule is simple. Treat a wall you're standing in as
+   somewhere you're passing through, not somewhere you are, and count.
 
-Three that used to be on this list are not. **Losing a mutation at random**
-works — that is the "strangely normal" one, and it takes a mutation back.
-**Wraith form** works, and is described above. And the **chaos gift** was never
-really missing: it has no per-turn roll because it fires when you gain a level,
-through the patron that grants it.
+All twenty-seven work. Losing a mutation at random is the "strangely normal"
+one, and it takes a mutation back. Wraith form is described above. The chaos
+gift has no per-turn roll, because it fires when you gain a level, through the
+patron that grants it.
 
-**Melee.** Five of them, and they are extra blows rather than anything else: a
-scorpion tail, horns, a beak, an elephantine trunk, a nest of tentacles.
+**Melee** mutations are extra blows and nothing else. There are five: a
+scorpion tail, horns, a beak, an elephantine trunk and a nest of tentacles.
 
-They land once each per melee round, after your weapon, and cost you nothing —
-a mutated Warrior and a mutated Mage bite equally often. They are the reason a
+They land once each per melee round, after your weapon, and cost you nothing,
+so a mutated Warrior and a mutated Mage bite equally often. They're why a
 low-level character with the right mutations hits harder than their class says
 they should.
 
-**They stop when the thing you are hitting dies.** They are tried in a fixed
-order and the sequence ends the moment the monster is dead, so a character with
-all five does not land five blows on something your weapon had already finished
-— the extras are spent on the next monster's turn, not wasted on this one's
-corpse. Against anything that survives a round they all land; against the small
-things they mostly do not come up at all.
+They stop when the thing you're hitting dies. They're tried in a fixed order
+and the sequence ends the moment the monster is dead, so a character with all
+five does not land five blows on something your weapon had already finished.
+The extras are spent on the next monster's turn instead of being wasted on
+this one's corpse. Against anything that survives a round they all land;
+against the small things they mostly don't come up at all.
 
 .. warning::
 
-   **The melee dice are not what Zangband's own text says.** Every one of the
-   five states its damage the wrong way round: a scorpion tail is written
-   "3d7" and rolls **7d3**, an elephantine trunk is written "1d4" and rolls a
-   flat **4d1**. The code fills in two variables and then passes them in the
-   other order, and the result is that all five hit harder than advertised.
-   This game uses what the code rolls and the descriptions have been corrected
-   to match.
+   The melee dice aren't what Zangband's own text says. Every one of the five
+   states its damage the wrong way round: a scorpion tail is written "3d7" and
+   rolls 7d3, and an elephantine trunk is written "1d4" and rolls a flat 4d1.
+   The code fills in two variables and then passes them in the other order, so
+   all five hit harder than advertised. This game uses what the code rolls,
+   and the descriptions here match it.
 
-*Zangband files these in three groups rather than four, because thirty-two
-flags is what fits in a machine word and it had three words to spend. The
-grouping above is what the spoiler describes and what a player actually meets.*
+*Zangband files these in three groups, not four, because thirty-two flags is
+what fits in a machine word and it had three words to spend. The grouping above
+is the spoiler's, and it's the one a player meets.*
 
 How you get them
 ----------------
 
-Every route is chaos of one sort or another — that is the point of them, and
-the reason there is no generic "random mutation" source:
+Every route is chaos of one sort or another, which is why there's no generic
+"random mutation" source:
 
-- **Being a Beastman.** One at character creation, and a one-in-five chance at
+- Being a Beastman: one at character creation, and a one-in-five chance at
   every level after. This is what a Beastman *is*.
-- **A Chaos patron's regard.** A Lord of the Courts may hand one down as a
+- A Chaos patron's regard: a Lord of the Courts may hand one down as a
   level-up reward.
-- **The gift mutation.** One of the ninety-six makes the Chaos deities take an
+- The gift mutation: one of the ninety-six makes the Chaos deities take an
   interest in you, which means more of the others.
-- **Chaos itself.** Being hit by raw chaos without resisting it.
-- **Polymorph Self**, whether cast or mutated into.
-- **A Chaos spell going badly wrong.** A failed Death spell hurts, but it does
-  not change you.
+- Chaos itself: being hit by raw chaos without resisting it.
+- Polymorph Self, whether cast or mutated into.
+- A Chaos spell going badly wrong. A failed Death spell hurts, but it does not
+  change you.
 
-**However it arrives, gaining one moves you a point up the Chance virtue.** The
-game counts a mutation as courting chaos whether or not you courted it, so a
-Beastman — which collects one every few levels for nothing it chose to do —
-drifts steadily up that scale over a career, and a character who has taken a few
-from bad luck with a chaos breath will find the scale has noticed. It is a
-single point each time, so it is slow; it is also the only thing on the list
+However it arrives, gaining a mutation moves you a point up the Chance virtue.
+The game counts a mutation as courting chaos whether or not you courted it, so
+a Beastman (which collects one every few levels for nothing it chose to do)
+drifts steadily up that scale over a career. A character who has taken a few
+from bad luck with a chaos breath will find the scale has noticed too. It's a
+single point each time, so it's slow, but it's also the only thing on the list
 that accumulates. See :doc:`virtues`.
 
-Everything on that list works. The two that go through a magic realm waited for
-the realms and arrived with Chaos: *Polymorph Self* is a Chaos spell as well as a
-mutation, and a Chaos spell that backfires can change you. A Lord of the Courts
-replaces one favour in six with a mutation instead, the chaos gift makes a Lord
-take an interest in a character who never swore to one, and unresisted chaos
-changes you one time in three.
+Everything on that list works. The two that go through a magic realm waited
+for the realms and came with Chaos: *Polymorph Self* is a Chaos spell as well
+as a mutation, and a Chaos spell that backfires can change you. A Lord of the
+Courts replaces one favour in six with a mutation instead, the chaos gift makes
+a Lord take an interest in a character who never swore to one, and unresisted
+chaos changes you one time in three.
 
 .. note::
 
-   **Polymorph Self does less here than in Zangband, on purpose.** Zangband's
-   version could change your sex and your race outright, permanently. This
-   game's shapechanges you instead — the same decision the Chaos patron's
-   "Thou needst a new form, mortal!" already got, for the same reason. What is
+   Polymorph Self does less here than in Zangband. Zangband's version could
+   change your sex and your race outright, permanently. This game's
+   shapechanges you instead, which is the same decision the Chaos patron's
+   "Thou needst a new form, mortal!" already got, for the same reason. What's
    left of it is the mutation reroll: it sheds some of what you have and gives
-   you more, and how much of each depends on your level. At level 40 it is
+   you more, and how much of each depends on your level. At level 40 it's
    frightening. At level 5 it usually does nothing at all.
 
 Some races take more readily to particular changes. A Vampire's gaze turns
 hypnotic six times out of ten; a Mindflayer sprouts tentacles as often; a Yeek
 learns to shriek, and an Imp grows horns. A Beastman tends towards polymorphing
-itself, but only one time in ten — the source is specific about that, where the
-documentation is not.
+itself, but only one time in ten. The source is specific about that, and the
+documentation isn't.
 
 Three mutations have conditions attached, and no Zangband document mentions
 them. The Midas touch only comes to the already-rich: a thousand gold for every
 level you have, in hand at the moment it would arrive. What it pays when it
-does arrive is a third of the object's real value, capped at thirty thousand,
-with artifacts refusing and a stack of cheap items paying nothing — the same
+does arrive is a third of the object's real value, capped at thirty thousand.
+Artifacts refuse, and a stack of cheap items pays nothing. Those are the same
 terms as Sorcery's *Alchemy*, set out under that realm. A silly voice and a
 vulnerability to the elements only come to characters who are mutated already,
-with three or more. That last is exactly what it sounds like — the more chaos
-has hold of you, the worse the changes it offers.
+with three or more: the more chaos has hold of you, the worse the changes it
+offers.
 
 How you get rid of them
 -----------------------
 
-Barely at all, which is what makes them matter:
+Barely at all:
 
-- **A potion of New Life**, which strips away every mutation at once and is
-  the deepest, most expensive potion in the game. Zangband's also re-rolled
-  your hit points; this one does not, because Angband 4.2 fixes those at birth.
-- **Gaining a mutation that cancels one you have.** Nine such pairs. Becoming
-  superhumanly strong ends being puny; growing a beak replaces a trunk. Iron
-  skin is the interesting one — it drives out scales, rotting flesh and warts
-  all at once, while any one of those three drives out the iron skin. Scales
-  and warts get along fine together.
-- **The Chaos Tower**, a building service that exists for this and nothing
-  else. Only great cities have one, and it costs 2500 gold a mutation — but it
-  is the only route that lets you *choose* which one goes. Everything else
-  takes whichever it likes, or takes all of them.
-- **The "strangely normal" mutation**, which occasionally removes mutations —
-  including, eventually, itself.
-- **Polymorph Self**, which sometimes takes one away instead of adding one.
+- A potion of New Life, which strips away every mutation at once and is the
+  deepest, most expensive potion in the game. Zangband's also re-rolled your
+  hit points; this one doesn't, because Angband 4.2 fixes those at birth.
+- Gaining a mutation that cancels one you have. There are nine such pairs.
+  Becoming superhumanly strong ends being puny; growing a beak replaces a
+  trunk. Iron skin is the interesting one: it drives out scales, rotting flesh
+  and warts all at once, while any one of those three drives out the iron
+  skin. Scales and warts get along fine together.
+- The Chaos Tower, a building service that exists for this and nothing else.
+  Only great cities have one, and it costs 2500 gold a mutation, but it's the
+  only route that lets you *choose* which one goes. Everything else takes
+  whichever it likes, or takes all of them.
+- The "strangely normal" mutation, which occasionally removes mutations,
+  eventually including itself.
+- Polymorph Self, which sometimes takes one away instead of adding one.
 
 .. note::
 
-   **Mutations do not slow your healing.** The Zangband spoiler warns that they
-   do, and that was true of version 2.2.2d — but the mechanic had been taken
-   out again by the version this game is built from, and it is not reinstated
-   here. What mutations cost you instead is that you do not choose them:
-   twelve of the continuous ones are simply bad, and being resilient or able to
-   eat rock makes you hungrier. See DEC-45.
+   Mutations do not slow your healing. The Zangband spoiler warns that they do,
+   and that was true of version 2.2.2d, but the mechanic had been taken out
+   again by the version this game is built from, and it is not put back here.
+   What mutations cost you instead is that you don't choose them: twelve of
+   the continuous ones are purely bad, and being resilient or able to eat rock
+   makes you hungrier. See DEC-45.
 
 A note on the descriptions
 --------------------------
 
 Each mutation's text is Zangband's sentence with a bracket this game writes
-itself, listing every effect the mutation carries. That is deliberate: the
+itself, listing every effect the mutation has. It writes its own because the
 brackets Zangband shipped were unreliable in three separate ways. Twelve of
-them named a change to your charisma, and there is no charisma in Angband 4.2 —
+them named a change to your charisma, and there is no charisma in Angband 4.2;
 the stat was removed in 4.2.0. All five melee mutations stated their damage
 dice the wrong way round. And six named some of their effects and not others,
 the worst hiding a vulnerability behind a pair of stat bonuses.
 
-Generating the bracket instead of curating it is what stops that recurring. The
-cost is the occasional redundancy — being completely fearless reads *(immune to
-fear)*, which you had probably guessed — and that is a fair price for never
-again being told half of what a mutation does.
+Generating the bracket instead of curating it stops that happening again. The
+cost is the occasional redundancy: being completely fearless reads *(immune to
+fear)*, which you'd probably guessed. That's a fair price for never again being
+told half of what a mutation does.
 
 If you are carrying a great many
 --------------------------------
 
-You can hold eighty-nine mutations at once — all ninety-six less the seven that
+You can hold eighty-nine mutations at once: all ninety-six, less the seven that
 cancelling pairs make unreachable together. The power list and the Chaos Tower
 show all of them. Only the first fifty-one get a letter to press; past that,
 move the cursor to the one you want.

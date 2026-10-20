@@ -998,6 +998,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     parse/world.c
     parse/z-info.c
     player/birth.c
+    player/book-burning.c
     player/calc-inventory.c
     player/class.c
     player/combine-pack.c

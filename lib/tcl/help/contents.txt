@@ -117,7 +117,12 @@ page	What a class grows into	characters#what-a-class-grows-into
 page	The Mindcrafter, and psionics	characters#the-mindcrafter-and-psionics
 page	The Chaos-Warrior, and who owns it	characters#the-chaos-warrior-and-who-owns-it
 page	What every class costs	characters#what-every-class-costs
+page	Burning books	characters#burning-books
 page	Still to come	characters#still-to-come
+stop
+book	Resistances and Abilities	flags
+page	The Flags page	flags#the-flags-page
+page	What each property does	flags#what-each-property-does
 stop
 book	Monsters	monsters
 page	Where the new monsters come from	monsters#where-the-new-monsters-come-from
@@ -145,7 +150,7 @@ page	The Ring of Fate	objects#the-ring-of-fate
 page	The Ancient and Foul Curse	objects#the-ancient-and-foul-curse
 page	Activations	objects#activations
 page	The lotus	objects#the-lotus
-page	Seven more from Zangband	objects#seven-more-from-zangband
+page	Eight more from Zangband	objects#eight-more-from-zangband
 page	Not yet implemented	objects#not-yet-implemented
 stop
 book	The Wilderness	wilderness

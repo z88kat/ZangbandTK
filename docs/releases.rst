@@ -6,7 +6,8 @@ Release log
 
    **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
    and a source archive. The most recent is **3.121.0**, of 15 September, and all of them are on
-   the `Releases page`_. Every release so far is marked a pre-release.
+   the `Releases page`_. Those up to 3.94.3 are marked as pre-releases;
+   3.111.3 and 3.121.0 aren't.
 
    What follows is the development log, grouped by the milestones the work is
    organised into, newest first, with everything done since the last tag under
@@ -104,6 +105,33 @@ number, so it is told here in one place rather than version by version.
 The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
+
+Book burning — 20 October 2026
+------------------------------
+
+- **3.137.0** — **A Warrior or a Paladin burns spellbooks for experience**
+  (DEC-161), as in Zangband. Only the rare books count, the two in each realm
+  found in the dungeon. A Warrior is paid for any of them, a Paladin of Life
+  for any but Life's, and a Paladin of Death for Life's alone. A book is worth
+  a twentieth of your maximum experience, up to 10,000, and the first of a
+  realm's two is worth a quarter of that. Ignore the book with ``k`` and pick
+  *Burn this book* at the bottom of the menu. It works in the Tk front end's
+  ignore menu too. Your virtues notice: a Life book burnt is a step towards
+  Unlife, a Death book a step away, and a costly book a sacrifice. The birth
+  screen and the abilities page say which classes do it.
+
+Older Linux — 19 October 2026
+-----------------------------
+
+- **The Linux downloads run on older distributions** (DEC-158). All three,
+  ``Zangband-<version>-linux64.AppImage``, the terminal tarball and
+  ``ZangbandTK-<version>-linux64-tk.AppImage``, need glibc 2.27 now, down from
+  2.35. Ubuntu 18.04, Debian 10 and RHEL 8 can run them, and so can anything
+  newer. A player asked for this after having to compile the game themselves.
+  There's still one download of each.
+- **SDL 2.32 in the Linux AppImages**, built from source for them. On Linux,
+  ZangbandTK's music player now shows how long a track is, as it does on the
+  Mac and Windows.
 
 Statues, and the Statue Store — 16 October 2026
 ------------------------------------------------

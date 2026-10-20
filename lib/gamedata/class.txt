@@ -180,7 +180,7 @@ equip:potion:Berserk Strength:1:1:none
 equip:sword:Dagger:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-player-flags:BRAVERY_30 | NO_MANA | SHIELD_BASH
+player-flags:BRAVERY_30 | NO_MANA | SHIELD_BASH | HATES_MAGIC
 title:Rookie
 title:Soldier
 title:Swordsman
@@ -198,9 +198,9 @@ name:Mage
 description:A Mage must live by their wits. They cannot hope to simply hack their
 description: way through the dungeon, and so must therefore use his magic to defeat,
 description: deceive, confuse, and escape. A mage is not really complete without an
-description: assortment of magical devices to use in addition to his spells. They can
-description: master the higher level magical devices far easier than anyone else, and
-description: has the excellent saving throws to resist effects of spells cast at him.
+description: assortment of magical devices to use in addition to his spells. No class
+description: is better with magical devices, though a Necromancer and a High-Mage are
+description: as good, and their saving throw is about average.
 description: However, they are incredibly weak, getting few hit dice and suffering
 description: strong penalties to strength and constitution. Intelligence is their
 description: primary stat and at high levels they can cast many spells without a
@@ -1505,10 +1505,9 @@ dice:1
 desc:Calls one of the great undead to serve you.
 name:Druid
 description:A Druid is a lover of nature, and at one with the natural world. Druids
-description: have control of their environment and direct power over creatures,
-description: leading even to the ability to take their forms. Druid skills are
-description: moderate, and they have some fighting ability, especially when
-description: transformed. A druid will usually seek to shape the flow of events to
+description: have control of their environment and direct power over creatures.
+description: Druid skills are moderate, and they have some fighting ability. A
+description: druid will usually seek to shape the flow of events to
 description: their purpose rather than using devices or missiles, but at high levels
 description: they do gain access to potent nature-based magic. Druids rely on their
 description: wisdom, and have good saving throws.
@@ -3093,7 +3092,7 @@ description: Necromancers love shadows and hate light, automatically shrouding
 description: themselves in darkness. Their spells require high intelligence, and
 description: frequently harm the caster or place them in danger. In return they
 description: achieve awesome power at high levels. The ultimate aim of the
-description: necromancer is to supplant the Dark Enemy and set up a tyranny in his
+description: necromancer is to supplant Oberon and set up a tyranny in Amber in his
 description: place.
 virtues:UNLIFE | KNOWLEDGE
 stats:-3:3:0:0:-2
@@ -3359,10 +3358,11 @@ desc:Turns you into a wraith for a while: you pass through walls, take a tenth o
 
 ############### PALADIN ###############
 name:Paladin
-description:A Paladin is a warrior/priest. Paladins are very good fighters, second
-description: only to the warrior class, but not very good at missile weapons. They
-description: receive prayers at a slower pace than the priest, but can use all but
-description: the most powerful prayers. A paladin lacks much in the way of abilities.
+description:A Paladin is a warrior/priest. Paladins are very good fighters, though
+description: a Warrior and a Chaos-Warrior are better, and so is a Warrior-Mage from
+description: about level 15. They are not very good at missile weapons. They receive
+description: prayers at a slower pace than the priest, but can learn every one of
+description: them, the last at level 50. A paladin lacks much in the way of abilities.
 description: Paladins have poor stealth, perception, searching, and magical device
 description: use. They have a decent saving throw due to their divine alliance. Their
 description: primary stats are strength and wisdom.
@@ -3389,7 +3389,7 @@ equip:light:Wooden Torch:1:3:none
 equip:sword:Main Gauche:1:1:none
 equip:scroll:Protection from Evil:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-player-flags:BLESS_WEAPON | SHIELD_BASH
+player-flags:BLESS_WEAPON | SHIELD_BASH | BURNS_HERESY
 # Zangband gives a Paladin fear resistance at 40 (files.c:1284).  4.2's own
 # Warrior gets the same thing from BRAVERY_30, which is why only this class and
 # the three below needed the mechanism.
@@ -4492,8 +4492,10 @@ dice:1
 desc:Calls a demon to serve you.
 name:Ranger
 description:A Ranger is at home in nature, and good at turning the environment to
-description: good use. Rangers are good fighters, and the best of all the classes
-description: with missile weapons, especially bows. The ranger learns chiefly spells
+description: good use. Rangers are good fighters, and the best shots in the game:
+description: only a Ranger gets extra shots as it gains levels, about one and a half
+description: more by level 50, with any launcher. A Warrior-Mage aims better from
+description: about level 6, but shoots less often. The ranger learns chiefly spells
 description: of survival and forest craft. A ranger has good stealth, good
 description: perception, good searching, a good saving throw, and is good with
 description: magical devices. Their primary stats are strength, wisdom and dexterity.
@@ -6435,9 +6437,10 @@ name:Mindcrafter
 description:A Mindcrafter has no spellbooks and will never find any. Its craft is
 description: twelve psionic powers that arrive as it grows, and it does not study
 description: them -- it simply becomes able to do them. Wisdom is what makes them
-description: work. It is physically frail, with the second worst hit dice in the
-description: game, and its attacks reach for minds rather than bodies, which makes it
-description: formidable against most things and useless against a golem.
+description: work. It is physically frail: only a Mage and a High-Mage have worse hit
+description: dice, and a Priest, a Druid and a Necromancer have the same. Its attacks
+description: reach for minds rather than bodies, which makes it formidable against
+description: most things and useless against a golem.
 virtues:HARMONY | ENLIGHTEN | PATIENCE
 stats:-1:0:3:-1:-1
 skill-disarm-phys:30:15
@@ -6978,10 +6981,11 @@ desc:Fires three volleys of destruction outward in every direction.
 ############### WARRIOR-MAGE ###############
 
 name:Warrior-Mage
-description:A fighter who casts, and the only class in the game whose first realm is
-description: decided for it: Arcane, always, plus any second realm you like. That is
-description: the class -- the generalist realm, which can be bought outright in town,
-description: and one specialism on top of it. It fights and shoots respectably and
+description:A fighter who casts, and one of two classes whose first realm is decided
+description: for it while the second is left to you: Arcane, always, plus any second
+description: realm you like. The Ranger is the other, with Nature. So the Warrior-Mage
+description: gets the generalist realm, which can be bought outright in town, and one
+description: specialism on top of it. It fights and shoots respectably and
 description: levels slowly, because it is paying for both halves.
 virtues:ENCHANT | KNOWLEDGE
 stats:2:2:0:1:0
@@ -8281,9 +8285,10 @@ desc:Calls one of the great undead to serve you.
 name:High-Mage
 description:The specialist. It picks one realm out of all seven and gets no second
 description: choice at all, and in exchange Zangband's table gives it the best
-description: figures of any caster: it reaches a realm's deepest spells earlier and
-description: for less mana than anyone else. It also has the worst hit dice in the
-description: game and cannot fight.
+description: figures of any caster: in every realm but Life it reaches the deepest
+description: spells earlier and for less mana than anyone else, and in Life a Priest
+description: gets there sooner and more cheaply. It shares the worst hit dice in the
+description: game with the Mage, and cannot fight.
 description:A High-Mage of Sorcery can do everything except kill things. A High-Mage
 description: of Chaos can do very little except kill things. That is the choice, and
 description: it is the whole class.

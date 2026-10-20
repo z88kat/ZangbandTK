@@ -47,7 +47,7 @@ M	the-options-menu
 T	h2	The options menu
 T	h2	\n
 T	p0 code	=
-T	p0	 opens a menu rather than a single screen, and not everything on it is an option in the on/off sense. The whole of it:
+T	p0	 opens a menu with these entries, and not everything on it is an option in the on/off sense:
 T	p0	\n
 T	th0	Key  Entry                                  What it is\n
 T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
@@ -78,21 +78,17 @@ T	p0	 (
 T	p0 code	=
 T	p0	 then 
 T	p0 code	o
-T	p0	) is the one that changes the shape of the main screen rather than a value in it. It cycles between three positions for the block of character information — 
+T	p0	) is the one entry that changes the shape of the main screen. It cycles the block of character information between three positions: 
 T	p0 strong	Left
 T	p0	, which is where it has always been; 
 T	p0 strong	Top
 T	p0	, which lays it along the top of the screen and gives the map the full width; and 
 T	p0 strong	None
-T	p0	, which removes it and gives the map everything. The screen names the current mode and any key but 
+T	p0	, which removes it and gives the map everything. The screen names the current mode, and any key but 
 T	p0 code	ESC
-T	p0	 cycles to the next; the choice is kept with your other preferences.
+T	p0	 cycles to the next. The choice is kept with your other preferences.
 T	p0	\n
-T	p0	On a wide terminal 
-T	p0 strong	Top
-T	p0	 is usually the better arrangement, since the wilderness and the world map are both wider than they are tall. 
-T	p0 strong	None
-T	p0	 is worth knowing about for screenshots and for very small terminals, but it takes the hit point and mana readouts with it — the status line along the bottom stays, so you keep your conditions and lose the two numbers that tell you how the fight is going.
+T	p0	On a wide terminal Top is usually the better arrangement, since the wilderness and the world map are both wider than they are tall. None is useful for screenshots and for very small terminals, but it takes the hit point and mana readouts with it. The status line along the bottom stays, so you keep your conditions and lose the two numbers that tell you how the fight is going.
 T	p0	\n
 M	user-interface-options
 T	h2	User Interface Options
@@ -192,7 +188,7 @@ T	p1	In graphics mode this needs a tileset that can recolour a tile without chan
 T	p1 code	cycle:
 T	p1	 in 
 T	p1 code	lib/tiles/list.txt
-T	p1	. At present that is the Neon set, in both its versions – the second in colours made for colour-blind players; the four tilesets inherited from Angband paint colour into their art, so nothing shimmers in them and the option has no effect.
+T	p1	. At present that’s the Neon set, in both its versions (the second is in colours made for colour-blind players). The four tilesets inherited from Angband paint colour into their art, so nothing shimmers in them and the option has no effect.
 T	p1	\n
 T	dt0 strong	Center map continuously 
 T	dt0 strong code	center_player
@@ -290,7 +286,7 @@ T	dt0 strong code	birth_no_selling
 T	dt0	\n
 T	p1	Shopkeepers will never pay you for items you sell, though they will still identify unknown items for you, and will still sell you their wares. To balance out income in the game, gold found in the dungeon will be increased if this option is on.
 T	p1	\n
-T	p1	It is off by default. Zangband always paid for what you sold, and ZangbandTK keeps that; Angband 4.2, which ZangbandTK is built on, turns it on. Like every birth option it is chosen when a character is created and cannot be changed afterwards, so a character made before this default changed keeps what it was born with.
+T	p1	It’s off by default. Zangband always paid for what you sold, and ZangbandTK does too; Angband 4.2, which ZangbandTK is built on, turns it on. Like every birth option it’s chosen when a character is created and can’t be changed afterwards, so a character made before this default changed keeps what it was born with.
 T	p1	\n
 T	dt0 strong	Start with a kit of useful gear 
 T	dt0 strong code	birth_start_kit
@@ -331,16 +327,13 @@ T	p0	Press
 T	p0 code	=
 T	p0	 then 
 T	p0 code	x
-T	p0	. These are for testing the game and for looking at how it works from the inside — not for winning it.
-T	p0	\n
-T	p0 strong	Using any of them ends the character’s chances of a score.
-T	p0	 Each cheat has a hidden twin that is set the moment the cheat is used and is never unset, and on death the game says 
+T	p0	. These are for testing the game and for looking at how it works from the inside, and using any of them ends the character’s chances of a score. Each cheat has a hidden twin that is set the moment the cheat is used and is never unset, and on death the game says 
 T	p0 em	“Score not registered for cheaters.”
-T	p0	 Turning the cheat back off afterwards does not undo that: the record is of having used it, not of having it on.
+T	p0	 Turning the cheat back off afterwards doesn’t undo that, because the record is of having used it, not of having it on.
 T	p0	\n
-T	p0	ZangbandTK also says so at the time. A character who has used any of these — or wizard mode, or the debug commands — carries 
+T	p0	The game shows it while you play, too. A character who has used any of these (or wizard mode, or the debug commands) has 
 T	p0 strong	Cheat
-T	p0	 in red at the left of the status line, for as long as that character exists. It is not a punishment; it is so that a screenshot of a character walking about invulnerable is not mistaken for a bug report about hit points, which is exactly what happened once.
+T	p0	 in red at the left of the status line for as long as that character exists. That’s so a screenshot of a character walking about invulnerable isn’t mistaken for a bug report about hit points, which is exactly what happened once.
 T	p0	\n
 T	dt0 strong	Peek into monster creation 
 T	dt0 strong code	cheat_hear
@@ -373,47 +366,46 @@ T	p1	 then
 T	p1 code	N
 T	p1	).
 T	p1	\n
-T	p1	Every route the game offers to a pet is a roll — a Trump summon, a charm that has to beat a saving throw, a Chaos-Warrior’s patron in a good mood — so seeing what pets 
+T	p1	Every way the game gives you a pet is a roll: a Trump summon, a charm that has to beat a saving throw, a Chaos-Warrior’s patron in a good mood. Without this, seeing what pets 
 T	p1 em	do
-T	p1	 otherwise means playing until one arrives and hoping it is the kind you wanted to look at.
+T	p1	 means playing until one arrives and hoping it’s the kind you wanted to look at.
 T	p1	\n
 T	dt0 strong	Racial and mutation powers never fail 
 T	dt0 strong code	cheat_powers
 T	dt0	\n
 T	p1	Every racial and mutation power fires, every time. The listing shows 
 T	p1 code	0% to fail
-T	p1	 and the roll agrees with it — both ask the same function.
+T	p1	 and the roll agrees with it, because both ask the same function.
 T	p1	\n
-T	p1	This exists because some powers used to be almost untestable. A power costs mana, and a character short of mana pays in hit points instead — and the failure chance 
+T	p1	The cheat exists because some powers used to be almost untestable. A power costs mana, and a character short of mana pays in hit points instead. The failure chance 
 T	p1 em	also
 T	p1	 charged 5% per point of the shortfall, so a class with no spell points at all was 100% over budget on a cost-20 power and sat near the 95% ceiling. A level 21 Beastman Chaos-Warrior looking at Polymorph saw 
 T	p1 code	20 hp, 95% to fail
 T	p1	.
 T	p1	\n
-T	p1 strong	That surcharge is gone
-T	p1	 (DEC-56): a power paid for in blood is not also penalised for it, because the condition charging the surcharge was the same condition that made the price blood in the first place. The same character now sees 
+T	p1	That surcharge is gone (DEC-56). A power paid for in blood isn’t penalised for it as well, since the shortfall that charged the surcharge is the same one that made the price blood in the first place. The same character now sees 
 T	p1 code	20 hp, 7% to fail
-T	p1	, which is what a full pool gives. Spells keep their penalty, and that is not an inconsistency — a spell short of mana is paid for in unconsciousness rather than blood.
+T	p1	, which is what a full pool gives. Spells keep their penalty, because a spell short of mana is paid for in unconsciousness instead of blood.
 T	p1	\n
-T	p1	So the cheat is no longer the only way to see a racial power fire. It is kept because it still removes the roll entirely, which is useful when the question is what a power 
+T	p1	So the cheat isn’t the only way to see a racial power fire any more. It’s kept because it still removes the roll entirely, which is useful when the question is what a power 
 T	p1 em	does
 T	p1	 rather than whether it goes off.
 T	p1	\n
 T	dt0 strong	Take gold 
 T	dt0 strong code	cheat_gold
 T	dt0	\n
-T	p1	Asks how much and puts it in your pocket. This one is ZangbandTK’s, added because the 
+T	p1	Asks how much and puts it in your pocket. This one is ZangbandTK’s. It was added because the 
 L	p1 link	10	towns	magetower
-T	p1	 charges a fare and there was no way to test whether the fares were sensible without a purse to test them with.
+T	p1	 charges a fare, and there was no way to test whether the fares were sensible without a purse to test them with.
 T	p1	\n
-T	p1	It is a button rather than a switch: select it, give an amount, and it turns itself back off. The record that a cheat was used stays.
+T	p1	It works like a button: select it, give an amount, and it turns itself back off. The record that a cheat was used stays.
 T	p1	\n
 T	dt0 strong	Take hit points 
 T	dt0 strong code	cheat_hp
 T	dt0	\n
-T	p1	Asks how many and sets them there. Written into the character’s hit dice rather than straight into the total, so it survives levelling up and the next step taken — putting it into the total alone would last until the game next recalculated bonuses, which is almost immediately.
+T	p1	Asks how many and sets them there. The number is written into the character’s hit dice, not straight into the total, so it survives levelling up and the next step taken. Put into the total alone, it would last until the game next recalculated bonuses, which is almost immediately.
 T	p1	\n
-T	p1	For walking through country that would otherwise kill you on the way to whatever you actually meant to test.
+T	p1	Use it for walking through country that would otherwise kill you on the way to whatever you meant to test.
 T	p1	\n
 T	dt0 strong	Know every place 
 T	dt0 strong code	cheat_places
@@ -422,7 +414,7 @@ T	p1	Puts every town and every dungeon mouth in the world on the map at once.
 T	p1	\n
 T	p1	The 
 L	p1 link	11	towns	magetower
-T	p1	 carries you only to towns you have stood in and dungeon mouths you have seen, so testing anything that happens in a particular town means walking there first. With this, the magetower becomes a way of getting anywhere in the world immediately.
+T	p1	 only takes you to towns you’ve stood in and dungeon mouths you’ve seen, so testing anything that happens in a particular town means walking there first. With this on, the magetower can take you anywhere in the world straight away.
 T	p1	\n
 M	debug-commands
 M	id2
@@ -430,26 +422,22 @@ T	h2	Debug commands
 T	h2	\n
 T	p0	A second and much larger set, reached with 
 T	p0 code	^A
-T	p0	 — control-A. The game asks for confirmation the first time, and the character is marked from then on: on death it says 
+T	p0	 (control-A). The game asks for confirmation the first time, and the character is marked from then on: on death it says 
 T	p0 em	“Score not registered for wizards.”
 T	p0	\n
-T	p0	These are not options but commands. There are forty-eight of them in nine submenus: pick a submenu with the movement keys, then a command by its letter.
+T	p0	These are commands, not options. There are forty-eight of them in nine submenus: pick a submenu with the movement keys, then a command by its letter. They’re development tools with no guard rails, and nothing asks whether you’re sure.
 T	p0	\n
-T	p0	They are development tools and there are no guard rails. Nothing asks whether you are sure.
-T	p0	\n
-T	p0	Worth knowing which of the two sets you want. The cheat options change how the game 
+T	p0	The cheat options change how the game 
 T	p0 em	behaves
 T	p0	; the debug commands change the 
 T	p0 em	state of your game
 T	p0	 directly.
 T	p0	\n
-T	p0	Commands marked ★ are ZangbandTK’s. The rest are Angband’s, and are documented here because they were not documented anywhere.
+T	p0	Commands marked ★ are ZangbandTK’s. The rest are Angband’s, and they’re documented here because they weren’t documented anywhere.
 T	p0	\n
 M	items
 T	h3	Items
 T	h3	\n
-T	p0	Making things out of nothing.
-T	p0	\n
 T	th0	Key  Command               Notes\n
 T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
 T	tr0	c    Create an object\n
@@ -463,8 +451,6 @@ T	tbllast0	\n
 M	player
 T	h3	Player
 T	h3	\n
-T	p0	Changing the character directly.
-T	p0	\n
 T	th0	Key  Command               Notes\n
 T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
 T	tr0	a    Cure everything\n
@@ -482,12 +468,12 @@ T	tr0	N    Gain a pet ★          Asks which monster and puts one beside you, a
 T	tr0	                           p and P are taken elsewhere in the debug lists, which share one key\n
 T	tr0	                           namespace.\n
 T	tr0 odd	U    Mutations ★           All ninety-six, with the character’s own marked [*]; select one to\n
-T	tr0 odd	                           toggle it, Escape to leave. Chaos hands these out and the player does\n
-T	tr0 odd	                           not choose them, so anything that touches them — Polymorph Self, the\n
-T	tr0 odd	                           patrons, the Chaos Tower — is otherwise close to untestable on\n
-T	tr0 odd	                           purpose. U because m and M were taken, and because U was Zangband’s\n
-T	tr0 odd	                           own key for these. To read what a character has, use the third page\n
-T	tr0 odd	                           of the character sheet rather than this.\n
+T	tr0 odd	                           toggle it, Escape to leave. Chaos hands these out and the player\n
+T	tr0 odd	                           doesn’t choose them, so anything that touches them (Polymorph Self,\n
+T	tr0 odd	                           the patrons, the Chaos Tower) is otherwise close to untestable. U\n
+T	tr0 odd	                           because m and M were taken, and because U was Zangband’s own key for\n
+T	tr0 odd	                           these. To read what a character has, use the third page of the\n
+T	tr0 odd	                           character sheet instead.\n
 T	tr0	B    Learn all monsters ★  Fills in the whole bestiary, so every monster’s recall reads as\n
 T	tr0	                           though you had met and killed it. The companion to Learn object\n
 T	tr0	                           kinds, and what the manual’s picture of the bestiary is taken\n
@@ -499,8 +485,6 @@ T	tbllast0	\n
 M	teleport
 T	h3	Teleport
 T	h3	\n
-T	p0	Going somewhere without walking.
-T	p0	\n
 T	th0	Key  Command          Notes\n
 T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
 T	tr0	b    To location\n
@@ -512,8 +496,6 @@ T	tbllast0	\n
 M	effects
 T	h3	Effects
 T	h3	\n
-T	p0	Firing off game effects by hand.
-T	p0	\n
 T	th0	Key  Command              Notes\n
 T	rule0	───────────────────────────────\n
 T	tr0	d    Detect all nearby\n
@@ -526,8 +508,6 @@ T	tbllast0	\n
 M	summon
 T	h3	Summon
 T	h3	\n
-T	p0	Putting monsters in front of you.
-T	p0	\n
 T	th0	Key  Command           Notes\n
 T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
 T	tr0	n    Summon specific\n
@@ -541,8 +521,6 @@ T	tbllast0	\n
 M	files
 T	h3	Files
 T	h3	\n
-T	p0	Writing things out to disk.
-T	p0	\n
 T	th0	Key  Command          Notes\n
 T	rule0	─────────────────────────────────────────────────────────────────────────────\n
 T	tr0	"    Create spoilers  Writes the object, artifact and monster lists to files.\n
@@ -551,12 +529,11 @@ T	tbllast0	\n
 M	statistics
 T	h3	Statistics
 T	h3	\n
-T	p0	Generating a great many levels and counting what comes out.
+T	p0	These generate a great many levels and count what comes out.
 T	p0	\n
 T	th0	Key  Command                Notes\n
 T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
-T	tr0	S    Objects and monsters   Generates hundreds of levels and tallies what comes out. This is\n
-T	tr0	                            where the How Balance Differs figures came from, and it is not\n
+T	tr0	S    Objects and monsters   Generates hundreds of levels and tallies what comes out. It isn’t\n
 T	tr0	                            quick.\n
 T	tr0 odd	P    Pits\n
 T	tr0	D    Disconnected levels\n
@@ -565,7 +542,7 @@ T	tbllast0	\n
 M	query
 T	h3	Query
 T	h3	\n
-T	p0	Asking the game what it thinks is where.
+T	p0	These ask the game what it thinks is where.
 T	p0	\n
 T	th0	Key  Command          Notes\n
 T	rule0	───────────────────────────\n
@@ -577,8 +554,6 @@ T	tbllast0	\n
 M	miscellaneous
 T	h3	Miscellaneous
 T	h3	\n
-T	p0	The rest.
-T	p0	\n
 T	th0	Key  Command                   Notes\n
 T	rule0	──────────────────────────────────────────────────────────────────\n
 T	tr0	w    Wizard light level\n

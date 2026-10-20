@@ -122,13 +122,12 @@ suddenly be 42 hit points better off.)
 Each character has spell points, or mana, which limits how many spells (or
 prayers) a character can cast (or pray). The maximum number of spell points
 is derived from your class, your level, and the spellcasting stat of the realm
-or realms you study. **The casting stat is a property of the realm, not of the
-class** — Life and Nature cast on wisdom, and the other five realms on
-intelligence — so the same class can cast on either, depending on what it chose
-at birth. A Mage that took Life casts on wisdom; a Priest that took Arcane casts
-on intelligence. Where a character studies two realms the two stats are
-averaged. The stat for each realm is set in ``lib/gamedata/realm.txt``. You can
-never have more spell
+or realms you study. The casting stat belongs to the realm, not the class. Life
+and Nature cast on wisdom and the other five realms on intelligence, so the same
+class can cast on either, depending on what it chose at birth. A Mage that took
+Life casts on wisdom; a Priest that took Arcane casts on intelligence. Where a
+character studies two realms the two stats are averaged. The stat for each realm
+is set in ``lib/gamedata/realm.txt``. You can never have more spell
 points than the maximum.  Spell points may be regained by resting, or by
 magical means. Warriors never have any spell points. If a character gains
 enough wisdom or intelligence to get more spell points, the result is
@@ -137,34 +136,35 @@ calculated right back to first level, just as with constitution and hit points.
 Lastly, each character has a base speed. Speed determines the amount of
 "energy" your character acquires in the game, and therefore how often you
 can take actions which use up energy (like moving or attacking). All
-beginning characters move at normal speed and the only way to increase
-speed is by magical means and equipment bonuses. Characters who are
-carrying too much weight will move more slowly. Extra speed is one of the
-most important boons in the game and therefore one of the rarest and most
-sought after.
+beginning characters move at normal speed. A Sprite, a Klackon and a lightly
+armoured Monk gain a point at level 10 and another every tenth level after;
+otherwise the only way to increase speed is by magical means and equipment
+bonuses. Characters who are carrying too much weight will move more slowly.
+Extra speed is one of the most important boons in the game and therefore one
+of the rarest and most sought after.
 
 Races
 =====
 
 There are twenty-eight different races that you can choose to play in
-ZangbandTK — Angband's eleven, and seventeen more brought over from Zangband.
-The list itself lives in ``lib/gamedata/p_race.txt``, which is what the birth
-menu is built from. Each race has its own
+ZangbandTK: Angband's eleven, and seventeen more brought over from Zangband.
+The list lives in ``lib/gamedata/p_race.txt``, and the birth menu is built
+from it. Each race has its own
 adjustments to a character's stats and abilities. Most races also have intrinsic
 abilities.  The bonuses to statistics and the experience penalty will be
 displayed next to the races as you move to select one.
 
 Watch the experience cost in particular. Angband gives nearly every race 120 and
-treats the number as a formality; Zangband used it as the price of being
-something unusual, and those prices are kept. An Amberite costs 225 and a
-Half-Titan 255, which is to say they level at less than half a human's pace.
+treats the number as a formality. Zangband used it as the price of being
+something unusual, and this game charges Zangband's prices. An Amberite costs
+225 and a Half-Titan 255, so they level at less than half a human's pace.
 
 .. _Human:
 
 Human
   The human is the base character.  All other races are compared to them.
   Humans are average at everything and gain levels as fast as anything in the
-  game -- the Yeek matches them at 100 per cent and nothing beats them.  No racial adjustments or 
+  game: the Yeek matches them at 100 per cent and nothing beats them.  No racial adjustments or 
   intrinsics occur to human characters.  Humans do not have any infravision.
 
 .. _Half-Elf:
@@ -212,7 +212,7 @@ Gnome
   are excellent at using wands and staves and can identify them when found.
 
   From level 5 a gnome can **blink**, a short hop that lengthens as the gnome
-  does — eleven squares at the start and sixty by the end.
+  does: eleven squares at the start and sixty by the end.
 
 .. _Dwarf:
 
@@ -230,8 +230,8 @@ Dwarf
   In other words, dwarves have a miserable stealth.
 
   From level 5 a dwarf can **examine its surroundings**, finding the traps,
-  doors and stairs nearby — the earliest way any character has of seeing a
-  floor before walking it.
+  doors and stairs nearby. It's the earliest way any race has of seeing
+  a floor before walking it.
 
 .. _Half-Orc:
 
@@ -245,14 +245,14 @@ Half-Orc
   They have fair infravision.
 
   From level 3 a half-orc can **play tough**, shrugging off the fear it is
-  feeling — the earliest racial power in the game, and the only one any
+  feeling. That's the earliest racial power in the game, and the only one any
   character has before level 4.
 
 .. _Half-Troll:
 
 Half-Troll
-  Half-Trolls are incredibly strong, and have more hit points than any
-  other character race. They are also very stupid and slow. They will make
+  Half-Trolls are incredibly strong, and only a Half-Titan or a Zombie has
+  more hit points. They are also very stupid and slow. They will make
   great warriors and iffy priests. They are bad at searching, disarming,
   perception, and stealth. They are so ugly that a Half-Orc grimaces in
   their presence. Half-trolls always have their strength sustained, and
@@ -260,10 +260,10 @@ Half-Troll
   regeneration also requires them to eat more food than other races. They
   have fair infravision.
 
-  From level 10 a half-troll can **work itself into a frenzy** — thirty hit
-  points back if it is not already raging, its fear gone, and berserk for
-  ten turns plus a roll against its level. The same power a Barbarian has,
-  two levels later and two points dearer.
+  From level 10 a half-troll can **work itself into a frenzy**: thirty hit
+  points back if it isn't already raging, its fear gone, and berserk for
+  ten turns plus a roll against its level. It's the same power a Barbarian
+  has, two levels later and two points dearer.
 
 .. _Dunadan:
 
@@ -302,26 +302,25 @@ Kobold
 
 The races below are Zangband's, and are new to ZangbandTK.
 
-Several of them **grow into what they are** rather than arriving finished. Where
-a description gives a level — "resists fire from 5", "reads minds at 30" — the
-property is simply absent before it and permanent after. Angband has almost
-nothing of this; in Zangband it is how half the races are shaped, and it is
-worth reading as part of the race rather than as a footnote, because it changes
-which levels are dangerous for you.
+Several of them grow into what they are. Where a description gives a level
+("resists fire from 5", "reads minds at 30"), the race doesn't have that
+property before it and has it for good after. Angband has almost nothing like
+this. In Zangband it's how half the races are shaped, and it changes which
+levels are dangerous for you.
 
 .. _Amberite:
 
 Amberite
   Of Amber's own blood, and it shows: an Amberite is better than a human at
-  very nearly everything, heals unnaturally fast, and cannot have its
-  constitution drained. All of which is paid for at the counter — an Amberite
-  costs 225 experience for every level, the third dearest thing you can be.
+  very nearly everything, heals unnaturally fast, and can't have its
+  constitution drained. You pay for all of it in experience: an Amberite
+  costs 225 for every level, the third dearest thing you can be.
 
 .. _Beastman:
 
 Beastman
   Chaos-touched and born wrong. Strong and hardy, dull and clumsy, and
-  resistant to sound and confusion because it is already used to both. It is
+  resistant to sound and confusion because it's already used to both. It is
   also the only race that mutates without being made to: one mutation at birth
   and a one-in-five chance at every level after. See :doc:`mutations`.
 
@@ -330,9 +329,9 @@ Beastman
 Yeek
   Feeble, cowardly, and aware of it. Weak, fragile and poor in a fight.
 
-  It is resistant to acid from birth and **immune to it from level 20**, which
-  is the one thing a Yeek is unambiguously good at — nothing corrodes it, and
-  no acid attack in the game will touch it once it gets there. Beyond that its
+  It is resistant to acid from birth and immune to it from level 20, which is
+  the one thing a Yeek is unambiguously good at. Nothing corrodes it, and no
+  acid attack in the game will touch it once it gets there. Beyond that its
   only kindness is the price: a Yeek levels at the same rate as a human, the
   cheapest race in the game alongside Human itself.
 
@@ -343,24 +342,24 @@ Draconian
   clever, and it glides rather than falls from the moment it is born.
 
   Everything else arrives with age, one scale at a time: fire at level 5, cold
-  at 10, acid at 15, lightning at 20, and poison at 35. A first-level Draconian
-  is therefore a well-built creature with no protection at all, and a
+  at 10, acid at 15, lightning at 20, and poison at 35. So a first-level
+  Draconian is a well-built creature with no protection at all, and a
   thirty-fifth-level one resists nearly everything the dungeon throws. It is the
-  slowest-ripening race in the game, and at 250 experience for every level it is
+  slowest-ripening race in the game, and at 250 experience for every level it's
   also the second dearest.
 
-  It breathes from level 15, for **twice your character level** in damage —
-  fire two times in three and cold the third, which is where every Draconian
-  breath starts. Until 3.118.3 it was fire only, and for three-quarters of the
+  It breathes from level 15, for twice your character level in damage: fire
+  two times in three and cold the third, which is where every Draconian breath
+  starts. Until 3.118.3 it was fire only, and for three-quarters of the
   damage.
 
-  **And then your class takes it over.** Each time you breathe, there is a
-  chance equal to your character level in a hundred that the fire or cold is
-  replaced by something belonging to your class instead. At level 20 that is
-  about one breath in five; at 50 it is about one in two. The damage is the
-  same either way — only the element changes.
+  Then your class takes it over. Each time you breathe, there's a chance equal
+  to your character level in a hundred that the fire or cold is replaced by
+  something belonging to your class. At level 20 that is about one breath in
+  five; at 50 it is about one in two. The damage is the same either way, and
+  only the element changes.
 
-  What you get is a pair, and the pair is uneven: one element comes up twice as
+  Each class gets a pair, and the pair is uneven: one element comes up twice as
   often as the other.
 
   ================================ ====================== ======================
@@ -375,112 +374,110 @@ Draconian
   Mindcrafter                      confusion              mental energy
   ================================ ====================== ======================
 
-  **Druid, Necromancer and Blackguard get nothing here**, and always breathe
-  fire or cold. Zangband had eleven classes and a branch for every one of them;
+  Druid, Necromancer and Blackguard get nothing here, and always breathe fire
+  or cold. Zangband had eleven classes and a branch for every one of them;
   those three are Angband's, and the original never had an opinion about what
   they should breathe.
 
-  Two of these are worth knowing before you pick one. *Holy fire* cannot hurt a
-  good creature at all and is resisted by anything that is neither good nor
-  evil — it is a weapon against evil and nothing else, where *hellfire* simply
-  doubles against the evil and is resisted by nobody. And *confusion* is a real
-  damage type here, not just a status: it does its full damage and bewilders on
-  top, which is why three classes get it as their common element.
+  *Holy fire* can't hurt a good creature at all and is resisted by anything
+  that's neither good nor evil, so it's a weapon against evil and nothing else.
+  *Hellfire* doubles against the evil and is resisted by nobody. And
+  *confusion* does its full damage and bewilders on top, which is why three
+  classes get it as their common element.
 
 .. _Mindflayer:
 
 Mindflayer
   All mind and no body: brilliant and wise, physically wretched, and with
-  excellent infravision. Its intelligence and wisdom cannot be drained — those
-  two it protects from birth, because they are the only things it has.
+  excellent infravision. Its intelligence and wisdom can't be drained. It
+  protects those two from birth, because they are the only things it has.
 
   The rest of the mind opens later. It sees what is invisible from level 15, and
   from 30 it reads the thoughts of everything on the level whether it can see
-  them or not. Zangband granted it no elemental resistance whatsoever, and that
-  is deliberate rather than an oversight: its entire identity is psionic. It
-  blasts minds from level 15, and a Mindflayer Mindcrafter is the pairing the
-  race was drawn for.
+  them or not. Zangband gave it no elemental resistance whatsoever, because its
+  entire identity is psionic. It blasts minds from level 15, and a Mindflayer
+  Mindcrafter is the pairing the race was drawn for.
 
 .. _Vampire:
 
 Vampire
-  A bargain rather than a gift, and the one race whose drawbacks you have to
-  play around rather than simply survive. Strong and clever, it holds its life
-  against draining, resists poison, cold and nether, is *immune* to darkness,
-  and carries a faint light of its own — it can see one square without a torch,
-  which no other race can. It sees 50 feet in the dark, as far as anything does.
+  A bargain, and the one race whose drawbacks you have to play around. Strong
+  and clever, it holds its life against draining, resists poison, cold and
+  nether, is *immune* to darkness, and has a faint light of its own: it can
+  see one square without a torch, which no other race can. It sees 50 feet in
+  the dark, as far as anything does.
 
   What it pays:
 
-  - **The sun burns it.** Anywhere on the surface in daylight — town streets
-    and open wilderness alike, since dawn lights the whole of it — you take a
-    point of damage every turn and cannot heal at all while it lasts. At night,
-    underground, or on a grid the light does not reach, you are fine.
+  - The sun burns it. Anywhere on the surface in daylight (town streets and
+    open wilderness alike, since dawn lights all of it) you take a point of
+    damage every turn and cannot heal at all while it lasts. At night,
+    underground, or on a grid the light doesn't reach, you're fine.
 
-    You are given the answer to this in your pack. A Vampire starts with two to
-    five **Scrolls of Darkness** in place of the torches everyone else carries,
-    and reading one puts out the ground around you — daylight included, which
-    is a thing only a character the light hurts can do. The darkness is
-    shelter: stand in it and the burning stops. Being immune to darkness, you
-    are the one character who loses nothing by making some.
+    The answer is in your pack. A Vampire starts with two to five Scrolls of
+    Darkness in place of the torches everyone else carries, and reading one
+    puts out the ground around you, daylight included. Only a character the
+    light hurts can do that. The darkness is shelter: stand in it and the
+    burning stops. Being immune to darkness, you're the one character who
+    loses nothing by making some.
 
     So a Vampire travels by night, goes to ground by day, and spends a scroll
     when it is caught between the two.
-  - **Food barely works, and blood does.** A ration feeds a Vampire a tenth of
-    what it feeds anyone else. You are not meant to live on it; you are meant
-    to drink blood, which is the racial power it gets at level 5. It strikes a
+  - Food barely works, and blood does. A ration feeds a Vampire a tenth of
+    what it feeds anyone else. You aren't meant to live on it; you're meant to
+    drink blood, which is the racial power it gets at level 5. It strikes a
     monster for your character level in nether damage, heals you for half that
-    level, and — this is the part that makes the diet a trade rather than a
-    punishment — it **feeds you**.
+    level, and it feeds you. That's what makes the diet a fair trade.
 
-    How much is worth knowing, because it decides how you play the race. A bite
-    is worth three fifths of your character level, where a ration is worth
-    thirty to anyone else and three to you. So at level 20 a bite feeds you as
-    much as four rations would, and at 50 as much as ten — a full ration's
-    worth, which is the most a bite can ever give. A Vampire that fights is a
-    Vampire that eats, and one that avoids fights goes hungry no matter what it
-    is carrying.
+    A bite feeds you three fifths of your character level, where a ration is
+    worth thirty to anyone else and three to you. So at level 20 a bite feeds
+    you as much as four rations would, and at 50 as much as ten, which is a
+    full ration's worth and the most a bite can ever give. A Vampire that
+    fights is a Vampire that eats, and one that avoids fights goes hungry no
+    matter what it is carrying.
 
     Until 3.124.22 the bite did not feed at all, which left the race with the
     penalty and none of the remedy.
-  - **Light hurts it** in the ordinary way as well: light-based attacks land
+  - Light hurts it in the ordinary way as well: light-based attacks land
     harder on a Vampire than on anything else.
 
-  Because of the sun, a Vampire **begins the game just after midnight** rather
-  than at dawn — roughly two and a half thousand moves of darkness to reach a
-  shop and a staircase before the problem starts. And because food is nearly
-  useless to it, it carries scrolls of Remove Hunger rather than rations: those
-  work normally, being nothing to do with eating.
+  Because of the sun, a Vampire begins the game just after midnight instead of
+  at dawn. That gives you roughly two and a half thousand moves of darkness to
+  reach a shop and a staircase before the problem starts. And because food is
+  nearly useless to it, it carries scrolls of Remove Hunger in place of
+  rations. Those work normally, since they have nothing to do with eating.
 
-  **The midnight start is not the Vampire's alone.** It belongs to being undead,
-  so a Skeleton, a Zombie, a Spectre and a Ghoul all begin the game at the same
-  hour. Only the Vampire has a reason to care, since only the Vampire burns —
-  for the other four it is atmosphere, and the first thing it costs them is a
-  torch.
+  The midnight start comes with being undead, so a Skeleton, a Zombie, a
+  Spectre and a Ghoul all begin the game at the same hour. Only the Vampire
+  has a reason to care, since only the Vampire burns. For the other four it's
+  atmosphere, and the first thing it costs them is a torch.
 
 .. _Golem:
 
 Golem
   Not alive, and built rather than born. Enormously strong and tough, extremely
-  stupid, immune to poison, never held or paralysed, **never stunned and unable
-  to bleed**, sees the invisible — and is hurt by cold. The stun immunity is
-  worth more than it sounds: a stunned character fights and casts worse and can
-  be knocked out entirely, and nothing in the dungeon can do that to a Golem.
+  stupid, immune to poison, never held or paralysed, never stunned and unable
+  to bleed, and it sees the invisible. Cold hurts it, though. The stun
+  immunity is better than it sounds: a stunned character fights and casts
+  worse and can be knocked out entirely, and nothing in the dungeon can do that
+  to a Golem.
 
   Its real advantage is that it *is* armour. A Golem has twenty points of armour
   class wearing nothing at all, and gains another point every fifth level, so a
   Golem at 50 is thirty points ahead of any other race before it puts on a
-  single item. Nothing else in the game does this, and it is most of the reason
+  single item. No other race has armour of its own. A Monk earns armour class
+  for the slots it leaves empty and loses it when it fills them, where a Golem
+  keeps all of its own under whatever it wears, and that's most of the reason
   to be one.
 
-  Food is nearly useless to it — a twentieth of the good it does anyone else —
+  Food is nearly useless to it (a twentieth of the good it does anyone else),
   but it digests so slowly that it rarely needs any, and it starts with scrolls
   of Remove Hunger instead of rations for when it does. From level 35 it holds its
   life against draining. A blunt instrument that costs 200 to swing.
 
-  Its power, *turn to stone*, is fifty points of armour class for thirty to
-  fifty turns and costs nothing else — no loss of speed, which is what
-  distinguishes it from the Stone Skin spell the Nature realm has.
+  Its power, *turn to stone*, gives fifty points of armour class for thirty to
+  fifty turns and costs nothing else. There's no loss of speed, which is what
+  sets it apart from the Stone Skin spell the Nature realm has.
 
 .. _Sprite:
 
@@ -488,36 +485,36 @@ Sprite
   Tiny, quick-witted and airborne. Feeble in a fight, excellent at everything
   requiring fingers or attention, resistant to light, and it falls slowly.
 
-  **Its sleeping dust has two forms, and the second is the one worth waiting
-  for.** From level 12 it puts to sleep whatever is standing next to you — the
-  eight adjacent squares and nothing further, so it is what you reach for when
+  Its sleeping dust has two forms, and the second is the one to wait for. From
+  level 12 it puts to sleep whatever is standing next to you: the eight
+  adjacent squares and nothing further, so it's what you reach for when
   something already has hold of you. From level 25 the same handful of dust
-  reaches every monster you can see, which makes it an opening move rather than
-  an escape: you can settle a room from its doorway before you walk into it.
-  The power is twice your character level either way, and it is also how long
-  the sleep lasts — so the dust is broad rather than long, and anything you
-  then hit wakes up at once.
+  reaches every monster you can see, which turns it from an escape into an
+  opening move. You can settle a room from its doorway before you walk into it.
+  The power is twice your character level either way, and that's also how long
+  the sleep lasts. So the dust covers a lot of ground but doesn't hold for
+  long, and anything you then hit wakes up at once.
 
   Until 3.124.20 it was the line-of-sight form from level 12, which gave a
   Sprite the whole room thirteen levels early.
 
-  And it is **the only race that gets faster as it grows**: a point of speed at
-  level 10 and another every tenth level after, so a Sprite at 50 moves five
-  points quicker than anything else in the game before it wears a single item.
-  Nothing else does this, and at 175 experience a level it is most of what you
-  are paying for.
+  And it gets faster as it grows: a point of speed at level 10 and another
+  every tenth level after, so a Sprite at 50 moves five points quicker than a
+  Human before it wears a single item. The Klackon is the only other race that
+  does this, and a Monk does it too while its armour is light. At 175
+  experience a level it is most of what you're paying for.
 
 .. _Half-Titan:
 
 Half-Titan
   The most expensive thing you can be born as, at 255. Vastly strong, tough,
-  clumsy, and resistant to chaos — which, given what it is descended from, is
+  clumsy, and resistant to chaos, which, given what it is descended from, is
   less a resistance than a family trait.
 
 .. _Barbarian:
 
 Barbarian
-  Strong, hardy, and afraid of nothing — it resists fear outright, from birth,
+  Strong, hardy, and afraid of nothing. It resists fear outright, from birth,
   which no other race does. Poor with devices, indifferent at stealth, and
   cheap at 120. From level 8 it can work itself into a frenzy: thirty hit
   points back, fear cleared, and a berserk rage for ten turns and more.
@@ -526,16 +523,16 @@ Barbarian
 
 Klackon
   An insect that works. Strong, hardy, diligent, resistant to acid and
-  immune to confusion, and it **gets faster as it grows** — a point of speed
-  at level 10 and another every tenth after, the same as a Sprite. Excellent
+  immune to confusion, and it gets faster as it grows: a point of speed at
+  level 10 and another every tenth after, the same as a Sprite. Excellent
   at disarming. It spits acid from level 9, a bolt that becomes a ball at 25.
 
 .. _Nibelung:
 
 Nibelung
-  A dwarf of the deep mines, and the **only race in the game that resists
-  disenchantment from birth** — which matters more than it sounds, because
-  nothing else protects your equipment that early. Wise, patient, resistant
+  A dwarf of the deep mines, and the only race in the game that resists
+  disenchantment from birth. That's more use than it sounds, because nothing
+  else protects your equipment that early. Wise, patient, resistant
   to darkness, and it sees fifty feet in the dark. From level 10 it examines
   its surroundings: traps, doors and stairs at once.
 
@@ -545,76 +542,76 @@ Imp
   A minor demon, and the cheapest thing worth being at 110. Feeble in mind
   and body alike, though quick and hardy enough, resistant to fire from
   birth, and it sees the
-  invisible from level 10. It throws fire from level 9 — a bolt, becoming a
+  invisible from level 10. It throws fire from level 9: a bolt, becoming a
   ball at 30.
 
 .. _Skeleton:
 
 Skeleton
   Bones, animated. It sees the invisible, holds its life against draining, is
-  immune to poison and resists shards — and acid eats it. Cold from level 10.
+  immune to poison and resists shards, and acid eats it. Cold from level 10.
 
-  **It cannot eat, and it digests at the ordinary rate**, which is the worst
-  combination of the four undead: it gets hungry like anyone else and food is
-  no use to it. So it starts with two to five scrolls of Remove Hunger instead
+  It can't eat, and it digests at the ordinary rate, the worst combination
+  any undead has, and one only the Ghoul shares: it gets hungry like anyone
+  else and food is no use to it. So it starts with two to five scrolls of Remove Hunger instead
   of rations, and will be buying more. From level 30 it can recover lost
-  experience, which no other race can do for itself.
+  experience. A Zombie can too, from the same level, and so can an Amberite
+  walking the Pattern from 40.
 
-  And **it does not bleed**. Nothing that cuts anyone else — a shard breath, an
-  ice storm, a blade, the strain of forcing a spell you cannot afford — leaves
-  a wound on it. A Golem and a Spectre are the same; a Zombie becomes so at
+  And it does not bleed. Nothing that cuts anyone else (a shard breath, an ice
+  storm, a blade, the strain of forcing a spell you cannot afford) leaves a
+  wound on it. A Golem and a Spectre are the same; a Zombie becomes so at
   level 12, being still fresh enough to leak before that.
 
 .. _Zombie:
 
 Zombie
-  Enormously strong and tough and very nearly mindless — a six-point penalty
-  to both intelligence and wisdom, the heaviest in the game — with thirteen hit
-  dice, the second most. Sees the invisible, holds its life, immune to poison,
-  resists nether, and fire is its undoing. Cold from level 5, the earliest of
-  the four.
+  Enormously strong and tough and very nearly mindless, with a six-point
+  penalty to both intelligence and wisdom (the heaviest in the game) and
+  thirteen hit dice, the second most. Sees the invisible, holds its life,
+  immune to poison, resists nether, and fire is its undoing. Cold from level 5,
+  five levels before a Skeleton.
 
   It cannot eat but digests slowly, so the hunger scrolls it starts with go
   further than a Skeleton's. From level 30 it too can recover lost experience,
-  and from level 12 it stops bleeding — it is still fresh enough to leak before
-  that, which is the one way the four undead differ on this.
+  and from level 12 it stops bleeding. Before that it's still fresh enough to
+  leak. A Ghoul and a Vampire bleed like the living all their lives.
 
 .. _Spectre:
 
 Spectre
-  Barely there. Feeble and frail — seven hit dice and five points of strength
-  gone — and in exchange the best stealth of any race in the game, a saving throw
-  matched only by a High-Elf and a way with devices matched only by a
-  Mindflayer, telepathy from level 35, and 180 experience a level to pay for
-  it. Immune to poison, resists cold and nether, holds its life,
+  Barely there. Feeble and frail, with seven hit dice and five points of
+  strength gone, and in exchange the best stealth of any race in the game, a
+  saving throw matched only by a High-Elf and a way with devices matched only
+  by a Mindflayer, telepathy from level 35, and 180 experience a level to pay
+  for it. Immune to poison, resists cold and nether, holds its life,
   sees the invisible, and lightning tears it apart.
 
-  It howls from level 4 — the earliest attacking power any race has — and
-  terrifies what it is aimed at. Like a Golem and a Skeleton, **it does not
-  bleed**: nothing cuts it. It cannot eat either, and starts with hunger scrolls
-  in place of rations; it digests slowly, so they last.
+  It howls from level 4, the earliest attacking power any race has, and
+  terrifies what it is aimed at. Like a Golem and a Skeleton, it doesn't bleed:
+  nothing cuts it. It can't eat either, and starts with hunger scrolls in place
+  of rations; it digests slowly, so they last.
 
-  **And it walks through walls.** Granite, veins, secret doors and mountain
+  It also walks through walls. Granite, veins, secret doors and mountain
   ranges all give way; only permanent wall and the edge of the world hold it.
   Stepping into rock takes no longer than stepping anywhere else.
 
-  **It costs blood, though, and you should know how much before you choose
-  one.** Every turn you spend inside rock takes a hit point, and more the
-  deeper you are — one on the surface and at the top of the dungeon, six at
-  two thousand five hundred feet — and you cannot heal at all while you are
-  in there. Cutting a corner is nothing. Crossing a vault wall is nothing.
-  Tunnelling any distance will empty you.
+  It costs blood, though, and you should know how much before you choose one.
+  Every turn you spend inside rock takes a hit point, and more the deeper you
+  are (one on the surface and at the top of the dungeon, six at two thousand
+  five hundred feet), and you cannot heal at all while you're in there. Cutting
+  a corner is nothing. Crossing a vault wall is nothing. Tunnelling any
+  distance will empty you.
 
   What it will not do is kill you. The damage stops when you have nothing left
-  to give rather than carrying on through, so a Spectre can always come back
-  out of the rock it walked into. It will come out with nothing, though, into
-  whatever is waiting — and that is usually what kills a Spectre, rather than
-  the rock.
+  to give, so a Spectre can always come back out of the rock it walked into. It
+  comes out with nothing, though, into whatever is waiting, and that's usually
+  what kills a Spectre, not the rock.
 
-  **Mountains are walls here, and they charge like walls.** A range is many
-  blocks across and a young Spectre has sixteen hit points, so you will reach
-  the far side empty. Going round is often the better idea, and going through
-  is the thing you can do that nothing else can — pick your moment.
+  Mountains are walls here, and they charge like walls. A range is many blocks
+  across and a young Spectre has sixteen hit points, so you'll reach the far
+  side empty. Going round is often the better idea. Going through is the thing
+  you can do that no other race can, so pick your moment.
 
   And inside rock you see the eight squares around you and nothing else, which
   is its own kind of dangerous: you can be most of the way through a mountain
@@ -623,14 +620,14 @@ Spectre
 .. _Ghoul:
 
 Ghoul
-  A corpse-eater, and the one race whose **bare hands paralyse**: fight
-  unarmed and what you hit falls asleep, which is the whole reason to be one.
+  A corpse-eater, and the one race whose bare hands paralyse: fight unarmed
+  and what you hit falls asleep, which is the whole reason to be one.
   Immune to poison, resists cold, holds its life, and fire hurts it. Darkness from
   level 10, nether from 20.
 
-  It senses living creatures from level 30. Zangband gave it a second power —
-  eating corpses for nutrition — which has nothing to work on here, because
-  this game has no corpses to eat.
+  It senses living creatures from level 30. Zangband gave it a second power,
+  eating corpses for nutrition, which has nothing to work on here because this
+  game has no corpses to eat.
 
   It cannot eat ordinary food either, and digests at the ordinary rate, which
   puts it where the Skeleton is: it starts with scrolls of Remove Hunger instead
@@ -643,12 +640,12 @@ Racial powers
 -------------
 
 Twenty-two of these twenty-eight races can do something no amount of study will
-teach, and press ``N`` to do it. The Amberite can do two things, which is the
-point of being an Amberite; the Beastman can do nothing, because in Zangband its
-whole character was mutation happening *to* it rather than anything it chose.
+teach, and press ``N`` to do it. The Amberite can do two things. The Beastman
+can do nothing, because in Zangband its whole character was mutation happening
+*to* it, not anything it chose.
 
 The six races Angband and Zangband share have theirs too, which is easy to miss
-if you have played Angband: a Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and
+if you've played Angband: a Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and
 Kobold are all ordinary in Angband and are not here. Only Human, Half-Elf, Elf,
 Dunadan, High-Elf and Beastman have nothing to press.
 
@@ -680,31 +677,31 @@ Half-Titan       examine your foes               35    20  STR       12%
 Amberite         walk the Pattern                40    75  WIS       50%
 ================ ============================ =====  ====  =====  =======
 
-The level is when the power arrives; before it, the character simply cannot.
+The level is when the power arrives. Before that, the character can't use it.
 
-The cost comes out of spell points where there are any — and where there are
-not, it comes out of you. The Warrior is the one class with no mana at all, and
-for it a racial power is always paid for in hit points instead, at the same
-price. So can anyone else who has run their pool down far enough. That is
-Zangband's rule and it is what keeps the powers worth having whatever you chose
-to be; the menu tells you which pool a power is about to take from before you
-commit to it. The amount is not fixed either: it is somewhere between half the
+The cost comes out of spell points where there are any, and where there
+aren't, it comes out of you. The Warrior is the one class with no mana at all,
+and for it a racial power is always paid for in hit points instead, at the same
+price. The same goes for anyone else who has run their pool down far enough.
+That's Zangband's rule, and it's what keeps the powers worth having whatever
+you chose to be. The menu tells you which pool a power is about to take from
+before you commit to it. The amount is not fixed either: it's somewhere between half the
 listed cost and all of it.
 
 The failure figure is the chance at exactly the level the power arrives, with
-an average stat. Both of the things you can do about it help: every level past
-that one takes three points off, and the stat it leans on takes off more — off
-the same table that decides how reliably a spell is cast, so a power behaves
-like a spell in the ways you would expect it to. Being stunned makes it worse,
-and so does **being afraid** — a flat twenty points, which is the one input to
-the figure that has nothing to do with your character and everything to do with
-the moment, and is easy to blame on the dice instead. Reaching past what is left
-in the pool does *not* make it worse: that would charge you twice for one
-shortfall, once in blood and once in failure, and the second charge was taken
+an average stat. You can do two things about it, and both help. Every level
+past that one takes three points off, and the stat it leans on takes off more,
+using the same table that decides how reliably a spell is cast, so a power
+behaves like a spell in the ways you'd expect. Being stunned makes it worse,
+and so does being afraid, by a flat twenty points. Fear is the one input to the
+figure that has nothing to do with your character and everything to do with
+the moment, and it's easy to blame on the dice instead. Reaching past what's
+left in the pool does *not* make it worse. That would charge you twice for one
+shortfall, once in blood and once in failure, so the second charge was taken
 out (DEC-56). However short the stat, the chance never gets worse than 95 per
 cent.
 
-Failing still costs the price — being told you are too junior, too confused, or
+Failing still costs the price. Being told you're too junior, too confused, or
 too spent to try at all does not.
 
 The two Amberite powers are the two halves of the family. *Shifting into
@@ -718,24 +715,24 @@ the Pattern.
 Races we decided against
 ------------------------
 
-Zangband has twenty-one races Angband does not. Seventeen are above. Four have
-been looked at and turned down, and it is worth saying why, because "it exists
-in the original" is not on its own a reason to carry something:
+Zangband has twenty-one races Angband does not. Seventeen are above. The other
+four were looked at and turned down, since "it exists in the original" isn't on
+its own a reason to carry something.
 
-**Half-Ogre, Half-Giant and Cyclops.** All three are Half-Troll — which this game
-already has — with one resistance swapped. Half-Ogre resists dark, Half-Giant
-shards, Cyclops sound; their stat lines are within a point or two of the
-Half-Troll's and of each other. Three more entries on the birth menu buying one
-resistance each is not a choice, it is a longer list.
+Half-Ogre, Half-Giant and Cyclops are all Half-Troll, which this game already
+has, with one resistance swapped. Half-Ogre resists dark, Half-Giant shards,
+Cyclops sound; their stat lines are within a point or two of the Half-Troll's
+and of each other. Three more entries on the birth menu, each buying one
+resistance, would just make the list longer.
 
-**Dark-Elf.** A better Elf for a higher price: the same shape, with more
+The Dark-Elf is a better Elf for a higher price: the same shape, with more
 intelligence and dexterity and the ability to see the invisible, at 150 instead
-of 120. A legitimate piece of design, and not a new idea — everything it does,
-an Elf already does.
+of 120. It's a legitimate piece of design, but not a new idea. Everything it
+does, an Elf already does.
 
-Those four are the whole of it. Barbarian, Klackon, Nibelung, Imp and the four
-undead races were on this list as waiting rather than rejected until 3.117.0;
-they arrived, and are described above with everything else.
+Until 3.117.0 this list also had Barbarian, Klackon, Nibelung, Imp and the four
+undead races on it, marked as waiting, not rejected. They've since arrived, and
+are described above with everything else.
 
 Classes
 =======
@@ -753,7 +750,8 @@ Warrior
   dexterity, and they will strike more blows with melee weapons than any
   other class. A Warrior will be excellent at fighting, shooting and
   throwing, but bad at most other skills. A warrior has bad stealth and
-  cannot learn any spells.
+  cannot learn any spells, but gains experience for burning the rare
+  spellbooks other people learn from (see :ref:`burning-books`).
 
 .. _Mage:
 
@@ -761,9 +759,9 @@ Mage
   A Mage must live by their wits. They cannot hope to simply hack their way
   through the dungeon, and so must therefore use his magic to defeat,
   deceive, confuse, and escape. A mage is not really complete without an
-  assortment of magical devices to use in addition to his spells. They can
-  master the higher level magical devices far easier than anyone else, and
-  has the excellent saving throws to resist effects of spells cast at him.
+  assortment of magical devices to use in addition to his spells. No class is
+  better with magical devices, though a Necromancer and a High-Mage are as
+  good, and their saving throw is about average.
   However, they are incredibly weak, getting few hit dice and suffering strong
   penalties to strength and constitution. Intelligence is their primary stat
   and at high levels they can cast many spells without a chance of failure.
@@ -775,9 +773,8 @@ Mage
 
 Druid
   A Druid is a lover of nature, and at one with the natural world.  Druids
-  have control of their environment and direct power over creatures, leading
-  even to the ability to take their forms. Druid skills are moderate, and
-  they have some fighting ability, especially when transformed.  A druid will
+  have control of their environment and direct power over creatures. Druid
+  skills are moderate, and they have some fighting ability. A druid will
   usually seek to shape the flow of events to their purpose rather than
   using devices or missiles, but at high levels they do gain access to
   potent nature-based magic.  Druids rely on their wisdom, and have good
@@ -806,19 +803,21 @@ Necromancer
   shadows and hate light, automatically shrouding themselves in darkness.
   Their spells require high intelligence, and frequently harm the caster or
   place them in danger.  In return they achieve awesome power at high levels.
-  The ultimate aim of the necromancer is to supplant the Dark Enemy and set
-  up a tyranny in his place.
+  The ultimate aim of the necromancer is to supplant Oberon and set up a
+  tyranny in Amber in his place.
 
 .. _Paladin:
 
 Paladin
-  A Paladin is a warrior/priest. Paladins are very good fighters, second
-  only to the warrior class, but not very good at missile weapons. They
-  receive prayers at a slower pace than the priest, but can use all but the
-  most powerful prayers. A paladin lacks much in the way of abilities.
+  A Paladin is a warrior/priest. Paladins are very good fighters, though a
+  Warrior and a Chaos-Warrior are better, and so is a Warrior-Mage from about
+  level 15. They are not very good at missile weapons. They receive prayers
+  at a slower pace than the priest, but can learn every one of them, the last
+  at level 50. A paladin lacks much in the way of abilities.
   Paladins have poor stealth, perception, searching, and magical device use.
   They have a decent saving throw due to their divine alliance. Their
-  primary stats are strength and wisdom.
+  primary stats are strength and wisdom. A paladin gains experience for
+  burning the rare books of a faith it opposes (see :ref:`burning-books`).
 
 .. _Rogue:
 
@@ -841,8 +840,10 @@ Rogue
 
 Ranger
   A Ranger is at home in nature, and good at turning the environment to
-  good use. Rangers are good fighters, and the best of all the classes with
-  missile weapons, especially bows. The ranger learns chiefly spells of
+  good use. Rangers are good fighters, and the best shots in the game: only a
+  Ranger gets extra shots as it gains levels, about one and a half more by
+  level 50, with any launcher. A Warrior-Mage aims better from about level 6,
+  but shoots less often. The ranger learns chiefly spells of
   survival and forest craft. A ranger has good stealth, good perception,
   good searching, a good saving throw, and is good with magical devices.
   Their primary stats are strength, wisdom and dexterity.
@@ -862,12 +863,12 @@ The five classes below are Zangband's, and are new to ZangbandTK.
 .. _Monk:
 
 Monk
-  A Monk carries no weapon because it does not need one. Where every other
-  class fighting bare-handed does a single point of damage a blow, a Monk
-  strikes with a trained technique — and strikes far more often than a Warrior
-  with a sword ever will. It is dextrous, quick, poor with a bow it has no
-  reason to carry, and expensive: a Monk costs 40 per cent more experience
-  for every level, which is Zangband's price for what the class can do.
+  A Monk carries no weapon because it doesn't need one. Every other class
+  fighting bare-handed does a single point of damage a blow. A Monk strikes
+  with a trained technique, and strikes far more often than a Warrior with a
+  sword ever will. It is dextrous, quick, poor with a bow it has no reason to
+  carry, and expensive: a Monk costs 40 per cent more experience for every
+  level, which is Zangband's price for what the class can do.
 
   A Monk is the one class in the game that is punished for wearing armour. See
   :ref:`Martial arts <martial-arts>` for what it gains by going without, and
@@ -877,62 +878,64 @@ Monk
 
 Mindcrafter
   A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
-  psionic powers that arrive as it grows, and it does not study them — it simply
+  psionic powers that arrive as it grows. It doesn't study them; it just
   becomes able to do them. Wisdom is what makes them work. It is physically
-  frail, with the second worst hit dice in the game, and its attacks reach for
-  minds rather than bodies, which makes it formidable against most things and
-  useless against a golem.
-
+  frail, with hit dice no better than a Priest's, a Druid's or a
+  Necromancer's, and only a Mage and a High-Mage have worse. Its attacks go for
+  the mind, which makes it formidable against most things and useless
+  against a golem.
   See :ref:`Psionics <psionics>` for the list.
 
 .. _Chaos-Warrior:
 
 Chaos-Warrior
   A Chaos-Warrior is a fighter who belongs to somebody. At birth it is sworn to
-  one of the nine Lords of the Courts of Chaos — it does not choose which, and
-  it cannot leave — and every time it gains a level its Lord looks up and
-  decides how it feels. Usually that is a gift. Sometimes it is not.
+  one of the nine Lords of the Courts of Chaos. It doesn't choose which, and it
+  can't leave. Every time it gains a level its Lord looks up and decides how
+  it feels. Usually that's a gift. Sometimes it isn't.
 
-  It fights nearly as well as a Warrior, and it casts Chaos — every spell in the
-  realm, from level 2, and no other realm ever. There is no realm choice to make
-  at birth because there is nothing to choose between: a Chaos-Warrior's magic
-  is Chaos or it is nothing. See :ref:`Patrons <patrons>` and :doc:`realms`.
+  It fights nearly as well as a Warrior, and it casts Chaos: every spell in the
+  realm, from level 2, and no other realm ever. There's no realm choice to make
+  at birth because there is nothing to choose between. See :ref:`Patrons
+  <patrons>` and :doc:`realms`.
 
 .. _Warrior-Mage:
 
 Warrior-Mage
-  A fighter who casts, and the only class in the game whose first realm is
-  decided for it: **Arcane**, always, plus any second realm you like. That is
-  the class — the generalist realm, which can be bought outright in town, and
-  one specialism on top of it. It fights and shoots respectably and levels
-  slowly, because it is paying for both halves.
+  A fighter who casts, and one of two classes whose first realm is decided for
+  it while the second is left to you: Arcane, always, plus any second realm
+  you like. The Ranger is the other, with Nature. So the Warrior-Mage gets
+  the generalist realm, which can be bought outright in town, and one
+  specialism on top of it. It fights and shoots respectably and levels
+  slowly, because it's paying for both halves.
 
 .. _High-Mage:
 
 High-Mage
-  The specialist. It picks **one** realm out of all seven and gets no second
+  The specialist. It picks one realm out of all seven and gets no second
   choice at all, and in exchange Zangband's table gives it the best figures of
-  any caster: it reaches a realm's deepest spells earlier and for less mana than
-  anyone else. It also has the worst hit dice in the game and cannot fight.
+  any caster: in every realm but Life it reaches the deepest spells earlier and
+  for less mana than anyone else, and in Life a Priest gets there sooner and
+  more cheaply. It also shares the worst hit dice in the game with the Mage,
+  and cannot fight.
 
   A High-Mage of Sorcery can do everything except kill things. A High-Mage of
-  Chaos can do very little except kill things. That is the choice, and it is the
-  whole class.
+  Chaos can do very little except kill things.
 
 .. _Monk-realms:
 
 .. note::
 
-   **A Monk casts as well as fights.** It studies one realm out of **Life,
-   Nature or Death** — chosen at birth, permanent, and there is no second choice
-   the way a Mage gets one. Its spells are learned at random rather than picked,
-   which is what Zangband does for anything reading prayers.
+   A Monk casts as well as fights. It studies one realm out of Life, Nature or
+   Death, chosen at birth and permanent, and there's no second choice the way a
+   Mage gets one. Its spells are learned at random, which is what Zangband does
+   for anything reading prayers.
 
    The two halves meet in your armour. A Monk's unarmed bonuses and its spell
    points are weighed against the *same* six slots, and its tolerance is a
-   Mage's rather than a Priest's — so a Monk in plate loses the fists and the
-   magic together. Of its three realms, **Death is the weakest choice**: this
-   game takes a spell's casting stat from the realm, and Death casts on
+   Mage's rather than a Priest's, so a Monk in plate loses the fists and the
+   magic together. Of its three realms, Death is the weakest choice: this game
+   takes a spell's casting stat from the realm, and Death casts on
    intelligence, which a Monk has least of.
 
 .. _martial-arts:
@@ -946,36 +949,34 @@ own difficulty, and what you throw is decided fresh every time you swing: the
 character gets one attempt per seven levels, each attempt turns up a technique
 at random, and the best of the ones that come off is the one that lands.
 
-So a novice punches and kicks, and a Grand Master usually — but not reliably —
+So a novice punches and kicks, and a Grand Master usually (but not reliably)
 lands something from the top of the ladder. Being stunned or confused takes
 away the choosing, and you throw whatever came up. Three of the techniques do
 something beyond damage: a knee doubles a male opponent up, a kick to the ankle
 leaves anything that walks limping, and most of the upper ladder stuns.
 
-The number of strikes goes up with level as well — two at first, eight by the
+The number of strikes goes up with level as well: two at first, eight by the
 end, which is more than a Warrior gets out of any weapon in the game.
 
-**What armour costs.** Add up what the character is wearing on its body, head,
+Then there's armour. Add up what the character is wearing on its body, head,
 arm, back, hands and feet. If that comes to more than ten pounds plus another
-four tenths of a pound per level — thirty pounds at level 50 — the Monk is
+four tenths of a pound per level (thirty pounds at level 50), the Monk is
 carrying too much, and:
 
 - the number of strikes is halved,
 - the bonus to hit and to damage is withdrawn, and
 - the armour class for empty slots stops being paid.
 
-You are told when it happens: *the weight of your armour disrupts your balance*.
+You're told when it happens: *the weight of your armour disrupts your balance*.
 
-**What going without pays.** Under the limit, every armour slot left empty is
-worth armour class in its own right, and the body slot is worth far more than
-the rest put together — three points for every two levels, so 75 at level 50.
-The back, arm and head slots only start paying at levels 15, 10 and 4. A Monk
-who wears nothing is not undefended; it is defended by having nothing in the
-way.
+Under the limit, every armour slot you leave empty gives armour class of its
+own, and the body slot gives far more than the rest put together: three points
+for every two levels, so 75 at level 50. The back, arm and head slots only
+start paying at levels 15, 10 and 4.
 
-Wielding a weapon has no penalty attached to it. It simply switches all of the
-above off, because the ladder is only reached with empty hands — which in
-practice is the sharpest penalty in the game.
+Wielding a weapon has no penalty attached to it. It just switches all of the
+above off, because the ladder is only reached with empty hands, and in
+practice that's the sharpest penalty in the game.
 
 .. _psionics:
 
@@ -986,9 +987,9 @@ The Mindcrafter's twelve powers are on ``N``, alongside anything the character's
 race can do. They cost mana, they can fail, and Wisdom governs both how much
 mana there is and how reliably a power works.
 
-They are deliberately **not a realm of magic**. There is no book to find, no
-spell to learn, nothing to choose at birth, and nothing that can be taken from
-you: a Mindcrafter's powers arrive purely by level.
+They are not a realm of magic. There's no book to find, no spell to learn,
+nothing to choose at birth, and nothing that can be taken from you: a
+Mindcrafter's powers arrive purely by level.
 
 =========================== ===== ===== =======
 Power                       Level  Mana  Failure
@@ -1007,86 +1008,85 @@ Drain a mind                   25    10     40%
 Loose a telekinetic wave       28    20     45%
 =========================== ===== ===== =======
 
-**A power is rarely one thing.** Most of these grow into something else as the
-character does, and keep growing for the whole career. *See what is coming*
-starts as a way to spot monsters at level 2; by 5 it finds traps and doors, by
-15 it sees the invisible, by 20 it maps the level, from 25 to 39 it grants
-telepathy, by 30 it detects everything there is, and at 45 it lights the entire
-level. It is the same power on the same key throughout.
+Most of these powers grow into something else as the character does, and keep
+growing for the whole career. *See what is coming* starts as a way to spot
+monsters at level 2; by 5 it finds traps and doors, by 15 it sees the
+invisible, by 20 it maps the level, from 25 to 39 it grants telepathy, by 30 it
+detects everything there is, and at 45 it lights the entire level. It is the
+same power on the same key throughout.
 
-Others switch rather than accumulate. *Shift a long way* adds banishment at 30.
+Others change what they do. *Shift a long way* adds banishment at 30.
 *Dominate a mind* stops being aimed at one creature and takes everything in
 sight. *Send out a mind wave* stops being a ball centred on you and strikes
 every creature in sight instead, at 25. *Channel adrenaline* gives heroism
 until 35 and berserk strength after. And *shift a short way*, a random ten-step
-hop for most of a career, becomes a **dimension door** at 40 — you pick the
-square you arrive on, the same way Sorcery and Trump do it.
+hop for most of a career, becomes a dimension door at 40: you pick the square
+you arrive on, the same way Sorcery and Trump do it.
 
 Three more grow and are easy to miss, because nothing announces it. *Armour
 your mind* starts as a shield and then collects a resistance every four levels
-from 17 — acid, fire, cold, electricity, poison — so by 33 it is the broadest
+from 17 (acid, fire, cold, electricity, poison), so by 33 it's the broadest
 single piece of protection a Mindcrafter has, and the class's answer to having
 no realm to find it in. *Pulverise* goes from a blast centred on what you hit to
 one a square wider at 21. And *loose a telekinetic wave* doubles its reach and
 goes from three times your level to four at 40, which is the largest single step
 any of the twelve takes.
 
-**Minds, not bodies.** Three of the powers attack with psionic force, which is a
-kind of damage Angband does not have. It asks whether there is a mind to hurt:
-anything that has none — a golem, a mould, an animated weapon — is completely
-unaffected however hard it is hit, and creatures with strange or feeble minds
-take a third of the damage. Against everything else, nothing resists it at all.
+Three of the powers attack with psionic force, a kind of damage Angband doesn't
+have. It asks whether there's a mind to hurt. Anything that has none (a golem,
+a mould, an animated weapon) is completely unaffected however hard it is hit,
+and creatures with strange or feeble minds take a third of the damage. Against
+everything else, nothing resists it at all.
 
-**Getting the mana back.** A Mindcrafter has no spellbooks, and it is easy to
-read that as having no pool either. It has one, and it refills exactly the way
-every other caster's does: by the turn, faster while you are resting, and a
-night at an inn will fill it. Nothing about the class is unusual here.
+A Mindcrafter has no spellbooks, and it's easy to read that as having no mana
+pool either. It has one, and it refills exactly the way every other caster's
+does: by the turn, faster while you're resting, and a night at an inn will fill
+it.
 
-What *is* unusual is that no shop sells a way to hurry it. The three things that
-restore mana outright — a mushroom of Clear Mind, a mushroom of Debility, and a
-potion of Restore Mana — are all floor finds, and the potion does not start
-appearing until around 750 feet. A Mindcrafter that has spent its pool at depth
-has the same two options as anyone else and one of its own.
+The difference is that no shop sells a way to hurry it. Three things restore
+mana outright: a mushroom of Clear Mind, a mushroom of Debility, and a potion of
+Restore Mana. All three are floor finds, and the potion doesn't start appearing
+until around 750 feet. A Mindcrafter that has spent its pool at depth has the
+same two options as anyone else, and one of its own.
 
-That one of its own is **drain a mind**, at level 25, and it is the only power
-in the list that pays you rather than costing you:
+That one is *drain a mind*, at level 25, and it's the only power in the list
+that pays for itself:
 
 - It converts what it hurts. The damage is your level halved in six-sided dice,
-  and you take back roughly five eighths of whatever landed — capped at your
-  maximum, so a nearly full pool wastes most of it. At level 25 a good drain is
-  worth more than twice the ten mana it cost.
-- **A mind that resists gives you nothing.** Not a reduced amount — nothing.
-  Animals, the stupid and the strange-minded always resist, and anything else
-  may resist on its own level. They still take a third of the damage; you simply
-  get none of it back. An empty mind gives nothing and takes nothing.
-- **It can be turned back on you.** An undead or demon above your own level
-  does it one time in two, and then a saving throw is all that stands between
-  you and losing both mana and hit points to your own spell. Draining the deep
-  dead is not a way to top up.
-- **It costs time as well as mana** — up to a turn and a half of standing still
-  on top of the turn the power takes, and only when it finds something. That is
-  the price of the fuel, and it is why the spell is not simply free mana in a
+  and you take back roughly five eighths of whatever landed, capped at your
+  maximum, so a nearly full pool wastes most of it. At level 25 a good drain
+  brings back more than twice the ten mana it cost.
+- If the mind resists, you get nothing at all. Animals, the stupid and the
+  strange-minded always resist, and anything else may resist on its own level.
+  They still take a third of the damage, but none of it comes back to you. An
+  empty mind gives nothing and takes nothing.
+- It can be turned back on you. An undead or demon above your own level does
+  it one time in two, and then a saving throw is all that stands between you
+  and losing both mana and hit points to your own spell. Draining the deep dead
+  is not a way to top up.
+- It costs time as well as mana: up to a turn and a half of standing still on
+  top of the turn the power takes, and only when it finds something. That is
+  the price of the fuel, and it's what stops the spell being free mana in a
   corridor.
 
-It is also worth casting on something nearly dead: the conversion reads the
+It's also worth casting on something nearly dead. The conversion reads the
 damage rolled and not the hit points the creature had left, so a finishing drain
 feeds you as well as a fresh one.
 
 .. warning::
 
-   **A failed power can go off inside your head.** Half as often as a power
-   fails, it backfires instead of merely fizzling, and the chance therefore
-   falls away as the power becomes reliable. What you get is one of five
-   things: most often a stunning, or your brain addled for a few turns; less
-   often visions dancing in front of you; rarely the map wiped from your
-   memory; and about one time in nine **a mana storm** — a ball of raw magic
-   centred on you at twice your level, which also tears a hole in the pool you
-   were casting from.
+   A failed power can go off inside your head. Half as often as a power fails,
+   it backfires instead of just fizzling, so the chance falls away as the power
+   becomes reliable. You get one of five things: most often a stunning, or your
+   brain addled for a few turns; less often visions dancing in front of you;
+   rarely the map wiped from your memory; and about one time in nine a mana
+   storm, a ball of raw magic centred on you at twice your level, which also
+   tears a hole in the pool you were casting from.
 
    This is the Mindcrafter's equivalent of the Chaos backfire and the Death
    miscast, and it is the reason a low-level psionicist should think twice
-   about leaning on a power it has only just learned. **Racial powers do not
-   backfire** — a Draconian's breath fails quietly.
+   about leaning on a power it has only just learned. Racial powers do not
+   backfire: a Draconian's breath that fails just fizzles.
 
    One mercy arrives at 30, with the class's own resistance to confusion: from
    there the most common of the five bands stops reaching you.
@@ -1096,8 +1096,8 @@ feeds you as well as a fresh one.
 Patrons
 -------
 
-The nine Lords are Zelazny's, not Zangband's. The original's sixteen patrons
-were Moorcock's Elric gods with four Warhammer ones among them, and not one of
+The nine Lords are Zelazny's. The original's sixteen patrons were Moorcock's
+Elric gods with four Warhammer ones among them, and not one of
 them had anything to do with Amber.
 
 =========== ============================ ==================================
@@ -1122,26 +1122,26 @@ Gilva       Warrior-Maiden of Hendrake   Direct; wants you to go and kill
 Your Lord is shown on the character sheet, in red, because it is not a
 credential.
 
-**What can happen.** At the generous end: a full healing, experience, a restored
+At the generous end a Lord can give you a full healing, experience, a restored
 or raised stat, all five stats at once, or an object pulled out of nothing. In
-the middle, nothing at all — a Lord who is not thinking about you is a good Lord.
-At the bad end: your weapon or armour cursed, a stat drained or ruined,
-experience lost, monsters summoned on top of you, the level destroyed around you,
-or simply damage, which at a high level can kill.
+the middle, nothing at all happens, and a Lord who isn't thinking about you is a
+good Lord. At the bad end: your weapon or armour cursed, a stat drained or
+ruined, experience lost, monsters summoned on top of you, the level destroyed
+around you, or plain damage, which at a high level can kill.
 
-**How kindly a Lord treats you is not only a matter of its level.** Four of
+Level isn't the only thing that decides how kindly a Lord treats you. Four of
 your virtues are read when the roll is made: Chance and Individualism make a
 favour more likely, Harmony and Temperance make it less. A reckless,
 self-willed character is rewarded more often than a harmonious and temperate
 one, which is the kind of patron these are. Nothing on the character sheet
-connects the two, so it is written here: the way you play changes what your
-Lord does, not merely how often it does it.
+connects the two, but the way you play changes what your Lord does as well as
+how often it does it.
 
 Some Lords will also give you a different shape for a while. Your gear merges
-into your body when that happens, so you lose every bonus it carried and cannot
-cast until you change back — which you may do whenever you like.
+into your body when that happens, so you lose every bonus it gave and can't
+cast until you change back, which you may do whenever you like.
 
-**Thirteen is an unlucky level.** The odds of your Lord reaching into the cruel
+Thirteen is an unlucky level. The odds of your Lord reaching into the cruel
 end of its repertoire are normally about one in six. On reaching level 13 they
 are one in two. On every other thirteenth level they are one in three. On every
 fourteenth they are one in twelve, which is the safest a Chaos-Warrior ever gets.
@@ -1176,9 +1176,9 @@ Strength
 
 Intelligence
   Intelligence affects the spellcasting abilities of anyone studying the
-  Arcane, Death, Sorcery, Chaos or Trump realms — which is a matter of the
-  realm chosen at birth rather than of the class, so it is not a fixed list of
-  classes. Intelligence will affect the number of spells you may learn each level as
+  Arcane, Death, Sorcery, Chaos or Trump realms. That depends on the realm
+  chosen at birth and not on the class, so there's no fixed list of classes.
+  Intelligence will affect the number of spells you may learn each level as
   well as the number of spell points you receive. Intelligence is the most
   important stat for mages and necromancers. A high intelligence may also
   improve your chances of successfully casting a spell. A good intelligence
@@ -1192,9 +1192,9 @@ Intelligence
 Wisdom
   The primary function of wisdom is to determine the ability of anyone
   studying the Life realm to use prayers, and anyone studying Nature to use
-  verses, just as intelligence serves the other five realms. As with
+  verses, just as intelligence does for the other five realms. As with
   intelligence, it follows the realm and not the class: a Priest who took
-  Arcane in its second slot does not cast that realm on wisdom. Again, high wisdom will increase the
+  Arcane in its second slot doesn't cast that realm on wisdom. Again, high wisdom will increase the
   number of mana points you have and increase the number of prayers or verses
   you can learn each level, while improving your chance of success. A good
   wisdom increases your saving throw, thereby improving your chances of

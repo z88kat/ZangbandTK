@@ -404,8 +404,8 @@ power-effect:CURE:AFRAID
 
 
 name:Half-Troll
-description:Half-Trolls are incredibly strong, and have more hit points than any
-description: other character race. They are also very stupid and slow. They will make
+description:Half-Trolls are incredibly strong, and only a Half-Titan or a Zombie
+description: has more hit points. They are also very stupid and slow. They will make
 description: great warriors and iffy priests. They are bad at searching, disarming,
 description: perception, and stealth. They are so ugly that a Half-Orc grimaces in
 description: their presence. Half-trolls always have their strength sustained, and
@@ -1050,8 +1050,10 @@ description: the dungeon can do that to a Golem.
 description:Its real advantage is that it is armour. A Golem has twenty points of
 description: armour class wearing nothing at all, and gains another point every fifth
 description: level, so a Golem at 50 is thirty points ahead of any other race before
-description: it puts on a single item. Nothing else in the game does this, and it is
-description: most of the reason to be one.
+description: it puts on a single item. No other race has armour of its own. A Monk
+description: earns armour class for the slots it leaves empty and loses it when it
+description: fills them, where a Golem keeps all of its own under whatever it wears,
+description: and that is most of the reason to be one.
 virtues:JUSTICE
 stats:4:-5:-5:-2:4
 skill-disarm-phys:-5
@@ -1290,11 +1292,12 @@ name:Skeleton
 description:Bones, animated. It sees the invisible, holds its life against draining,
 description: is immune to poison and resists shards -- and acid eats it. Cold from
 description: level 10.
-description:It cannot eat, and it digests at the ordinary rate, which is the worst
-description: combination of the four undead: it gets hungry like anyone else and food
-description: is no use to it. So it starts with two to five scrolls of Remove Hunger
-description: instead of rations, and will be buying more. From level 30 it can
-description: recover lost experience, which no other race can do for itself.
+description:It cannot eat, and it digests at the ordinary rate, the worst
+description: combination any undead has, and one only the Ghoul shares: it gets
+description: hungry like anyone else and food is no use to it. So it starts with two
+description: to five scrolls of Remove Hunger instead of rations, and will be buying
+description: more. From level 30 it can recover lost experience. A Zombie can too,
+description: from the same level, and so can an Amberite walking the Pattern from 40.
 virtues:UNLIFE
 stats:0:-2:-2:0:1
 skill-disarm-phys:-5
@@ -1336,12 +1339,12 @@ description:Enormously strong and tough and very nearly mindless -- a six-point
 description: penalty to both intelligence and wisdom, the heaviest in the game --
 description: with thirteen hit dice, the second most. Sees the invisible, holds its
 description: life, immune to poison, resists nether, and fire is its undoing. Cold
-description: from level 5, the earliest of the four.
+description: from level 5, five levels before a Skeleton.
 description:It cannot eat but digests slowly, so the hunger scrolls it starts with
 description: go further than a Skeleton's. From level 30 it too can recover lost
-description: experience, and from level 12 it stops bleeding -- it is still fresh
-description: enough to leak before that, which is the one way the four undead differ
-description: on this.
+description: experience, and from level 12 it stops bleeding. Before that it is still
+description: fresh enough to leak. A Ghoul and a Vampire bleed like the living all
+description: their lives.
 virtues:UNLIFE
 stats:2:-6:-6:1:4
 skill-disarm-phys:-5

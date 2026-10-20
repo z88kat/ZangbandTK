@@ -10,37 +10,33 @@ T	h2	\n
 T	p0	These are the mechanics most likely to change how you fight, and all three can appear on artifacts or on ordinary ego items.
 T	p0	\n
 T	p0 strong	Vampiric.
-T	p0	 Drains life from living creatures to heal you, by the damage each blow deals. A killing blow drains nothing — the life has gone with the monster, as it had in Zangband — so it is the blows that do not kill that feed you. Undead and other non-living creatures give you nothing. Found on artifacts and on the 
+T	p0	 Drains life from living creatures to heal you, by the damage each blow deals. A killing blow drains nothing, as in Zangband: the life has gone with the monster, so it is the blows that don’t kill that feed you. Undead and other non-living creatures give you nothing. Found on artifacts and on the 
 T	p0 code	(Vampiric)
 T	p0	 ego.
 T	p0	\n
 T	p0 strong	Vorpal.
-T	p0	 One blow in six cuts far deeper than it should, doubling that blow’s damage. It multiplies the weapon’s own contribution rather than your damage bonuses, so it favours a large weapon over a heavily enchanted small one. Found on artifacts and on weapons 
+T	p0	 One blow in six cuts far deeper than it should, doubling that blow’s damage. It multiplies the weapon’s own contribution and leaves your damage bonuses alone, so it favours a large weapon over a heavily enchanted small one. Found on artifacts and on weapons 
 T	p0 code	of Sharpness
 T	p0	.
 T	p0	\n
 T	p0 strong	Chaotic.
-T	p0	 One blow in seven discharges an unpredictable effect into whatever you hit — confusion, terror, slowing, stunning, or flinging the target out of reach entirely. That last one is a genuine drawback and is meant to be: a chaotic weapon that only ever helped you would not be chaotic. Found on artifacts and on the 
+T	p0	 One blow in seven discharges an unpredictable effect into whatever you hit: confusion, terror, slowing, stunning, or flinging the target out of reach entirely. That last one is a drawback, and it’s meant to be, since a chaotic weapon that only ever helped you would not be chaotic. Found on artifacts and on the 
 T	p0 code	(Chaotic)
 T	p0	 ego.
 T	p0	\n
-T	p0	All three announce themselves in an item’s description, so you will know a weapon has them once you have identified it.
+T	p0	All three announce themselves in an item’s description, so you’ll know a weapon has them once you have identified it.
 T	p0	\n
 M	new-artifacts
 T	h2	New artifacts
 T	h2	\n
-T	p0	The 51 imported artifacts include the regalia of Amber — 
-T	p0 strong	Grayswandir
-T	p0	, Corwin’s blade, and 
-T	p0 strong	Frakir
-T	p0	, the strangling cord — along with Zangband’s chaos and Mythos artifacts.
+T	p0	The 51 imported artifacts include Zangband’s chaos and Mythos artifacts, and the regalia of Amber: Grayswandir, Corwin’s blade, and Frakir, the strangling cord.
 T	p0	\n
-T	p0	A few appear on base items Angband no longer has. Angband retired several object kinds over the years, and where an artifact’s original base was one of them it has been rehoused on the nearest surviving equivalent. Grayswandir is a cutlass here because Angband no longer has sabres. The artifact’s own damage, weight and value are unchanged.
+T	p0	A few were built on base items Angband no longer has. Angband retired several object kinds over the years, and where an artifact’s original base was one of them it has been rehoused on the nearest surviving equivalent. Grayswandir is a cutlass here because Angband no longer has sabres. The artifact keeps its own damage, weight and value.
 T	p0	\n
 M	new-ego-types
 T	h2	New ego types
 T	h2	\n
-T	p0	Sixteen, including 
+T	p0	There are sixteen, including 
 T	p0 code	(Vampiric)
 T	p0	, 
 T	p0 code	(Chaotic)
@@ -56,86 +52,50 @@ T	p0	 and
 T	p0 code	(Pattern Weapon)
 T	p0	.
 T	p0	\n
-T	p0	Ego items are where most players will actually meet Zangband’s character. Artifacts are rare by design; a vampiric long sword is not.
+T	p0	Ego items are where most players will meet Zangband’s character. Artifacts are rare, and a vampiric long sword is not.
 T	p0	\n
 M	new-objects
 T	h2	New objects
 T	h2	\n
-T	p0	Eighty-six of Zangband’s own object kinds, which is most of what it had that Angband does not: thirteen swords including the 
-T	p0 strong	Diamond Edge
-T	p0	 and the 
-T	p0 strong	Psiblade
-T	p0	, nine polearms, eight hafted weapons, eighteen pieces of armour from the 
-T	p0 strong	T-shirt
-T	p0	 to the feathered 
-T	p0 strong	Hagaromo
-T	p0	, and twenty-five rings and amulets. The remaining thirteen are consumables — five potions, four scrolls, two rods, a food and an arrow.
+T	p0	There are eighty-six of Zangband’s own object kinds, which is most of what it had that Angband does not: thirteen swords including the Diamond Edge and the Psiblade, nine polearms, eight hafted weapons, eighteen pieces of armour from the T-shirt to the feathered Hagaromo, and twenty-five rings and amulets. The remaining thirteen are consumables: five potions, four scrolls, two rods, a food and an arrow.
 T	p0	\n
-T	p0	The jewellery is where the interesting things are. An 
-T	p0 strong	Amulet of Anti-Magic
-T	p0	 stops you casting at all; an 
-T	p0 strong	Amulet of Anti-Teleportation
-T	p0	 roots you where you stand, which is a drawback until the day something tries to teleport you away. A 
-T	p0 strong	Ring of Lordly Protection
-T	p0	 is what its name suggests. An 
-T	p0 strong	Amulet of Destruction
-T	p0	 is not.
+T	p0	The jewellery is where the interesting things are. An Amulet of Anti-Magic stops you casting at all, and an Amulet of Anti-Teleportation roots you where you stand, which is a drawback until the day something tries to teleport you away. A Ring of Lordly Protection is what its name suggests. An Amulet of Destruction is not.
 T	p0	\n
-T	p0	A 
-T	p0 strong	Ring of Wizardry
-T	p0	 gives a caster more mana — and the number on it is per level you can cast at, not a flat bonus, so it is worth a little to a novice and a great deal to someone who has been at it a while.
+T	p0	A Ring of Wizardry gives a caster more mana. The number on it is per level you can cast at, so it is worth a little to a novice and a great deal to someone who has been at it a while. The Ring of Fate has a section of its own, below.
 T	p0	\n
-T	p0	A 
-T	p0 strong	Ring of Fate
-T	p0	 deserves its own paragraph, below.
+T	p0	Among the consumables, a Rod of Havoc picks one of twenty-five damage types and throws it at whatever you aimed at, as a ball or occasionally as a beam, and is never twice the same rod. A Scroll of Mundanity strips an item back to the plain thing it was made as: no artifact, no ego, base dice, base armour, and the identification forgotten with them. It is the only way to be rid of something that will not come off, and it’s indiscriminate. Nothing warns you what you’re about to lose. (A magical figurine keeps its monster, which is what it was made as.)
 T	p0	\n
-T	p0	Among the consumables: a 
-T	p0 strong	Rod of Havoc
-T	p0	, which picks one of twenty-five damage types and throws it at whatever you aimed at, as a ball or occasionally as a beam, and is never twice the same rod. And a 
-T	p0 strong	Scroll of Mundanity
-T	p0	, which strips an item back to the plain thing it was made as — no artifact, no ego, base dice, base armour, and the identification forgotten with them. It is the only way to be rid of something that will not come off, and it is indiscriminate: nothing warns you what you are about to lose. (A magical figurine keeps its monster, which is what it was made as.)
-T	p0	\n
-T	p0	Some care went into what 
-T	p0 em	not
-T	p0	 to import. Zangband renamed a good deal of what it inherited from Angband — its Ring of Skill is Angband’s Ring of Accuracy, its Scroll of Enchant Weapon Deadliness is Enchant Weapon To-Dam — and importing those by name would have put two of each in the game under two names. They are compared by the slot they occupy rather than by what they are called, so the ten renamed ones are recognised as things Angband already has.
+T	p0	Zangband renamed a good deal of what it inherited from Angband. Its Ring of Skill is Angband’s Ring of Accuracy, and its Scroll of Enchant Weapon Deadliness is Enchant Weapon To-Dam, so importing those by name would have put two of each in the game under two names. They are compared by the slot they occupy instead of by what they’re called, so the ten renamed ones are recognised as things Angband already has.
 T	p0	\n
 M	the-ring-of-fate
 T	h2	The Ring of Fate
 T	h2	\n
-T	p0	It sounds like a lucky charm. It is not, quite.
+T	p0	It sounds like a lucky charm, and it isn’t, quite. It sharpens every critical hit in the game by half again, including the ones landed on you. And roughly one monster in thirteen generated while you wear it comes from deeper than the level should produce, sometimes forty levels deeper.
 T	p0	\n
-T	p0	What it actually does is sharpen every critical hit in the game by half again — 
-T	p0 strong	including the ones landed on you
-T	p0	. And roughly one monster in thirteen generated while you wear it comes from deeper than the level should produce, sometimes forty levels deeper.
-T	p0	\n
-T	p0	So it is a good ring for a character who kills things quickly and a very bad one for a character who does not, and it will eventually introduce you to something you were not ready for. Zangband’s own source comments the third of its four effects with “Luck isn’t always good for you…”, which is the whole item in six words.
+T	p0	So it is a good ring for a character who kills things quickly and a very bad one for a character who doesn’t, and it will eventually introduce you to something you were not ready for. Zangband’s own source comments the third of its four effects with “Luck isn’t always good for you…”, which is the whole item in six words.
 T	p0	\n
 M	the-ancient-and-foul-curse
 T	h2	The Ancient and Foul Curse
 T	h2	\n
-T	p0	Some equipment carries the Curse of Topi Ylinen, and you will know it: the item describes itself as ancient and foul.
+T	p0	Some equipment has the Curse of Topi Ylinen, and you’ll know it: the item describes itself as ancient and foul.
 T	p0	\n
-T	p0	What makes it feared is not any single outcome but its shape. Roughly once every hundred turns, a cursed item stirs and one misfortune befalls you — monsters woken, something summoned, experience drained, paralysis, a statistic lost, or your memory torn away. But each of those has a chance of 
+T	p0	Roughly once every hundred turns, a cursed item stirs and one misfortune befalls you: monsters woken, something summoned, experience drained, paralysis, a statistic lost, or your memory torn away. But each of those has a chance of 
 T	p0 em	falling through
-T	p0	 to the next, and the next after that, so a woken monster can escalate into a summoning, into paralysis, into total amnesia, in a single visitation. When it finishes, there is a one-in-three chance it simply begins again.
+T	p0	 to the next, and the next after that, so a woken monster can escalate into a summoning, into paralysis, into total amnesia, in a single visitation. When it finishes, there’s a one-in-three chance it begins again. Sometimes the curse stirs and nothing happens at all.
 T	p0	\n
 T	p0	Free action does not make you immune to the paralysis. It gives you a saving throw, and shortens the paralysis if you fail.
 T	p0	\n
-T	p0	Sometimes the curse stirs and nothing happens at all.
-T	p0	\n
-T	p0	It is worth carrying cursed equipment only if what it gives you is worth this. Often it is.
+T	p0	Cursed equipment is only worth carrying if what it gives you makes up for all this, and often it does.
 T	p0	\n
 M	activations
 T	h2	Activations
 T	h2	\n
-T	p0	Zangband scripted its artifact activations in a scripting language ZangbandTK does not carry. Each has been matched to the nearest Angband activation instead — an artifact that threw a fireball still throws a fireball, and its recharge time is preserved, but the effect is Angband’s version rather than a faithful reproduction of Zangband’s.
+T	p0	Zangband scripted its artifact activations in a scripting language ZangbandTK doesn’t have, so each one uses the nearest Angband activation instead. An artifact that threw a fireball still throws a fireball, with the same recharge time, but the effect is Angband’s version and won’t behave exactly like Zangband’s.
 T	p0	\n
 M	the-lotus
 T	h2	The lotus
 T	h2	\n
-T	p0	There is a mushroom that takes your memory.
-T	p0	\n
-T	p0	It looks like every other mushroom you have not identified — some colour and a comma on the floor — and eating it says only that you feel a little dizzy. Five turns later you forget everything you know:
+T	p0	There’s a mushroom that takes your memory. It looks like every other mushroom you haven’t identified, some colour and a comma on the floor, and eating it says only that you feel a little dizzy. Five turns later you forget everything you know:
 T	p0	\n
 T	li1	•\t
 T	li1	the map of the level you are standing on;
@@ -152,59 +112,57 @@ T	li1	\n
 T	li1	•\t
 T	li1	and every spell you had learned, which must be studied again from the book.
 T	li1	\n
-T	p0	It takes nothing you cannot get back. No experience, no levels, no items. But none of it comes back quickly, so the price of eating a strange mushroom is measured in hours of play rather than in a dead character — which is the point. A consumable that could end a run outright is one nobody eats twice.
+T	p0	It takes nothing you cannot get back: no experience, no levels, no items. But none of it comes back quickly, so the price of eating a strange mushroom is measured in hours of play. A consumable that could end a run outright is one nobody eats twice.
 T	p0	\n
-T	p0 strong	One thing survives: you always know where home is.
-T	p0	 The village you started in stays on the map, along with the country immediately around it, so there is always one place you can name and one direction worth walking. That is not mercy — the magetower only carries you to places you have found, so a character who had forgotten every place including their own would have a blank map, no travel and nothing to aim at.
+T	p0	One thing survives: you always know where home is. The village you started in stays on the map, along with the country immediately around it, so there’s always one place you can name and one direction worth walking. The reason is the magetower, which only carries you to places you’ve found. A character who had forgotten every place including their own would have a blank map, no travel and nothing to aim at.
 T	p0	\n
-T	p0	Which is also where the idea comes from. The first of Zelazny’s Amber novels opens on a man who has lost his memory and knows only that there is a place called Amber, and that he is of it.
+T	p0	That’s also where the idea comes from. The first of Zelazny’s Amber novels opens on a man who has lost his memory and knows only that there is a place called Amber, and that he is of it.
 T	p0	\n
-T	p0 strong	The five turns are deliberate.
-T	p0	 Something that took your memory the moment you swallowed it would be an ordinary bad mushroom. Five turns is long enough to work out what you have done and not long enough to do anything about it.
+T	p0	Something that took your memory the moment you swallowed it would be an ordinary bad mushroom. The five turns are long enough to work out what you’ve done, and not long enough to do anything about it.
 T	p0	\n
-M	seven-more-from-zangband
-T	h2	Seven more from Zangband
+M	eight-more-from-zangband
+T	h2	Eight more from Zangband
 T	h2	\n
 T	p0 strong	Returning.
 T	p0	 A thrown weapon comes back to your hand, nineteen throws in twenty. The twentieth is what keeps it a weapon you can lose.
 T	p0	\n
 T	p0 strong	Luck.
-T	p0	 Improves your saving throw. Zangband wrote this as a flat value rather than a bonus, which made a lucky novice better at shrugging things off than an unlucky veteran; here it is the bonus the name promises.
+T	p0	 Improves your saving throw. Zangband wrote this as a flat value, which made a lucky novice better at shrugging things off than an unlucky veteran. Here it’s the bonus the name promises.
 T	p0	\n
 T	p0 strong	A ghoul’s touch.
-T	p0	 What you strike falls asleep — but only if you strike it bare-handed. Gloves of this kind are for someone who fights with their hands, and putting a weapon in them turns the property off entirely.
+T	p0	 What you strike falls asleep, but only if you strike it bare-handed. Gloves of this kind are for someone who fights with their hands, and putting a weapon in them turns the property off entirely.
 T	p0	\n
 T	p0 strong	Easily enchanted.
 T	p0	 Takes twice as many enchantment attempts, and an artifact so made does not get its usual chance to resist being enchanted at all.
 T	p0	\n
 T	p0 strong	Weird luck.
-T	p0	 The Ring of Fate’s property, described above. Both edges of it — and a third thing besides: once in about seven levels gained, something in the Courts of Chaos notices you and hands down a reward. It will not be a Lord of your own, and one that was never yours is gentler than one that is — a passing interest rather than a claim.
+T	p0	 The Ring of Fate’s property, described above, with both its edges and a third thing besides. Once in about seven levels gained, something in the Courts of Chaos notices you and hands down a reward. It won’t be a Lord of your own, and one that was never yours is gentler than one that is: it takes a passing interest in you, and has no claim on you.
 T	p0	\n
 T	p0 strong	Magic-powered criticals.
-T	p0	 A weapon that spends your mana to land critical hits, and to make the ones it lands worse — one to three points each time. The 
-T	p0 strong	Psiblade
-T	p0	 carries it. With an empty mana pool it does nothing at all, which makes it a warrior’s weapon only in the hands of a warrior who casts.
+T	p0	 A weapon that spends your mana to land critical hits, and to make the ones it lands worse (one to three points each time). The Psiblade has it. With an empty mana pool it does nothing at all, so it’s only a warrior’s weapon in the hands of a warrior who casts.
 T	p0	\n
 T	p0 strong	An anti-magic shell.
-T	p0	 You cannot cast. Not a reduced chance, not a higher cost: the spell simply does not happen. Studying and browsing still work, so you can keep learning spells you are unable to use.
+T	p0	 You cannot cast. There’s no reduced chance or higher cost: the spell just doesn’t happen. Studying and browsing still work, so you can keep learning spells you are unable to use.
 T	p0	\n
 T	p0 strong	A chaos patron.
-T	p0	 Carried by the 
+T	p0	 The 
 T	p0 code	(Chaotic)
-T	p0	 ego. A Lord of the Courts takes an interest in whoever holds it, and every level you gain from then on brings a reward — the same ladder a Chaos-Warrior climbs, from the genuinely generous down to the actively hostile. Wearing one is not the same as being sworn to one, and the difference runs the way you would not guess: a Lord with no claim on you is 
+T	p0	 ego has it. A Lord of the Courts takes an interest in whoever holds it, and every level you gain from then on brings a reward from the same ladder a Chaos-Warrior climbs, from the generous down to the actively hostile. Wearing one is not the same as being sworn to one, and the difference runs the way you wouldn’t guess: a Lord with no claim on you is 
 T	p0 em	less
-T	p0	 likely to reach for the bottom of the ladder, not more. It is glancing over rather than keeping accounts, and the borrowed reward is a smaller thing in both directions.
+T	p0	 likely to reach for the bottom of the ladder. It’s only glancing over, and the borrowed reward is a smaller thing in both directions.
 T	p0	\n
 M	not-yet-implemented
 T	h2	Not yet implemented
 T	h2	\n
-T	p0	One Zangband object property is recorded but inactive: passing through walls. Angband has no form of player wall-movement to hang it on — not a spell, not a temporary state, nothing — so carrying it would mean building wall-phasing for the player rather than reading a flag. Items with it work in every other respect.
+T	p0	One Zangband object property is left off every item: passing through walls. A Spectre walks through walls, and so does anyone in wraith form (see 
+L	p0 link	1	mutations	Mutations
+T	p0	), but no item grants it, because wall-walking you can put on takes the dungeon away as an obstacle. Zangband’s one item with it, the cloak ‘Soulless One’, comes without it and works in every other respect.
 T	p0	\n
-T	p0	Two more object properties are recorded and inactive, and both are the same kind of case: each cancels a penalty this game does not impose. 
+T	p0	Two more object properties are recorded and inactive, because each cancels a penalty this game does not impose. 
 T	p0 code	WILD_SHOT
 T	p0	 ignores the cover a monster gets from standing in trees, and Angband has no terrain term in its combat at all. 
 T	p0 code	WILD_WALK
-T	p0	 removes the extra effort of climbing a mountain and the poison of wading a swamp — but here a mountainside is a wall rather than slow ground, and there is no swamp terrain. Building either flag alone would do nothing; building what they cancel is a change to how the wilderness plays rather than a conversion of a flag. One ego, 
+T	p0	 removes the extra effort of climbing a mountain and the poison of wading a swamp, but here a mountainside is a wall, not slow ground, and a swamp is mud and shallow water that poisons nobody. Building either flag alone would do nothing. Building what they cancel would change how the wilderness plays, which is a bigger job than converting a flag. One ego, 
 T	p0 code	of the Wild
 T	p0	, waits with them: every property it had was 
 T	p0 code	WILD_WALK
@@ -213,40 +171,28 @@ T	p0	\n
 T	p0	Two of Zangband’s object kinds are likewise recorded but not imported:
 T	p0	\n
 T	li1	•\t
-T	li1 strong	A Scroll of Artifact Creation
-T	li1	, which makes a new artifact out of an ordinary item during play. Angband generates its random artifacts once, at birth, and stores an artifact in the savefile by name — so one invented mid-game would not be there when the character was loaded again.
+T	li1	A Scroll of Artifact Creation, which makes a new artifact out of an ordinary item during play. Angband generates its random artifacts once, at birth, and stores an artifact in the savefile by name, so one invented mid-game would not be there when the character was loaded again.
 T	li1	\n
 T	li1	•\t
-T	li1 strong	A Wand of Rockets
-T	li1	, whose damage is its own element — it stuns, and shard resistance halves it — and adding an element changes the savefile layout.
+T	li1	A Wand of Rockets, whose damage is its own element (it stuns, and shard resistance halves it), and adding an element changes the savefile layout.
 T	li1	\n
-T	p0	Thirteen that used to be on this list have since arrived. The 
-T	p0 strong	Wand of Tame Monster
-T	p0	 waited on pets and now has them (
-L	p0 link	1	pets	Pets and Allies
-T	p0	). The 
-T	p0 strong	Potion of New Life
-T	p0	 strips every mutation you carry (
-L	p0 link	2	mutations	Mutations
-T	p0	); Zangband’s version also re-rolled your hit points, and that half of it is still not built. The 
-T	p0 strong	Magical Figurine
-T	p0	 waited on an object that could name a monster: 
+T	p0	Thirteen more had to wait for something else in the game, and all thirteen are in. The Wand of Tame Monster needed pets, and has them (
+L	p0 link	2	pets	Pets and Allies
+T	p0	). The Potion of New Life strips every mutation you carry (
+L	p0 link	3	mutations	Mutations
+T	p0	); Zangband’s version also re-rolled your hit points, and that half of it isn’t built yet. The Magical Figurine needed an object that could name a monster: 
 T	p0 em	a Magical Figurine of a cave spider
 T	p0	, thrown, breaks and leaves the cave spider behind as your pet (
-L	p0 link	3	pets	Pets and Allies
+L	p0 link	4	pets	Pets and Allies
 T	p0	).
 T	p0	\n
-T	p0	And the 
-T	p0 strong	ten statues
-T	p0	, which needed the same thing and then a reason. A statue is a monster rendered in a material — 
+T	p0	The other ten are statues, which needed the same thing and then a reason. A statue is a monster rendered in a material (
 T	p0 em	a Golden Statue of Smeagol
-T	p0	, any monster at all, uniques included — and it does nothing. It is treasure: worth what its material is worth, from 75 gold for wood to 10,000 for mithril, and heavy, twenty pounds for the wooden one and fifty for the rest. They are found from level 9 down, never stack, and no monster will pick one up. The 
+T	p0	; any monster at all, uniques included), and it does nothing. It is treasure, worth what its material is worth, from 75 gold for wood to 10,000 for mithril, and it’s heavy: twenty pounds for the wooden one and fifty for the rest. Statues are found from level 9 down, never stack, and no monster will pick one up. The 
 T	p0 strong	Statue Store
 T	p0	, which Zangband’s great cities had and this game turned away while it had no statues to sell, buys and sells them, and the general store and the black market will take one too (
-L	p0 link	4	towns	Towns and Services
+L	p0 link	5	towns	Towns and Services
 T	p0	).
 T	p0	\n
-T	p0	One more is not waiting at all. 
-T	p0 strong	The Scroll of Rumour is dropped
-T	p0	, not deferred. Zangband’s 647 rumours are in the archive and Angband already has the machinery to hold a list like it, so the mechanism was never the obstacle — but a good many of the lines name things this game does not have or contradict what it does, and a scroll whose whole purpose is to tell you something true is the wrong place for text that is not. Sorting the true from the false is 647 judgements for one flavour scroll, and it is not worth them.
+T	p0	The Scroll of Rumour is dropped for good. Zangband’s 647 rumours are in the archive, and Angband already has the machinery to hold a list like it, so the mechanism was never the obstacle. But a good many of the lines name things this game doesn’t have or contradict what it does, and a scroll whose whole purpose is to tell you something true is the wrong place for text that isn’t. Sorting the true from the false is 647 judgements for one flavour scroll, and it is not worth them.
 T	p0	\n

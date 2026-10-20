@@ -438,19 +438,36 @@ check "the Flags page is one of the Character window's pages" {
 	list [expr {"flags" in $keys}] $ok
 } {1 1}
 
-# The cell is the one place this page could disagree with the term screen,
-# because the game's renderer draws to the Term and cannot be asked for a
-# character. These pin what it says instead.
-check "a flag cell marks presence, absence and borrowed time apart" {
-	list [character_flag_cell 0 0 flag] [character_flag_cell 1 0 flag] \
-		[character_flag_cell -1 0 flag] [character_flag_cell 0 1 flag]
-} {. + - ~}
+# What a cell says, from what angband_flags sends.  The first version of the
+# page read the game's "nothing worn here" sentinel, a number near INT_MAX, as
+# "has it", and drew every empty slot as a source of every property.  The
+# sentinels now arrive as words; these pin what each one becomes.
+check "an empty slot is empty, not a source" {
+	list [flags_cell_state abil none 0] [flags_cell_state abil none 1] \
+		[flags_cell_state abil unknown]
+} {empty na unknown}
 
-check "a modifier cell shows the number, and temporary separately" {
-	set r char_screen1_stat_mod_renderer
-	list [character_flag_cell 0 0 $r] [character_flag_cell 3 0 $r] \
-		[character_flag_cell 0 2 $r]
-} {. 3 ~}
+check "a flag cell marks presence, absence and opposition apart" {
+	list [flags_cell_state abil 0] [flags_cell_state abil 1] \
+		[flags_cell_state abil -1] [flags_cell_state res 3] \
+		[flags_cell_state draw 1]
+} {nothing has against immune drawback}
+
+# The rule the Result column exists for: a resistance and a vulnerability
+# cancel, and a timed effect on top makes it "For now".
+check "a cancelled resistance is no, and a potion makes it For now" {
+	list [lrange [flags_result res {both 0}] 0 1] \
+		[lrange [flags_result res {both 1}] 0 1] \
+		[lrange [flags_result res {1 0}] 0 1] \
+		[lrange [flags_result res {-1 0}] 0 1] \
+		[lrange [flags_result res {unknown 0}] 0 1]
+} {{nothing no} {timed {For now}} {has Resist} {against Vulnerable} {unknown Unknown}}
+
+# expr reads "+3" back as the number 3, which is how a sign gets lost.
+check "a modifier's total keeps its sign" {
+	list [lindex [flags_result mod {3 0}] 1] [lindex [flags_result mod {0 2}] 1] \
+		[flags_signed -2]
+} [list +3 +2 \u22122]
 
 # --- the Spells menu, before there is a character ---------------------------
 
@@ -1607,8 +1624,9 @@ proc birth_pass_held {} {
 		set cols [angband_flags columns]
 		if {![llength $cols]} { lappend bad "no columns at all" }
 		foreach c $cols {
-			if {[llength $c] != 4} { lappend bad "width [llength $c]" }
+			if {[llength $c] != 8} { lappend bad "width [llength $c]" }
 			if {[lindex $c 1] eq ""} { lappend bad "slot [lindex $c 0]: no name" }
+			if {[lindex $c 6] ni {0 1}} { lappend bad "slot [lindex $c 0]: runes" }
 		}
 		set bad
 	} ""
@@ -1621,8 +1639,14 @@ proc birth_pass_held {} {
 		set bad {}
 		foreach group [angband_flags categories] {
 			foreach row [angband_flags rows $group] {
-				lassign $row label known values auxs renderer
-				if {[llength $row] != 5} { lappend bad "$label: width" }
+				lassign $row label known values auxs renderer result without curses origin
+				if {[llength $row] != 10} { lappend bad "$label: width" }
+				if {[llength $result] != 2} { lappend bad "$label: result" }
+				if {[llength $without] != $n} { lappend bad "$label: without" }
+				if {[llength $curses] != $n} { lappend bad "$label: curses" }
+				if {[dict keys $origin] ne {race racelevel class classlevel shape}} {
+					lappend bad "$label: origin"
+				}
 				if {[llength $values] != $n + 1} {
 					lappend bad "$label: [llength $values] values for $n slots"
 				}
@@ -1652,6 +1676,58 @@ proc birth_pass_held {} {
 		list [expr {$n > 10}] [expr {$n < 200}]
 	} {1 1}
 
+	# The sentinels go out as words.  A number this large in a row is one
+	# that escaped, and a script would draw it as a huge bonus.
+	check "no sentinel reaches a script as a number" {
+		set bad {}
+		foreach group [angband_flags categories] {
+			foreach row [angband_flags rows $group] {
+				lassign $row label known values auxs renderer result
+				foreach v [concat $values $auxs $result] {
+					if {[string is integer -strict $v] && abs($v) > 1000000} {
+						lappend bad "$label: $v"
+					}
+				}
+			}
+		}
+		set bad
+	} ""
+
+	# describe_ui_entry_player_origin() walks the same inputs as
+	# compute_ui_entry_values_for_player(), and has to be kept in step with
+	# it.  A value in the character's column that it cannot attribute is the
+	# sign that the two have drifted.
+	check "every value in the character's column says where it comes from" {
+		set bad {}
+		foreach group [angband_flags categories] {
+			foreach row [angband_flags rows $group] {
+				lassign $row label known values auxs renderer result without curses origin
+				set v [lindex $values end]
+				if {![string is integer -strict $v] || $v == 0} continue
+				set from 0
+				foreach k {race racelevel class classlevel shape} {
+					if {[dict get $origin $k]} { set from 1 }
+				}
+				if {!$from} { lappend bad $label }
+			}
+		}
+		set bad
+	} ""
+
+	# The cards quote the manual's list of properties, so a row the manual
+	# does not describe is a card with no description.
+	check "every row has its description in the manual" {
+		set missing {}
+		foreach group [angband_flags categories] {
+			foreach row [angband_flags rows $group] {
+				if {[flags_description [lindex $row 0]] eq ""} {
+					lappend missing [lindex $row 0]
+				}
+			}
+		}
+		set missing
+	} ""
+
 	# The ten this project bound in DEC-152. Asserted by name rather than
 	# trusted, because a bindui: naming an entry that does not exist is
 	# silently ignored -- init.c:2094 records why that cannot be caught at
@@ -1665,7 +1741,7 @@ proc birth_pass_held {} {
 			}
 		}
 		set missing {}
-		foreach want {"Prot. cut" Reflection "Pass wall" "Ghoul touch"
+		foreach want {"Cut resistance" Reflection "Pass wall" "Ghoul touch"
 					  "Fiery aura" "Electric aura" Luck "Anti-magic"
 					  "Cannot eat" Mana} {
 			if {$want ni $seen} { lappend missing $want }
@@ -1692,11 +1768,17 @@ proc birth_pass_held {} {
 		character_window
 		set ::character(page) flags
 		character_switch
-		set t .character.f.page.flags.f.t
-		set text [$t get 1.0 end]
+		update idletasks
+		set c [flags_canvas body]
+		set items [llength [$c find all]]
+		set none 0
+		foreach i [$c find all] {
+			if {[$c type $i] eq "text" && [$c itemcget $i -text] eq "No character yet."} {
+				set none 1
+			}
+		}
 		destroy .character
-		list [expr {[string length $text] > 100}] \
-			[string match "*No character yet*" $text]
+		list [expr {$items > 100}] $none
 	} {1 0}
 
 	# --- the Spells menu, with a character ----------------------------------

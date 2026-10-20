@@ -31,6 +31,7 @@
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
@@ -38,6 +39,7 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "player-virtue.h"
 #include "target.h"
 #include "trap.h"
 
@@ -385,6 +387,95 @@ void do_cmd_drop(struct command *cmd)
 
 	inven_drop(obj, amt);
 	player->upkeep->energy_use = z_info->move_energy / 2;
+}
+
+/**
+ * Whether burning it would pay, for the item prompt.
+ */
+static bool obj_is_worth_burning(const struct object *obj)
+{
+	return player_book_burn_exp(player, obj) > 0;
+}
+
+/**
+ * Burn a spellbook for the experience (ZangbandTK).
+ *
+ * What is left of Zangband's destroy command, which 4.2 replaced with
+ * ignoring: its reward for a Warrior or Paladin who burns a rare book of the
+ * wrong kind of magic, which player_book_burn_exp() decides.  The ignore menu
+ * offers it only when it pays, and it takes a turn, as destroying did.  The
+ * virtues move as destroy_item_aux() moved them for any such book
+ * ([cmd3.c:414](../archive/zangband/src/cmd3.c#L414)): a Life book burnt is a
+ * step towards Unlife, a Death book a step away, and a costly one a sacrifice.
+ */
+void do_cmd_burn(struct command *cmd)
+{
+	struct object *obj, *burnt;
+	const struct class_book *book;
+	char o_name[80];
+	int amt, value;
+	int32_t exp;
+	bool none_left = false;
+
+	if (!player_get_resume_normal_shape(player, cmd)) {
+		return;
+	}
+
+	/* Get arguments */
+	if (cmd_get_item(cmd, "item", &obj,
+			/* Prompt */ "Burn which book?",
+			/* Error  */ "You have no book worth burning.",
+			/* Filter */ obj_is_worth_burning,
+			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
+		return;
+
+	/* cmd_get_item() filters an item handed in, but never asks where it is */
+	if (!item_is_available(obj)) {
+		msg("You can only burn a book you hold or stand on.");
+		return;
+	}
+	exp = player_book_burn_exp(player, obj);
+	if (!exp) {
+		msg("You would gain nothing by burning that.");
+		return;
+	}
+
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
+		return;
+
+	/* Read before the book is gone */
+	book = object_kind_to_book(obj->kind);
+	value = object_value_real(obj, 1);
+
+	object_desc(o_name, sizeof(o_name), obj,
+		ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM | (amt << 16), player);
+	msgt(MSG_DESTROY, "You burn %s.", o_name);
+
+	if (object_is_carried(player, obj)) {
+		burnt = gear_object_for_use(player, obj, amt, true, &none_left);
+	} else {
+		burnt = floor_object_for_use(player, obj, amt, true, &none_left);
+	}
+	if (burnt->known)
+		object_delete(player->cave, NULL, &burnt->known);
+	object_delete(cave, player->cave, &burnt);
+
+	msg("You feel more experienced.");
+	player_exp_gain(player, exp * amt);
+
+	if (streq(book->realm->name, "life")) {
+		virtue_change(player, V_UNLIFE, 1);
+		virtue_change(player, V_VITALITY, -1);
+	} else if (streq(book->realm->name, "death")) {
+		virtue_change(player, V_UNLIFE, -1);
+		virtue_change(player, V_VITALITY, 1);
+	}
+	if (value > 30000)
+		virtue_change(player, V_SACRIFICE, 2);
+	else if (value > 10000)
+		virtue_change(player, V_SACRIFICE, 1);
+
+	player->upkeep->energy_use = z_info->move_energy;
 }
 
 /**

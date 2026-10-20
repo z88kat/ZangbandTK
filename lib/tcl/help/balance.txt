@@ -2,38 +2,32 @@ H	How Balance Differs
 M	how-balance-differs
 T	h1	How Balance Differs
 T	h1	\n
-T	p0	ZangbandTK is built on Angband 4.2 and rebuilds the character of Zangband, a variant whose development stopped in 2005. It matches neither of its ancestors exactly. This chapter states plainly how it differs from both, so that players arriving from either know what to expect.
+T	p0	ZangbandTK is built on Angband 4.2 and rebuilds the character of Zangband, a variant whose development stopped in 2005. It doesn’t match either of them exactly. If you’ve played one of them, these are the differences to expect.
 T	p0	\n
 M	monsters-die-sooner
 T	h2	Monsters die sooner
 T	h2	\n
-T	p0	Every monster in ZangbandTK carries 
-T	p0 strong	73% of Angband’s hit points
-T	p0	 and 
-T	p0 strong	50% of its armour class
-T	p0	.
+T	p0	Every monster in ZangbandTK has 73% of Angband’s hit points and 50% of its armour class.
 T	p0	\n
-T	p0	This is the single change that makes the game feel different, and it is the only mechanism by which ZangbandTK moves faster than vanilla Angband. Monsters die sooner and are easier to hit, so encounters resolve faster and turn over more quickly. They also kill you sooner: a fight you would have survived in Angband by grinding it out is now decided in fewer turns, in whichever direction it was going.
+T	p0	That one change is what makes the game feel different, and it’s the only thing that makes ZangbandTK faster than vanilla Angband. Monsters die sooner and are easier to hit, so fights are over quicker. They also kill you sooner: a fight you’d have survived in Angband by grinding it out is now decided in fewer turns, whichever way it was going.
 T	p0	\n
-T	p0	Those figures are not invented. They are what Zangband did, measured across the 450 monsters that Zangband 2.7.5 and Angband 2.8.1 have in common — Zangband’s monsters carried a median 0.73× the hit points and 0.50× the armour class of the Angband release it forked from.
+T	p0	The figures come from Zangband itself. Across the 450 monsters that Zangband 2.7.5 and Angband 2.8.1 have in common, Zangband’s monsters had a median 0.73× the hit points and 0.50× the armour class of the Angband release it forked from.
 T	p0	\n
 M	why-scale-rather-than-import
 T	h2	Why scale rather than import
 T	h2	\n
-T	p0	ZangbandTK does not use Zangband’s own per-monster numbers for creatures that already exist in Angband. It scales Angband 4.2’s numbers instead.
+T	p0	ZangbandTK doesn’t use Zangband’s own per-monster numbers for creatures that already exist in Angband. It scales Angband 4.2’s numbers instead.
 T	p0	\n
-T	p0	Angband spent twenty-five years tuning the relationships 
-T	p0 em	between
-T	p0	 its monsters — which are dangerous for their depth, which are pushovers, which punch above their weight. Importing Zangband’s 2005 values wholesale would have discarded all of that to no benefit, because those relationships are not what makes Zangband distinctive. Scaling keeps Angband’s relative balance and adopts Zangband’s absolute lethality.
+T	p0	Angband spent twenty-five years tuning how its monsters compare with each other: which ones are dangerous for their depth, which are pushovers, which punch above their weight. Importing Zangband’s 2005 values wholesale would have thrown all of that away for nothing, since those relationships aren’t what makes Zangband distinctive. Scaling keeps Angband’s relative balance and takes Zangband’s absolute lethality.
 T	p0	\n
-T	p0	Monsters that exist only in Zangband have no Angband counterpart to scale, so they are placed on Angband 4.2’s own depth curve, using Zangband’s numbers only as a signal of their relative role — whether a creature is meant to be tanky, fragile or fast for its depth.
+T	p0	Monsters that exist only in Zangband have no Angband version to scale, so they’re placed on Angband 4.2’s own depth curve. Zangband’s numbers are only used as a hint to the creature’s role: whether it’s meant to be tanky, fragile or fast for its depth.
 T	p0	\n
 M	experience-is-unchanged
 T	h2	Experience is unchanged
 T	h2	\n
-T	p0	ZangbandTK awards experience exactly as Angband 4.2 does. There is no multiplier, and levelling thresholds are untouched.
+T	p0	ZangbandTK awards experience exactly as Angband 4.2 does. There’s no multiplier, and the levelling thresholds are untouched.
 T	p0	\n
-T	p0	This surprises people who remember Zangband as a faster game, so it is worth stating why. Zangband appears at first glance to award roughly twenty times more experience per monster, but this is an artefact of how the two games store the value. Angband stores experience 
+T	p0	This surprises people who remember Zangband as a faster game. At first glance Zangband seems to award about twenty times more experience per monster, but that’s down to how the two games store the value. Angband stores experience 
 T	p0 em	per monster level
 T	p0	 and awards 
 T	p0 code	value × level ÷ player level
@@ -41,31 +35,29 @@ T	p0	; Zangband stored the
 T	p0 em	total
 T	p0	 and awarded 
 T	p0 code	value ÷ player level
-T	p0	. Once that difference is accounted for, Zangband’s experience per kill is within 2% of Angband’s — a median ratio of 0.98 across the monsters they share.
+T	p0	. Allow for that and Zangband’s experience per kill is within 2% of Angband’s, a median ratio of 0.98 across the monsters they share.
 T	p0	\n
 T	p0	Zangband’s levelling threshold table is byte-identical to Angband’s, and its race experience factors are slightly 
 T	p0 em	higher
-T	p0	, meaning marginally slower levelling. There is simply no faster progression to inherit. What made Zangband feel quick was monsters dying sooner, which is the change described above.
+T	p0	, which means slightly slower levelling. So there’s no faster progression to inherit. What made Zangband feel quick was monsters dying sooner, which is the change described above.
 T	p0	\n
 M	tuning-it-yourself
 T	h2	Tuning it yourself
 T	h2	\n
-T	p0	Both scalars live in 
+T	p0	Both values live in 
 T	p0 code	lib/gamedata/constants.txt
-T	p0	 and take effect on restart, with no rebuild required:
+T	p0	 and take effect when you restart. No rebuild is needed:
 T	p0	\n
 T	pre0	lethality:hit-points:73\n
 T	pre0 prelast	lethality:armor-class:50\n
-T	p0	They are percentages of each monster’s base value. 
-T	p0 strong	Setting both to 100 gives behaviour identical to vanilla Angband 4.2
-T	p0	, which is a supported configuration — useful for comparison, and for players who want ZangbandTK’s content at Angband’s pacing.
+T	p0	They’re percentages of each monster’s base value. Set both to 100 and the game behaves exactly like vanilla Angband 4.2. That’s a supported setup, useful for comparison, and for players who want ZangbandTK’s content at Angband’s pace.
 T	p0	\n
-T	p0	Lower values make the game faster and more lethal in both directions. There is no upper limit, but note that hit points floor at 1 and armour class at 0, so very low percentages compress the difference between weak and strong monsters.
+T	p0	Lower values make the game faster and more lethal in both directions. There’s no upper limit. Hit points floor at 1 and armour class at 0, though, so very low percentages squash the difference between weak and strong monsters.
 T	p0	\n
 M	savefiles
 T	h2	Savefiles
 T	h2	\n
-T	p0	ZangbandTK does not load Angband or Zangband savefiles, and never will. The player model, level persistence and world layout all diverge too far for a converted character to be meaningful. Savefiles carry the tag 
+T	p0	ZangbandTK doesn’t load Angband or Zangband savefiles, and never will. The player model, level persistence and world layout have moved too far apart for a converted character to mean anything. Savefiles are tagged 
 T	p0 code	ZZK1
-T	p0	, and the game will decline to open anything else rather than load it partially.
+T	p0	, and the game won’t open anything else, not even partly.
 T	p0	\n

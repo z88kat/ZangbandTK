@@ -1495,7 +1495,9 @@ bool target_set_interactive(int mode, int x, int y, bool allow_pathfinding)
 			/* Ignore the tracked object, set by target_set_interactive_aux() */
 			if (!(mode & TARGET_KILL)
 					&& pile_is_tracked(square_object(cave, loc(x, y)))) {
-				textui_cmd_ignore_menu(player->upkeep->object);
+				/* A burning queued waits on the look, so end it */
+				if (textui_cmd_ignore_menu(player->upkeep->object))
+					done = true;
 				handle_stuff(player);
 
 				/* Recalculate interesting grids */

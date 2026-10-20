@@ -114,6 +114,13 @@ jobs:
           # Bound the emulator here rather than leaving it to the step's own
           # timeout.  A step killed from outside says nothing about why: the
           # checks below never run and neither log is ever read.
+          #
+          # SDL_VIDEODRIVER=dummy because the runner has no display.  DOSBox-X
+          # 2024.03 (Ubuntu 24.04) started without one; 2026.01 (Ubuntu 26.04,
+          # ubuntu-latest from October 2026) stops at once with "Can't init SDL
+          # x11 not available", -nogui or not.  The game is driven by -mtest and
+          # its output goes to a file, so nothing needs a screen.
+          SDL_VIDEODRIVER=dummy \
           timeout 120 dosbox-x -debug -conf dosbox.conf -nogui -exit > dosbox.log 2>&1 \
             || echo "dosbox-x exited $? (124 means it outlasted the two-minute bound)"
 

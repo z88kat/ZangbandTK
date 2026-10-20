@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Run a command on the oldest Linux the release's downloads support, inside a
+# container built from scripts/oldest-linux/Dockerfile.
+#
+# Use anywhere inside the repository, like so:
+#    scripts/in-oldest-linux <command> [arguments...]
+#
+# For example `scripts/in-oldest-linux scripts/build-sdl2`, or
+# `scripts/in-oldest-linux cmake --build build`.  The repository is mounted at
+# the same path it has outside, and the command starts in the same directory,
+# so a path means the same thing on either side: a toolchain cached from one
+# run, with its prefix baked into its pkg-config files and rpaths, is found
+# where it says it is by the next.
+#
+# Needs Docker.  The image is built on first use and reused after that.  It is
+# always x86-64, which is what the downloads are: on an arm64 Mac, Docker
+# Desktop runs it under emulation, slowly.  LANG, LC_ALL and SDL_AUDIODRIVER
+# are passed through for the tests that start the game.
+set -o errexit
+
+if [ $# -eq 0 ]; then
+	sed -n -e '3,20p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+case $PWD/ in
+"$ROOT"/*) ;;
+*)
+	echo "Run this from inside $ROOT; nothing outside it is visible in there." >&2
+	exit 1
+	;;
+esac
+
+IMAGE=zangband-oldest-linux
+docker build --platform linux/amd64 --quiet --tag "$IMAGE" \
+	"$ROOT/scripts/oldest-linux" >/dev/null
+
+# A worktree's .git is a pointer to the repository it was added from, which is
+# somewhere else, and scripts/version.sh needs to follow it to put a version in
+# the build.  So that is mounted too, at its own path, when it is outside.
+GIT_DIR_MOUNT=
+GIT_COMMON=$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir \
+	2>/dev/null || true)
+case $GIT_COMMON/ in
+/ | "$ROOT"/*) ;;
+*) GIT_DIR_MOUNT="--volume $GIT_COMMON:$GIT_COMMON" ;;
+esac
+
+# The command runs as root, which is what the image has.  Whatever it writes is
+# handed back to the caller afterwards, success or not, so that nothing the
+# runner's own steps go on to touch -- the caches, the artifacts -- is owned by
+# somebody else.
+# shellcheck disable=SC2086
+exec docker run --rm --platform linux/amd64 \
+	--volume "$ROOT:$ROOT" $GIT_DIR_MOUNT --workdir "$PWD" \
+	--env LANG --env LC_ALL --env SDL_AUDIODRIVER \
+	"$IMAGE" \
+	sh -c '"$@"; status=$?; chown -R '"$(id -u):$(id -g)"' "'"$ROOT"'"; exit $status' \
+	in-oldest-linux "$@"

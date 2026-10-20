@@ -31,6 +31,111 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+20 October 2026 — burning books, and a crash I nearly counted as a pass
+=======================================================================
+
+Steven asked whether we'd ever done the Warrior's book burning. We hadn't. It
+had sat as open question 7 since I found it in September, because 4.2 has no
+destroy command to hang it on. I gave him two ways to do it, a choice in the
+ignore menu or a destroy command just for books, and he took the menu.
+
+Rereading Zangband's code for it, I found my September note was wrong in two
+places. It had the twentieth of your experience and the 10,000 cap, but it
+missed that the first of a realm's two dungeon books pays only a quarter, and
+that burning a stack pays for every book in it. The rule itself is the nice
+part: a Warrior burns anyone's books, a Paladin of Life burns everyone's but
+Life's, and a Paladin of Death burns only Life's. It's two flags on the classes
+now, so the birth screen says so, where Zangband never told you at all.
+
+The choice goes at the bottom of the menu, on purpose. Enter takes the first
+entry, and the borg ignores things by pressing ``a``, so anything put on top
+would have taken the place of the choice people pick without looking.
+
+The bit I'll remember is the negative control. I broke the feature seven ways
+and ran the tests after each one. Six went red as they should. The seventh,
+taking out the check that the book is in your pack or under your feet, came
+back "0 failing", and for a moment that looked like a test that couldn't fail.
+It was a crash. With the check gone, burning a book across the room (which the
+look command's ignore menu can reach) broke the floor's object list badly
+enough that the game stopped itself. My script only counted lines that said
+"Failed", and a run that dies says nothing. So the check matters more than I'd
+thought, and a script that can't tell a crash from a pass isn't checking
+anything.
+
+20 October 2026 — the Flags page, and every empty hand resisting blindness
+==========================================================================
+
+Steven said the Flags page was hard to read and told him nothing, and he was
+right, but it was worse than hard to read. While I was writing the brief for
+the designer I dumped the grid as data, and every empty slot came back as
+2147483646. That is how the game says "nothing worn here", and the page drew
+anything above nought as "has it". So in his screenshot Telch's empty ring
+fingers, neck and feet all resisted blindness. A second thing was hiding in the
+same dump: a dwarf's infravision and tunnelling were in the character's column,
+and the page showed them as question marks, because it blanked any row whose
+rune hadn't been learned. The game's own text screen only greys the name.
+
+The designer's answer was good, and most of the work was making the game supply
+what it needed. The Result column is the point of the page, and I didn't want
+the page deciding when a vulnerability cancels a resistance, so the game works
+it out with its own combiners and sends it over, once as things are and once
+for each slot with that slot taken off. That second list is the whole of "what
+do I lose if I take this off?". The help the designer drew as a window of its
+own went into the manual instead, where every other window's F1 already goes,
+and the cards quote it, so the two can't drift apart. Writing the fourteen
+descriptions the designer had left blank meant reading the code for each one,
+and the Bless row turned out not to be the prayer at all but the blessed-weapon
+flag. It's called Blessed weapon now.
+
+Two surprises came out of the building. "Weapon" doesn't fit in a 44-pixel
+column here, because Tk scales points up by a third on this Mac, so the columns
+are measured and the headings step down a size until the row fits. And the ten
+rows added last week were sorted backwards: the comment said positive
+priorities put them after the originals, and higher sorts first, so Luck and
+the auras had been leading the abilities and pushing the old rows off the text
+screen.
+
+The one I'll remember is the negative control. The rule now is that a new
+check isn't done until it has been made to fail, so I broke the page on purpose
+in the scratch build and ran the suite, and it passed. The suite wasn't reading
+the scratch build at all; a development build takes its scripts from the
+source tree. Broken there instead, every check went red and named what it was
+looking at. If I'd stopped at the first green I'd have had seven checks that
+couldn't fail and wouldn't have known.
+
+
+19 October 2026 — older Linux, and no second download
+=====================================================
+
+A player wrote that they liked it harder, and that they had had to compile it
+themselves because their Linux was too old for ours. Every Linux download was
+built on ubuntu-22.04, the oldest runner GitHub still has, and a binary needs the
+glibc it was built against or newer: 2.35. The terminal build's executable asked
+for 2.34 for exactly two symbols, ``__libc_start_main`` and ``stat``. Everything
+else it used was older than 2.14.
+
+My first thought was a second set of downloads, current and legacy. I turned it
+down. A build made against an older glibc runs on a newer one exactly as it
+would have, so the "current" download would only be the legacy one with fewer
+machines able to start it, and everybody would be asked a question only a few
+of them need to answer. The player also suggested PkgForge's AppImages, which
+carry their own glibc; I kept that as the fallback and did not need it. The
+three Linux downloads are now built on Ubuntu 18.04 instead, in a container,
+which puts the floor at glibc 2.27.
+
+What it cost was mostly finding out what 22.04 had been doing for us. 18.04's
+SDL is 2.0.8 and the SDL2 front end needs 2.0.18, so SDL and its companion
+libraries are built from source now, as Tcl and Tk already were. That gives
+Linux a newer SDL than it had, and the music player finally knows how long a
+track is. Two curses problems that 22.04 had hidden: on 18.04 the wide-character
+header is only in ``include/ncursesw``, and the static archive calls the
+console mouse server directly. Opus nearly disappeared: SDL_mixer has no
+decoder of its own for it, and the music player offers it. And the smoke test
+had only ever passed because Python 3.7 and later quietly give a child process a
+UTF-8 locale when none is set. 18.04's Python is 3.6, which does not, so the
+game quit, correctly, saying it needed UTF-8.
+
+
 16 October 2026 — statues, and a shop I turned away
 ===================================================
 

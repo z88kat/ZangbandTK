@@ -63,6 +63,12 @@ def strip_escapes(text):
 
 def run(game_dir, executable):
     env = dict(os.environ, TERM='xterm-256color')
+    # The game quits in a locale that is not UTF-8, and a container sets none.
+    # Python 3.7 and later make up for that themselves -- PEP 538 coerces an
+    # unset locale to C.UTF-8 and passes it on to children -- so this went
+    # unnoticed until it ran under Ubuntu 18.04's 3.6, which does not.
+    if not any(os.environ.get(v) for v in ('LC_ALL', 'LC_CTYPE', 'LANG')):
+        env['LC_CTYPE'] = 'C.UTF-8'
     argv = ['./' + executable, '-mgcu', '-uSmokeTest', '-n']
 
     pid, fd = pty.fork()

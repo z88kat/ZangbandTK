@@ -143,26 +143,25 @@ T	tr0 odd	|  List contents of quiver\n
 T	tbllast0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Three of these keys are ZangbandTK’s.
-T	p0 note	 
+T	p0 note	Three of these keys are ZangbandTK’s. 
 T	p0 note code	P
-T	p0 note	 — 
-T	p0 note code	!
-T	p0 note	 in the roguelike keyset — commands your pets (
+T	p0 note	 commands your pets (
 L	p0 note link	2	pets	Pets and Allies
-T	p0 note	); 
+T	p0 note	), 
 T	p0 note code	J
-T	p0 note	 — 
-T	p0 note code	%
-T	p0 note	 — lists the work you have taken on (
+T	p0 note	 lists the work you’ve taken on (
 L	p0 note link	3	quests	Quests
-T	p0 note	); 
+T	p0 note	) and 
 T	p0 note code	N
-T	p0 note	 — 
-T	p0 note code	&
-T	p0 note	 — uses a racial power (
+T	p0 note	 uses a racial power (
 L	p0 note link	4	birth#racial-powers	Racial powers
-T	p0 note	).
+T	p0 note	). In the roguelike keyset they’re 
+T	p0 note code	!
+T	p0 note	, 
+T	p0 note code	%
+T	p0 note	 and 
+T	p0 note code	&
+T	p0 note	.
 T	p0 note	\n
 T	p0 note	Each takes a letter in the original keyset and a symbol in the roguelike one, because no letter is free in both: the roguelike keyset spends eight of them on running and eight more on walking.
 T	p0 note	\n
@@ -284,7 +283,7 @@ T	li1	\n
 T	li1	•\t
 T	li1	A monster uses a ranged attack or spell on 
 T	li1 em	another monster
-T	li1	 — one of your allies fighting, or two hostiles fighting each other — only if you could make out that it happened: one of the two within your line of sight range, and one of the two actually visible. A battle in the dark on the far side of the level does not stop you resting.
+T	li1	 (one of your allies fighting, or two hostiles fighting each other), but only if you could make out that it happened: one of the two is within your line of sight range, and one of the two is visible. A battle in the dark on the far side of the level doesn’t stop you resting.
 T	li1	\n
 T	li1	•\t
 T	li1	A monster that is visible and in the line of sight and either moves or performs a melee attack on the player will disturb if the 

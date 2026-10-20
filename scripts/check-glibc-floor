@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# Fail if anything in a Linux download needs a newer glibc than the one the
+# download page promises.
+#
+# Use in the root directory of the game, like so:
+#    scripts/check-glibc-floor <file-or-directory>...
+#
+# For example `scripts/check-glibc-floor squashfs-root` on an unpacked
+# AppImage, which checks the game and every library bundled beside it.
+#
+# A binary takes the glibc it was linked against as its minimum, and that is
+# set by where it was built: scripts/oldest-linux/Dockerfile.  This is the
+# number written down in docs/download.rst and scripts/linux-tty-readme.txt,
+# checked against what the files actually ask for, so that the promise and the
+# build cannot drift apart without something going red -- a newer base image,
+# or a library that came from somewhere other than that image.
+set -o errexit
+
+FLOOR=2.27
+
+if [ $# -eq 0 ]; then
+	sed -n -e '3,17p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+CANDIDATES=$(mktemp)
+trap 'rm -f "$CANDIDATES"' EXIT
+find "$@" -type f \( -perm -u+x -o -name '*.so' -o -name '*.so.*' \) >"$CANDIDATES"
+
+failed=0
+checked=0
+while IFS= read -r f; do
+	case $(file -b "$f") in
+	ELF*) ;;
+	*) continue ;;
+	esac
+	checked=$((checked + 1))
+	# The symbols it takes from glibc, each with the version that introduced
+	# the variant it was linked against: "GLIBC_2.34 __libc_start_main".
+	needs=$(objdump -T "$f" | awk '$NF != "" && $(NF-1) ~ /^GLIBC_[0-9]/ {
+		v = $(NF-1); sub(/^\(/, "", v); sub(/\)$/, "", v); print v, $NF }' |
+		sort -u)
+	newest=$(printf '%s\n' "$needs" | cut -d' ' -f1 | sed 's/^GLIBC_//' |
+		sort -V | tail -n 1)
+	[ -n "$newest" ] || continue
+	if [ "$(printf '%s\n%s\n' "$FLOOR" "$newest" | sort -V | tail -n 1)" != "$FLOOR" ]; then
+		echo "$f needs glibc $newest, newer than $FLOOR:" >&2
+		printf '%s\n' "$needs" | while read -r version symbol; do
+			v=${version#GLIBC_}
+			if [ "$(printf '%s\n%s\n' "$FLOOR" "$v" | sort -V | tail -n 1)" != "$FLOOR" ]; then
+				echo "    $symbol ($version)" >&2
+			fi
+		done
+		failed=1
+	fi
+done <"$CANDIDATES"
+
+if [ "$checked" -eq 0 ]; then
+	echo "No ELF files under $*." >&2
+	exit 1
+fi
+if [ "$failed" -ne 0 ]; then
+	echo "The download page promises glibc $FLOOR.  Build in scripts/in-oldest-linux," >&2
+	echo "or change the promise and FLOOR here together." >&2
+	exit 1
+fi
+echo "glibc $FLOOR or newer is enough for all $checked ELF files."

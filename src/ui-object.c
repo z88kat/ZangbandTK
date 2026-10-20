@@ -1703,10 +1703,45 @@ enum {
 	UNIGNORE_THIS_FLAVOR,
 	IGNORE_THIS_EGO,
 	UNIGNORE_THIS_EGO,
-	IGNORE_THIS_QUALITY
+	IGNORE_THIS_QUALITY,
+	BURN_THIS_BOOK
 };
 
-void textui_cmd_ignore_menu(struct object *obj)
+/**
+ * Ask how many and whether they mean it, then queue the burning (ZangbandTK).
+ * True if it was queued.
+ */
+static bool ignore_menu_burn(struct object *obj)
+{
+	char o_name[80];
+	char question[120];
+	int amt = 1;
+
+	if (obj->number > 1) {
+		amt = get_quantity(NULL, obj->number);
+		if (amt <= 0) return false;
+	}
+
+	object_desc(o_name, sizeof(o_name), obj,
+		ODESC_PREFIX | ODESC_FULL | ODESC_ALTNUM | (amt << 16), player);
+	strnfmt(question, sizeof(question), "Really burn %s? ", o_name);
+	if (!get_check(question)) return false;
+
+	cmdq_push(CMD_BURN);
+	cmd_set_arg_item(cmdq_peek(), "item", obj);
+	cmd_set_arg_number(cmdq_peek(), "quantity", amt);
+	return true;
+}
+
+/**
+ * The ignore menu for one item.
+ *
+ * Returns true if it queued a command, which only burning a book does: a
+ * Warrior's or a Paladin's way to destroy one for the experience, since 4.2
+ * has no destroy command for it to belong to.  It goes last, so that the
+ * menu's first choice, and the key pressed to take it, are what they were.
+ */
+bool textui_cmd_ignore_menu(struct object *obj)
 {
 	char out_val[160];
 
@@ -1715,9 +1750,10 @@ void textui_cmd_ignore_menu(struct object *obj)
 	int selected;
 	uint8_t value;
 	int type;
+	bool queued = false;
 
 	if (!obj)
-		return;
+		return false;
 
 	m = menu_dynamic_new();
 	m->selections = all_letters_nohjkl;
@@ -1781,6 +1817,12 @@ void textui_cmd_ignore_menu(struct object *obj)
 		menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
 	}
 
+	/* Burning, for a book to hand whose burning pays (not one across the room) */
+	if (player_book_burn_exp(player, obj) > 0 && item_is_available(obj)
+			&& obj->known && obj->known->kind == obj->kind) {
+		menu_dynamic_add(m, "Burn this book", BURN_THIS_BOOK);
+	}
+
 	/* Work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
 	r.col = 80 - r.width;
@@ -1813,11 +1855,14 @@ void textui_cmd_ignore_menu(struct object *obj)
 		int ignore_type = ignore_type_of(obj);
 
 		ignore_level[ignore_type] = ignore_value;
+	} else if (selected == BURN_THIS_BOOK) {
+		queued = ignore_menu_burn(obj);
 	}
 
 	player->upkeep->notice |= PN_IGNORE;
 
 	menu_dynamic_free(m);
+	return queued;
 }
 
 void textui_cmd_ignore(void)

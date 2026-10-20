@@ -1191,6 +1191,187 @@ void release_cached_player_data(struct cached_player_data *cache)
 }
 
 
+/* Note a timed effect once, up to the room there is for them. */
+static void origin_add_timed(struct ui_entry_player_origin *o, int t)
+{
+	int i;
+
+	for (i = 0; i < o->n_timed; ++i) {
+		if (o->timed[i] == t) return;
+	}
+	if (o->n_timed < UI_ENTRY_MAX_TIMED) {
+		o->timed[o->n_timed++] = t;
+	}
+}
+
+
+/* The lowest level at which an applying gain carries this object flag. */
+static int gain_level_for_flag(const struct player *p,
+	const struct player_gain *g, int flag)
+{
+	int level = 0;
+
+	for (; g; g = g->next) {
+		if (!player_gain_applies(p, g) || !of_has(g->flags, flag)) continue;
+		if (!level || g->level < level) level = g->level;
+	}
+	return level;
+}
+
+
+/**
+ * Take the character's own value for an entry apart into where it comes from.
+ *
+ * This walks the same bindings, in the same order and with the same
+ * exclusions, as compute_ui_entry_values_for_player() above, and asks of each
+ * input separately what that function asks of them together.  Keep the two in
+ * step: an input added there and not here is a value the Flags page shows and
+ * cannot attribute.
+ */
+void describe_ui_entry_player_origin(const struct ui_entry *entry,
+	const struct player *p, struct ui_entry_player_origin *o)
+{
+	int i, t;
+
+	memset(o, 0, sizeof(*o));
+	if (!p) return;
+
+	for (i = 0; i < entry->n_p_ability; ++i) {
+		int ind = entry->p_abilities[i].ability->index;
+		const char *type = entry->p_abilities[i].ability->type;
+
+		if ((entry->flags & ENTRY_FLAG_TIMED_AUX) &&
+				entry->p_abilities[i].isaux) {
+			continue;
+		}
+
+		if (streq(type, "player")) {
+			if (!player_has(p, ind)) continue;
+			if (pf_has(p->race->pflags, ind)) o->race = true;
+			if (pf_has(p->class->pflags, ind)) o->cls = true;
+			if (pf_has(p->shape->pflags, ind)) o->shape = true;
+		} else if (streq(type, "object")) {
+			int level;
+
+			if (of_has(p->race->flags, ind)) o->race = true;
+			level = gain_level_for_flag(p, p->race->gains, ind);
+			if (level && !o->race) o->race_level = level;
+			if (of_has(p->class->flags, ind)) o->cls = true;
+			level = gain_level_for_flag(p, p->class->gains, ind);
+			if (level && !o->cls) o->class_level = level;
+			if (ind == OF_PROT_FEAR && player_has(p, PF_BRAVERY_30)
+					&& p->lev >= 30 && !o->cls) {
+				o->class_level = 30;
+			}
+			if (of_has(p->shape->flags, ind)
+					&& of_has(p->obj_k->flags, ind)) {
+				o->shape = true;
+			}
+			if (entry->flags & ENTRY_FLAG_TIMED_AUX) {
+				for (t = 0; t < TMD_MAX; ++t) {
+					if (p->timed[t] && timed_effects[t].oflag_dup == ind
+							&& t != TMD_TRAPSAFE) {
+						origin_add_timed(o, t);
+					}
+				}
+				if (ind == OF_TRAP_IMMUNE && p->timed[TMD_TRAPSAFE]) {
+					origin_add_timed(o, TMD_TRAPSAFE);
+				}
+			}
+		} else if (streq(type, "element")) {
+			if (p->race->el_info[ind].res_level) o->race = true;
+			if (p->shape->el_info[ind].res_level
+					&& p->obj_k->el_info[ind].res_level) {
+				o->shape = true;
+			}
+			if (entry->flags & ENTRY_FLAG_TIMED_AUX) {
+				for (t = 0; t < TMD_MAX; ++t) {
+					if (p->timed[t] && timed_effects[t].temp_resist == ind) {
+						origin_add_timed(o, t);
+					}
+				}
+			}
+		}
+	}
+
+	for (i = 0; i < entry->n_obj_prop; ++i) {
+		int ind = entry->obj_props[i].index;
+		int skill_ind, num, den;
+
+		if (entry->obj_props[i].isaux &&
+				(entry->flags & ENTRY_FLAG_TIMED_AUX)) {
+			continue;
+		}
+		if (entry->obj_props[i].type != OBJ_PROPERTY_STAT &&
+				entry->obj_props[i].type != OBJ_PROPERTY_MOD) {
+			continue;
+		}
+		if (p->shape->modifiers[ind]) o->shape = true;
+		modifier_to_skill(ind, &skill_ind, &num, &den);
+		if (skill_ind >= 0 && (p->race->r_skills[skill_ind] * num) / den) {
+			o->race = true;
+		}
+		if (ind == OBJ_MOD_INFRA && p->race->infra) o->race = true;
+
+		/* The same table as get_timed_modifier_effect(). */
+		if (entry->flags & ENTRY_FLAG_TIMED_AUX) {
+			static const struct { int mod; int tmd; } feeds[] = {
+				{ OBJ_MOD_BLOWS, TMD_BLOODLUST },
+				{ OBJ_MOD_INFRA, TMD_SINFRA },
+				{ OBJ_MOD_SPEED, TMD_FAST },
+				{ OBJ_MOD_SPEED, TMD_SPRINT },
+				{ OBJ_MOD_SPEED, TMD_STONESKIN },
+				{ OBJ_MOD_SPEED, TMD_SLOW },
+				{ OBJ_MOD_SPEED, TMD_TERROR },
+				{ OBJ_MOD_STEALTH, TMD_STEALTH },
+			};
+			size_t k;
+
+			for (k = 0; k < N_ELEMENTS(feeds); ++k) {
+				if (feeds[k].mod == ind && p->timed[feeds[k].tmd]) {
+					origin_add_timed(o, feeds[k].tmd);
+				}
+			}
+		}
+	}
+}
+
+
+/**
+ * The first curse on an object that, by itself, gives a value for this entry,
+ * or -1.
+ *
+ * Only a curse the character knows is on the object is considered, and its
+ * value is computed through the same known-rune filter as the object's own, so
+ * naming the curse can never reveal more than the cell already shows.
+ */
+int find_ui_entry_curse_for_object(const struct ui_entry *entry,
+	const struct object *obj, const struct player *p)
+{
+	int ci;
+
+	if (!obj || !obj->curses || !obj->known || !obj->known->curses) {
+		return -1;
+	}
+	for (ci = 1; ci < z_info->curse_max; ++ci) {
+		struct cached_object_data *cache = NULL;
+		int v, a;
+
+		if (!obj->curses[ci].power || !obj->known->curses[ci].power) {
+			continue;
+		}
+		compute_ui_entry_values_for_object(entry, curses[ci].obj, p,
+			&cache, &v, &a);
+		if (cache) release_cached_object_data(cache);
+		if (v != 0 && v != UI_ENTRY_VALUE_NOT_PRESENT
+				&& v != UI_ENTRY_UNKNOWN_VALUE) {
+			return ci;
+		}
+	}
+	return -1;
+}
+
+
 /**
  * Lookup a user interface entry by name.
  *

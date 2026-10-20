@@ -113,6 +113,11 @@ __pycache__/
 tcltk/build/
 tcltk/local/
 
+# SDL2 and its three companion libraries, which scripts/build-sdl2 downloads
+# and builds for the Linux AppImages: the tarballs, their object trees and the
+# install prefix, sdl2/local.  None of it is source; the script is.
+sdl2/
+
 # And four rules above have to be undone inside it.  This repository ignores
 # `configure`, `aclocal.m4`, `*.exe` and `*.map` because for *our* source tree
 # they are build artefacts -- but in an upstream release tarball they are
@@ -169,6 +174,17 @@ src/osx-tty*/
 *-osx-terminal.tar.gz
 *-osx-terminal-intel.tar.gz
 
+# And the Linux packages, which their scripts write at the top level: the
+# terminal tarball, the AppImages, the AppDirs they are packed from, and the
+# squashfs-root that --appimage-extract unpacks one into to check it.
+# README.md says how to build them in the tree, through scripts/in-oldest-linux,
+# and none of this is source.
+*-linux64-terminal.tar.gz
+*.AppImage
+AppDir/
+AppDir.tk/
+squashfs-root/
+
 # The Neon tileset writes two pictures for inspection -- a mock map and a
 # filmstrip of the colour cycle.  They live beside the source art rather than
 # beside the sheet, because Makefile.osx copies lib/tiles wholesale into the
@@ -198,3 +214,5 @@ deleted/*
 # Music for trying the Tk front end's music player: hundreds of megabytes,
 # and the player's own, never the game's.
 tests/music/
+
+.claude/plans/todo.txt

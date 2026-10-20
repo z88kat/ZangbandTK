@@ -52,4 +52,28 @@ void compute_ui_entry_values_for_player(const struct ui_entry *entry,
 void release_cached_object_data(struct cached_object_data *cache);
 void release_cached_player_data(struct cached_player_data *cache);
 
+/**
+ * Where the character's own value for an entry comes from (ZangbandTK).
+ *
+ * compute_ui_entry_values_for_player() folds the race, the class, the level
+ * gains of both and the current shape into one number, which is right for a
+ * total and no use to a player asking "can I lose this?".  This takes the
+ * same inputs apart again.  A level of 0 means innate; above 0, the level the
+ * gain arrived at.  timed[] lists the TMD_ effects feeding the aux value.
+ */
+#define UI_ENTRY_MAX_TIMED (8)
+struct ui_entry_player_origin {
+	bool race;
+	int race_level;
+	bool cls;
+	int class_level;
+	bool shape;
+	int n_timed;
+	int timed[UI_ENTRY_MAX_TIMED];
+};
+void describe_ui_entry_player_origin(const struct ui_entry *entry,
+	const struct player *p, struct ui_entry_player_origin *origin);
+int find_ui_entry_curse_for_object(const struct ui_entry *entry,
+	const struct object *obj, const struct player *p);
+
 #endif /* INCLUDED_UI_ENTRY_H */

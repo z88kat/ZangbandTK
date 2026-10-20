@@ -4,28 +4,29 @@
 Rebuilding Zangband on a modern Angband
 =======================================
 
-Zangband was one of the great Angband variants — a wilderness to cross, towns to
-visit, mutations, pets, chaos patrons, and a bestiary drawn from Roger Zelazny's
-Amber and H. P. Lovecraft's Mythos as much as from Tolkien. Its development
-stopped in 2005, at version 2.7.5-pre1.
+Zangband was one of the great Angband variants. It had a wilderness to cross,
+towns to visit, mutations, pets, chaos patrons, and a bestiary drawn as much
+from Roger Zelazny's Amber and H. P. Lovecraft's Mythos as from Tolkien. Its
+development stopped in 2005, at version 2.7.5-pre1.
 
-Angband did not stop. It is now at 4.2.6, with twenty years of better level
-generation, a real data-driven architecture, and a proper object property
-system that Zangband never had.
+Angband kept going. It's now at 4.2.6, with twenty years of better level
+generation, a data-driven architecture, and a proper object property system
+that Zangband never had.
 
-ZangbandTK puts the first on top of the second. It is not a port: Zangband's
-2005 codebase is not what is worth preserving. Its *character* is.
+ZangbandTK puts the first on top of the second. It isn't a port, because
+Zangband's 2005 code wasn't worth keeping. What it rebuilds is the game's
+*character*.
 
 .. note::
 
-   **Status: feature-complete.** Everything Zangband is known for is in — the
+   **Status: feature-complete.** Everything Zangband is known for is in: the
    wilderness, the towns and their services, thirteen dungeons, the bestiary,
    mutations, chaos patrons, seven realms of magic, pets and nightmare mode.
-   What is left is the polish that turns a working game into one worth
-   standing behind, and a second Mac front end modelled on the original
-   ZangbandTk. :doc:`features` is the honest
-   inventory, and every release so far is still marked a pre-release.
-   Development happens at `GitHub`_.
+   What's left is polish, and finishing the Tk front end, a second application
+   modelled on the original ZangbandTk, which the next release ships on Windows
+   and Linux as well as the Mac. :doc:`features` lists what's in and what
+   isn't, and no release has been played through before it was tagged.
+   Development happens on `GitHub`_.
 
 .. _GitHub: https://github.com/z88kat/ZangbandTK
 
@@ -53,29 +54,28 @@ Start here
       :link: features
       :link-type: doc
 
-      What is in the game now — the wilderness, the bestiary, the lethality —
-      and what is still to come.
+      Everything that's in the game now, and what's still to come.
 
    .. grid-item-card:: Play in the browser
       :link: play
       :link-type: doc
 
-      The real game, compiled to WebAssembly. Nothing to install, and it saves
-      where you left off.
+      The same game, compiled to WebAssembly. There's nothing to install, and
+      it saves where you left off.
 
    .. grid-item-card:: Download
       :link: download
       :link-type: doc
 
-      A disk image for macOS, zips for Windows, an AppImage for Linux — or two
-      commands to build it from source.
+      A disk image for macOS, zips for Windows and an AppImage for Linux. Or
+      build it from source with two commands.
 
    .. grid-item-card:: Documentation
       :link: documentation
       :link-type: doc
 
-      The manual, in four parts. Start with the demonstration if roguelikes are
-      new to you.
+      The manual, in four parts. If roguelikes are new to you, start with the
+      demonstration.
 
    .. grid-item-card:: Release log
       :link: releases
@@ -88,19 +88,18 @@ Start here
 What makes it Zangband
 ======================
 
-Three things, in the order you will notice them.
+The first thing you'll notice is that monsters die sooner, and so do you.
+Every monster has 73% of Angband's hit points and 50% of its armour class,
+which is the difference measured between Zangband 2.7.5 and the Angband it
+forked from. Fights are over in fewer turns, whichever way they were going.
+:doc:`balance` has the full story.
 
-**Monsters die sooner, and so do you.** Every monster carries 73% of Angband's
-hit points and 50% of its armour class — the measured difference between Zangband
-2.7.5 and the Angband it forked from. Fights resolve in fewer turns, in whichever
-direction they were going. :doc:`balance` is the full account.
+Then there's the world. Angband is a town and a staircase; here there's a
+wilderness 2064 grids square, generated from a seed and never stored, with a
+dozen towns standing in it and roads between them. Deep water can be waded into
+and drowned in, the world ends in open sea, and what you drop in the country
+stays where you left it until somebody finds it. :doc:`wilderness` covers it.
 
-**There is a world, not a staircase.** A wilderness 2064 grids square, generated
-from a seed and never stored, with the town standing in it and roads out of it.
-Deep water can be waded and drowned in, the world ends in open sea, and what you
-drop in the country stays where you left it until somebody finds it.
-:doc:`wilderness` covers it.
-
-**The bestiary is not Tolkien's alone.** 387 monsters imported from Zangband,
-including the princes of Amber and the Mythos deities, alongside 51 artifacts and
-16 ego types. :doc:`monsters` and :doc:`objects` have the detail.
+And the monsters aren't all Tolkien's. There are 387 imported from Zangband,
+including the princes of Amber and the Mythos deities, along with 51 artifacts
+and 16 ego types. :doc:`monsters` and :doc:`objects` have the details.

@@ -4,7 +4,7 @@ Zangband for Linux -- terminal build
 This is the curses build of Zangband: the game drawn with characters, in a
 terminal, over ssh if you like.  No window, no tileset, no sound.
 
-x86-64, and any glibc from 2.35 onwards -- Ubuntu 22.04, Debian 12, RHEL 9 and
+x86-64, and any glibc from 2.27 onwards -- Ubuntu 18.04, Debian 10, RHEL 8 and
 anything newer.  Nothing else needs to be installed: ncurses is linked in, so
 it does not matter which one your distribution ships, or whether it ships one
 at all.

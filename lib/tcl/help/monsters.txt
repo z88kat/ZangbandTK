@@ -2,25 +2,22 @@ H	Monsters
 M	monsters
 T	h1	Monsters
 T	h1	\n
-T	p0	ZangbandTK’s bestiary is Angband’s, plus 387 creatures drawn from Zangband. There are 1013 in total, and the additions are not evenly spread: shallow levels are much as you remember them, while the deep dungeon holds a great deal you will not.
+T	p0	ZangbandTK’s bestiary is Angband’s, plus 387 creatures drawn from Zangband. There are 1013 in total, and the additions aren’t evenly spread: shallow levels are much as you remember them, but the deep dungeon holds a great deal you won’t.
 T	p0	\n
 M	where-the-new-monsters-come-from
 T	h2	Where the new monsters come from
 T	h2	\n
 T	p0	Angband’s monsters are Tolkien’s. Zangband layered three further sources on top, and those are what ZangbandTK imports.
 T	p0	\n
-T	p0 strong	Amber.
-T	p0	 The scions of Roger Zelazny’s Amber appear as deep uniques, along with their servants and creatures. They are among the most dangerous things in the game and are meant to be met late. There are twelve of Oberon’s blood — Oberon himself, Benedict, Corwin, Eric, Caine, Gerard, Julian, Bleys, Fiona, Brand, Dworkin and Rinaldo — and the game treats them as a family rather than as twelve separate uniques. Look one up and its recall calls it an 
+T	p0	The first is Roger Zelazny’s Amber. Its scions appear as deep uniques, along with their servants and creatures. They are among the most dangerous things in the game and are meant to be met late. There are twelve of Oberon’s blood: Oberon himself, Benedict, Corwin, Eric, Caine, Gerard, Julian, Bleys, Fiona, Brand, Dworkin and Rinaldo. The game treats the twelve as a family. Look one up and its recall calls it an 
 T	p0 em	Amberite
-T	p0	; some things in the depths can call the whole house down on you at once; and see 
+T	p0	, some things in the depths can call the whole house down on you at once, and 
 L	p0 link	1	#blood-curse	The blood curse of Amber
-T	p0	 below for what killing one may cost.
+T	p0	 below covers what killing one may cost.
 T	p0	\n
-T	p0 strong	The Cthulhu Mythos.
-T	p0	 Nyarlathotep, Hastur, Shub-Niggurath and Tsathoggua dwell at the bottom of the dungeon, attended by formless spawn and dark young.
+T	p0	The second is the Cthulhu Mythos. Nyarlathotep, Hastur, Shub-Niggurath and Tsathoggua dwell at the bottom of the dungeon, attended by formless spawn and dark young.
 T	p0	\n
-T	p0 strong	Chaos.
-T	p0	 Creatures of raw chaos, unstable and unpredictable, scattered throughout the depths.
+T	p0	The third is Chaos: creatures of raw chaos, unstable and unpredictable, scattered throughout the depths.
 T	p0	\n
 M	monsters-that-are-not-what-they-appear
 T	h2	Monsters that are not what they appear
@@ -31,15 +28,15 @@ T	p0	; a cloak may be a
 T	p0 strong	cloaker
 T	p0	; a door may be a 
 T	p0 strong	door mimic
-T	p0	; a patch of floor may be something considerably worse. Two of these classes are new to this game and display as Angband has no symbol for them:
+T	p0	; a patch of floor may be something considerably worse. Two of these classes are new to this game, and since Angband has no symbol for them they get their own:
 T	p0	\n
 T	li1	•\t
 T	li1 code	#
-T	li1	 — wall monsters: sentient stone, drifting mists, and things that live inside the dungeon’s structure
+T	li1	 is for wall monsters: sentient stone, drifting mists, and things that live inside the dungeon’s structure
 T	li1	\n
 T	li1	•\t
 T	li1 code	|
-T	li1	 — animated weapons, which hunt rather than wait
+T	li1	 is for animated weapons, which hunt rather than wait
 T	li1	\n
 T	p0	The rest borrow Angband’s own symbols where its bestiary already had a suitable class: floating spheres display as vortices, ents as trees, standing water as elementals.
 T	p0	\n
@@ -47,99 +44,87 @@ M	the-blood-curse-of-amber
 M	blood-curse
 T	h2	The blood curse of Amber
 T	h2	\n
-T	p0	Killing one of Oberon’s blood is not free. About half the time, a dying Amberite lays a blood curse on whoever killed it: your equipment is cursed, and the Ancient and Foul Curse falls on you two to four times over. That curse is the worst thing in the game — see 
+T	p0	Killing one of Oberon’s blood is not free. About half the time, a dying Amberite lays a blood curse on whoever killed it: your equipment is cursed, and the Ancient and Foul Curse falls on you two to four times over. That curse is the worst thing in the game (see 
 L	p0 link	2	objects	Objects
-T	p0	 — and having it arrive several times in a row, at the end of a fight you only just won, is how a good character dies.
+T	p0	), and having it arrive several times in a row, at the end of a fight you only just won, is how a good character dies.
 T	p0	\n
-T	p0	It is worth knowing before you pick the fight rather than after. There is no way to prevent it and no saving throw against it; the only choice is whether to make the kill at all, and whether to make it in a state fit to survive the aftermath.
+T	p0	There’s no way to prevent it and no saving throw against it. The only choice you get is whether to make the kill at all, and whether to make it in a state fit to survive the aftermath.
 T	p0	\n
-T	p0	Zangband filed this under a two-word comment: 
-T	p0 em	don’t kill Amberites
-T	p0	. It comes out of the books, where a dying prince’s curse is a real and lasting weapon — Corwin lays one on Eric at the end of 
+T	p0	Zangband filed this under a three-word comment: 
+T	p0 em	Don’t kill Amberites
+T	p0	. It comes out of the books, where a prince’s curse is a lasting weapon. Corwin lays one on Eric at the end of 
 T	p0 em	Nine Princes in Amber
-T	p0	, and it outlives them both.
+T	p0	, and it goes on working long after Eric is dead: it’s partly to blame for the Black Road.
 T	p0	\n
 M	monsters-that-talk
 T	h2	Monsters that talk
 T	h2	\n
-T	p0	Eighty-nine of the imported monsters have something to say. They speak in a fight, roughly one turn in eight and only when you can see them; they say something different once they have turned and run; and they have a last word when they die. It is Zangband’s own writing, and it is a large part of why its dungeon felt inhabited rather than stocked.
+T	p0	Eighty-nine of the imported monsters have something to say. They speak in a fight, roughly one turn in eight and only when you can see them. They say something different once they have turned and run, and they have a last word when they die. It’s Zangband’s own writing, and it is a large part of why its dungeon felt inhabited.
 T	p0	\n
-T	p0	There is one thing in it that is not flavour. When a 
-T	p0 strong	unique
-T	p0	 that could talk dies, about one time in ten it turns out there was a price on its head:
+T	p0	One of those last words can pay. When a unique that could talk dies, about one time in ten it turns out there was a price on its head:
 T	p0	\n
 T	pre0	There was a price on Robin Hood, the Outlaw's head.\n
 T	pre0	Robin Hood, the Outlaw was wanted for smuggling.\n
 T	pre0 prelast	You collect a reward of 4750 gold pieces.\n
-T	p0	The reward scales with the monster’s level and runs from 250 gold to 32,000, so a deep unique that happened to be wanted is worth a great deal more than its drop. There is no way to seek this out — you cannot tell in advance which monsters were wanted, and the same monster is not always wanted twice — but it is a reason to read what the dead say rather than scroll past it.
+T	p0	The reward scales with the monster’s level and runs from 250 gold to 32,000, so a deep unique that happened to be wanted is worth a great deal more than its drop. You cannot seek this out. There’s no telling in advance which monsters were wanted, and the same monster isn’t always wanted twice. But it’s a reason not to scroll past what the dead say.
 T	p0	\n
 M	uniques-cannot-be-put-out-of-the-fight
 T	h2	Uniques cannot be put out of the fight
 T	h2	\n
-T	p0	A unique monster is 
-T	p0 strong	never
-T	p0	 put to sleep, slowed, confused or frightened by anything you do to it. Not rarely, not with a good saving throw — never, at any character level, from any spell, wand, staff, scroll or racial power. It is Zangband’s rule and it is deliberate: the unique is the fight the game means you to have, and none of those four is a way around it.
+T	p0	A unique monster is never put to sleep, slowed, confused or frightened by anything you do to it. There’s no saving throw to roll: it doesn’t happen at any character level, from any spell, wand, staff, scroll or racial power. It is Zangband’s rule, because the unique is the fight the game means you to have, and none of those four is a way around it.
 T	p0	\n
-T	p0	That is a change from Angband, which gives a unique a stiff saving throw against all four rather than an exemption, so a low-level unique there can be slept by a determined caster. If you have played 4.2 and expect 
+T	p0	That’s a change from Angband, which gives a unique a stiff saving throw against all four, so a low-level unique there can be slept by a determined caster. If you’ve played 4.2 and expect 
 T	p0 em	Sleep Monsters
-T	p0	 to work on Bullroarer, it will not.
+T	p0	 to work on Bullroarer, it won’t.
 T	p0	\n
-T	p0	Four things this does 
+T	p0	There are four things the rule does 
 T	p0 strong	not
-T	p0	 cover, and they are the ones worth knowing:
+T	p0	 cover:
 T	p0	\n
 T	li1	•\t
-T	li1 strong	Stunning and holding still work
-T	li1	, because Zangband does not exempt uniques from those. A unique can be stunned by a heavy blow like anything else.
+T	li1	Stunning and holding still work, because Zangband does not exempt uniques from those. A unique can be stunned by a heavy blow like anything else.
 T	li1	\n
 T	li1	•\t
-T	li1 strong	Damage still breaks its nerve.
-T	li1	 A unique badly enough hurt flees, the same as any other monster. The immunity is to being 
+T	li1	Damage still breaks its nerve. A unique badly enough hurt flees, the same as any other monster. The immunity is to being 
 T	li1 em	frightened by an effect
 T	li1	, not to fear itself, and a wounded unique running for a corridor is ordinary play.
 T	li1	\n
 T	li1	•\t
-T	li1 strong	It is not protection from harm.
-T	li1	 Everything that does damage still does it.
+T	li1	Everything that does damage still does it.
 T	li1	\n
 T	li1	•\t
-T	li1 strong	Non-uniques are unchanged
-T	li1	 — they keep the graded saving throw, so the same spell that bounces off a unique may well work on its escort.
+T	li1	Non-uniques are unchanged. They keep the graded saving throw, so the same spell that bounces off a unique may well work on its escort.
 T	li1	\n
 M	monsters-that-will-not-be-moved
 T	h2	Monsters that will not be moved
 T	h2	\n
-T	p0	A hundred and two of the imported monsters resist being teleported. This is the answer to a tactic Angband lets you rely on: 
+T	p0	A hundred and two of the imported monsters resist being teleported. That is the answer to a tactic Angband lets you rely on, where 
 T	p0 em	Teleport Other
-T	p0	 removes anything inconvenient, and against these it may simply fail.
+T	p0	 removes anything inconvenient. Against these it may just fail.
 T	p0	\n
-T	p0	It is not a flat immunity, and the difference matters:
+T	p0	How often it fails depends on the monster:
 T	p0	\n
 T	li1	•\t
-T	li1	A 
-T	li1 strong	unique
-T	li1	 that has it is 
+T	li1	A unique that has it is 
 T	li1 em	unaffected
 T	li1	, every time. If you were planning to teleport Oberon out of the way and fight his escort, plan something else.
 T	li1	\n
 T	li1	•\t
-T	li1 strong	Anything else
-T	li1	 gets a saving throw, and a heavy monster makes it more often than a light one. The same creature may be shifted one turn and stand its ground the next, so a failed attempt is worth repeating — up to a point.
+T	li1	Anything else gets a saving throw, and a heavy monster makes it more often than a light one. The same creature may be shifted one turn and stand its ground the next, so a failed attempt is worth repeating, up to a point.
 T	li1	\n
-T	p0	You will see 
+T	p0	You’ll see 
 T	p0 code	is unaffected!
 T	p0	 for the first and 
 T	p0 code	resists!
-T	p0	 for the second, which is how you tell which you are dealing with. The distinction is recorded in the monster’s recall once you have seen it happen: 
+T	p0	 for the second, which is how you tell which you are dealing with. Once you’ve seen it happen, the monster’s recall records it: 
 T	p0 em	cannot be teleported
 T	p0	.
 T	p0	\n
-T	p0	It applies to every way the game has of moving a monster against its will — the teleport-other effects, the blink a nexus attack causes, and the shove of a gravity attack — so there is no side door.
+T	p0	It applies to every way the game has of moving a monster against its will: the teleport-other effects, the blink a nexus attack causes, and the shove of a gravity attack. There’s no side door.
 T	p0	\n
-T	p0 strong	It also refuses to be moved towards you.
-T	p0	 The swap-position mutation trades your square for a monster’s, and a monster with this flag will not make the trade: you get 
+T	p0	It also refuses to be moved towards you. The swap-position mutation trades your square for a monster’s, and a monster with this flag will not make the trade: you get 
 T	p0 code	Your teleportation is blocked!
-T	p0	 and neither of you moves. The flag reads as a defence against being sent away, and it is, but it is a defence against being brought closer as well.
+T	p0	 and neither of you moves. So the flag is a defence against being brought closer as well as against being sent away.
 T	p0	\n
 M	things-it-is-a-mistake-to-touch
 T	h2	Things it is a mistake to touch
@@ -150,25 +135,17 @@ T	p0	,
 T	p0 code	very cold
 T	p0	, or 
 T	p0 code	You get zapped!
-T	p0	, and the damage rises with how big the monster is and how deep it lives. Immunity to the element stops it dead; resistance only blunts it. Some carry two at once, and the recall says so — 
+T	p0	, and the damage rises with how big the monster is and how deep it lives. Immunity to the element stops it dead, and resistance only blunts it. Some have two at once, and the recall shows both: 
 T	p0 em	surrounded by flames and electricity
 T	p0	.
 T	p0	\n
-T	p0	The one thing worth knowing before you meet a coast: 
-T	p0 strong	a monster wrapped in fire will not enter water
-T	p0	. Not the deep sea and not the shallows. It is the oldest tactical fact in this game that Zangband wrote down and never got to use, having no water worth the name; here there is a shoreline, and stepping into it is a way to break off a fight you are losing.
+T	p0	A monster wrapped in fire will not enter water, neither the deep sea nor the shallows. It’s the oldest tactical fact in this game that Zangband wrote down and never got to use, having no water worth the name. Here there’s a shoreline, and stepping into it is a way to break off a fight you’re losing.
 T	p0	\n
-T	p0	Twenty-two others reflect bolt spells. Not balls, not breaths — a single bolt, and about nine times in ten. The bolt does not come back at you: it goes to a grid 
+T	p0	Twenty-two others reflect bolt spells, about nine times in ten. Only a single bolt is reflected, never a ball or a breath. The bolt does not come back at you: it goes to a grid 
 T	p0 em	beside
 T	p0	 you, so it may well miss, and it may equally well hit something standing next to you.
 T	p0	\n
-T	p0	You can have all three yourself. A shield 
-T	p0 strong	of Reflection
-T	p0	, a cloak 
-T	p0 strong	of Immolation
-T	p0	 or 
-T	p0 strong	of Electricity
-T	p0	 does for a monster exactly what the monster’s aura does to you, on the same terms — a monster immune to the element shrugs it off, and your reflected bolt scatters beside whatever cast it.
+T	p0	You can have all three yourself. A shield of Reflection, or a cloak of Immolation or of Electricity, does to a monster exactly what the monster’s aura does to you, on the same terms. A monster immune to the element shrugs it off, and your reflected bolt scatters beside whatever cast it.
 T	p0	\n
 M	five-that-will-not-hold-still
 T	h2	Five that will not hold still
@@ -183,33 +160,33 @@ T	p0	,
 T	p0 strong	Nyarlathotep
 T	p0	 and 
 T	p0 strong	Dworkin Barimen
-T	p0	 are not drawn as themselves. Each time the display refreshes — which for these is every game turn — the symbol is replaced by that of some other creature entirely, and about one time in twenty-five by an 
+T	p0	 are never drawn as themselves. Each time the display refreshes, which for these is every game turn, the symbol is replaced by that of some other creature entirely, and about one time in twenty-five by an 
 T	p0 em	object
 T	p0	 instead. A shapechanger looks like a kobold, then a dragon, then a mushroom, then something else.
 T	p0	\n
-T	p0	Nothing about the monster changes. It has the same stats, the same attacks and the same behaviour throughout; only the glyph moves. That is worth knowing because the obvious inference — that the thing has actually become a dragon and should be fought like one — is wrong, and acting on it is how the flag kills people.
+T	p0	Nothing about the monster changes. It has the same stats, the same attacks and the same behaviour throughout, and only the glyph moves. The obvious guess, that the thing has become a dragon and should be fought like one, is wrong, and acting on it is how the flag kills people.
 T	p0	\n
-T	p0	The company is not accidental. Four of the five are creatures of chaos, and the fifth is Dworkin, who drew the Pattern and lost his mind doing it. In this game he is both a shapechanger and one of Amber’s blood, and he is the only monster who is both.
+T	p0	Four of the five are creatures of chaos, and the fifth is Dworkin, who drew the Pattern and lost his mind doing it. In this game he is both a shapechanger and one of Amber’s blood, and he’s the only monster who is both.
 T	p0	\n
 M	the-one-that-may-not-be-there
 T	h2	The one that may not be there
 T	h2	\n
-T	p0	There is a single 
+T	p0	There’s a single 
 T	p0 strong	quantum monster
-T	p0	 in the game, and it is a poor thing to rely on. Half of what you swing at it passes through — not a miss you can improve on with skill, simply an attack that did not happen. It takes only half its own turns. And now and then it stops existing: no death, no corpse, no experience, just an absence where it was.
+T	p0	 in the game, and it is a poor thing to rely on. Half of what you swing at it passes through. That isn’t a miss you can improve on with skill; the attack just didn’t happen. It takes only half its own turns. And now and then it stops existing. It doesn’t die, it leaves no corpse and you get no experience: there’s just an absence where it was.
 T	p0	\n
-T	p0	You cannot be sent to kill one, which is deliberate: a quest whose target can evaporate is a quest that cannot be finished.
+T	p0	You cannot be sent to kill one, because a quest whose target can evaporate is a quest that can’t be finished.
 T	p0	\n
 M	how-dangerous-are-they
 T	h2	How dangerous are they?
 T	h2	\n
-T	p0	Every monster in the game — Angband’s and Zangband’s alike — carries 73% of its Angband hit points and 50% of its armour class. See 
+T	p0	Every monster in the game, Angband’s and Zangband’s alike, has 73% of its Angband hit points and 50% of its armour class. See 
 L	p0 link	3	balance	How Balance Differs
 T	p0	 for why, and for how to change it.
 T	p0	\n
-T	p0	Imported monsters were placed on Angband’s own difficulty curve rather than keeping Zangband’s numbers, so a Zangband monster at depth 40 should be a reasonable match for an Angband monster at depth 40. Where Zangband’s version was unusually tough or unusually fragile for its depth, that relationship was preserved.
+T	p0	Imported monsters don’t keep Zangband’s numbers. They were placed on Angband’s own difficulty curve, so a Zangband monster at depth 40 should be a reasonable match for an Angband monster at depth 40. Where Zangband’s version was unusually tough or unusually fragile for its depth, it still is.
 T	p0	\n
-T	p0	This is the least-tested part of the game. If something at a given depth feels badly out of place, that is worth reporting.
+T	p0	This is the least-tested part of the game. If something at a given depth feels badly out of place, please report it.
 T	p0	\n
 M	rooms-full-of-them
 T	h2	Rooms full of them
@@ -217,30 +194,27 @@ T	h2	\n
 T	p0	Angband gathers monsters of a kind into pits and nests, and ZangbandTK’s imports make three more of those possible:
 T	p0	\n
 T	li1	•\t
-T	li1 strong	Forests
-T	li1	 — ents, huorns and the older things of the wood
+T	li1	Forests: ents, huorns and the older things of the wood
 T	li1	\n
 T	li1	•\t
-T	li1 strong	The living dungeon
-T	li1	 — sentient walls and the mists that drift between them
+T	li1	The living dungeon: sentient walls and the mists that drift between them
 T	li1	\n
 T	li1	•\t
-T	li1 strong	Elemental
-T	li1	 — spirits and elementals of the four elements
+T	li1	Elemental: spirits and elementals of the four elements
 T	li1	\n
 M	not-yet-implemented
 T	h2	Not yet implemented
 T	h2	\n
-T	p0	Zangband also tagged every monster with the terrain it prefers and the dungeons it belongs in. Those tags are unused here, because this game decides both questions a different way — a dungeon lists the 
+T	p0	Zangband also tagged every monster with the terrain it prefers and the dungeons it belongs in. Those tags are unused here, because this game decides both questions a different way: a dungeon lists the 
 T	p0 em	kinds
-T	p0	 of creature that live in it, and a fish is kept in the water by being a fish. The tags are recorded against the monsters rather than thrown away, in case that ever changes.
+T	p0	 of creature that live in it, and a fish is kept in the water by being a fish. The tags are still recorded against the monsters, in case that ever changes.
 T	p0	\n
 M	things-that-live-in-the-water
 T	h2	Things that live in the water
 T	h2	\n
 T	p0	Twenty-four of the imported monsters are aquatic, drawn as 
 T	p0 code	N
-T	p0	, and they are the only creatures in the game with a place of their own to live. They are in the open sea and the shallows, in the flooded dungeons beneath Amber — Faiella-Bionin and Rebma — and nowhere else at all. A shark cannot come ashore.
+T	p0	, and they are the only creatures in the game with a place of their own to live. They’re in the open sea and the shallows, in the flooded dungeons beneath Amber (Faiella-Bionin and Rebma), and nowhere else at all. A shark cannot come ashore.
 T	p0	\n
 T	p0	They arrived badly. Zangband drew its aquatic monsters with 
 T	p0 code	l
@@ -248,7 +222,7 @@ T	p0	 and Angband draws
 T	p0 em	trees
 T	p0	 with 
 T	p0 code	l
-T	p0	, so the import gave every fish, whale and kraken in the game the character of a tree: unable to feel fear, unable to be confused, regenerating, and — because dungeons choose their inhabitants by kind — living in the forest of Arden. That is fixed, and the fixing is why they now have a letter of their own.
+T	p0	, so the import gave every fish, whale and kraken in the game the character of a tree: unable to feel fear, unable to be confused, regenerating, and, because dungeons choose their inhabitants by kind, living in the forest of Arden. That’s fixed, and fixing it is why they have a letter of their own.
 T	p0	\n
 M	not-everything-is-there-to-be-fought
 T	h2	Not everything is there to be fought
@@ -257,31 +231,30 @@ T	p0	A
 T	p0 strong	white deer
 T	p0	 is a 
 T	p0 code	q
-T	p0	 in white, standing too still and too unafraid of you. Walk into it and it heals you — everything, whatever you were down to — and then bounds away far enough to be out of earshot and carries on grazing somewhere else. That distance is the point: a deer moves quickly and hears well, and one that bounded only a few paces knew exactly where you were and came straight back to be refused again.
+T	p0	 in white, standing too still and too unafraid of you. Walk into it and it heals you, all of it, whatever you were down to. Then it bounds away far enough to be out of earshot and carries on grazing somewhere else. It goes that far because a deer moves quickly and hears well, and one that bounded only a few paces knew exactly where you were and came straight back to be refused again.
 T	p0	\n
-T	p0	It does that once, and then no beast will do it again for a while — about five hundred turns, during which you are carrying a blessing and every deer you meet shies from your hand. Follow the one that blessed you and it will not oblige; nor will the next one you find. Reloading does not persuade them either, because what remembers is you.
+T	p0	It does that once, and then no beast will do it again for a while. For about five hundred turns you’re carrying a blessing, and every deer you meet shies from your hand. Follow the one that blessed you and it won’t oblige, and nor will the next one you find. Reloading doesn’t persuade them either, because what remembers is you.
 T	p0	\n
-T	p0	That is deliberate and it is the whole of the balance. A full heal for nothing is worth having. A full heal for nothing that can be had again a dozen paces later is a character who never needs a potion, and deer are common.
+T	p0	That’s what keeps it balanced. A full heal for nothing is worth having. A full heal for nothing that can be had again a dozen paces later is a character who never needs a potion, and deer are common.
 T	p0	\n
-T	p0	You can kill it, if you want to. It carries nothing and is worth no experience, and it will not fight back.
+T	p0	You can kill it, if you want to. It carries nothing, is worth no experience, and won’t fight back.
 T	p0	\n
-T	p0	Deer are uncommon and live in quiet country. Finding one is luck, not a plan.
+T	p0	Deer are commonest in quiet country, where there’s less of anything bigger.
 T	p0	\n
-T	p0	And there is one of them that is not a deer.
-T	p0	\n
+T	p0	And there’s one of them that isn’t a deer. 
 T	p0 strong	The Unicorn of Amber
-T	p0	 is silver-white, watches you with an interest you have not earned, and is always about to leave. She is the oldest thing in Amber and there is exactly one of her in the world.
+T	p0	 is silver-white, watches you with an interest you have not earned, and is always about to leave. She is the oldest thing in Amber and there’s exactly one of her in the world.
 T	p0	\n
-T	p0	Walk into her and she makes you whole. Not your wounds only — everything the healer in a town will sell you and charge for: the poison, the cuts, the stunning, the blindness, the confusion, the fear, your drained stats, and the levels a life-draining touch took off you. All of it, at once, for nothing.
+T	p0	Walk into her and she makes you whole: your wounds, and everything the healer in a town will sell you and charge for. That’s the poison, the cuts, the stunning, the blindness, the confusion, the fear, your drained stats, and the levels a life-draining touch took off you, all of it at once, for nothing.
 T	p0	\n
-T	p0	Once. Then she goes about her business, and if you find her again she will shy from your hand like any other beast.
+T	p0	She does it once. Then she goes about her business, and if you find her again she’ll shy from your hand like any other beast.
 T	p0	\n
-T	p0	She will not fight you, and killing her is possible and is exactly the sort of thing the Courts would do.
+T	p0	She will not fight you. Killing her is possible, and it’s exactly the sort of thing the Courts would do.
 T	p0	\n
 M	things-that-fly-and-things-that-swim
 T	h2	Things that fly, and things that swim
 T	h2	\n
-T	p0	Deep water stops most creatures, and it is meant to: wading out of reach is one of the few ways to break a pursuit in open country. It does not stop everything. 117 of the imported monsters fly and 91 swim, and those cross the water after you — a raven does not resist drowning, it simply never touches the surface.
+T	p0	Deep water stops most creatures, and it’s meant to, because wading out of reach is one of the few ways to break a pursuit in open country. It does not stop everything. 117 of the imported monsters fly and 91 swim, and those cross the water after you. A raven doesn’t resist drowning; it just never touches the surface.
 T	p0	\n
 T	p0	What flies also crosses lava, which is the same rule seen from the other side. And a creature of the water stays in the water unless it can also fly, so the sea is a wall for the shark in both directions.
 T	p0	\n

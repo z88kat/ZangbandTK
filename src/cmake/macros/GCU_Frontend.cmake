@@ -190,7 +190,8 @@ endfunction()
 # distributions that matter, so the terminal driver lives in libtinfo and
 # libncursesw.a alone leaves better than a thousand symbols undefined.  Where
 # ncurses was built without that split there is no tinfo archive to find and
-# ncursesw.a is self-contained, so tinfo is looked for but not required.
+# ncursesw.a is self-contained, so tinfo is looked for but not required.  A
+# third, libgpm.a, follows them where it is installed; see below.
 function(angband_curses_create_static_target _TARGET_OUT)
     # Named with the prefix and suffix in full: find_library takes a name like
     # that literally, which is the whole point -- the plain name would match
@@ -201,6 +202,17 @@ function(angband_curses_create_static_target _TARGET_OUT)
     endif()
     # libtinfow.a first: a few distributions build a separate wide tinfo.
     find_library(CURSES_STATIC_TINFO NAMES libtinfow.a libtinfo.a)
+    # Ubuntu 18.04's archive calls GPM, the console mouse server, directly,
+    # where its shared library loads it at run time, so it needs libgpm.a after
+    # it or the link fails on Gpm_Open.  Later archives do not call it, and
+    # naming an archive nothing calls pulls nothing in.
+    find_library(CURSES_STATIC_GPM NAMES libgpm.a)
+    # And the header that goes with the wide library, which is the one in
+    # include/ncursesw.  Debian and Ubuntu before 2019 have no ncurses.h
+    # anywhere else -- the plain include/ncurses.h is the narrow library's,
+    # from another package -- and the ones after keep a link to it there, as
+    # Fedora does, so it is the one place that works on all of them.
+    find_path(CURSES_STATIC_INCLUDE_DIR ncursesw/ncurses.h)
 
     set(_TARGET Curses::CursesStatic)
     if(NOT TARGET ${_TARGET})
@@ -210,11 +222,19 @@ function(angband_curses_create_static_target _TARGET_OUT)
         else()
             set(_LIBRARIES "${CURSES_STATIC_NCURSES}" "${CURSES_STATIC_TINFO}")
         endif()
+        if(NOT CURSES_STATIC_GPM STREQUAL "CURSES_STATIC_GPM-NOTFOUND")
+            list(APPEND _LIBRARIES "${CURSES_STATIC_GPM}")
+        endif()
         set_target_properties(${_TARGET} PROPERTIES
             INTERFACE_LINK_LIBRARIES "${_LIBRARIES}"
             ANGBAND_PROP_CURSES_NCURSES ON
             ANGBAND_PROP_CURSES_HEADER_NAME "ncurses.h"
         )
+        if(NOT CURSES_STATIC_INCLUDE_DIR STREQUAL "CURSES_STATIC_INCLUDE_DIR-NOTFOUND")
+            set_target_properties(${_TARGET} PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${CURSES_STATIC_INCLUDE_DIR}/ncursesw"
+            )
+        endif()
         angband_curses_test_use_default_colors(${_TARGET})
     endif()
     set(${_TARGET_OUT} ${_TARGET} PARENT_SCOPE)

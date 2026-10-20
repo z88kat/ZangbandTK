@@ -47,7 +47,7 @@ T	h3	How do I report a bug?
 T	h3	\n
 T	p0	Open an issue on the 
 L	p0 link	10	https://github.com/z88kat/ZangbandTK/issues	issue tracker
-T	p0	. If you are sure the bug is Angband’s rather than this game’s, it is worth reporting upstream as well.
+T	p0	. If you’re sure the bug comes from Angband itself, report it upstream as well.
 T	p0	\n
 T	p0	Bug reports should include:
 T	p0	\n
@@ -133,15 +133,15 @@ T	h3	Where does development happen?
 T	h3	\n
 T	p0	On GitHub, at 
 L	p0 link	11	https://github.com/z88kat/ZangbandTK	https://github.com/z88kat/ZangbandTK
-T	p0	 — issues, discussion and pull requests all in the one place.
+T	p0	. Issues, discussion and pull requests are all in the one place.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
 T	p0 note	This section used to answer questions about contributing to 
 T	p0 note em	Angband
-T	p0 note	: post on their forums, their developers will file it, and a patch that does not suit them may mean 
+T	p0 note	: post on their forums, their developers will file it, and a patch that doesn’t suit them may mean 
 T	p0 note em	“you may just be better off writing a variant”
-T	p0 note	. All of which is true, and none of which is about this game — it was pointing anyone who wanted to help at the wrong project. Writing a variant is advice this project has already taken.
+T	p0 note	. All of that is true of Angband, and it was sending anyone who wanted to help this game to the wrong project. Writing a variant is advice this project has already taken.
 T	p0 note	\n
 M	issue-tracker
 M	angband-forum

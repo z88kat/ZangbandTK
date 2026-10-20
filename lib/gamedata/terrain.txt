@@ -241,7 +241,7 @@ priority:20
 flags:SHOP | LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 look-prefix:the entrance to the
 look-in-preposition:at
-desc:Your safe piece of Middle Earth, and the only place you can store goods
+desc:Your safe corner of Shadow, and the only place you can store goods
 desc: apart from on your person.
 
 # ZangbandTK (DEC-145): Zangband's Statue Store, which its great cities had and
@@ -435,7 +435,7 @@ graphics:.:U
 priority:6
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | TRAP
 look-prefix:some
-desc:Wet, sucking mud.  Heavy going.
+desc:Wet, sucking mud.
 
 code:WATER
 name:shallow water
