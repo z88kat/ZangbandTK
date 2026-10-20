@@ -334,17 +334,22 @@ errr grab_int_range(int *lo, int *hi, const char *range, const char *sep)
 	}
 	range = pe;
 	if (sep) {
+		/*
+		 * Its own variable rather than pe: strstr() of a const string is
+		 * a const pointer under glibc 2.43, and pe has to stay non-const
+		 * for strtol().
+		 */
+		const char *found = strstr(range, sep);
 		size_t nonwhite_offset;
 
-		pe = strstr(range, sep);
-		if (!pe) {
+		if (!found) {
 			return PARSE_ERROR_INVALID_VALUE;
 		}
 		nonwhite_offset = strspn(range, " \t");
-		if (range + nonwhite_offset != pe) {
+		if (range + nonwhite_offset != found) {
 			return PARSE_ERROR_INVALID_VALUE;
 		}
-		range = pe + strlen(sep);
+		range = found + strlen(sep);
 		if (!isspace((unsigned char)*range)) {
 			return PARSE_ERROR_INVALID_VALUE;
 		}

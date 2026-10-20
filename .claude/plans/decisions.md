@@ -8833,3 +8833,30 @@ a change to the image rebuilds both. The Tk AppImage still bundles a
 `libpng16` that nothing loads, pulled in by linuxdeploy following
 `libfreetype`'s dependencies; the 22.04 build above carries it too, so it is
 noted rather than fixed.
+
+---
+
+**DEC-159 — Two const fixes for Ubuntu 26.04's GCC 15 and glibc 2.43 (20
+October 2026).** (Build. Fixes four red Linux jobs.)
+
+GitHub began moving `ubuntu-latest` to Ubuntu 26.04 on 19 October, and four
+`linux.yaml` jobs on that label -- Tests, NCurses, SDL2, X11 and Statistics
+Backend -- went red on a97c64452 and every push since, at the same line.
+glibc 2.43 defines `strchr`, `strstr` and their relatives so that a const
+argument gives a const result, and two places in the core kept that result in
+a plain `char *`: `grab_int_range()` in `datafile.c` and
+`grab_element_flag()` in `obj-init.c`. Under `-Werror` each discarded
+qualifier is fatal.
+
+Both are inherited from Angband (e72343073, 2023, and ffc5177a8, 2016), and
+upstream's copy is unchanged as of today, so there was nothing to cherry-pick.
+`grab_element_flag()` only reads `under`, so it becomes `const char *`.
+`grab_int_range()` cannot do the same with `pe`, which `strtol()` writes
+through, so the `strstr()` result gets a `const char *` of its own.
+
+Run: Ubuntu 26.04 (GCC 15.2, glibc 2.43), in each failing job's
+configuration with `ninja -k 0` -- which showed these two were the only
+errors in the whole tree, before the fix -- all four building clean after
+it and `alltests` passing; GCC 7.5 on 18.04 and Apple clang 21 on both
+files, with CI's warnings, clean. The jobs pinned to `ubuntu-22.04` and the
+18.04 container never saw the error and are unaffected.
