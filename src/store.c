@@ -1507,7 +1507,7 @@ static void store_maint(struct store *s)
 }
 
 /**
- * Whether a shop door stays shut, and say so if it does (ZangbandTK, DEC-162).
+ * Whether a shop door stays shut, and say so if it does (ZangbandTK, DEC-163).
  *
  * Zangband's `ironman_shops`, which do_cmd_store() checks before anything else
  * (store.c:2485): every door, the home's included, is locked for the whole

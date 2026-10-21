@@ -733,7 +733,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 
 
 /**
- * The size of a level under birth_small_levels (ZangbandTK, DEC-162).
+ * The size of a level under birth_small_levels (ZangbandTK, DEC-163).
  *
  * \param p is the player
  * \param height is set to the level's height, in grids, when the option is on
@@ -758,7 +758,7 @@ bool small_level_size(const struct player *p, int *height, int *width)
 
 
 /**
- * The base number of monsters a level is given (ZangbandTK, DEC-162).
+ * The base number of monsters a level is given (ZangbandTK, DEC-163).
  *
  * \param p is the player
  * \param height is the level's height, in grids

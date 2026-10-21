@@ -116,7 +116,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   hour before midnight and the Ancient and Foul Curse on the stroke of it; and
   one Word of Recall in six hundred and sixty-six that arrives deeper than you
   asked; and a Golem that can be stunned, which Zangband also does under two
-  other hard options and so waited until this game had them (DEC-162). The
+  other hard options and so waited until this game had them (DEC-163). The
   status line says `Nightmare` in red for as long as the character
   lives — Zangband showed the mode in the character dump alone, which is a file
   you write after you are dead.
@@ -135,7 +135,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   dungeon level somewhere between one screen and a little short of a full one,
   with the base monster count scaled to the area as Zangband scaled it. Zangband
   documented nine more options with nothing here; seven of those it had removed
-  itself before 2.7.5, and the other two were ruled out (DEC-162).
+  itself before 2.7.5, and the other two were ruled out (DEC-163).
 
 **Not yet:** nightmare mode's stage 2 — the things its spoiler describes and
 Zangband never actually built — which is a decision that has not been taken

@@ -813,7 +813,7 @@ static bool labyrinth_check(int depth)
 }
 
 /**
- * Whether a profile can be used in a game of small levels (ZangbandTK, DEC-162).
+ * Whether a profile can be used in a game of small levels (ZangbandTK, DEC-163).
  *
  * The gauntlet's caverns and the hard centre's vault are sized against a full
  * level, and a greater vault is two-thirds of one high, so neither can be made

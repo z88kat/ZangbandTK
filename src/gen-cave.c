@@ -1155,7 +1155,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width,
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-	/* ZangbandTK (DEC-162): always full size, unless born to small levels */
+	/* ZangbandTK (DEC-163): always full size, unless born to small levels */
 	if (small_level_size(p, &height, &width)) {
 		height = MIN(MAX(height, min_height), z_info->dungeon_hgt);
 		width = MIN(MAX(width, min_width), z_info->dungeon_wid);
@@ -3090,7 +3090,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
-	/* ZangbandTK (DEC-162): or Zangband's smaller size, if born to it */
+	/* ZangbandTK (DEC-163): or Zangband's smaller size, if born to it */
 	small_level_size(p, &y_size, &x_size);
 
 	/* Enforce dimension limits */
@@ -3331,7 +3331,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
-	/* ZangbandTK (DEC-162): or Zangband's smaller size, if born to it */
+	/* ZangbandTK (DEC-163): or Zangband's smaller size, if born to it */
 	small_level_size(p, &y_size, &x_size);
 
 	/* Enforce dimension limits */
@@ -3776,7 +3776,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
-	/* ZangbandTK (DEC-162): or Zangband's smaller size, if born to it */
+	/* ZangbandTK (DEC-163): or Zangband's smaller size, if born to it */
 	small_level_size(p, &y_size, &x_size);
 
 	/* Enforce dimension limits */

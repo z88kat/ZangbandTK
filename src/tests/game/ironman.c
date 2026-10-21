@@ -1,6 +1,6 @@
 /* game/ironman.c
  *
- * Two of Zangband's ironman options (DEC-162): `birth_no_stores`, its
+ * Two of Zangband's ironman options (DEC-163): `birth_no_stores`, its
  * `ironman_shops`, and `birth_small_levels`, its `ironman_small_levels`, and
  * the Golem's stun immunity, which closed stores are one of three ways to lose.
  *

@@ -1081,7 +1081,7 @@ weight:190:16
 # PROT_STUN because a Golem cannot be stunned (effects.c:1875) -- one of three
 # grants the archive makes outside player_flags(), which is why it was missed.
 # Only in an easy game, though, and TRAINING_RACE below is what takes it away
-# in a hard one (DEC-162).
+# in a hard one (DEC-163).
 # PROT_CUT: `set_cut()` zeroes the value outright for this race
 # (effects.c:2064).  Nothing in it bleeds.
 obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN | PROT_CUT

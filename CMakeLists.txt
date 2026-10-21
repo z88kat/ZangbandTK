@@ -1021,6 +1021,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/psychic-drain.c
     player/quest.c
     player/realm.c
+    player/shape-powers.c
     player/timed.c
     player/util.c
     player/virtue.c

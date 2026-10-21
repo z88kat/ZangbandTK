@@ -524,7 +524,7 @@ no Zangband analogue.
    though the median barely moved. Applying Zangband's ratio to a distribution that has
    itself shifted may overshoot for the monsters vanilla beefed up. Resolvable only by
    playtest; BAL-14 exists so that retuning is cheap when it is.
-4. ~~Which of Zangband's eleven remaining options are wanted?~~ **Settled by DEC-162
+4. ~~Which of Zangband's eleven remaining options are wanted?~~ **Settled by DEC-163
    (21 October 2026): `ironman_shops` and `ironman_small_levels` are kept, as
    `birth_no_stores` and `birth_small_levels`; the other nine are binned.** The count
    below was wrong: it came from Zangband's help file, which still documents options

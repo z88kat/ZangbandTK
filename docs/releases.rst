@@ -111,7 +111,7 @@ Closed stores and small levels — 21 October 2026
 ------------------------------------------------
 
 - **3.138.0** — **Two of Zangband's ironman options are birth options**
-  (DEC-162). *Stores are permanently closed* locks every shop door for the
+  (DEC-163). *Stores are permanently closed* locks every shop door for the
   whole game, the home's too. Inns and magetowers aren't shops and stay open.
   *Always create unusually small dungeon levels* makes every dungeon level
   somewhere between one screen and a little short of a full level, quest

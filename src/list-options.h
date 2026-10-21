@@ -124,7 +124,7 @@ OP(birth_percent_damage,  "To-damage is a percentage of dice (experimental)",
 BIRTH, false)
 
 /*
- * ZangbandTK (DEC-162): two of Zangband's ironman options, `ironman_shops`
+ * ZangbandTK (DEC-163): two of Zangband's ironman options, `ironman_shops`
  * and `ironman_small_levels`, with their own birth text (tables.c:6271).
  * The other nine Zangband options with no counterpart here were ruled out the
  * same day; seven of them Zangband had already removed itself.  Before
