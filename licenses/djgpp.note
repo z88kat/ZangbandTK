@@ -1,0 +1,2 @@
+Its runtime is linked into the executable.  DJGPP itself, with its sources,
+is available from https://www.delorie.com/djgpp/ .

@@ -192,16 +192,15 @@ jobs:
               version=`scripts/version.sh`
           fi
           echo "version=$version" >> $GITHUB_OUTPUT
-          # Every release is a prerelease, for now.  This used to be decided by
-          # the shape of the version -- a plain X.Y.Z was a full release and
-          # anything else a prerelease -- which describes the tag rather than the
-          # state of the game.  3.1.1 has not been played through, has known bugs
-          # and has whole Zangband features still missing, and GitHub's
-          # prerelease badge is the one place somebody sees that before they
-          # download.  When there is a version worth standing behind without the
-          # qualification, restore the test:
-          #   prerelease=`echo $version | awk '/^[0-9]+\.[0-9]+\.[0-9]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
-          prerelease=true
+          # Decided by the shape of the version: a plain X.Y.Z is a full
+          # release, and anything else -- 3.140.0-rc1 -- is a prerelease.
+          # From 3.1.1 to 3.94.3 every release was marked a prerelease
+          # whatever its tag, because the game had not been played through
+          # and whole Zangband features were missing, and GitHub's badge is
+          # the one place somebody sees that before they download.  3.138.0,
+          # the first with ZangbandTK, is the version the owner stands behind
+          # without that qualification, so the test is back.
+          prerelease=`echo $version | awk '/^[0-9]+\.[0-9]+\.[0-9]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
           echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
           # Nothing is drafted.  Upstream drafts a final release so that a
           # human can write its notes before anybody sees it, and publishes
@@ -492,9 +491,14 @@ jobs:
           mv angband.3dsx ${archive_prefix}.3dsx
           sed -e "s/<version>/${{ steps.store_config.outputs.version }}/g" \
             src/nds/card-readme.txt > README.txt
+          # The C libraries and the console libraries linked into the two
+          # executables, whose licences ask for their notices in every copy:
+          # BlocksDS's for the DS, devkitPro's for the 3DS.
+          scripts/third-party-notices -n Zangband THIRD-PARTY-LICENSES.txt \
+            libnds fatfs picolibc libctru newlib
           zip -9 -r ${archive_prefix}-nintendo.zip \
             ${archive_prefix}.nds ${archive_prefix}.3dsx \
-            zangbandtk LICENSE.md README.txt
+            zangbandtk LICENSE.md THIRD-PARTY-LICENSES.txt README.txt
           echo "archive_file=${archive_prefix}-nintendo.zip" >> $GITHUB_OUTPUT
           ls -lh ${archive_prefix}-nintendo.zip
 
@@ -2155,7 +2159,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           release_tag="${{ steps.store_config.outputs.version }}"
-          options="-t $release_tag --generate-notes"
+          # The notes written for this version, if there are any, and
+          # GitHub's own otherwise -- which, with no pull requests, is only a
+          # link to the commits.  A release somebody will download from
+          # deserves the written kind: which file to take, and what changed.
+          notes=.github/release-notes/$release_tag.md
+          if test -f "$notes" ; then
+              options="-t $release_tag --notes-file $notes"
+          else
+              options="-t $release_tag --generate-notes"
+          fi
           test x"${{ steps.store_config.outputs.draft }}" = xtrue && options="$options -d"
           test x"${{ steps.store_config.outputs.prerelease }}" = xtrue && options="$options -p"
           gh release create $release_tag \

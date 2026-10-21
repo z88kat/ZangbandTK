@@ -99,11 +99,14 @@ mappings and change no art.
 
 ### Bundled libraries
 
-- **libpng** and **zlib**, shipped as DLLs with the Windows build, are under
-  their own permissive licences.
-- **The SDL runtime libraries**, if provided with your copy, are under the
-  [GNU LGPL](http://www.gnu.org/copyleft/lesser.html). SDL is available from
-  <http://www.libsdl.org/>.
+Every download that contains other people's software has a
+`THIRD-PARTY-LICENSES.txt` beside this file, with each of their licences in
+full (`LICENSES.TXT` in the DOS zip). ZangbandTK carries Tcl and Tk, and on
+Windows and Linux SDL2 with the libraries it plays sound and music through.
+The Windows and Linux builds of Zangband carry SDL2, libpng, zlib or ncurses,
+and the DOS, DS and 3DS builds have their C libraries linked in. The same
+texts are in the [licenses](licenses) folder of the source, and
+`scripts/third-party-notices` writes each download's file from them.
 
 ## A note for anyone deriving from this
 

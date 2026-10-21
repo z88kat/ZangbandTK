@@ -53,6 +53,8 @@ fi
 cp "$ROOT/src/borg/borg.txt" "$STAGE/image/borg.txt"
 cp "$ROOT/src/tcl/dmg-readme.txt" "$STAGE/image/README.txt"
 cp "$ROOT/LICENSE.md" "$STAGE/image/LICENSE.md"
+cp "$APP/Contents/Resources/THIRD-PARTY-LICENSES.txt" \
+	"$STAGE/image/THIRD-PARTY-LICENSES.txt"
 
 rm -f "$DMG"
 hdiutil create -quiet -fs HFS+ -volname "$VOLUME" -srcfolder "$STAGE/image" \

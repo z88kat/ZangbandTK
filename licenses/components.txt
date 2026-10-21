@@ -1,0 +1,55 @@
+# The third-party software a download can carry, for scripts/third-party-notices.
+#
+# One line per component, fields separated by tabs:
+#
+#   id   name   home page   library files that are this component
+#
+# The id names the licence beside this file, <id>.txt, which is the licence as
+# its authors wrote it, copied from the source the release builds from, and an
+# optional <id>.note, which says where the component is in the download.
+#
+# The last field is shell patterns for the shared libraries that are this
+# component, matched against the file name only, first line first: so a more
+# specific name has to come before a pattern that would also take it (Tk
+# before Tcl, opusfile before opus).  "-" means it is never a file of its own:
+# it is compiled into something else, and a packager names it explicitly.
+#
+# A packager that scans its package with -s fails on any shared library that
+# matches no line here.  Adding a library to a download means adding a line
+# and its licence, not only copying the file.
+
+tk	Tk	https://www.tcl-lang.org/	libtcl9tk9.0.dylib libtcl9tk9.0.so* tcl9tk90.dll
+tcl	Tcl	https://www.tcl-lang.org/	libtcl9.0.dylib libtcl9.0.so* tcl90.dll
+libtommath	LibTomMath	https://www.libtom.net/LibTomMath/	libtommath*.dll
+zlib	zlib	https://zlib.net/	zlib1.dll libz.so*
+libpng	libpng	http://www.libpng.org/pub/png/libpng.html	libpng*.dll libpng*.so*
+sdl2	SDL2	https://www.libsdl.org/	SDL2.dll libSDL2-2.0.so*
+sdl2_image	SDL2_image	https://github.com/libsdl-org/SDL_image	SDL2_image.dll libSDL2_image-2.0.so*
+sdl2_ttf	SDL2_ttf	https://github.com/libsdl-org/SDL_ttf	SDL2_ttf.dll libSDL2_ttf-2.0.so*
+sdl2_mixer	SDL2_mixer	https://github.com/libsdl-org/SDL_mixer	SDL2_mixer.dll libSDL2_mixer-2.0.so*
+freetype	FreeType	https://freetype.org/	-
+stb_image	stb_image	https://github.com/nothings/stb	-
+qoi	QOI	https://qoiformat.org/	-
+nanosvg	NanoSVG	https://github.com/memononen/nanosvg	-
+miniz	miniz	https://github.com/richgel999/miniz	-
+timidity	Timidity (SDL_mixer's)	https://github.com/libsdl-org/SDL_mixer	-
+minimp3	minimp3	https://github.com/lieff/minimp3	-
+dr_flac	dr_flac	https://github.com/mackron/dr_libs	-
+stb_vorbis	stb_vorbis	https://github.com/nothings/stb	-
+flac	FLAC	https://xiph.org/flac/	libFLAC*.dll
+mpg123	mpg123	https://www.mpg123.de/	libmpg123*.dll
+opusfile	opusfile	https://opus-codec.org/	libopusfile*.dll
+opus	Opus	https://opus-codec.org/	libopus*.dll
+ogg	Ogg	https://xiph.org/ogg/	libogg*.dll
+vorbis	Vorbis	https://xiph.org/vorbis/	libvorbis*.dll
+wavpack	WavPack	https://www.wavpack.com/	libwavpack*.dll
+libxmp	libxmp	https://github.com/libxmp/libxmp	libxmp*.dll
+winpthreads	MinGW-w64 winpthreads	https://www.mingw-w64.org/	libwinpthread*.dll
+ncurses	ncurses	https://invisible-island.net/ncurses/	-
+debian	Libraries from the Linux system	https://www.debian.org/	libX*.so* libxcb*.so* libbsd.so* libmd.so*
+djgpp	DJGPP runtime	https://www.delorie.com/djgpp/	-
+libnds	libnds (BlocksDS)	https://blocksds.skylyrac.net/	-
+fatfs	FatFs	http://elm-chan.org/fsw/ff/	-
+picolibc	picolibc	https://github.com/picolibc/picolibc	-
+libctru	libctru (devkitPro)	https://github.com/devkitPro/libctru	-
+newlib	newlib	https://sourceware.org/newlib/	-

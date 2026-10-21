@@ -1,0 +1,1 @@
+See usr/share/doc/<package>/copyright, beside each library, for its terms.

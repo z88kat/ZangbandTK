@@ -106,5 +106,13 @@ for f in "$NAME"/*.exe "$NAME"/*.dll; do
 	echo "$(basename "$f"): $(objdump -p "$f" | sed -n 's/^[[:space:]]*DLL Name: //p' | tr '\n' ' ')"
 done
 
+# The licences of everything the loop above put in the folder, found from the
+# DLLs themselves, so one bundled without its licence in licenses/ stops the
+# package here.  Timidity is named because it is inside SDL2_mixer.dll rather
+# than a DLL of its own: MSYS2 builds SDL_mixer with MIDI on.
+scripts/third-party-notices -n ZangbandTK -s "$NAME" "$NAME/notices.tmp" timidity
+cp_unix2dos "$NAME/notices.tmp" "$NAME/THIRD-PARTY-LICENSES.txt"
+rm "$NAME/notices.tmp"
+
 zip -9 -q -r "$OUT" "$NAME"
 echo "Wrote $OUT"

@@ -39,14 +39,14 @@ Exceptions
 Parts of a ZangbandTK distribution carry their own terms, which are not the
 Angband licence and which the licence above does not override:
 
-* The SDL runtime libraries (if provided with your copy of the game) are under
-  the following licence:
-
-    The Simple DirectMedia Layer (SDL for short) is a cross-platform library designed to make it easy to write multi-media software, such as games and emulators.
-
-    The Simple DirectMedia Layer library source code is available from: http://www.libsdl.org/
-
-    This library is distributed under the terms of the GNU LGPL license: http://www.gnu.org/copyleft/lesser.html
+* The libraries the downloads carry are under their own licences, and every
+  download that contains other people's software has a
+  ``THIRD-PARTY-LICENSES.txt`` beside ``LICENSE.md`` with each of them in full
+  (``LICENSES.TXT`` in the DOS zip). ZangbandTK carries Tcl and Tk, and on
+  Windows and Linux SDL2 with the libraries it plays sound and music through.
+  The Windows and Linux builds of Zangband carry SDL2, libpng, zlib or
+  ncurses, and the DOS, DS and 3DS builds have their C libraries linked in.
+  The same texts are in the ``licenses`` folder of the source.
 
 .. note::
 

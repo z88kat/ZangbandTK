@@ -141,6 +141,10 @@ dist:
 	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/changes.txt ../changes.txt
 	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/borg.txt borg/borg.txt
 	@cp ../README.md $(TMPDIR)
+	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/LICENSE.md ../LICENSE.md
+	@../scripts/third-party-notices -n Zangband $(TMPDIR)/licenses.tmp djgpp
+	@iconv -f UTF-8 -t CP437//TRANSLIT -o $(TMPDIR)/LICENSES.TXT $(TMPDIR)/licenses.tmp
+	@rm $(TMPDIR)/licenses.tmp
 	@cp $(EXE) $(TMPDIR)
 	zip -r ../$(EXEBASE).zip $(TMPDIR)
 	rm -rf $(TMPDIR)

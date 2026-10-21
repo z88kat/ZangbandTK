@@ -130,6 +130,15 @@ for f in libtcl9.0.so libtcl9tk9.0.so; do
 	}
 done
 
+# The licences of what linuxdeploy bundled, found from the libraries, so one
+# with no licence in licenses/ stops the package here.  The system libraries
+# it took from Ubuntu came with their copyright files; Tcl, Tk and SDL did not.
+# The decoders are named because scripts/build-sdl2 compiles them into
+# SDL2_mixer, where no scan can see them.
+scripts/third-party-notices -n ZangbandTK -s "$APPDIR/usr/lib" \
+	"$APPDIR/usr/share/doc/ZangbandTK/THIRD-PARTY-LICENSES.txt" \
+	ogg opus opusfile minimp3 dr_flac stb_vorbis
+
 # A second pass to pack it, as scripts/pkg_appimage does, naming the custom
 # AppRun again so the default does not replace it; and the output found by
 # what linuxdeploy wrote rather than guessed from the desktop file.

@@ -91,6 +91,13 @@ cp_unix2dos ../src/win/zip-readme.txt README.txt
 # with Unix line endings.
 cp_unix2dos ../LICENSE.md LICENSE.md
 
+# And libpng's and zlib's: in the DLLs beside the 32-bit build, linked into the
+# 64-bit one, which is static.  The scan adds whatever else a DLL here is, and
+# stops the package on one with no licence in licenses/.
+../scripts/third-party-notices -n Zangband -s . notices.tmp libpng zlib
+cp_unix2dos notices.tmp THIRD-PARTY-LICENSES.txt
+rm notices.tmp
+
 # Assumes that all the converted files in docs have names that don't contain
 # spaces or other characters that the shell uses as field separators.
 # First copy the ones that will benefit from newline conversion; then

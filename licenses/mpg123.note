@@ -1,0 +1,5 @@
+mpg123 is under the GNU Lesser General Public License, version 2.1, below.
+It is the unmodified build of MSYS2's mingw-w64-x86_64-mpg123 package, in its
+own DLL, libmpg123-0.dll, which you may replace with a build of your own.
+Its source is available from https://www.mpg123.de/ and the recipe it was
+built with from https://github.com/msys2/MINGW-packages .

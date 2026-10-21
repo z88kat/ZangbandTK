@@ -47,16 +47,16 @@ T	h2	\n
 T	p0	Parts of a ZangbandTK distribution carry their own terms, which are not the Angband licence and which the licence above does not override:
 T	p0	\n
 T	li1	•\t
-T	li1	The SDL runtime libraries (if provided with your copy of the game) are under the following licence:
+T	li1	The libraries the downloads carry are under their own licences, and every download that contains other people’s software has a 
+T	li1 code	THIRD-PARTY-LICENSES.txt
+T	li1	 beside 
+T	li1 code	LICENSE.md
+T	li1	 with each of them in full (
+T	li1 code	LICENSES.TXT
+T	li1	 in the DOS zip). ZangbandTK carries Tcl and Tk, and on Windows and Linux SDL2 with the libraries it plays sound and music through. The Windows and Linux builds of Zangband carry SDL2, libpng, zlib or ncurses, and the DOS, DS and 3DS builds have their C libraries linked in. The same texts are in the 
+T	li1 code	licenses
+T	li1	 folder of the source.
 T	li1	\n
-T	p2	The Simple DirectMedia Layer (SDL for short) is a cross-platform library designed to make it easy to write multi-media software, such as games and emulators.
-T	p2	\n
-T	p2	The Simple DirectMedia Layer library source code is available from: 
-L	p2 link	2	http://www.libsdl.org/	http://www.libsdl.org/
-T	p2	\n
-T	p2	This library is distributed under the terms of the GNU LGPL license: 
-L	p2 link	3	http://www.gnu.org/copyleft/lesser.html	http://www.gnu.org/copyleft/lesser.html
-T	p2	\n
 T	p0 note strong	Note
 T	p0 note	\n
 T	p0 note strong	The tilesets shipped with this game have been changed.
@@ -94,7 +94,7 @@ T	li1	, which those terms allow in terms.
 T	li1	\n
 T	li1	•\t
 T	li1	David Gervais’ (32x32) graphics may be redistributed, modified, and used only under the terms of the 
-L	li1 link	4	http://creativecommons.org/licenses/by/3.0/	Creative Commons Attribution 3.0
+L	li1 link	2	http://creativecommons.org/licenses/by/3.0/	Creative Commons Attribution 3.0
 M	creative-commons-attribution-3-0
 T	li1	 licence. 
 T	li1 strong	Not modified here
@@ -103,7 +103,7 @@ T	li1	\n
 T	li1	•\t
 T	li1 strong	Shockbolt’s (64x64) graphics are not distributed with this game.
 T	li1	 Angband ships them; ZangbandTK may not. The licence grants use “with in-development and released versions of Angband” and expressly withholds it for “other games or projects” — and this is another project: separately named, separately released, with a savefile format of its own. The author offers permission on request and we have not asked, so the tileset was removed in 3.95.0 rather than shipped on an assumption. The terms are at 
-L	li1 link	5	https://angband.readthedocs.io/en/latest/copying.html	Angband’s copying page
+L	li1 link	3	https://angband.readthedocs.io/en/latest/copying.html	Angband’s copying page
 M	angband-s-copying-page
 T	li1	.
 T	li1	\n
@@ -117,9 +117,9 @@ T	li1	 by the appended row described above, on the reading that neither is carve
 T	li1	\n
 T	li1	•\t
 T	li1	The sounds are licenced under the Creative Commons Attribution 4.0 licence. They were created by Dubtrain <
-L	li1 link	6	mailto:angband@dubtrain.com	angband@dubtrain.com
+L	li1 link	4	mailto:angband@dubtrain.com	angband@dubtrain.com
 T	li1	>. You can find them in Wave format at 
-L	li1 link	7	http://www.dubtrain.com/angband/	http://www.dubtrain.com/angband/
+L	li1 link	5	http://www.dubtrain.com/angband/	http://www.dubtrain.com/angband/
 T	li1	.
 T	li1	\n
 T	li1	•\t

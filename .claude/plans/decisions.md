@@ -9379,3 +9379,54 @@ changed C file. sphinx-build -W clean; lib/tcl/help regenerated; slop_lint 12.9
 on the new manual text, every hit the word "stunning". The Tk Birth Options
 page builds its checkboxes from angband_option's rows, so both options appear
 there with no Tk change; that was read in options.tcl, not run.
+
+**DEC-164 — Every download carries the licences of what is in it, releases
+get written notes, and a plain version is a full release again (21 October
+2026).** (Release. Before 3.138.0, the first release with ZangbandTK.)
+
+**The licences.** Nothing but LICENSE.md went into any download, and LICENSE.md
+covered none of the other people's software inside them. Tcl's licence asks for
+its notice "verbatim in any distributions", and the three ZangbandTK packages
+carry Tcl and Tk. The Windows one also carries fifteen MSYS2 DLLs, several of
+them BSD or MIT, which ask the same, and mpg123, which is LGPL. The Linux
+AppImages carry SDL built from source with FreeType, Ogg and Opus compiled in.
+The terminal and AppImage builds link ncurses statically. The DOS build links
+DJGPP's runtime, whose terms let it ship without sources only if the recipient
+is told where DJGPP is. The DS and 3DS builds link picolibc and newlib. And the
+DOS zip did not even have LICENSE.md, which the Angband licence itself asks to
+travel with every copy. LICENSE.md also still called SDL LGPL, which was SDL
+1.2's licence; SDL 2 is zlib.
+
+Now `licenses/` holds each component's licence as its authors wrote it, copied
+from the source the release builds from: the tarballs scripts/build-sdl2 pins
+by SHA-256, the Tcl and Tk source trees, and each project's upstream for what
+MSYS2, devkitPro and BlocksDS supply prebuilt. `licenses/components.txt` names
+them and the library files that are each one. `scripts/third-party-notices`
+writes a download's THIRD-PARTY-LICENSES.txt (LICENSES.TXT in the DOS zip), and
+every packager calls it. With `-s` it reads the package's own .dll, .so and
+.dylib files and fails on one that is no component, so a library cannot reach a
+download without its licence. What is compiled into something else (the
+decoders, FreeType, Timidity in MSYS2's SDL2_mixer, ncurses, the C libraries)
+is named by the packager, beside a comment saying why.
+
+Checked against what ships: the scan run over the 3.138.0 Tk packages from CI,
+the Windows zip's fifteen DLLs all found and a planted unknown DLL refused;
+the Mac bundle packaged, signed, imaged and package-tested with both files
+inside the signature. The Windows and Linux packagers run only in CI, so the
+rehearsal is their first real run. mpg123's LGPL is met by its notice, its own
+replaceable DLL and a pointer to its source; rebuilding SDL_mixer with minimp3,
+as Linux already does, would drop the LGPL component entirely, and is the
+owner's call.
+
+**The notes.** The release job used `--generate-notes`, which with no pull
+requests is a link to the commits and nothing else. A version's notes are now
+`.github/release-notes/<version>.md` when that file exists, and GitHub's
+otherwise. 3.138.0's say which file to take, that the names swapped in 3.128.1,
+how to get past Gatekeeper and SmartScreen, what changed, and what is known
+not to work.
+
+**The prerelease badge.** Every release was marked a prerelease whatever its
+tag, because 3.1.1 had not been played through. The comment said to restore the
+shape test when there was a version worth standing behind, and on the owner's
+ruling 3.138.0 is it: a plain X.Y.Z is a full release, and a suffix such as
+-rc1 is still a prerelease.

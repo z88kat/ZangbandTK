@@ -71,6 +71,9 @@ chmod 755 "$ROOT/zangband"
 cp scripts/linux-tty-readme.txt "$ROOT/README.txt"
 # The licence travels with every copy, which is what the Angband licence asks.
 cp LICENSE.md "$ROOT/LICENSE.md"
+# And ncurses', which asks the same of anyone who hands out a copy, since this
+# executable has ncurses linked into it (GCU_STATIC_CURSES).
+scripts/third-party-notices -n Zangband "$ROOT/THIRD-PARTY-LICENSES.txt" ncurses
 cp src/borg/borg.txt "$ROOT/borg.txt"
 
 # The manual, if it has been built.  Optional so that building the tarball by

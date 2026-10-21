@@ -194,6 +194,16 @@ sed -e 's|\$EXECUTABLE\$|'"$NAME"'|g' \
 	-e 's|\$COPYRIGHT\$|'"$COPYRIGHT"'|g' \
 	"$ROOT/src/tcl/Info.plist.in" > "$APP/Contents/Info.plist"
 
+# 5. The licences: the game's, and those of Tcl and Tk, whose terms ask for
+#    their notice in every copy.  Inside the bundle, so they go wherever the
+#    application is dragged; dmg_macos_tcltk puts copies beside it as well.
+#    The scan of Frameworks is the guard: a library put there without a
+#    licence in licenses/ stops the build here.  Before the signature, which
+#    seals Resources along with everything else.
+cp "$ROOT/LICENSE.md" "$APP/Contents/Resources/LICENSE.md"
+"$ROOT/scripts/third-party-notices" -n "$NAME" -s "$APP/Contents/Frameworks" \
+	"$APP/Contents/Resources/THIRD-PARTY-LICENSES.txt"
+
 # An ad-hoc signature, the same as the release gives Zangband.app: no
 # Developer ID, but a bundle whose every piece is sealed, which is what
 # Gatekeeper and codesign --verify ask of it.  Extended attributes first,

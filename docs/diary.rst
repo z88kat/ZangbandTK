@@ -101,6 +101,39 @@ enough that the game stopped itself. My script only counted lines that said
 thought, and a script that can't tell a crash from a pass isn't checking
 anything.
 
+21 October 2026 — what else is in the box
+=========================================
+
+Steven asked what he had missed before the first release with ZangbandTK in
+it, and the answer turned out to be other people's names. Every download
+carried LICENSE.md and nothing else, and LICENSE.md mentioned none of the
+software inside them. Tcl's licence asks for its notice in every distribution,
+and the Mac image had shipped Tcl and Tk without it. The Windows zip had fifteen
+DLLs MSYS2 had chosen for us, several of whose licences ask for their notice to
+travel with the binary, and one of them LGPL. The DOS zip didn't even have our
+own licence in it.
+
+Working out what to list took longer than writing the list. A file listing
+doesn't show what's compiled in, so I read the build recipes instead.
+scripts/build-sdl2 builds FreeType into SDL2_ttf and Ogg and Opus into
+SDL2_mixer. MSYS2's SDL2_mixer leaves MIDI on, so Timidity is inside that DLL
+under the Artistic Licence. The terminal builds link ncurses statically. The
+licences are now in ``licenses/``, copied from the very tarballs the builds
+use where they're pinned, and every packager writes a THIRD-PARTY-LICENSES.txt
+from them. Each packager also checks the libraries it carries against that
+list and refuses one it has no licence for.
+
+I caught myself twice on the way, both times with zsh. A loop meant to
+download and checksum seven tarballs printed seven "ok" lines while
+downloading nothing, because zsh doesn't split ``$pair`` and the comparison
+was between two empty strings. It's the same lesson as yesterday's negative
+control, in a smaller place: a check I haven't seen fail isn't a check yet.
+
+The release also gets notes of its own now, saying which of fifteen files to
+take and that the two Mac applications swapped names, and a plain version
+number makes a full release again rather than a pre-release.
+
+
 20 October 2026 — the Flags page, and every empty hand resisting blindness
 ==========================================================================
 

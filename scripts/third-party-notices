@@ -1,0 +1,155 @@
+#!/bin/sh
+#
+# Write the licences of the other people's software a download carries.
+#
+# Use in the root directory of the game, like so:
+#    scripts/third-party-notices [-n name] [-s dir]... output [component...]
+#
+# Every component named is written to the output: its name, its home page,
+# a note on where it is in the download, and its licence in full, which most
+# of them require of anyone who hands out a copy.  The components and their
+# licences are in licenses/; components.txt there lists them.
+#
+# -s scans a directory of the package for shared libraries -- .dll, .dylib,
+# .so -- and adds whichever component each one is.  A library that is no
+# component in components.txt is an error, so a new DLL cannot reach a
+# download without its licence: the error says what to add.  Components that
+# are compiled into something else cannot be found that way, and are named on
+# the command line instead.
+#
+# -n is the download's name for the heading: ZangbandTK or Zangband.
+set -o errexit
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+DIR=$ROOT/licenses
+MANIFEST=$DIR/components.txt
+TAB=$(printf '\t')
+
+usage() {
+	sed -n -e '3,6p' "$0" | sed -e 's/^# \{0,1\}//' >&2
+	exit 1
+}
+
+name=ZangbandTK
+scan=""
+while getopts n:s: opt ; do
+	case $opt in
+		n) name=$OPTARG ;;
+		s) scan="$scan$OPTARG$TAB" ;;
+		*) usage ;;
+	esac
+done
+shift $((OPTIND - 1))
+[ $# -ge 1 ] || usage
+out=$1
+shift
+
+# The manifest without its comments: id, name, home page, library patterns.
+table=$(grep -v -e '^#' -e '^[[:space:]]*$' "$MANIFEST")
+
+# Which component a library file is, by its name, or nothing.
+component_of() {
+	base=$1
+	# Patterns, not file names: no globbing while they are split.
+	set -f
+	result=""
+	oldifs=$IFS
+	IFS='
+'
+	for line in $table ; do
+		IFS=$TAB
+		set -- $line
+		IFS=' '
+		for pattern in $4 ; do
+			[ "$pattern" = "-" ] && continue
+			case $base in
+				$pattern) result=$1 ; break 2 ;;
+			esac
+		done
+		IFS='
+'
+	done
+	IFS=$oldifs
+	set +f
+	echo "$result"
+}
+
+wanted=" $* "
+unknown=""
+list=$(mktemp)
+trap 'rm -f "$list"' EXIT
+IFS=$TAB
+for dir in $scan ; do
+	IFS=' '
+	find "$dir" -type f \( -name '*.dll' -o -name '*.dylib' -o -name '*.so' \
+		-o -name '*.so.*' \) > "$list"
+	while IFS= read -r file ; do
+		base=$(basename "$file")
+		id=$(component_of "$base")
+		if [ -z "$id" ] ; then
+			unknown="$unknown  $file
+"
+		else
+			case $wanted in
+				*" $id "*) ;;
+				*) wanted="$wanted$id " ;;
+			esac
+		fi
+	done < "$list"
+done
+IFS=' '
+
+if [ -n "$unknown" ] ; then
+	echo "These libraries are in the package but are no component of" >&2
+	echo "licenses/components.txt, so their licences cannot be written:" >&2
+	printf '%s' "$unknown" >&2
+	echo "Add a line for each to licenses/components.txt and its licence as" >&2
+	echo "licenses/<id>.txt, copied from the source it was built from." >&2
+	exit 1
+fi
+
+# Every component asked for has to exist and have its licence.
+for id in $wanted ; do
+	if ! printf '%s\n' "$table" | cut -f1 | grep -qx "$id" ; then
+		echo "No component \"$id\" in licenses/components.txt." >&2
+		exit 1
+	fi
+	if [ ! -s "$DIR/$id.txt" ] ; then
+		echo "Component \"$id\" has no licence, licenses/$id.txt." >&2
+		exit 1
+	fi
+done
+
+# Written in the manifest's order, so two downloads list things alike.
+{
+	heading="Other people's software in this copy of $name"
+	echo "$heading"
+	echo "$heading" | sed 's/./=/g'
+	echo
+	echo "$name is under the Angband licence, which LICENSE.md, beside this"
+	echo "file, sets out together with the terms of its graphics and sounds."
+	echo
+	echo "This copy also contains the software below, written by other people"
+	echo "and distributed under their own licences.  Each licence follows the"
+	echo "list in full, as its authors ask."
+	echo
+	printf '%s\n' "$table" | while IFS=$TAB read -r id cname home libs ; do
+		case $wanted in *" $id "*) ;; *) continue ;; esac
+		printf '  %-32s %s\n' "$cname" "$home"
+	done
+	printf '%s\n' "$table" | while IFS=$TAB read -r id cname home libs ; do
+		case $wanted in *" $id "*) ;; *) continue ;; esac
+		echo
+		echo
+		echo "========================================================================"
+		echo "$cname"
+		echo "$home"
+		echo "========================================================================"
+		echo
+		if [ -s "$DIR/$id.note" ] ; then
+			cat "$DIR/$id.note"
+			echo
+		fi
+		cat "$DIR/$id.txt"
+	done
+} > "$out"

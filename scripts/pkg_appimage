@@ -125,6 +125,16 @@ linuxdeploy \
 mv "$APPDIR/usr/bin/zangband-bin" "$APPDIR/usr/bin/zangband"
 rm -f "$APPDIR/zangband-bin"
 
+# The licences of what linuxdeploy bundled, found from the libraries, so one
+# with no licence in licenses/ stops the package here.  The rest are compiled
+# into something with no file of its own: the decoders and FreeType into the
+# SDL libraries scripts/build-sdl2 makes, and ncurses into the executable,
+# which GCU_STATIC_CURSES links statically.
+scripts/third-party-notices -n Zangband -s "$APPDIR/usr/lib" \
+	"$APPDIR/usr/share/doc/ZangbandTK/THIRD-PARTY-LICENSES.txt" \
+	freetype stb_image qoi nanosvg miniz minimp3 dr_flac stb_vorbis \
+	ogg opus opusfile ncurses
+
 # linuxdeploy names its output from the desktop file, so find whatever it wrote
 # rather than guessing at the name.
 #
