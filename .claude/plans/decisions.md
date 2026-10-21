@@ -4169,6 +4169,12 @@ three settings, which is a different bargain from the one the archive offers.
 > options we genuinely lack are open question 4 in the balance plan. PROT_CUT and PROT_STUN were both built
 for the Golem in 3.118.2 and stay unconditional.
 
+> **Superseded by DEC-162 (21 October 2026).** `ironman_shops` arrived as
+> `birth_no_stores`, so all three of the settings that share the penalty are
+> here, and the reason this ruling gave no longer holds. The Golem now loses
+> PROT_STUN under any of the three, as the source does. PROT_CUT stays
+> unconditional.
+
 **3. Follow the numbers on the invisible walls, and expect a different
 density.** Zangband turns 1 door in 666 into an invisible wall and adds
 `Rand_normal(3, 3)` more per level ([grid.c:125](../zangband/src/grid.c#L125),
@@ -9015,3 +9021,87 @@ Prayers [Blessings of the Grail]?"; the book went, and experience rose by the
 one point a new character is owed. The first reading said 0, because the
 probe read experience while the game was still at the -more- after "You feel
 more experienced.", which is logged before the experience is added.
+
+**DEC-162 — Two of Zangband's ironman options are kept, nine are binned, and a
+Golem can be stunned in a hard game (21 October 2026).** (Game, data. Settles
+open question 4 in phase1-balance-calibration.md; supersedes the second of
+DEC-81's rulings. The owner kept `ironman_shops` and `ironman_small_levels`,
+binned the rest, and chose Zangband's rule for the Golem. 3.138.0.)
+
+**The eleven were seven fewer than they looked.** The September count came from
+Zangband's help file, `lib/help/option.txt`, which still documents options the
+2.7.5-pre1 source no longer has. Only four of the eleven are in tables.c:
+`ironman_shops`, `ironman_small_levels`, `small_levels` and `silly_monsters`.
+The other seven Zangband removed itself, and z_update.txt says so for most:
+`auto_scum`/`ironman_autoscum` and `ironman_rooms` in 2.7.3 ("the new
+dungeon-making algorithm makes much more interesting dungeons", line 1668), the
+two arena options in 2.7.4 (line 1506; arena levels became 1 in 15 of the city
+dungeons, generate.c:635), and `ironman_moria` and `ironman_hard_quests` without
+a dated line. Under DEC-20 that is the archive's own ruling, so the seven are
+not a gap. `silly_monsters` would import 24 joke monsters (the green glutton
+ghost, its 25th, is vanilla's and already here), which DEC-30 rules against.
+`small_levels` makes one level in five small, which the 75-100% shrink the
+modified, moria and lair builders already do covers well enough; its other half
+gates Zangband's destroyed levels, which this generator doesn't have.
+
+**`birth_no_stores`**, "Stores are permanently closed" (tables.c:6271).
+store_is_locked() in store.c says "The doors are locked." and the door isn't
+entered: Zangband's do_cmd_store() check (store.c:2485), the home included.
+It's called from both ways onto a door, walking (player_handle_post_move) and
+holding still (do_cmd_hold), after the shapechange check that already refuses
+entry the same way. Inns and magetowers go through wild_service_at() and stay
+open, as Zangband's bldg.c buildings did.
+
+**`birth_small_levels`**, "Always create unusually small dungeon levels".
+small_level_size() in gen-util.c is Zangband's level_gen() draw
+(generate.c:975): whole 11-grid blocks, at least one screen and short of a full
+level both ways. Zangband rejects a joint draw until it lands in that box, which
+leaves each dimension uniform on its own range, so two independent rand_range()
+calls make the same levels: 22 to 55 high, 66 to 187 wide (our full level is
+Zangband's 66 by 198). Quest levels too, because level_gen() never asks.
+- classic_gen, modified_gen, moria_gen and lair_gen take the draw. Classic was
+  always full size and now isn't; the other three keep their min_height and
+  min_width limits, so persistent levels still fit their stairs.
+- cavern_gen and labyrinth_gen are left alone. A cavern is 1/2 to 3/4 of each
+  dimension, which averages 0.39 of a full level against the small draw's 0.37,
+  and a labyrinth is smaller than either.
+- gauntlet and hard centre are not chosen (profile_allowed() in generate.c),
+  neither at random nor for a dungeon that names one. Both are sized against a
+  full level and the hard centre holds a greater vault up to 44 rows high. So
+  the Abyss builds its levels the ordinary way under this option.
+- level_monster_base() scales the base number of monsters by area, adds one and
+  caps it at the base, as Zangband's cave_gen() did "to make small levels a bit
+  more playable" (generate.c:903): 2 on the smallest level, 11 on the largest.
+  Objects, gold, traps and rubble are not scaled, in Zangband or here.
+
+**The Golem.** player_flags() in player.c takes OF_PROT_STUN out of the race's
+flags when the race has `TRAINING_RACE` and any of birth_nightmare,
+birth_force_descend or birth_no_stores is on: Zangband's set_stun()
+(effects.c:1876) under ironman_nightmare, ironman_downward and ironman_shops,
+"Golems are designed for newbies - not scummers". `ironman_downward` maps to
+birth_force_descend alone, as the DEC-81 correction had it. The flag is in
+list-player-flags.h, on the Golem in p_race.txt, and in player_property.txt as
+*Made for Learning*, so the birth screen says it. Only the racial grant goes: a
+class, a gain or worn gear that gives PROT_STUN still does. The new options sit
+before birth_nightmare in list-options.h, so nightmare is still the last birth
+option, which nightmare.rst says it is.
+
+Run: game/ironman, seven cases. Each failed first (DEC-156) under sixteen
+deliberate breaks: the doors never locked, each of the two entry paths left
+unguarded, gauntlet and hard centre allowed back, each of the four builders
+left at full size, the monster base unscaled, the draw's floor dropped to one
+block, the Golem rule removed, its flag taken out of p_race.txt, each of the
+three options left out of it in turn, and wr_options() skipping
+birth_no_stores. Each was caught by the case meant for it. Twelve random seeds
+in a row ran 7/7. One run looked hung, at full CPU and then not; it was the Mac
+idling the process at night, and the same seed replayed in 9.5 s, so the
+checks after it ran under caffeinate. The first failing save case left its
+savefile in the repo root, because a failed require returns before the delete;
+the file is now deleted in teardown, as game/roundtrip does. The one-block draw also showed why Zangband's floor is there: an 11-row
+level trips the generator's square_in_bounds() assertion, where 502 levels at
+every depth of every dungeon in the real range made none.
+1635/1635 unit, 6/6 integration. GCC 16 with -Wshadow -Werror clean on every
+changed C file. sphinx-build -W clean; lib/tcl/help regenerated; slop_lint 12.9
+on the new manual text, every hit the word "stunning". The Tk Birth Options
+page builds its checkboxes from angband_option's rows, so both options appear
+there with no Tk change; that was read in options.tcl, not run.

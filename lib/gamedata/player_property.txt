@@ -361,3 +361,15 @@ desc:Your faith has enemies, and their books burn.  A Paladin of Life gains
 desc: experience for burning any spellbook only found in the dungeon, except
 desc: one of Life's own; a Paladin of Death, for burning one of Life's.  Ignore
 desc: the book with k and choose to burn it.
+
+# ZangbandTK (DEC-162): Zangband's set_stun() spares a Golem being stunned
+# unless the game is a hard one (effects.c:1876): "Golems are designed for
+# newbies - not scummers."  Only the race's own protection goes; equipment that
+# protects from stunning still does.
+
+type:player
+code:TRAINING_RACE
+name:Made for Learning
+desc:Nothing stuns you in an ordinary game.  In a hard one, under nightmare
+desc: mode, forced descent or closed stores, you can be stunned like anyone
+desc: else, unless something you wear prevents it.

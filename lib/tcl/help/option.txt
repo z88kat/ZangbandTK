@@ -16,31 +16,31 @@ M	option-pages
 T	p0 note strong	Option pages
 T	p0 note	\n
 T	li1 note	•\t
-M	id3
+M	id4
 L	li1 note link	2	#the-options-menu	The options menu
 T	li1 note	\n
 T	li1 note	•\t
-M	id4
+M	id5
 L	li1 note link	3	#user-interface-options	User Interface Options
 T	li1 note	\n
 T	li1 note	•\t
-M	id5
+M	id6
 L	li1 note link	4	#birth-options	Birth options
 T	li1 note	\n
 T	li1 note	•\t
-M	id6
+M	id7
 L	li1 note link	5	#cheating-options	Cheating options
 T	li1 note	\n
 T	li1 note	•\t
-M	id7
+M	id8
 L	li1 note link	6	#debug-commands	Debug commands
 T	li1 note	\n
 T	li1 note	•\t
-M	id8
+M	id9
 L	li1 note link	7	#window-flags	Window flags
 T	li1 note	\n
 T	li1 note	•\t
-M	id9
+M	id10
 L	li1 note link	8	#left-over-information	Left Over Information
 T	li1 note	\n
 M	the-options-menu
@@ -229,6 +229,7 @@ T	dt0	\n
 T	p1	Instead of showing absolute speed modifier (e.g. ‘Slow (-2)’ or ‘Fast (+38)’), show the effective rate at which the character is moving (e.g. ‘Slow (x0.8)’ or ‘Fast (x4.1)’).
 T	p1	\n
 M	birth-options
+M	id1
 T	h2	Birth options
 T	h2	\n
 T	p0	The birth options may only be changed when creating a character or using the quick restart option for a dead character. When setting the birth options, there are a handful of commands to make it easier to get to a well-known state for all of the birth options. They are: ‘s’ to save the current selections so that they will be used as the starting point for future characters, ‘r’ to reset the current selections to the defaults for a new character, and ‘x’ to reset the current selections to the ZangbandTK maintainer’s defaults for the birth options.
@@ -254,6 +255,28 @@ T	dt0 strong	Word of Recall has no effect
 T	dt0 strong code	birth_no_recall
 T	dt0	\n
 T	p1	Word of Recall scrolls have no effect. When combined with the option to force player descent, this recreates the previous “ironman” option.
+T	p1	\n
+T	dt0 strong	Stores are permanently closed 
+T	dt0 strong code	birth_no_stores
+T	dt0	\n
+T	p1	Every shop is locked for the whole game, your home with them, and walking up to a door just tells you so. You live on what you find and what you start with. Inns and magetowers aren’t shops, so you can still take work, sleep at an inn and travel between towns. If you turn off the starting kit as well you’ll start with gold and nothing to spend it on.
+T	p1	\n
+T	p1	This is Zangband’s 
+T	p1 code	ironman_shops
+T	p1	. Like nightmare mode and forced descent, it also takes away a Golem’s immunity to stunning (see 
+L	p1 link	10	birth#golem	Golem
+T	p1	).
+T	p1	\n
+T	dt0 strong	Always create unusually small dungeon levels 
+T	dt0 strong code	birth_small_levels
+T	dt0	\n
+T	p1	Every dungeon level is smaller than usual, anything from one screen (22 rows by 66 columns) to a little short of a full level (55 by 187). Quest levels are small too. The town and the wilderness aren’t touched. A smaller level has fewer monsters, though not as few as its size alone would suggest, and the same amount of treasure, so both are closer together.
+T	p1	\n
+T	p1	Caverns and labyrinths already come in about that size and keep their own. Two rare kinds of level need a full one and aren’t made at all: the gauntlet, two caverns either side of a labyrinth, and the hard centre, built round a greater vault. So the Abyss builds its levels the way most dungeons do.
+T	p1	\n
+T	p1	This is Zangband’s 
+T	p1 code	ironman_small_levels
+T	p1	.
 T	p1	\n
 T	dt0 strong	Restrict creation of artifacts 
 T	dt0 strong code	birth_no_artifacts
@@ -320,7 +343,7 @@ T	dt0	\n
 T	p1	Instead of bonuses to damage being just added on to damage dealt, each +1 adds 5% to the value of the damage dice. This option is currently not very balanced.
 T	p1	\n
 M	cheating-options
-M	id1
+M	id2
 T	h2	Cheating options
 T	h2	\n
 T	p0	Press 
@@ -395,7 +418,7 @@ T	dt0 strong	Take gold
 T	dt0 strong code	cheat_gold
 T	dt0	\n
 T	p1	Asks how much and puts it in your pocket. This one is ZangbandTK’s. It was added because the 
-L	p1 link	10	towns	magetower
+L	p1 link	11	towns	magetower
 T	p1	 charges a fare, and there was no way to test whether the fares were sensible without a purse to test them with.
 T	p1	\n
 T	p1	It works like a button: select it, give an amount, and it turns itself back off. The record that a cheat was used stays.
@@ -413,11 +436,11 @@ T	dt0	\n
 T	p1	Puts every town and every dungeon mouth in the world on the map at once.
 T	p1	\n
 T	p1	The 
-L	p1 link	11	towns	magetower
+L	p1 link	12	towns	magetower
 T	p1	 only takes you to towns you’ve stood in and dungeon mouths you’ve seen, so testing anything that happens in a particular town means walking there first. With this on, the magetower can take you anywhere in the world straight away.
 T	p1	\n
 M	debug-commands
-M	id2
+M	id3
 T	h2	Debug commands
 T	h2	\n
 T	p0	A second and much larger set, reached with 

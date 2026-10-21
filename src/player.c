@@ -327,6 +327,21 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 {
 	/* Add racial flags */
 	memcpy(f, p->race->flags, sizeof(p->race->flags));
+
+	/*
+	 * ZangbandTK (DEC-162): a race made for learning the game on keeps its stun
+	 * immunity only while the game is an easy one.  Zangband's set_stun()
+	 * (effects.c:1876) waives it for a Golem under ironman_shops,
+	 * ironman_downward and ironman_nightmare, which are ours as these three.
+	 * Taken from the race's flags alone, so a class, a gain or a worn item that
+	 * protects from stunning still does.
+	 */
+	if (pf_has(p->race->pflags, PF_TRAINING_RACE)
+			&& (OPT(p, birth_nightmare) || OPT(p, birth_force_descend)
+			|| OPT(p, birth_no_stores))) {
+		of_off(f, OF_PROT_STUN);
+	}
+
 	of_union(f, p->class->flags);
 
 	/* Some classes become immune to fear at a certain plevel */

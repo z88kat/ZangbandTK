@@ -1507,6 +1507,22 @@ static void store_maint(struct store *s)
 }
 
 /**
+ * Whether a shop door stays shut, and say so if it does (ZangbandTK, DEC-162).
+ *
+ * Zangband's `ironman_shops`, which do_cmd_store() checks before anything else
+ * (store.c:2485): every door, the home's included, is locked for the whole
+ * game.  Inns and magetowers are buildings rather than shops, so work and
+ * travel are still to be had.
+ */
+bool store_is_locked(struct player *p)
+{
+	if (!OPT(p, birth_no_stores)) return false;
+
+	msg("The doors are locked.");
+	return true;
+}
+
+/**
  * Take a shop's custom in the town the player is actually standing in
  * (ZangbandTK, WLD-15, WLD-16a).
  *

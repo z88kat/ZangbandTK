@@ -95,6 +95,7 @@ struct store {
 extern struct store *stores;
 
 struct store *store_at(struct chunk *c, struct loc grid);
+bool store_is_locked(struct player *p);
 void store_enter(struct store *s);
 void store_stock_at_quality(struct store *s, int tier);
 void store_init(void);

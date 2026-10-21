@@ -2095,6 +2095,7 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 			}
 			return;
 		}
+		if (store_is_locked(p)) return;
 		disturb(p);
 		if (is_involuntary) {
 			cmdq_flush();

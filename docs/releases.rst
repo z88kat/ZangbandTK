@@ -34,8 +34,9 @@ figurine, arrived in 3.129.0; its wand of charm monster has been here since
 3.72.0, as the Wand of Tame Monster, Zangband's own name for it.
 
 **M11, nightmare mode, is done**, closed on 4 October. Stage 1 is every
-behaviour Zangband's own nightmare mode has: sixteen, twelve of them built and
-four ruled out. Stage 2 was the menu of things its spoiler describes and
+behaviour Zangband's own nightmare mode has: sixteen, thirteen of them built
+and three ruled out (the Golem's stun waited until 21 October for the two other
+options that share it). Stage 2 was the menu of things its spoiler describes and
 Zangband never built, and it ended in four additions of our own (DEC-126 to
 DEC-129): more breeders, weaker reflection, nastier mutations, and poor
 shopkeepers who never leave. :doc:`nightmare` keeps the two halves apart.
@@ -105,6 +106,27 @@ number, so it is told here in one place rather than version by version.
 The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
+
+Closed stores and small levels — 21 October 2026
+------------------------------------------------
+
+- **3.138.0** — **Two of Zangband's ironman options are birth options**
+  (DEC-162). *Stores are permanently closed* locks every shop door for the
+  whole game, the home's too. Inns and magetowers aren't shops and stay open.
+  *Always create unusually small dungeon levels* makes every dungeon level
+  somewhere between one screen and a little short of a full level, quest
+  levels included, with fewer monsters and the same treasure. Caverns and
+  labyrinths are that size already and keep their own; the gauntlet and the
+  hard centre need a full level, so they aren't made.
+- **A Golem can be stunned in a hard game**, as in Zangband: under nightmare
+  mode, forced descent or closed stores. Until now it kept the immunity,
+  because the other two options weren't in the game. Gear that protects from
+  stunning still protects it.
+- The other nine of the eleven Zangband options that had nothing here were
+  ruled out. Seven of them Zangband had already removed itself before 2.7.5
+  (autoscum twice over, unusual rooms, arena levels twice over, Moria mode and
+  hard quests), and only its help file still described them. Silly monsters
+  and the "sometimes small" levels option went too.
 
 Book burning — 20 October 2026
 ------------------------------

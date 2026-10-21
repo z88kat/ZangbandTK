@@ -31,6 +31,45 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+21 October 2026 — eleven options that were really four
+======================================================
+
+Steven asked where the eleven missing Zangband options had got to, and then for
+enough detail to decide which to keep. Getting him the detail turned up the
+thing I should have seen in September: seven of the eleven aren't in Zangband's
+last source at all. I'd counted them from its help file, ``option.txt``, which
+still describes options the code had dropped years before. Zangband's own
+changelog says it removed autoscum and unusual rooms in 2.7.3, because the new
+level generator made better dungeons, and the arena levels in 2.7.4. Moria
+mode and hard quests just aren't there. So the archive had already made most
+of this decision, and I'd written it up as eleven open questions.
+
+He kept closed stores and always-small levels, and binned the rest. Closed
+stores was small: one check, called from the two ways you can end up on a shop
+door. Small levels took more thought, because Zangband
+had one level builder and we have nine. Four take Zangband's size draw. Caverns
+and labyrinths I left alone, because I worked it out and a cavern is already
+the size a small level averages. The gauntlet and the hard centre can't be
+small at all, since the hard centre is built round a greater vault that's two
+thirds of a full level high. So with the option on they aren't made, and the
+Abyss loses its usual shape. That was a trade, and I'd rather the option keep
+its promise that every level is small.
+
+Zangband also cuts the monster count on a small level, which I'd have missed
+if I hadn't read its ``cave_gen()`` all the way to the end. Without it the
+smallest level would have had a full level's monsters in a ninth of the room.
+
+The negative controls turned up one thing worth keeping. I dropped the
+smallest draw from two blocks to one to check the test would notice, and it
+did, but not the way I expected: an 11-row level trips an assertion in the
+generator. So Zangband's one-screen minimum is load-bearing, not taste.
+
+And the Golem. In September we let it keep its stun immunity under nightmare,
+because Zangband takes it away under three settings and I wrote that we had
+neither of the other two. We already had one of them, forced descent, and that
+was corrected at the time. Now we have the third too, so the only reason for
+the ruling had gone. I asked, and Steven went with Zangband's rule.
+
 20 October 2026 — burning books, and a crash I nearly counted as a pass
 =======================================================================
 

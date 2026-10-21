@@ -237,6 +237,8 @@ Show effective speed as multiplier ``effective_speed``
   or 'Fast (x4.1)').
 
 
+.. _birth-options:
+
 Birth options
 =============
 
@@ -280,6 +282,31 @@ Force player descent (never make up stairs) ``birth_force_descend``
 Word of Recall has no effect ``birth_no_recall``
   Word of Recall scrolls have no effect.  When combined with the option
   to force player descent, this recreates the previous "ironman" option.
+
+Stores are permanently closed ``birth_no_stores``
+  Every shop is locked for the whole game, your home with them, and walking
+  up to a door just tells you so. You live on what you find and what you
+  start with. Inns and magetowers aren't shops, so you can still take work,
+  sleep at an inn and travel between towns. If you turn off the starting kit
+  as well you'll start with gold and nothing to spend it on.
+
+  This is Zangband's ``ironman_shops``. Like nightmare mode and forced descent,
+  it also takes away a Golem's immunity to stunning (see :ref:`Golem`).
+
+Always create unusually small dungeon levels ``birth_small_levels``
+  Every dungeon level is smaller than usual, anything from one screen (22 rows
+  by 66 columns) to a little short of a full level (55 by 187). Quest levels
+  are small too. The town and the wilderness aren't touched. A smaller level
+  has fewer monsters, though not as few as its size alone would suggest, and
+  the same amount of treasure, so both are closer together.
+
+  Caverns and labyrinths already come in about that size and keep their own.
+  Two rare kinds of level need a full one and aren't made at all: the
+  gauntlet, two caverns either side of a labyrinth, and the hard centre, built
+  round a greater vault. So the Abyss builds its levels the way most dungeons
+  do.
+
+  This is Zangband's ``ironman_small_levels``.
 
 Restrict creation of artifacts ``birth_no_artifacts``
   No artifacts will be created. Ever. Just *how* masochistic are you?

@@ -124,6 +124,18 @@ OP(birth_percent_damage,  "To-damage is a percentage of dice (experimental)",
 BIRTH, false)
 
 /*
+ * ZangbandTK (DEC-162): two of Zangband's ironman options, `ironman_shops`
+ * and `ironman_small_levels`, with their own birth text (tables.c:6271).
+ * The other nine Zangband options with no counterpart here were ruled out the
+ * same day; seven of them Zangband had already removed itself.  Before
+ * nightmare mode, which the manual describes as the last birth option.
+ */
+OP(birth_no_stores,       "Stores are permanently closed",
+BIRTH, false)
+OP(birth_small_levels,    "Always create unusually small dungeon levels",
+BIRTH, false)
+
+/*
  * ZangbandTK (BAL-15): Zangband's nightmare mode, whose own birth text is
  * "Nightmare mode (this isn't even remotely fair!)" (tables.c:6287).
  *

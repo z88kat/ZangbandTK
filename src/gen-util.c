@@ -733,6 +733,61 @@ void alloc_stairs(struct chunk *c, int feat, int num, int minsep, bool sepany,
 
 
 /**
+ * The size of a level under birth_small_levels (ZangbandTK, DEC-162).
+ *
+ * \param p is the player
+ * \param height is set to the level's height, in grids, when the option is on
+ * \param width is set to the level's width, likewise
+ * \return whether the option is on; when it is not, neither is touched.
+ *
+ * Zangband's level_gen() (generate.c:975) draws a height and a width in blocks
+ * of eleven grids, and keeps the draw only if it is at least one screen, 22 by
+ * 66, and short of a full level both ways.  Throwing a joint draw away until it
+ * lands in that box leaves each dimension uniform over its own range, so two
+ * independent draws make the same levels without the loop.  A full level here
+ * is Zangband's 66 by 198, which makes it 22 to 55 high and 66 to 187 wide.
+ */
+bool small_level_size(const struct player *p, int *height, int *width)
+{
+	if (!OPT(p, birth_small_levels)) return false;
+
+	*height = 11 * rand_range(2, z_info->dungeon_hgt / 11 - 1);
+	*width = 11 * rand_range(6, z_info->dungeon_wid / 11 - 1);
+	return true;
+}
+
+
+/**
+ * The base number of monsters a level is given (ZangbandTK, DEC-162).
+ *
+ * \param p is the player
+ * \param height is the level's height, in grids
+ * \param width is the level's width, likewise
+ * \return z_info->level_monster_min, scaled down on a small level.
+ *
+ * On a level birth_small_levels has made smaller, Zangband scales the base by
+ * the level's share of a full one, adds one, and never lets that come out
+ * larger (generate.c:903, "to make small levels a bit more playable").  The
+ * random part and the depth part are added on top as usual.  Caverns and
+ * labyrinths already scale their own numbers by area, and don't use this.
+ */
+int level_monster_base(const struct player *p, int height, int width)
+{
+	int base = z_info->level_monster_min;
+	int scaled;
+
+	if (!OPT(p, birth_small_levels)) return base;
+	if (height >= z_info->dungeon_hgt && width >= z_info->dungeon_wid) {
+		return base;
+	}
+
+	scaled = (base * height) / z_info->dungeon_hgt;
+	scaled = (scaled * width) / z_info->dungeon_wid;
+	return MIN(scaled + 1, base);
+}
+
+
+/**
  * Allocates 'num' random entities in the dungeon.
  * \param c the current chunk
  * \param set where the entity is placed (corridor, room or either)

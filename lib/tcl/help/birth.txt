@@ -223,6 +223,8 @@ T	dt0 strong	Golem
 T	dt0	\n
 T	p1	Not alive, and built rather than born. Enormously strong and tough, extremely stupid, immune to poison, never held or paralysed, never stunned and unable to bleed, and it sees the invisible. Cold hurts it, though. The stun immunity is better than it sounds: a stunned character fights and casts worse and can be knocked out entirely, and nothing in the dungeon can do that to a Golem.
 T	p1	\n
+T	p1	That’s only in an ordinary game. Zangband made the Golem for learning on, and takes the stun immunity away when you ask for a hard game: under nightmare mode, forced descent, or stores that are permanently closed, a Golem can be stunned like anyone else. Something you wear that stops stunning still does.
+T	p1	\n
 T	p1	Its real advantage is that it 
 T	p1 em	is
 T	p1	 armour. A Golem has twenty points of armour class wearing nothing at all, and gains another point every fifth level, so a Golem at 50 is thirty points ahead of any other race before it puts on a single item. No other race has armour of its own. A Monk earns armour class for the slots it leaves empty and loses it when it fills them, where a Golem keeps all of its own under whatever it wears, and that’s most of the reason to be one.

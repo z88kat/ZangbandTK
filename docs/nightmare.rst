@@ -26,7 +26,7 @@ afterwards. That's what makes it irreversible, and it's why it lives in the
 birth menu and nowhere else.
 
 It is not on the race and class menus themselves. Press ``=`` at any of them for
-the birth options, where it's the last of the sixteen:
+the birth options, where it's the last of the eighteen:
 
 .. code-block:: text
 
@@ -122,6 +122,12 @@ dungeon, half the remaining way down in the lower. It won't take you past the
 bottom of the dungeon you're recalling into, so in a shallow one this does
 little. In a deep one it can end a character who was going shopping.
 
+A Golem can be stunned. Ordinarily nothing stuns one, but Zangband made the
+Golem for learning on and takes that away in a hard game. Nightmare is one of
+three ways to ask for one; forced descent and closed stores are the others (see
+:ref:`Golem`). For a while this page said the Golem kept it, because the other
+two options weren't in this game yet.
+
 And four things it does not do
 ------------------------------
 
@@ -159,15 +165,12 @@ a find is as low as it can be, for the whole game, and waiting for a richer
 buyer isn't a plan.
 
 
-Four more things won't be built, and two of those are permanent decisions:
+Three more things won't be built, and one of those is a permanent decision:
 
 - Your score is unaffected. Zangband gives nightmare characters a score bonus,
   but this game's scoring has no multiplier of any kind to attach one to, for
   any birth option. Adding one would mean inventing a system just to port a
   number.
-- A Golem keeps its immunity to stunning. Zangband takes it away, but not for
-  nightmare alone: two other difficulty options do the same, and this game has
-  neither of them.
 
 The other two are the mode's two nightmares, which Zangband triggers at the inn
 and when a sleep attack lands on you:

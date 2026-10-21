@@ -107,7 +107,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   savefile is worse than one that has no effect. [docs/mutations.rst](docs/mutations.rst)
   names them and says what each one is waiting for.
 - **Nightmare mode.** A birth option that cannot be turned off afterwards, and
-  twelve of the sixteen things Zangband's own mode does: monsters with twice the
+  thirteen of the sixteen things Zangband's own mode does: monsters with twice the
   hit points and five more speed, awake from the moment the level is made,
   generated far out of their depth and given no free move when they are
   summoned; stealth worth half as much; sustains that hold twelve times in
@@ -115,22 +115,27 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   creation that does nothing; walls that look like floor; a bell in the last
   hour before midnight and the Ancient and Foul Curse on the stroke of it; and
   one Word of Recall in six hundred and sixty-six that arrives deeper than you
-  asked. The status line says `Nightmare` in red for as long as the character
+  asked; and a Golem that can be stunned, which Zangband also does under two
+  other hard options and so waited until this game had them (DEC-162). The
+  status line says `Nightmare` in red for as long as the character
   lives — Zangband showed the mode in the character dump alone, which is a file
   you write after you are dead.
 
-  **The other four were closed by a ruling rather than built**, and the rulings
+  **The other three were closed by a ruling rather than built**, and the rulings
   are in the decision log rather than in the code, because a reader comparing us
   against Zangband will find the difference and needs to know it was chosen.
   Zangband adds twenty points to a score multiplier; 4.2's score is
   `max_exp + 100 * max_depth`, flat and blind to every birth option, so there is
-  nothing to add them to and inventing one would be our design. Zangband strips
-  the Golem's stun immunity, but not for nightmare alone — the penalty is shared
-  across three of its settings and only one of them is this, so stripping it here
-  would be a different bargain from the one the archive offers, and the Golem
-  keeps it. And the mode's two nightmares are not built: one has no hook,
+  nothing to add them to and inventing one would be our design. And the mode's
+  two nightmares are not built: one has no hook,
   because 4.2 has no player sleep state for it to land on, and the other would
   mean choosing a number nobody has a source for. See DEC-81 and DEC-82.
+- **Closed stores and small levels.** Two more of Zangband's ironman birth
+  options: every shop door locked for the whole game, the home's too, and every
+  dungeon level somewhere between one screen and a little short of a full one,
+  with the base monster count scaled to the area as Zangband scaled it. Zangband
+  documented nine more options with nothing here; seven of those it had removed
+  itself before 2.7.5, and the other two were ruled out (DEC-162).
 
 **Not yet:** nightmare mode's stage 2 — the things its spoiler describes and
 Zangband never actually built — which is a decision that has not been taken

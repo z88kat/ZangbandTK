@@ -462,6 +462,11 @@ Golem
   worse and can be knocked out entirely, and nothing in the dungeon can do that
   to a Golem.
 
+  That's only in an ordinary game. Zangband made the Golem for learning on, and
+  takes the stun immunity away when you ask for a hard game: under nightmare
+  mode, forced descent, or stores that are permanently closed, a Golem can be
+  stunned like anyone else. Something you wear that stops stunning still does.
+
   Its real advantage is that it *is* armour. A Golem has twenty points of armour
   class wearing nothing at all, and gains another point every fifth level, so a
   Golem at 50 is thirty points ahead of any other race before it puts on a

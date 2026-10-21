@@ -1135,6 +1135,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width,
 	int by, bx = 0, tby, tbx, key, rarity, built;
 	int num_rooms, size_percent;
 	int dun_unusual = dun->profile->dun_unusual;
+	int height = z_info->dungeon_hgt, width = z_info->dungeon_wid;
 
 	bool **blocks_tried;
 	struct chunk *c;
@@ -1153,7 +1154,13 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width,
 	num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
-	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
+
+	/* ZangbandTK (DEC-162): always full size, unless born to small levels */
+	if (small_level_size(p, &height, &width)) {
+		height = MIN(MAX(height, min_height), z_info->dungeon_hgt);
+		width = MIN(MAX(width, min_width), z_info->dungeon_wid);
+	}
+	c = cave_new(height, width);
 	c->depth = p->depth;
 	ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
@@ -1302,7 +1309,7 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width,
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(8) + k;
+	i = level_monster_base(p, c->height, c->width) + randint1(8) + k;
 
 	/* Put some monsters in the dungeon */
 	for (; i > 0; i--) {
@@ -3083,6 +3090,9 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
+	/* ZangbandTK (DEC-162): or Zangband's smaller size, if born to it */
+	small_level_size(p, &y_size, &x_size);
+
 	/* Enforce dimension limits */
 	y_size = MIN(MAX(y_size, min_height), z_info->dungeon_hgt);
 	x_size = MIN(MAX(x_size, min_width), z_info->dungeon_wid);
@@ -3133,7 +3143,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width,
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(8) + k;
+	i = level_monster_base(p, c->height, c->width) + randint1(8) + k;
 
 	/* Remove all monster restrictions. */
 	mon_restrict(NULL, c->depth, c->depth, true);
@@ -3321,6 +3331,9 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
+	/* ZangbandTK (DEC-162): or Zangband's smaller size, if born to it */
+	small_level_size(p, &y_size, &x_size);
+
 	/* Enforce dimension limits */
 	y_size = MIN(MAX(y_size, min_height), z_info->dungeon_hgt);
 	x_size = MIN(MAX(x_size, min_width), z_info->dungeon_wid);
@@ -3371,7 +3384,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width,
 	}
 
 	/* Pick a base number of monsters */
-	i = z_info->level_monster_min + randint1(8) + k;
+	i = level_monster_base(p, c->height, c->width) + randint1(8) + k;
 
 	/* Moria levels have a high proportion of cave dwellers. */
 	mon_restrict("Moria dwellers", c->depth, c->depth, true);
@@ -3763,6 +3776,9 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width,
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
+	/* ZangbandTK (DEC-162): or Zangband's smaller size, if born to it */
+	small_level_size(p, &y_size, &x_size);
+
 	/* Enforce dimension limits */
 	y_size = MIN(MAX(y_size, min_height), z_info->dungeon_hgt);
 	x_size = MIN(MAX(x_size, min_width), z_info->dungeon_wid);
@@ -3861,7 +3877,7 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width,
 		build_streamer(normal, FEAT_QUARTZ, dun->profile->str.qc);
 
 	/* Pick a larger number of monsters for the lair */
-	i = (z_info->level_monster_min + randint1(20) + k);
+	i = (level_monster_base(p, y_size, x_size) + randint1(20) + k);
 
 	/* Find appropriate monsters */
 	while (true) {

@@ -923,6 +923,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/carry.c
     game/generations.c
     game/integrity.c
+    game/ironman.c
     game/nightmare.c
     game/roundtrip.c
     game/mage.c

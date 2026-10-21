@@ -1738,6 +1738,7 @@ void do_cmd_hold(struct command *cmd)
 			}
 			return;
 		}
+		if (store_is_locked(player)) return;
 		disturb(player);
 		/*
 		 * ZangbandTK (WLD-16a): the shelves belong to the town the player is

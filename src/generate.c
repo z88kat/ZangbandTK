@@ -813,6 +813,22 @@ static bool labyrinth_check(int depth)
 }
 
 /**
+ * Whether a profile can be used in a game of small levels (ZangbandTK, DEC-162).
+ *
+ * The gauntlet's caverns and the hard centre's vault are sized against a full
+ * level, and a greater vault is two-thirds of one high, so neither can be made
+ * small.  birth_small_levels promises that every level is, so they are not
+ * used.  Every other profile is small already or is made so by its builder.
+ */
+static bool profile_allowed(const struct player *p,
+		const struct cave_profile *profile)
+{
+	if (!OPT(p, birth_small_levels)) return true;
+	return !streq(profile->name, "gauntlet")
+		&& !streq(profile->name, "hard centre");
+}
+
+/**
  * Choose a cave profile
  * \param p is the player
  */
@@ -855,7 +871,7 @@ static const struct cave_profile *choose_profile(struct player *p)
 		if (type && type->profile) {
 			const struct cave_profile *want = find_cave_profile(type->profile);
 
-			if (want && want->min_level <= p->depth)
+			if (want && want->min_level <= p->depth && profile_allowed(p, want))
 				return want;
 		}
 	}
@@ -892,7 +908,8 @@ static const struct cave_profile *choose_profile(struct player *p)
 		for (i = 0; i < z_info->profile_max; i++) {
 			struct cave_profile *test_profile = &cave_profiles[i];
 			if (test_profile->alloc <= 0 ||
-				 p->depth < test_profile->min_level) continue;
+				 p->depth < test_profile->min_level ||
+				 !profile_allowed(p, test_profile)) continue;
 			total_alloc += test_profile->alloc;
 			if (randint0(total_alloc) < test_profile->alloc) {
 				profile = test_profile;

@@ -1046,7 +1046,9 @@ description: extremely stupid, immune to poison, never held or paralysed, never
 description: stunned and unable to bleed, sees the invisible -- and is hurt by cold.
 description: The stun immunity is worth more than it sounds: a stunned character
 description: fights and casts worse and can be knocked out entirely, and nothing in
-description: the dungeon can do that to a Golem.
+description: the dungeon can do that to a Golem. Not in a hard game, though: under
+description: nightmare mode, forced descent or closed stores a Golem can be stunned
+description: like anyone else.
 description:Its real advantage is that it is armour. A Golem has twenty points of
 description: armour class wearing nothing at all, and gains another point every fifth
 description: level, so a Golem at 50 is thirty points ahead of any other race before
@@ -1078,9 +1080,12 @@ weight:190:16
 # 35 rather than arriving at birth.
 # PROT_STUN because a Golem cannot be stunned (effects.c:1875) -- one of three
 # grants the archive makes outside player_flags(), which is why it was missed.
+# Only in an easy game, though, and TRAINING_RACE below is what takes it away
+# in a hard one (DEC-162).
 # PROT_CUT: `set_cut()` zeroes the value outright for this race
 # (effects.c:2064).  Nothing in it bleeds.
 obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN | PROT_CUT
+player-flags:TRAINING_RACE
 armour:20:5
 # A Golem gets a twentieth out of food, so Zangband gives it scrolls rather
 # than rations too (birth.c:557).  It keeps its torches: only the Vampire

@@ -315,6 +315,17 @@ description is *"this isn't even remotely fair!"* It's off by default; press
 
 See :doc:`nightmare`, which says what it does and what it doesn't.
 
+Closed stores and small levels
+------------------------------
+
+Two more of Zangband's ironman options, chosen at birth like nightmare mode
+and kept for the whole game. With stores permanently closed, every shop is
+locked, your home too, and you live on what you find. With unusually small
+levels, every dungeon level is somewhere between one screen and a little
+short of a full level, with fewer monsters and just as much treasure.
+Either one, or nightmare, or forced descent, takes away a Golem's immunity to
+stunning, as it did in Zangband. See :ref:`the birth options <birth-options>`.
+
 The original's interface
 ------------------------
 

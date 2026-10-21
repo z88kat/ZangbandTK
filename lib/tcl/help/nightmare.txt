@@ -23,7 +23,7 @@ T	p0	 is a birth option, off by default. Like every birth option it can only be 
 T	p0	\n
 T	p0	It is not on the race and class menus themselves. Press 
 T	p0 code	=
-T	p0	 at any of them for the birth options, where it’s the last of the sixteen:
+T	p0	 at any of them for the birth options, where it’s the last of the eighteen:
 T	p0	\n
 T	pre0 prelast	Nightmare mode (this isn't even remotely fair!)  : no   (birth_nightmare)\n
 T	p0	Press 
@@ -82,6 +82,10 @@ T	p0	A bell tolls before midnight, and then something answers it. It rings four 
 T	p0	\n
 T	p0	Word of Recall occasionally takes you somewhere worse. About one recall in six hundred and sixty-six arrives deeper than you asked: twice as deep in the upper dungeon, half the remaining way down in the lower. It won’t take you past the bottom of the dungeon you’re recalling into, so in a shallow one this does little. In a deep one it can end a character who was going shopping.
 T	p0	\n
+T	p0	A Golem can be stunned. Ordinarily nothing stuns one, but Zangband made the Golem for learning on and takes that away in a hard game. Nightmare is one of three ways to ask for one; forced descent and closed stores are the others (see 
+L	p0 link	1	birth#golem	Golem
+T	p0	). For a while this page said the Golem kept it, because the other two options weren’t in this game yet.
+T	p0	\n
 M	and-four-things-it-does-not-do
 T	h2	And four things it does not do
 T	h2	\n
@@ -97,13 +101,10 @@ T	p0	The changes chaos works on you are worse ones. Ten of the mutations are pur
 T	p0	\n
 T	p0	The shopkeepers are poor, and they never leave. Each shop is run by whichever of its owners has the smallest purse, and the usual rotation that replaces a shopkeeper every so often doesn’t happen. So the most any shop will pay you for a find is as low as it can be, for the whole game, and waiting for a richer buyer isn’t a plan.
 T	p0	\n
-T	p0	Four more things won’t be built, and two of those are permanent decisions:
+T	p0	Three more things won’t be built, and one of those is a permanent decision:
 T	p0	\n
 T	li1	•\t
 T	li1	Your score is unaffected. Zangband gives nightmare characters a score bonus, but this game’s scoring has no multiplier of any kind to attach one to, for any birth option. Adding one would mean inventing a system just to port a number.
-T	li1	\n
-T	li1	•\t
-T	li1	A Golem keeps its immunity to stunning. Zangband takes it away, but not for nightmare alone: two other difficulty options do the same, and this game has neither of them.
 T	li1	\n
 T	p0	The other two are the mode’s two nightmares, which Zangband triggers at the inn and when a sleep attack lands on you:
 T	p0	\n
