@@ -38,7 +38,9 @@ T	p0 strong	A killing in the open.
 T	p0	 The same, but it counts only what dies above ground. What you kill underground is nobody’s business.
 T	p0	\n
 T	p0 strong	Fetching something.
-T	p0	 Bring a particular thing back. It’s finished by having it, and the check is on your pack, so buying it or taking it out of a chest is fetching it just as much as finding it lying about.
+T	p0	 Bring a particular thing back. The job names it in full, as a shop would: 
+T	p0 em	a Potion of Cure Light Wounds
+T	p0	, since there’s a Staff of Cure Light Wounds as well. It’s finished by having it. One that comes into your pack counts as it arrives, so buying it or taking it out of a chest is fetching it just as much as finding it lying about, and one you were already carrying counts as you walk into an inn. You keep it: the inn doesn’t take it off you.
 T	p0	\n
 M	carrying-and-reporting
 T	h2	Carrying and reporting
@@ -57,7 +59,13 @@ T	p0	 as
 T	p0 code	wild:quest-slots
 T	p0	.
 T	p0	\n
-T	p0	Any building that hires will tell you how far along you are, or pay you when you’re done. There’s no haggling over the reward. It’s twenty gold for each creature you were asked for, multiplied by one more than how deep that creature lives, with a floor of twenty gold so that nothing pays nothing. A job for six of something at depth 20 is worth two and a half thousand; the same six at depth 2 are worth three hundred and sixty. Taking work you can barely survive is where the money is, and that’s why you’re told the depth before you accept.
+T	p0	In ZangbandTK the Knowledge window has a Quests page. Pick a job and 
+T	p0 em	What Is Known
+T	p0	 says what it wants, what finishes it, and what it will pay. Finish one and a message tells you any inn will pay you for it.
+T	p0	\n
+T	p0	Any building that hires will tell you how far along you are, or pay you when you’re done. Walk in and choose 
+T	p0 em	Be paid for the work you have done
+T	p0	. There’s no haggling over the reward. It’s twenty gold for each creature you were asked for, multiplied by one more than how deep that creature lives, with a floor of twenty gold so that nothing pays nothing. A job for six of something at depth 20 is worth two and a half thousand; the same six at depth 2 are worth three hundred and sixty. Taking work you can barely survive is where the money is, and that’s why you’re told the depth before you accept.
 T	p0	\n
 T	p0	A bounty picks from anything living down to four levels below the deepest you’ve been. A job down a named dungeon goes to six below that, then is pulled back inside the range that dungeon covers. So a shallow dungeon cannot be made to give you deep work however far you have travelled, and a deep one won’t offer you anything above its own mouth. In both cases what counts is the deepest you’ve 
 T	p0 em	been
