@@ -166,6 +166,19 @@ struct term_data {
 	Tk_PhotoHandle screen;	/* what that image shows */
 	char screen_name[64];	/* the photo's name, to delete it by */
 	bool cursor_visible;
+
+	/*
+	 * The tile layer's pixels, as the photo holds them, drawn here by
+	 * blit_tile() and clear_tiles() and handed to the photo by tiles_flush()
+	 * in one block: see there for why.  dirty_* is the rectangle drawn
+	 * since, in pixels; empty when dirty_x1 is not past dirty_x0.
+	 */
+	unsigned char *pix;	/* pix_w * pix_h * 4, RGBA */
+	int pix_w, pix_h;
+	int dirty_x0, dirty_y0, dirty_x1, dirty_y1;
+
+	/* Per cell: whether its text item is drawn, or hidden as blank. */
+	unsigned char *shown;
 };
 
 /*
@@ -240,8 +253,6 @@ static void clear_tiles(term_data *td, int x, int y, int n);
  */
 static unsigned char *sheet = NULL;	/* RGBA, sheet_w * sheet_h * 4 */
 static int sheet_w = 0, sheet_h = 0;
-static unsigned char *cell_buf = NULL;
-static int cell_buf_size = 0;
 
 /**
  * Turn a role named in lib/tcl/main.tcl into the subwindow that holds it.
@@ -303,6 +314,9 @@ static char colour_name[MAX_COLORS][8];
 static Tcl_Obj *cfg_itemconfigure;
 static Tcl_Obj *cfg_dash_text;
 static Tcl_Obj *cfg_dash_fill;
+static Tcl_Obj *cfg_dash_state;
+static Tcl_Obj *cfg_hidden;
+static Tcl_Obj *cfg_normal;
 
 static void colours_init(void)
 {
@@ -318,11 +332,22 @@ static void colours_init(void)
 
 /**
  * Reconfigure one cell.
+ *
+ * A cell holding only a space is hidden as well, and shown again when it has
+ * something in it.  Canvas text has no background, so a space draws nothing
+ * either way -- but Tk still lays out and draws every text item a repaint
+ * reaches, and in tiles every cell of the map is a space: a step that moved
+ * the view had the canvas draw some 1,800 of them, measured as a quarter of
+ * the step.  A hidden item is passed over.  The text is set all the same, so
+ * what a pane says reads back as it did; the state is sent only when it
+ * changes.
  */
 static void cell_set(term_data *td, int x, int y, const char *ch, int attr)
 {
-	Tcl_Obj *objv[7];
+	Tcl_Obj *objv[9];
+	int objc = 7;
 	int idx = y * td->cols + x;
+	bool blank = (ch[0] == ' ' && ch[1] == '\0');
 	int i;
 
 	if (x < 0 || y < 0 || x >= td->cols || y >= td->rows) return;
@@ -334,14 +359,19 @@ static void cell_set(term_data *td, int x, int y, const char *ch, int attr)
 	objv[4] = Tcl_NewStringObj(ch, -1);
 	objv[5] = cfg_dash_fill;
 	objv[6] = Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1);
+	if (td->shown && td->shown[idx] != !blank) {
+		objv[objc++] = cfg_dash_state;
+		objv[objc++] = blank ? cfg_hidden : cfg_normal;
+		td->shown[idx] = !blank;
+	}
 
-	for (i = 0; i < 7; i++) Tcl_IncrRefCount(objv[i]);
+	for (i = 0; i < objc; i++) Tcl_IncrRefCount(objv[i]);
 
-	if (Tcl_EvalObjv(interp, 7, objv, TCL_EVAL_GLOBAL) != TCL_OK) {
+	if (Tcl_EvalObjv(interp, objc, objv, TCL_EVAL_GLOBAL) != TCL_OK) {
 		plog_fmt("Tcl/Tk: drawing failed: %s", Tcl_GetStringResult(interp));
 	}
 
-	for (i = 0; i < 7; i++) Tcl_DecrRefCount(objv[i]);
+	for (i = 0; i < objc; i++) Tcl_DecrRefCount(objv[i]);
 }
 
 static errr Term_text_tcl(int x, int y, int n, int a, const wchar_t *s)
@@ -634,13 +664,104 @@ done:
  * have one tile each, which is why an object the character merely remembers
  * used to be drawn as brightly as one under their torch.
  */
+/*
+ * The tile layer is drawn into the term's own pixels, and the photo is given
+ * them in one block when Tk is next about to do anything: tiles_flush().
+ *
+ * It used to be given each tile as it was drawn, one Tk_PhotoPutBlock per
+ * tile, and that was most of the time a step took.  Tk_PhotoPutBlock, for any
+ * block with an alpha channel, then looks through the alpha of every pixel in
+ * the whole photo for one that is part transparent (ToggleComplexAlphaIfNeeded
+ * in tkImgPhoto.c), and tiles have none -- every pixel is fully opaque or fully
+ * clear -- so it never stopped early.  A step that redrew the map redrew some
+ * hundreds of tiles and read the whole of a megabyte-sized photo for each:
+ * measured on this Mac, 180 ms a step, two thirds of it in that one function.
+ * One block a refresh reads it once.
+ */
+
+/* Note what was drawn, for tiles_flush. */
+static void tiles_dirty(term_data *t, int x, int y, int w, int h)
+{
+	if (t->dirty_x1 <= t->dirty_x0) {
+		t->dirty_x0 = x;
+		t->dirty_y0 = y;
+		t->dirty_x1 = x + w;
+		t->dirty_y1 = y + h;
+		return;
+	}
+	t->dirty_x0 = MIN(t->dirty_x0, x);
+	t->dirty_y0 = MIN(t->dirty_y0, y);
+	t->dirty_x1 = MAX(t->dirty_x1, x + w);
+	t->dirty_y1 = MAX(t->dirty_y1, y + h);
+}
+
+/*
+ * Give the photo what has been drawn since it was last given anything.
+ *
+ * As a SET of the pixels exactly as they are here, which is the same photo the
+ * tile-at-a-time puts made: the overlay rule they asked Tk for is applied in
+ * blit_tile instead, with Tk's own arithmetic, so a monster on grass blends to
+ * the byte as it did.
+ */
+static void tiles_flush(term_data *t)
+{
+	Tk_PhotoImageBlock blk;
+	Tk_PhotoHandle photo;
+	int x = t->dirty_x0, y = t->dirty_y0;
+	int w = t->dirty_x1 - t->dirty_x0, h = t->dirty_y1 - t->dirty_y0;
+
+	if (w <= 0 || h <= 0) return;
+	t->dirty_x0 = t->dirty_y0 = t->dirty_x1 = t->dirty_y1 = 0;
+	if (!t->pix || !t->screen_name[0] || !interp || Tcl_InterpDeleted(interp))
+		return;
+
+	/*
+	 * Found by name rather than through t->screen: this runs whenever Tcl
+	 * looks for events, which goes on while Tk is shutting down and deleting
+	 * images, and a deleted photo is simply not found.
+	 */
+	photo = Tk_FindPhoto(interp, t->screen_name);
+	if (!photo) return;
+
+	blk.pixelPtr = t->pix + ((size_t)y * t->pix_w + x) * 4;
+	blk.width = w;
+	blk.height = h;
+	blk.pitch = t->pix_w * 4;
+	blk.pixelSize = 4;
+	blk.offset[0] = 0;
+	blk.offset[1] = 1;
+	blk.offset[2] = 2;
+	blk.offset[3] = 3;
+
+	Tk_PhotoPutBlock(interp, photo, &blk, x, y, w, h, TK_PHOTO_COMPOSITE_SET);
+}
+
+static void tiles_flush_all(void)
+{
+	int i;
+
+	for (i = 0; i < td_count; i++) tiles_flush(&td[i]);
+}
+
+/*
+ * Tcl calls this each time it is about to look for something to do -- from
+ * Term_xtra, from a view waiting in its own loop, from an `update` in a script
+ * -- and always before it repaints, so the photo is never behind what was
+ * drawn when anything could look at it.
+ */
+static void tiles_event_setup(void *data, int flags)
+{
+	(void)data;
+	(void)flags;
+	tiles_flush_all();
+}
+
 static void blit_tile(term_data *td, int x, int y, int a, int c, int comp,
 		bool dim)
 {
-	Tk_PhotoImageBlock dst;
-	int tw, th, sx, sy, px, py, dw, dh;
+	int tw, th, sx, sy, px, py, dw, dh, ox, oy, w, h;
 
-	if (!sheet || !td->screen || !current_graphics_mode) return;
+	if (!sheet || !td->pix || !current_graphics_mode) return;
 
 	tw = current_graphics_mode->cell_width;
 	th = current_graphics_mode->cell_height;
@@ -658,46 +779,57 @@ static void blit_tile(term_data *td, int x, int y, int a, int c, int comp,
 	dw = td->cw * tile_width;
 	dh = td->ch * tile_height;
 
-	if (cell_buf_size < dw * dh * 4) {
-		if (cell_buf) mem_free(cell_buf);
-		cell_buf_size = dw * dh * 4;
-		cell_buf = mem_zalloc(cell_buf_size);
-	}
+	/* Clipped to the layer, as the photo, made at the grid's size, clipped. */
+	ox = x * td->cw;
+	oy = y * td->ch;
+	if (ox < 0 || oy < 0) return;
+	w = MIN(dw, td->pix_w - ox);
+	h = MIN(dh, td->pix_h - oy);
+	if (w <= 0 || h <= 0) return;
 
-	for (py = 0; py < dh; py++) {
+	for (py = 0; py < h; py++) {
 		int ty = sy + (py * th) / dh;
+		unsigned char *d = td->pix + ((size_t)(oy + py) * td->pix_w + ox) * 4;
 
-		for (px = 0; px < dw; px++) {
+		for (px = 0; px < w; px++, d += 4) {
 			int tx = sx + (px * tw) / dw;
 			const unsigned char *s = sheet + ((size_t)ty * sheet_w + tx) * 4;
-			unsigned char *d = cell_buf + (py * dw + px) * 4;
+			int r = s[0], g = s[1], b = s[2];
+			/* Alpha is the sheet's own: dimming must not dissolve a tile. */
+			int alpha = s[3];
 
 			if (dim) {
-				d[0] = (unsigned char)((s[0] * DIM_REMEMBERED) >> 8);
-				d[1] = (unsigned char)((s[1] * DIM_REMEMBERED) >> 8);
-				d[2] = (unsigned char)((s[2] * DIM_REMEMBERED) >> 8);
-			} else {
-				d[0] = s[0];
-				d[1] = s[1];
-				d[2] = s[2];
+				r = (r * DIM_REMEMBERED) >> 8;
+				g = (g * DIM_REMEMBERED) >> 8;
+				b = (b * DIM_REMEMBERED) >> 8;
 			}
-			/* Alpha is the sheet's own: dimming must not dissolve a tile. */
-			d[3] = s[3];
+
+			/*
+			 * Tk_PhotoPutBlock's compositing, as tkImgPhoto.c has it: SET
+			 * replaces the pixel, and OVERLAY is Porter and Duff's source
+			 * over, written as Tk's PD_SRC_OVER macros expand so that the
+			 * integer arithmetic rounds where Tk's did.
+			 */
+			if (comp == TK_PHOTO_COMPOSITE_SET || alpha == 255 || !d[3]) {
+				d[0] = (unsigned char)r;
+				d[1] = (unsigned char)g;
+				d[2] = (unsigned char)b;
+				d[3] = (unsigned char)alpha;
+			} else if (alpha) {
+				int under = d[3];
+
+				d[0] = (unsigned char)((r * alpha / 255)
+					+ under * (255 - alpha) / 255 * d[0] / 255);
+				d[1] = (unsigned char)((g * alpha / 255)
+					+ under * (255 - alpha) / 255 * d[1] / 255);
+				d[2] = (unsigned char)((b * alpha / 255)
+					+ under * (255 - alpha) / 255 * d[2] / 255);
+				d[3] = (unsigned char)(alpha + (255 - alpha) * under / 255);
+			}
 		}
 	}
 
-	dst.pixelPtr = cell_buf;
-	dst.width = dw;
-	dst.height = dh;
-	dst.pitch = dw * 4;
-	dst.pixelSize = 4;
-	dst.offset[0] = 0;
-	dst.offset[1] = 1;
-	dst.offset[2] = 2;
-	dst.offset[3] = 3;
-
-	Tk_PhotoPutBlock(interp, td->screen, &dst, x * td->cw, y * td->ch,
-			dw, dh, comp);
+	tiles_dirty(td, ox, oy, w, h);
 }
 
 /**
@@ -708,30 +840,18 @@ static void blit_tile(term_data *td, int x, int y, int a, int c, int comp,
  */
 static void clear_tiles(term_data *td, int x, int y, int n)
 {
-	Tk_PhotoImageBlock blk;
-	int len = n * td->cw * td->ch * 4;
+	int ox = x * td->cw, oy = y * td->ch, w, h, row;
 
-	if (!td->screen || n <= 0) return;
+	if (!td->pix || n <= 0 || ox < 0 || oy < 0) return;
+	w = MIN(n * td->cw, td->pix_w - ox);
+	h = MIN(td->ch, td->pix_h - oy);
+	if (w <= 0 || h <= 0) return;
 
-	if (cell_buf_size < len) {
-		if (cell_buf) mem_free(cell_buf);
-		cell_buf_size = len;
-		cell_buf = mem_zalloc(cell_buf_size);
-	}
-	memset(cell_buf, 0, len);
+	for (row = 0; row < h; row++)
+		memset(td->pix + ((size_t)(oy + row) * td->pix_w + ox) * 4, 0,
+				(size_t)w * 4);
 
-	blk.pixelPtr = cell_buf;
-	blk.width = n * td->cw;
-	blk.height = td->ch;
-	blk.pitch = n * td->cw * 4;
-	blk.pixelSize = 4;
-	blk.offset[0] = 0;
-	blk.offset[1] = 1;
-	blk.offset[2] = 2;
-	blk.offset[3] = 3;
-
-	Tk_PhotoPutBlock(interp, td->screen, &blk, x * td->cw, y * td->ch,
-			n * td->cw, td->ch, TK_PHOTO_COMPOSITE_SET);
+	tiles_dirty(td, ox, oy, w, h);
 }
 
 /**
@@ -1071,6 +1191,16 @@ static errr Term_xtra_tcl(int n, int v)
 		bridge_first_wait();
 		bridge_reinstall_if_due();
 	}
+
+	/*
+	 * Whatever was drawn goes to the photos before Tk runs anything, and in
+	 * particular before a refresh's repaint.  tiles_event_setup does this
+	 * whenever Tk looks for events; here it is done outright, because a pump
+	 * of idle events alone, as `update idletasks` is, goes past the event
+	 * sources.
+	 */
+	if (n == TERM_XTRA_EVENT || n == TERM_XTRA_FLUSH || n == TERM_XTRA_FRESH)
+		tiles_flush_all();
 
 	switch (n) {
 		case TERM_XTRA_EVENT:
@@ -8380,6 +8510,8 @@ static void last_sight_notice(game_event_type type, game_event_data *data,
 	last_sight = NULL;
 
 	if (!player || !player->is_dead || !td[0].screen) return;
+	/* The photo is a refresh behind the drawing until it is given it. */
+	tiles_flush(&td[0]);
 	if (!Tk_PhotoGetImage(td[0].screen, &b) || b.width <= 0 || b.height <= 0)
 		return;
 
@@ -10314,6 +10446,10 @@ static void build_cells(term_data *td)
 	if (td->item) mem_free(td->item);
 	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
 
+	/* Every cell starts as a space, and so hidden: see cell_set(). */
+	if (td->shown) mem_free(td->shown);
+	td->shown = mem_zalloc((size_t)td->cols * td->rows);
+
 	/*
 	 * The last build's photo goes with its canvas item.  It used to be left
 	 * behind: deleting the item does not delete the image, so every resize
@@ -10329,6 +10465,17 @@ static void build_cells(term_data *td)
 		td->screen_name[0] = '\0';
 		td->screen = NULL;
 	}
+
+	/*
+	 * And its pixels, made again with it: blank, as a new photo is, so that
+	 * the two agree before anything is drawn.  What the last one had been
+	 * given and not yet shown goes with it.
+	 */
+	if (td->pix) mem_free(td->pix);
+	td->pix_w = td->cols * td->cw;
+	td->pix_h = td->rows * td->ch;
+	td->pix = mem_zalloc((size_t)td->pix_w * td->pix_h * 4);
+	td->dirty_x0 = td->dirty_y0 = td->dirty_x1 = td->dirty_y1 = 0;
 
 	/*
 	 * The tile layer: one photo the size of the grid, shown by one canvas
@@ -10367,7 +10514,7 @@ static void build_cells(term_data *td)
 		for (x = 0; x < td->cols; x++) {
 			Tcl_Obj *mk = Tcl_ObjPrintf(
 					"%s create text %d %d -anchor nw -font %s"
-					" -fill white -text { }",
+					" -fill white -text { } -state hidden",
 					td->path, x * td->cw, y * td->ch, td->font);
 
 			Tcl_IncrRefCount(mk);
@@ -10634,9 +10781,15 @@ static bool terms_init(void)
 	cfg_itemconfigure = Tcl_NewStringObj("itemconfigure", -1);
 	cfg_dash_text = Tcl_NewStringObj("-text", -1);
 	cfg_dash_fill = Tcl_NewStringObj("-fill", -1);
+	cfg_dash_state = Tcl_NewStringObj("-state", -1);
+	cfg_hidden = Tcl_NewStringObj("hidden", -1);
+	cfg_normal = Tcl_NewStringObj("normal", -1);
 	Tcl_IncrRefCount(cfg_itemconfigure);
 	Tcl_IncrRefCount(cfg_dash_text);
 	Tcl_IncrRefCount(cfg_dash_fill);
+	Tcl_IncrRefCount(cfg_dash_state);
+	Tcl_IncrRefCount(cfg_hidden);
+	Tcl_IncrRefCount(cfg_normal);
 
 	td_count = (int)n;
 	for (i = 0; i < td_count; i++) {
@@ -10669,6 +10822,9 @@ static bool terms_init(void)
 
 	/* Start the animation clock now that there is something to animate. */
 	Tcl_CreateTimerHandler(ANIMATION_MS, animation_tick, NULL);
+
+	/* And hand the tile layers to their photos whenever Tk looks up. */
+	Tcl_CreateEventSource(tiles_event_setup, NULL, NULL);
 
 	/*
 	 * The map is the active term when the game starts, and stays the one the
