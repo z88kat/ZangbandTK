@@ -522,7 +522,7 @@ jobs:
 
   linux:
     needs: [setup, docconvert]
-    name: Linux (AppImage, 64-bit)
+    name: Linux (AppImage, ${{ matrix.arch }})
     # A binary is bound to the glibc it was built against and will not start on
     # anything older, so the build runs on Ubuntu 18.04, inside the container
     # scripts/in-oldest-linux starts, rather than on the runner: the oldest
@@ -530,7 +530,31 @@ jobs:
     # distribution who wanted to play.  That puts the floor at 2.27.  The
     # runner itself only holds the container and the steps that need GitHub's
     # own actions.
-    runs-on: ubuntu-22.04
+    #
+    # Twice, as are the other two Linux jobs: for x86-64, and for 64-bit ARM --
+    # a Raspberry Pi, an ARM laptop, a Linux VM on an Apple Silicon Mac, none
+    # of which can start an x86-64 file.  The ARM leg runs on GitHub's ARM
+    # runner, where the container is ARM too, so nothing is emulated.  Its
+    # files have -arm on the end, as the Intel Mac's have -intel, and so do
+    # its artifacts, so that the release job can fetch both legs'.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            runner: ubuntu-22.04
+            platform: linux/amd64
+            elf: x86-64
+            suffix: ''
+          - arch: ARM
+            runner: ubuntu-22.04-arm
+            platform: linux/arm64
+            elf: ARM aarch64
+            suffix: -arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      # Which image scripts/in-oldest-linux builds and runs.
+      OLDEST_LINUX_PLATFORM: ${{ matrix.platform }}
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v8
@@ -625,8 +649,9 @@ jobs:
         id: create_linux_archive
         run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          scripts/in-oldest-linux scripts/pkg_appimage $archive_prefix ${archive_prefix}-linux64.AppImage
-          echo "archive_file=${archive_prefix}-linux64.AppImage" >> $GITHUB_OUTPUT
+          archive_file=${archive_prefix}-linux64${{ matrix.suffix }}.AppImage
+          scripts/in-oldest-linux scripts/pkg_appimage $archive_prefix $archive_file
+          echo "archive_file=$archive_file" >> $GITHUB_OUTPUT
 
       # An AppImage that cannot start is indistinguishable from a broken
       # download, so start it -- on a stock Ubuntu 18.04, the oldest system it
@@ -641,7 +666,7 @@ jobs:
           ./${{ steps.create_linux_archive.outputs.archive_file }} --appimage-extract >/dev/null
           test -f squashfs-root/usr/share/ZangbandTK/lib/gamedata/constants.txt
           test -x squashfs-root/usr/bin/zangband
-          file squashfs-root/usr/bin/zangband | grep -q "x86-64"
+          file squashfs-root/usr/bin/zangband | grep -q "${{ matrix.elf }}"
           scripts/check-glibc-floor squashfs-root
           docker run --rm \
             -v "$PWD/squashfs-root:/game:ro" \
@@ -665,24 +690,41 @@ jobs:
       - name: Upload Artifact with Linux Archive Path
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.LINUX_ARTIFACT }}
+          name: ${{ env.LINUX_ARTIFACT }}${{ matrix.suffix }}
           path: ${{ env.LINUX_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Linux Archive as Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}
+          name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}${{ matrix.suffix }}
           path: ${{ steps.create_linux_archive.outputs.archive_file }}
           retention-days: 1
 
   linux-terminal:
     needs: [setup, docconvert]
-    name: Linux (terminal, 64-bit)
+    name: Linux (terminal, ${{ matrix.arch }})
     # Built on Ubuntu 18.04 through scripts/in-oldest-linux, for the reason the
     # AppImage job gives: the executable is bound to the glibc it was built
-    # against.  That is 2.27, which the README in the archive states.
-    runs-on: ubuntu-22.04
+    # against.  That is 2.27, which the README in the archive states.  For
+    # x86-64 and ARM, as the AppImage job explains.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            runner: ubuntu-22.04
+            platform: linux/amd64
+            elf: x86-64
+            suffix: ''
+          - arch: ARM
+            runner: ubuntu-22.04-arm
+            platform: linux/arm64
+            elf: ARM aarch64
+            suffix: -arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      OLDEST_LINUX_PLATFORM: ${{ matrix.platform }}
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v8
@@ -745,8 +787,9 @@ jobs:
         id: create_linux_terminal_archive
         run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          scripts/in-oldest-linux scripts/pkg_linux_tty $archive_prefix
-          echo "archive_file=${archive_prefix}-linux64-terminal.tar.gz" >> $GITHUB_OUTPUT
+          archive_file=${archive_prefix}-linux64-terminal${{ matrix.suffix }}.tar.gz
+          scripts/in-oldest-linux scripts/pkg_linux_tty $archive_prefix $archive_file
+          echo "archive_file=$archive_file" >> $GITHUB_OUTPUT
           echo "package_name=$archive_prefix" >> $GITHUB_OUTPUT
 
       - name: Unpack the Archive
@@ -765,7 +808,7 @@ jobs:
             echo "The executable depends on a library it should have linked in or never wanted." >&2
             exit 1
           fi
-          file $root/zangband | grep -q "x86-64"
+          file $root/zangband | grep -q "${{ matrix.elf }}"
           scripts/check-glibc-floor $root
 
       # Play it, on two distributions that are not the one it was built on:
@@ -796,14 +839,14 @@ jobs:
       - name: Upload Artifact with Linux Terminal Archive Path
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.LINTTY_ARTIFACT }}
+          name: ${{ env.LINTTY_ARTIFACT }}${{ matrix.suffix }}
           path: ${{ env.LINTTY_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Linux Terminal Archive as Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.LINTTY_ARCHIVE_ARTIFACT }}
+          name: ${{ env.LINTTY_ARCHIVE_ARTIFACT }}${{ matrix.suffix }}
           path: ${{ steps.create_linux_terminal_archive.outputs.archive_file }}
           retention-days: 1
 
@@ -1532,11 +1575,27 @@ jobs:
   # the AppImage runs on, as the other Linux downloads' is.  The bridge test
   # runs on this build too, under Xvfb, and the AppImage is started through its
   # own AppRun on 18.04 and asked where Tcl, Tk and its scripts came from.
+  # For x86-64 and ARM, as the AppImage job explains.
   linux-tk:
     needs: [setup, docconvert]
-    name: Linux (Tk)
-    runs-on: ubuntu-22.04
+    name: Linux (Tk, ${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            runner: ubuntu-22.04
+            platform: linux/amd64
+            elf: x86-64
+            suffix: ''
+          - arch: ARM
+            runner: ubuntu-22.04-arm
+            platform: linux/arm64
+            elf: ARM aarch64
+            suffix: -arm
+    runs-on: ${{ matrix.runner }}
     env:
+      OLDEST_LINUX_PLATFORM: ${{ matrix.platform }}
       # The game refuses to start in a locale that is not UTF-8.
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
@@ -1615,12 +1674,14 @@ jobs:
         id: create_linux_tk_archive
         run: |
           package_name=${{ steps.store_config.outputs.tkapp }}-${{ steps.store_config.outputs.version }}
-          scripts/in-oldest-linux scripts/pkg_linux_tcltk build "$package_name"
-          echo "archive_file=${package_name}-linux64-tk.AppImage" >> $GITHUB_OUTPUT
+          archive_file=${package_name}-linux64-tk${{ matrix.suffix }}.AppImage
+          scripts/in-oldest-linux scripts/pkg_linux_tcltk build "$package_name" "$archive_file"
+          echo "archive_file=$archive_file" >> $GITHUB_OUTPUT
 
       - name: The AppImage runs on what it carries
         run: |
           ./${{ steps.create_linux_tk_archive.outputs.archive_file }} --appimage-extract >/dev/null
+          file squashfs-root/usr/bin/zangbandtk | grep -q "${{ matrix.elf }}"
           scripts/check-glibc-floor squashfs-root
           scripts/in-oldest-linux xvfb-run -a -s "-screen 0 1600x1200x24" \
             scripts/run-tcl-package-test squashfs-root squashfs-root/AppRun
@@ -1632,14 +1693,14 @@ jobs:
       - name: Upload Artifact with Tk Linux Archive Path
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.LINUXTK_ARTIFACT }}
+          name: ${{ env.LINUXTK_ARTIFACT }}${{ matrix.suffix }}
           path: ${{ env.LINUXTK_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Tk Linux Archive as Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.LINUXTK_ARCHIVE_ARTIFACT }}
+          name: ${{ env.LINUXTK_ARCHIVE_ARTIFACT }}${{ matrix.suffix }}
           path: ${{ steps.create_linux_tk_archive.outputs.archive_file }}
           retention-days: 1
 
@@ -1975,6 +2036,29 @@ jobs:
         with:
           name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}
 
+      # Each Linux job's ARM leg names its artifacts as the x86-64 leg does,
+      # with -arm on the end, and the file inside that holds the archive's name
+      # is called the same on both, so the ARM ones go in a directory of their
+      # own.  gh release create names an asset for its file, not its path.
+
+      - name: Download Artifact with ARM Linux Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUX_ARTIFACT }}-arm
+          path: arm
+
+      - name: Extract ARM Linux Archive Path and Store in Step Outputs
+        id: store_linux_arm
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' arm/$LINUX_ARTIFACT_PATH`
+          echo "archive_path=arm/$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with ARM Linux Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}-arm
+          path: arm
+
       - name: Download Artifact with Linux Terminal Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -1990,6 +2074,24 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ env.LINTTY_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with ARM Linux Terminal Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINTTY_ARTIFACT }}-arm
+          path: arm
+
+      - name: Extract ARM Linux Terminal Archive Path and Store in Step Outputs
+        id: store_linux_terminal_arm
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' arm/$LINTTY_ARTIFACT_PATH`
+          echo "archive_path=arm/$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with ARM Linux Terminal Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINTTY_ARCHIVE_ARTIFACT }}-arm
+          path: arm
 
       - name: Download Artifact with 32-bit Windows Archive Path
         uses: actions/download-artifact@v8
@@ -2119,6 +2221,24 @@ jobs:
         with:
           name: ${{ env.LINUXTK_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with ARM Tk Linux Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUXTK_ARTIFACT }}-arm
+          path: arm
+
+      - name: Extract ARM Tk Linux Archive Path and Store in Step Outputs
+        id: store_linux_tk_arm
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' arm/$LINUXTK_ARTIFACT_PATH`
+          echo "archive_path=arm/$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with ARM Tk Linux Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUXTK_ARCHIVE_ARTIFACT }}-arm
+          path: arm
+
       - name: Download Artifact with Tk Windows Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -2176,7 +2296,9 @@ jobs:
             ${{ steps.store_win64.outputs.archive_path }} \
             ${{ steps.store_win32.outputs.archive_path }} \
             ${{ steps.store_linux.outputs.archive_path }} \
+            ${{ steps.store_linux_arm.outputs.archive_path }} \
             ${{ steps.store_linux_terminal.outputs.archive_path }} \
+            ${{ steps.store_linux_terminal_arm.outputs.archive_path }} \
             ${{ steps.store_nin.outputs.archive_path }} \
             ${{ steps.store_mac.outputs.archive_path }} \
             ${{ steps.store_mac_terminal.outputs.archive_path }} \
@@ -2184,6 +2306,7 @@ jobs:
             ${{ steps.store_mac_terminal_intel.outputs.archive_path }} \
             ${{ steps.store_mac_tk.outputs.archive_path }} \
             ${{ steps.store_linux_tk.outputs.archive_path }} \
+            ${{ steps.store_linux_tk_arm.outputs.archive_path }} \
             ${{ steps.store_win_tk.outputs.archive_path }} \
             ${{ steps.store_dos.outputs.archive_path }} \
             $options

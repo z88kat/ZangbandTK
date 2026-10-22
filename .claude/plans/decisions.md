@@ -9430,3 +9430,95 @@ tag, because 3.1.1 had not been played through. The comment said to restore the
 shape test when there was a version worth standing behind, and on the owner's
 ruling 3.138.0 is it: a plain X.Y.Z is a full release, and a suffix such as
 -rc1 is still a prerelease.
+
+**DEC-165 — Every Linux download comes for ARM as well (21 October 2026).**
+(Release. After 3.138.0.)
+
+**Why.** The owner's Linux test machine is a VM on an Apple Silicon Mac, so it
+is aarch64, and all three Linux downloads were x86-64 only. The AppImage
+stopped with "Exec format error". The terminal build went straight back to the
+prompt with no message, which looked like a bug in the game. It wasn't: a
+binary for the wrong architecture can't start. Why that one was silent was
+never pinned down. Most likely something on the VM is set up to run x86-64
+programs under emulation and the game died early in it, but that wasn't
+checked, and it doesn't matter once there is a native build. A Raspberry Pi,
+an ARM laptop or server and a Linux VM on any recent Mac are the same case.
+
+**What.** The `linux`, `linux-terminal` and `linux-tk` jobs in release.yaml are
+each a two-leg matrix: x86-64 on ubuntu-22.04 as before, and ARM on
+ubuntu-22.04-arm, GitHub's ARM runner, which is free for a public repository.
+Both legs build in the same Ubuntu 18.04 container (DEC-158), so both have the
+glibc 2.27 floor. `scripts/in-oldest-linux` takes `OLDEST_LINUX_PLATFORM`
+(linux/amd64 by default, or linux/arm64), and the Dockerfile picks CMake and
+linuxdeploy for the machine it is built on. Nothing is emulated on either leg.
+The ARM files have `-arm` on the end, as the Intel Mac's have `-intel`:
+`-linux64-arm.AppImage`, `-linux64-terminal-arm.tar.gz`,
+`-linux64-tk-arm.AppImage`. Their artifacts are named the same way, and the
+release job fetches them into a directory of their own, because the file that
+names each archive is called the same on both legs. Each leg checks that its
+executable is its own architecture, so an ARM leg that quietly built x86-64
+would fail.
+
+The game itself was already known to work there: arm64.yaml has run the whole
+unit suite on aarch64 Linux on every push, for the unsigned `char`. What no
+workflow made was a download. The push workflows that package (linux.yaml,
+tk.yaml) stay x86-64 only; the ARM legs run on every pull request, every
+release rehearsal and every tag. There is no 32-bit ARM build, by the owner's
+ruling that arm64.yaml records.
+
+**Checked** on this Mac, whose Docker is ARM and so runs the ARM legs natively,
+with each job's steps run by hand: all three ARM downloads built from the
+18.04 container at -O2 -Werror, packaged, and passed the glibc 2.27 floor
+check (1, 8 and 13 ELF files). The terminal build links only libc and played
+into the dungeon on stock ARM Ubuntu 18.04 and Debian 12. The Zangband
+AppImage played into the dungeon through its curses front end on stock 18.04,
+and its SDL2 window stayed up under Xvfb. It holds the same 498 files as the
+published x86-64 3.138.0 AppImage, leaving out the manual, which the local
+build lacked. ZangbandTK passed the bridge test (243 checks) and the package
+test. The x86-64 leg's architecture check fails on the ARM file, as it should.
+The x86-64 image still builds, under emulation, with its own CMake and
+linuxdeploy. Not yet run on GitHub's ARM runner: that is the next release
+rehearsal.
+
+**DEC-166 — ZangbandTK's canvases follow its fonts on a scaled Linux desktop;
+Zangband's AppImage stays as 3.138.0 had it (22 October 2026).**
+(Front ends. After 3.138.0.)
+
+**Why.** The owner ran 3.138.0 on an Intel Linux laptop with MATE scaled to
+twice the size. In ZangbandTK, Tk 9 reads the desktop's scale itself and made
+a point 2.66 pixels, so every font doubled, but the Flags page is two
+canvases laid out in pixels for the Mac: 18-pixel rows held 38-pixel lines
+and the page could not be read. The map's tiles stayed at 1 while the text
+round them doubled. The window had no icon in the dock either, as an AppImage
+run from Downloads has no installed desktop file to be matched to.
+
+**What.** The Flags page scales every length it draws by its 12-point line
+over 19. 19 is the line on the Mac, where Tk also makes a point 1.33 pixels
+(measured: line 19, scaling 1.335), and on Linux and Windows at their natural
+size, so the factor is 1 there and nothing moves; it is 2 at twice the size,
+and it follows the text-size setting too. The tile scale, for someone who has
+never chosen one, starts at Tk's own (`::tk::ScalingPct`, rounded), so 1 on
+the Mac and 2 at twice the size. ZangbandTK sets zangband.png as its window
+icon with `wm iconphoto` on X11.
+
+**Tried and rolled back, by the owner's ruling.** Zangband's AppImage was
+changed to open SDL2 by default, with SDL2 scaling itself from Xft.dpi, a
+fallback to curses when there is no display, and the game's icon. The owner
+tested it on the ARM VM and did not like the SDL2 front end, and found the
+X11 window does come up right once it is resized. So the AppImage stays as
+3.138.0 has it: X11 first, upstream's order, and SDL2 only when asked for
+with -msdl2. main.c, main-sdl2.c, main-x11.c and main.h are back to 3.138.0.
+Two things learned on the way, should it come up again: SDL reads Xft.dpi
+only on X servers without XRandR, which is none of them; and SDL 2.32 falls
+back to its "offscreen" driver when there is no display, so SDL_Init
+succeeds and a game started over ssh runs into an invisible window.
+
+**Checked** in the ARM 18.04 container with Xvfb at 2560x1600 and Xft.dpi set
+by xrdb (Xvfb needs -noreset, or it resets when xrdb disconnects and the
+resource is gone), on the ARM 3.138.0 AppImage with the new scripts laid
+over it. At 2x: factor 2, rows 36, the page readable, the tiles at 2. At 1x:
+factor 1, rows 18, tiles 1, as before. ZangbandTK's window had no
+_NET_WM_ICON before and has one after. The bridge test passed, 243 checks.
+
+Not checked: a real MATE or GNOME desktop; Windows, where the Flags factor
+and the tile default follow what Tk sees and so should not move.

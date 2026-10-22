@@ -45,13 +45,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # workflows say `cmake -S . -B build` and `cmake --build build --parallel`, and
 # those arrived in 3.13 and 3.12.  Kitware's own build runs on glibc 2.17, so
 # its current 3.x does instead of rewriting every one of them for here.
+#
+# The image is built for x86-64 and for ARM (scripts/in-oldest-linux says
+# how), and Kitware names its builds as uname -m names the machine, so that
+# picks the file, and the checksum to go with it.
 ARG CMAKE_VERSION=3.31.12
-ARG CMAKE_SHA256=0dc2e9a6860f06bf10bd8fadc03e35d9eeb4df46e33763a7e480e987758f385c
-RUN curl -fsSL -o /tmp/cmake.tar.gz \
-		https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-x86_64.tar.gz \
-	&& echo "$CMAKE_SHA256  /tmp/cmake.tar.gz" | sha256sum -c - \
+ARG CMAKE_SHA256_x86_64=0dc2e9a6860f06bf10bd8fadc03e35d9eeb4df46e33763a7e480e987758f385c
+ARG CMAKE_SHA256_aarch64=83f8fd91d2038a56556e1400390fcfe42f79602940c494f6c6f1cdae7f9e7f40
+RUN arch=$(uname -m) \
+	&& case $arch in \
+		x86_64) sha256=$CMAKE_SHA256_x86_64 ;; \
+		aarch64) sha256=$CMAKE_SHA256_aarch64 ;; \
+		*) echo "No CMake for $arch here." >&2; exit 1 ;; \
+	esac \
+	&& curl -fsSL -o /tmp/cmake.tar.gz \
+		https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-$arch.tar.gz \
+	&& echo "$sha256  /tmp/cmake.tar.gz" | sha256sum -c - \
 	&& tar -xzf /tmp/cmake.tar.gz -C /opt \
-	&& mv /opt/cmake-$CMAKE_VERSION-linux-x86_64 /opt/cmake && rm /tmp/cmake.tar.gz \
+	&& mv /opt/cmake-$CMAKE_VERSION-linux-$arch /opt/cmake && rm /tmp/cmake.tar.gz \
 	&& ln -s /opt/cmake/bin/cmake /opt/cmake/bin/ctest /usr/local/bin/ \
 	&& cmake --version
 
@@ -62,13 +73,15 @@ RUN git config --system --add safe.directory '*'
 
 # linuxdeploy, unpacked, so it needs no FUSE inside a container.  Its tools are
 # statically linked, so the newest release runs on 18.04 as well as anywhere.
+# Named by uname -m, as CMake's builds are.
 #
 # The three bytes after the ELF magic are the AppImage's own marker.  The
 # kernel ignores them, but the binfmt entries that run x86-64 under emulation
 # on an arm64 machine match them as zero and refuse the file, so they are
-# cleared before it is run.  On an x86-64 runner that changes nothing.
+# cleared before it is run.  Where the image runs natively that changes
+# nothing.
 RUN curl -fsSL -o /tmp/linuxdeploy \
-		https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+		https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$(uname -m).AppImage \
 	&& printf '\0\0\0' | dd of=/tmp/linuxdeploy bs=1 seek=8 count=3 conv=notrunc 2>/dev/null \
 	&& chmod a+x /tmp/linuxdeploy \
 	&& cd /opt && /tmp/linuxdeploy --appimage-extract >/dev/null \

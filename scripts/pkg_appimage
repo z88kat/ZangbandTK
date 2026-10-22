@@ -104,7 +104,9 @@ for pattern in libpng16 libjpeg libwebp libvorbisfile libvorbis libogg \
 	if [ -z "$SDL_CODEC_USERS" ] || ! grep -q "$pattern\.so" $SDL_CODEC_USERS; then
 		continue
 	fi
-	for found in /usr/lib/x86_64-linux-gnu/$pattern.so.* ; do
+	# The multiarch directory, which is named for the machine as uname -m
+	# names it on both architectures the release builds for.
+	for found in /usr/lib/$(uname -m)-linux-gnu/$pattern.so.* ; do
 		if [ -e "$found" ]; then
 			EXTRA_LIBS="$EXTRA_LIBS --library=$found"
 			break

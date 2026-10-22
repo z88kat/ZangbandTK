@@ -237,6 +237,16 @@ proc display_tilescale {n} {
     settings_set display,tilescale $n
 }
 
+# The tile scale for someone who has never chosen one: the one Tk is drawing
+# the text at.  A Linux desktop scaled to twice the size has Tk double every
+# font, and the map, left at 1, came up half the size of its own text.  1 on
+# the Mac and anywhere at its natural size, where ScalingPct is 100; rounded to
+# the nearest whole step, as the SDL2 front end's scale is, so 150% is 2.
+proc display_tilescale_default {} {
+    if {[catch {::tk::ScalingPct} pct]} { return 1 }
+    return [expr {max(1, min(4, ($pct + 50) / 100))}]
+}
+
 # --- colours -------------------------------------------------------------------------
 
 # The palettes in palettes.txt: key -> {label colours roles}.
@@ -395,7 +405,7 @@ proc display_defaults {} {
     wm minsize . [expr {80 * $angband(cellw)}] [expr {24 * $angband(cellh)}]
     event generate . <<FontsChanged>> -when tail
     catch {display_uisize $display(uibase)}
-    catch {display_tilescale 1}
+    catch {display_tilescale [display_tilescale_default]}
     catch {display_palette game}
     if {[angband_tileset] != 7} { angband_choose_tileset 7 }
     display_page_refresh

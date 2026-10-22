@@ -225,6 +225,10 @@ An AppImage built like that runs on your distribution's glibc and newer; the
 release's run back to Ubuntu 18.04, because CI makes them inside an 18.04
 container with SDL2 built from source — `scripts/in-oldest-linux` in front of
 each step, after `scripts/build-sdl2`. That needs Docker, and nothing else.
+The container is x86-64 unless `OLDEST_LINUX_PLATFORM=linux/arm64` asks for
+the ARM one, which is how the release's `-arm` downloads are made. Use a
+checkout of its own for that: `sdl2/local` and `tcltk/local` are built for one
+architecture, and a build for the other will not link against them.
 
 None of the original's front-end C is being compiled in — the survey concluded
 it loses to Tk 9 and Angband 4.2 on the merits, file by file, so the front end is

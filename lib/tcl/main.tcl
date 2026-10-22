@@ -36,7 +36,7 @@ display_uisize_start
 # The tile set and its size, for main-tcl.c to load once this has run; and
 # the colours, before anything is drawn in them.
 set angband(graphics) [settings_get display,tileset 7]
-set angband(tilescale) [settings_get display,tilescale 1]
+set angband(tilescale) [settings_get display,tilescale [display_tilescale_default]]
 display_palette_start
 
 set angband(cellw) [font measure termfont "W"]
@@ -48,6 +48,20 @@ set angband(cellh) [font metrics termfont -linespace]
 # decision instead, by naming this file as the startup script beforehand.
 
 wm title . "ZangbandTK"
+
+# The game's icon on every window, for a Linux desktop's dock and task bar.
+# They show the window's own icon when they cannot match it to an installed
+# desktop file, and an AppImage run from Downloads has none installed, so
+# without this the dock showed a blank.  Only on X11: the Mac's Dock takes the
+# icon from the application bundle.
+if {[tk windowingsystem] eq "x11"} {
+    set icon [file join [file dirname [file dirname [info script]]] \
+        icons zangband.png]
+    if {[file readable $icon]} {
+        wm iconphoto . -default [image create photo -file $icon]
+    }
+    unset icon
+}
 
 # Closing the window, and Quit from the application menu, save the character
 # and end the game, from wherever the game is -- angband_quit in main-tcl.c.

@@ -14,15 +14,26 @@
 # where it says it is by the next.
 #
 # Needs Docker.  The image is built on first use and reused after that.  It is
-# always x86-64, which is what the downloads are: on an arm64 Mac, Docker
-# Desktop runs it under emulation, slowly.  LANG, LC_ALL and SDL_AUDIODRIVER
-# are passed through for the tests that start the game.
+# x86-64 unless OLDEST_LINUX_PLATFORM says linux/arm64, the other architecture
+# the release has Linux downloads for.  Each is native on its own machine: on
+# an Apple Silicon Mac, Docker Desktop runs x86-64 under emulation, slowly.
+# LANG, LC_ALL and SDL_AUDIODRIVER are passed through for the tests that start
+# the game.
 set -o errexit
 
 if [ $# -eq 0 ]; then
-	sed -n -e '3,20p' "$0" | sed -e 's/^# \{0,1\}//'
+	sed -n -e '3,21p' "$0" | sed -e 's/^# \{0,1\}//'
 	exit 1
 fi
+
+PLATFORM=${OLDEST_LINUX_PLATFORM:-linux/amd64}
+case $PLATFORM in
+linux/amd64 | linux/arm64) ;;
+*)
+	echo "OLDEST_LINUX_PLATFORM is linux/amd64 or linux/arm64, not $PLATFORM." >&2
+	exit 1
+	;;
+esac
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 case $PWD/ in
@@ -33,8 +44,9 @@ case $PWD/ in
 	;;
 esac
 
-IMAGE=zangband-oldest-linux
-docker build --platform linux/amd64 --quiet --tag "$IMAGE" \
+# One image for each, so that building for one does not throw the other away.
+IMAGE=zangband-oldest-linux-${PLATFORM#linux/}
+docker build --platform "$PLATFORM" --quiet --tag "$IMAGE" \
 	"$ROOT/scripts/oldest-linux" >/dev/null
 
 # A worktree's .git is a pointer to the repository it was added from, which is
@@ -53,7 +65,7 @@ esac
 # runner's own steps go on to touch -- the caches, the artifacts -- is owned by
 # somebody else.
 # shellcheck disable=SC2086
-exec docker run --rm --platform linux/amd64 \
+exec docker run --rm --platform "$PLATFORM" \
 	--volume "$ROOT:$ROOT" $GIT_DIR_MOUNT --workdir "$PWD" \
 	--env LANG --env LC_ALL --env SDL_AUDIODRIVER \
 	"$IMAGE" \

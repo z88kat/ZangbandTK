@@ -4,10 +4,16 @@ Zangband for Linux -- terminal build
 This is the curses build of Zangband: the game drawn with characters, in a
 terminal, over ssh if you like.  No window, no tileset, no sound.
 
-x86-64, and any glibc from 2.27 onwards -- Ubuntu 18.04, Debian 10, RHEL 8 and
+It needs any glibc from 2.27 onwards -- Ubuntu 18.04, Debian 10, RHEL 8 and
 anything newer.  Nothing else needs to be installed: ncurses is linked in, so
 it does not matter which one your distribution ships, or whether it ships one
 at all.
+
+There are two of these downloads.  -linux64-terminal.tar.gz is for x86-64, an
+ordinary PC.  -linux64-terminal-arm.tar.gz is for 64-bit ARM: a Raspberry Pi
+with a 64-bit system, an ARM laptop or server, or Linux in a virtual machine on
+an Apple Silicon Mac.  uname -m says which you have: x86_64 or aarch64.  The
+wrong one will not start, and may say nothing at all about why.
 
 
 Running it

@@ -180,6 +180,7 @@ src/osx-tty*/
 # README.md says how to build them in the tree, through scripts/in-oldest-linux,
 # and none of this is source.
 *-linux64-terminal.tar.gz
+*-linux64-terminal-arm.tar.gz
 *.AppImage
 AppDir/
 AppDir.tk/

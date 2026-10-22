@@ -69,12 +69,37 @@ set flags(timednames) {
 
 # The size of things, from the design.  The slot width is a floor: the real
 # width is measured from the short names in the font in use.
-set flags(row)     18
-set flags(band)    20
-set flags(head)    44
-set flags(namemin) 132
-set flags(result)  92
-set flags(slotmin) 44
+#
+# These, and every other length on the page, are for the size the page was
+# drawn at: the Mac's, where a line of its 12-point text is 19 pixels high --
+# and Linux and Windows at their natural size, where it is too.  The canvases
+# are drawn in pixels and only the fonts grow by themselves, so on a desktop
+# scaled to twice the size, where Tk makes a point 2.7 pixels and the line 38,
+# each row held two rows' worth of text and the page could not be read.
+# flags_metrics measures the line and flags_px scales every length by it.
+set flags(design) {
+    row     18
+    band    20
+    head    44
+    namemin 132
+    result  92
+    slotmin 44
+}
+set flags(k) 1.0
+foreach {key n} $flags(design) { set flags($key) $n }
+
+proc flags_metrics {} {
+    global flags
+    set line [font metrics [uifont 12] -linespace]
+    set flags(k) [expr {max(1.0, $line / 19.0)}]
+    foreach {key n} $flags(design) { set flags($key) [flags_px $n] }
+}
+
+# A length from the design, in this screen's pixels.
+proc flags_px {n} {
+    global flags
+    return [expr {round($n * $flags(k))}]
+}
 
 # --- what a value means ---------------------------------------------------------
 
@@ -225,6 +250,7 @@ proc flags_timed_name {name desc} {
 proc flags_build {f} {
     global flags
 
+    flags_metrics
     set ground [ttk::style lookup . -background]
     set lf $f.lf
     ttk::labelframe $lf -text "What you have, and what is giving it to you" \
@@ -272,24 +298,25 @@ proc flags_build {f} {
         empty    "empty slot"      "A grey column is a slot with nothing in it."
         rune     "rune not learned" "A grey, sloping name is a rune you haven't learned yet. Its values are still shown."
     } {
-        set sw [canvas $lg.s$i -width 18 -height 14 -highlightthickness 0 \
-            -borderwidth 0 -background $ground]
+        set sw [canvas $lg.s$i -width [flags_px 18] -height [flags_px 14] \
+            -highlightthickness 0 -borderwidth 0 -background $ground]
         if {$state eq "rune"} {
-            $sw create text 9 7 -text Ab -font [uifont 11 italic] \
-                -fill [display_role flagrune]
+            $sw create text [flags_px 9] [flags_px 7] -text Ab \
+                -font [uifont 11 italic] -fill [display_role flagrune]
             ttk::label $lg.t$i -text $text -font [uifont 12 italic] \
                 -foreground [display_role flagrune]
         } else {
             lassign [flags_style $state] mark ink tint
-            $sw create rectangle 1 1 17 13 -fill $tint -outline #a3a3a3
+            $sw create rectangle 1 1 [flags_px 17] [flags_px 13] -fill $tint \
+                -outline #a3a3a3
             if {$mark ne ""} {
-                $sw create text 9 7 -text $mark -fill $ink \
-                    -font [uifont Courier 12 bold]
+                $sw create text [flags_px 9] [flags_px 7] -text $mark \
+                    -fill $ink -font [uifont Courier 12 bold]
             }
             ttk::label $lg.t$i -text $text -font [uifont 12]
         }
-        pack $sw -side left -padx {0 3}
-        pack $lg.t$i -side left -padx {0 10}
+        pack $sw -side left -padx [list 0 [flags_px 3]]
+        pack $lg.t$i -side left -padx [list 0 [flags_px 10]]
         foreach w [list $sw $lg.t$i] {
             bind $w <Enter> [list set character(msg) $tip]
             bind $w <Leave> flags_say_idle
@@ -377,14 +404,17 @@ proc flags_layout {width cols} {
             set need [expr {max($need, [font measure [uifont 12] [lindex $row 0]])}]
         }
     }
-    set namemin [expr {min(220, max($flags(namemin), $need + 14))}]
-    set resultw [expr {26 + [font measure [uifont 12 bold] Vulnerable] + 6}]
+    set namemin [expr {min([flags_px 220],
+        max($flags(namemin), $need + [flags_px 14]))}]
+    set resultw [expr {[flags_px 26] + [font measure [uifont 12 bold] Vulnerable]
+        + [flags_px 6]}]
 
     foreach size {11 10 9} {
         set widths {}
         set total 0
         foreach short $shorts {
-            set w [expr {max(36, [font measure [uifont $size] $short] + 6)}]
+            set w [expr {max([flags_px 36],
+                [font measure [uifont $size] $short] + [flags_px 6])}]
             lappend widths $w
             incr total $w
         }
@@ -421,6 +451,10 @@ proc flags_redraw {} {
     unset -nocomplain flags(redrawafter)
     flags_tip_hide
     set head [flags_canvas head]
+    # Measured again each time, so that a change to the text size is
+    # followed as well.
+    flags_metrics
+    $head configure -height $flags(head)
     $head delete all
     $body delete all
     set flags(rows) {}
@@ -431,8 +465,8 @@ proc flags_redraw {} {
     set lf .character.f.page.flags.lf
     if {$flags(data) eq ""} {
         pack forget $lf.note
-        $body create text 12 12 -anchor nw -text "No character yet." \
-            -font [uifont Courier 12] -fill #5a5a5a
+        $body create text [flags_px 12] [flags_px 12] -anchor nw \
+            -text "No character yet." -font [uifont Courier 12] -fill #5a5a5a
         flags_counts {}
         return
     }
@@ -457,13 +491,19 @@ proc flags_draw_head {c cols} {
     set f11 $flags(headfont)
     set mono [uifont Courier 12 bold]
 
+    # The icon's box and the glyph's middle, which everything in it is placed
+    # from.
+    set top [flags_px 4]
+    set bottom [flags_px 24]
+    set mid [flags_px 14]
+
     lassign [flags_track name] x0 x1
-    $c create text [expr {$x0 + 8}] [expr {$h - 6}] -anchor sw \
-        -text Property -font $fb
+    $c create text [expr {$x0 + [flags_px 8]}] [expr {$h - [flags_px 6]}] \
+        -anchor sw -text Property -font $fb
     lassign [flags_track result] x0 x1
     $c create line $x0 0 $x0 $h -fill #d0d0d0
-    $c create text [expr {$x0 + 8}] [expr {$h - 6}] -anchor sw \
-        -text Result -font $fb
+    $c create text [expr {$x0 + [flags_px 8]}] [expr {$h - [flags_px 6]}] \
+        -anchor sw -text Result -font $fb
 
     set keys {}
     set i 0
@@ -479,42 +519,48 @@ proc flags_draw_head {c cols} {
         $c create line $x0 [expr {$h - 1}] $x0 0 [expr {$x1 - 1}] 0 -fill white
         $c create line [expr {$x1 - 1}] 0 [expr {$x1 - 1}] [expr {$h - 1}] \
             $x0 [expr {$h - 1}] -fill #828282
-        $c create rectangle [expr {$cx - 10}] 4 [expr {$cx + 10}] 24 \
+        set half [flags_px 10]
+        $c create rectangle [expr {$cx - $half}] $top [expr {$cx + $half}] $bottom \
             -fill black -outline #5a5a5a
         switch -- $key {
             you {
                 set short You
-                $c create text $cx 14 -text @ -fill white -font $mono
+                $c create text $cx $mid -text @ -fill white -font $mono
             }
             timed {
                 set short Timed
                 # An hourglass, in two triangles.
-                $c create polygon [expr {$cx - 5}] 7 [expr {$cx + 5}] 7 $cx 14 \
-                    -fill #8fb0ff
-                $c create polygon $cx 14 [expr {$cx - 5}] 21 [expr {$cx + 5}] 21 \
-                    -fill #8fb0ff
+                set w [flags_px 5]
+                set y0 [flags_px 7]
+                set y1 [flags_px 21]
+                $c create polygon [expr {$cx - $w}] $y0 [expr {$cx + $w}] $y0 \
+                    $cx $mid -fill #8fb0ff
+                $c create polygon $cx $mid [expr {$cx - $w}] $y1 \
+                    [expr {$cx + $w}] $y1 -fill #8fb0ff
             }
             default {
                 set col [lindex $cols $i]
                 lassign $col slot part glyph colour sname fname runes
                 lassign [flags_slot_info $part] short long symbol
                 if {$glyph ne ""} {
-                    $c create text $cx 14 -text $glyph -fill $colour -font $mono
+                    $c create text $cx $mid -text $glyph -fill $colour -font $mono
                     if {!$runes} {
                         # Runes not learned: say so on the heading, so the
                         # cause of a column of ? is visible before the rows.
-                        $c create text [expr {$x1 - 4}] 3 -anchor ne -text ? \
-                            -fill [display_role flagunk] -font [uifont Courier 11 bold]
+                        $c create text [expr {$x1 - [flags_px 4]}] [flags_px 3] \
+                            -anchor ne -text ? -fill [display_role flagunk] \
+                            -font [uifont Courier 11 bold]
                     }
                 } else {
-                    $c create text $cx 14 -text $symbol -fill #3a3a3a -font $mono
+                    $c create text $cx $mid -text $symbol -fill #3a3a3a -font $mono
                 }
                 incr i
             }
         }
-        $c create text $cx [expr {$h - 3}] -anchor s -text $short -font $f11
+        $c create text $cx [expr {$h - [flags_px 3]}] -anchor s -text $short \
+            -font $f11
         if {$key eq "s0" || $key eq "you"} {
-            $c create line $x0 0 $x0 $h -fill #a3a3a3 -width 2
+            $c create line $x0 0 $x0 $h -fill #a3a3a3 -width [flags_px 2]
         }
     }
 }
@@ -571,12 +617,12 @@ proc flags_draw_body {c cols groups} {
         $c create line 0 [expr {$y1 - 1}] 0 $y [expr {$width - 1}] $y -fill white
         $c create line 0 [expr {$y1 - 1}] [expr {$width - 1}] [expr {$y1 - 1}] \
             -fill #828282
-        $c create text 8 [expr {$y + $flags(band) / 2}] -anchor w \
+        $c create text [flags_px 8] [expr {$y + $flags(band) / 2}] -anchor w \
             -text "[expr {$folded ? "▶" : "▼"}] [flags_group_label $group]" \
             -font $fb
         lassign [flags_track result] rx0
-        $c create text [expr {$rx0 + 8}] [expr {$y + $flags(band) / 2}] -anchor w \
-            -text [flags_band_summary $group $kind $rows] -font $f12
+        $c create text [expr {$rx0 + [flags_px 8]}] [expr {$y + $flags(band) / 2}] \
+            -anchor w -text [flags_band_summary $group $kind $rows] -font $f12
         lappend flags(rows) [list $y $y1 band $group]
         set y $y1
         if {$folded} continue
@@ -594,7 +640,7 @@ proc flags_draw_body {c cols groups} {
             lassign [flags_track name] x0 x1
             set flags(namebg,$id) [$c create rectangle $x0 $y $x1 $y1 \
                 -fill white -outline ""]
-            $c create text [expr {$x0 + 8}] $ym -anchor w -text $label \
+            $c create text [expr {$x0 + [flags_px 8]}] $ym -anchor w -text $label \
                 -font [expr {$known ? $f12 : $fi}] \
                 -fill [expr {$known ? "black" : [display_role flagrune]}]
 
@@ -605,12 +651,12 @@ proc flags_draw_body {c cols groups} {
             $c create rectangle $x0 $y $x1 $y1 -fill $tint -outline ""
             $c create line $x0 $y $x0 $y1 -fill #d0d0d0
             if {$kind eq "mod"} {
-                $c create text [expr {$x0 + 10}] $ym -anchor w -text $word \
+                $c create text [expr {$x0 + [flags_px 10]}] $ym -anchor w -text $word \
                     -font $mono -fill [expr {$state eq "nothing" ? [display_role flagnone] : $ink}]
             } else {
-                $c create text [expr {$x0 + 10}] $ym -anchor w -text $mark \
+                $c create text [expr {$x0 + [flags_px 10]}] $ym -anchor w -text $mark \
                     -font $mono -fill [expr {$ink eq "" ? "black" : $ink}]
-                $c create text [expr {$x0 + 26}] $ym -anchor w -text $word \
+                $c create text [expr {$x0 + [flags_px 26]}] $ym -anchor w -text $word \
                     -font [expr {$state eq "nothing" ? $f12 : $fb}] \
                     -fill [expr {$state eq "nothing" ? [display_role flagnone] : $ink}]
             }
@@ -645,7 +691,7 @@ proc flags_draw_body {c cols groups} {
             }
             foreach key {s0 you} {
                 lassign [flags_track $key] x0
-                $c create line $x0 $y $x0 $y1 -fill #a3a3a3 -width 2
+                $c create line $x0 $y $x0 $y1 -fill #a3a3a3 -width [flags_px 2]
             }
             set y $y1
         }
@@ -658,9 +704,9 @@ proc flags_draw_body {c cols groups} {
             unknown "You've learned every rune on this page."
             all     ""
         } $flags(show)]
-        $c create text 12 [expr {$y + 12}] -anchor nw -text $text \
-            -font [uifont Courier 12] -fill #5a5a5a
-        incr y 36
+        $c create text [flags_px 12] [expr {$y + [flags_px 12]}] -anchor nw \
+            -text $text -font [uifont Courier 12] -fill #5a5a5a
+        incr y [flags_px 36]
     }
 
     # What the page leaves out, which the old notes said.
@@ -668,10 +714,11 @@ proc flags_draw_body {c cols groups} {
         which nothing can add or take away; mutations and shapes; and a\
         weapon's brands, which belong to its blows and are listed on the\
         weapon."
-    set t [$c create text 12 [expr {$y + 10}] -anchor nw -text $note \
-        -font $f12 -fill #5a5a5a -width [expr {max(200, $width - 24)}]]
+    set t [$c create text [flags_px 12] [expr {$y + [flags_px 10]}] -anchor nw \
+        -text $note -font $f12 -fill #5a5a5a \
+        -width [expr {max([flags_px 200], $width - [flags_px 24])}]]
     lassign [$c bbox $t] - - - by
-    return [expr {$by + 10}]
+    return [expr {$by + [flags_px 10]}]
 }
 
 # A band's summary, from its rows.
@@ -782,9 +829,9 @@ proc flags_draw_marks {} {
         lassign [$body cget -scrollregion] - - - h
         if {$h eq ""} { set h [winfo height $body] }
         $body create line [expr {$x0 + 1}] 0 [expr {$x0 + 1}] $h \
-            -fill $accent -width 2 -tags mark
+            -fill $accent -width [flags_px 2] -tags mark
         $body create line [expr {$x1 - 1}] 0 [expr {$x1 - 1}] $h \
-            -fill $accent -width 2 -tags mark
+            -fill $accent -width [flags_px 2] -tags mark
     }
     flags_draw_hover
 }
@@ -1350,7 +1397,7 @@ proc flags_tip_show {t X Y} {
     set paper #ffffe0
     set f [frame .flagtip.f -background $paper -padx 8 -pady 6]
     pack $f -padx 1 -pady 1
-    set wrap 420
+    set wrap [flags_px 420]
     set f12 [uifont 12]
 
     switch -- [lindex $t 0] {
@@ -1361,12 +1408,14 @@ proc flags_tip_show {t X Y} {
     update idletasks
     set w [winfo reqwidth .flagtip]
     set h [winfo reqheight .flagtip]
-    set x [expr {$X + 16}]
-    set y [expr {$Y + 20}]
+    set dx [flags_px 16]
+    set dy [flags_px 20]
+    set x [expr {$X + $dx}]
+    set y [expr {$Y + $dy}]
     set right [expr {[winfo rootx .character] + [winfo width .character]}]
     set bottom [expr {[winfo rooty .character] + [winfo height .character]}]
-    if {$x + $w > $right} { set x [expr {$X - 16 - $w}] }
-    if {$y + $h > $bottom} { set y [expr {$Y - 20 - $h}] }
+    if {$x + $w > $right} { set x [expr {$X - $dx - $w}] }
+    if {$y + $h > $bottom} { set y [expr {$Y - $dy - $h}] }
     wm geometry .flagtip +$x+$y
     wm deiconify .flagtip
     raise .flagtip
@@ -1375,6 +1424,17 @@ proc flags_tip_show {t X Y} {
 
 proc flags_card_rule {f paper} {
     frame $f.r[llength [winfo children $f]] -height 1 -background #c8c4a0
+}
+
+# A cell's colour and mark, small, for a line of a card.
+proc flags_card_swatch {w paper tint mark ink} {
+    canvas $w -width [flags_px 22] -height [flags_px 16] -highlightthickness 0 \
+        -borderwidth 0 -background $paper
+    $w create rectangle [flags_px 2] 1 [flags_px 20] [flags_px 15] -fill $tint \
+        -outline #a3a3a3
+    $w create text [flags_px 11] [flags_px 8] -text $mark -fill $ink \
+        -font [uifont Courier 11 bold]
+    return $w
 }
 
 proc flags_card_row {f t paper wrap} {
@@ -1428,15 +1488,16 @@ proc flags_card_row {f t paper wrap} {
                 -padx 6 -pady 1
             label $s.n$r -text [expr {$curse ne "" ? "$name (curse: $curse)" : $name}] \
                 -font $font -background $bg -anchor w -justify left \
-                -padx 4 -pady 1 -wraplength [expr {$wrap - 40}]
+                -padx 4 -pady 1 -wraplength [expr {$wrap - [flags_px 40]}]
             # The swatch is as tall as its line, with the mark in the middle.
             set h [winfo reqheight $s.s$r]
             set m [expr {$h / 2}]
-            set sw [canvas $s.w$r -width 26 -height $h -highlightthickness 0 \
-                -borderwidth 0 -background $bg]
-            $sw create rectangle 4 [expr {$m - 7}] 22 [expr {$m + 7}] \
+            set sw [canvas $s.w$r -width [flags_px 26] -height $h \
+                -highlightthickness 0 -borderwidth 0 -background $bg]
+            $sw create rectangle [flags_px 4] [expr {$m - [flags_px 7]}] \
+                [flags_px 22] [expr {$m + [flags_px 7]}] \
                 -fill $tint -outline #a3a3a3
-            $sw create text 13 $m -text $mark -fill $ink \
+            $sw create text [flags_px 13] $m -text $mark -fill $ink \
                 -font [uifont Courier 11 bold]
             grid $sw $s.s$r $s.n$r -row $r -sticky nsew
             incr r
@@ -1490,10 +1551,7 @@ proc flags_card_column {f key paper wrap} {
                 lassign $line state label v kind
                 lassign [flags_style $state] mark ink tint
                 if {$kind eq "mod"} { set mark [flags_signed $v] }
-                set sw [canvas $s.w$r -width 22 -height 16 -highlightthickness 0 \
-                    -borderwidth 0 -background $paper]
-                $sw create rectangle 2 1 20 15 -fill $tint -outline #a3a3a3
-                $sw create text 11 8 -text $mark -fill $ink -font [uifont Courier 11 bold]
+                set sw [flags_card_swatch $s.w$r $paper $tint $mark $ink]
                 label $s.n$r -text $label -font [uifont 12] -background $paper -anchor w
                 grid $sw $s.n$r -row $r -sticky w -pady 1
                 grid configure $s.n$r -padx {6 0}
@@ -1558,17 +1616,14 @@ proc flags_card_column {f key paper wrap} {
             set first 1
             foreach item $items {
                 lassign [flags_style $state] mark ink tint
-                set sw [canvas $s.w$r -width 22 -height 16 -highlightthickness 0 \
-                    -borderwidth 0 -background $paper]
-                $sw create rectangle 2 1 20 15 -fill [expr {$state eq "nothing" ? "white" : $tint}] \
-                    -outline #a3a3a3
-                $sw create text 11 8 -text $sign \
-                    -fill [expr {$ink eq "" || $state eq "nothing" ? "black" : $ink}] \
-                    -font [uifont Courier 11 bold]
+                set sw [flags_card_swatch $s.w$r $paper \
+                    [expr {$state eq "nothing" ? "white" : $tint}] $sign \
+                    [expr {$ink eq "" || $state eq "nothing" ? "black" : $ink}]]
                 label $s.k$r -text [expr {$first ? $word : ""}] -font [uifont 12] \
                     -foreground #5a5a5a -background $paper -anchor w
                 label $s.v$r -text $item -font [uifont 12] -background $paper \
-                    -anchor w -justify left -wraplength [expr {$wrap - 140}]
+                    -anchor w -justify left \
+                    -wraplength [expr {$wrap - [flags_px 140]}]
                 grid $sw $s.k$r $s.v$r -row $r -sticky w -pady 1
                 grid configure $s.k$r -padx {6 10}
                 set first 0

@@ -40,13 +40,17 @@ build for every platform, and the source:
 - ``Zangband-<version>-linux64.AppImage``: the Linux build, 64-bit. It's one
   file: make it executable and run it. It has three front ends, chosen with
   ``-m``: ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to
-  play in a terminal with no display at all.
+  play in a terminal with no display at all. For menus, and the inventory,
+  messages and the rest in windows of their own, take ZangbandTK instead.
 - ``Zangband-<version>-linux64-terminal.tar.gz``: the Linux terminal build. It's
   the curses front end on its own, with no FUSE and no graphics stack, for a
   server you reach over ssh. See `The Linux terminal build`_.
 - ``ZangbandTK-<version>-linux64-tk.AppImage``: the Tk front end for 64-bit
   Linux, one file like the other AppImage. See `ZangbandTK on Windows and
   Linux`_.
+- The same three Linux files again with ``-arm`` on the end, such as
+  ``Zangband-<version>-linux64-arm.AppImage``, for 64-bit ARM. See `x86-64 or
+  ARM`_.
 - ``Zangband-<version>-nintendo.zip``: the Nintendo DS ROM and the 3DS build,
   with the data the card needs. Text mode, no tiles or sound.
 - ``Zangband-<version>-dos.zip``: the DOS build, for a 386 or better with a
@@ -407,9 +411,12 @@ launch, as it does for ``Zangband.exe``, and the ``README.txt`` in the zip says
 how to get past it.
 
 On Linux it's one file, and it needs nothing installed but an X11 desktop, or
-Wayland through XWayland. Like the other Linux downloads, it runs on x86-64
-with glibc 2.27 or newer: Ubuntu 18.04, Debian 10, RHEL 8 and anything after
-them.
+Wayland through XWayland. Like the other Linux downloads, it comes for x86-64
+and for ARM (see `x86-64 or ARM`_), and runs with glibc 2.27 or newer: Ubuntu
+18.04, Debian 10, RHEL 8 and anything after them. Tk finds the desktop's
+scale for itself, so on a desktop scaled to twice the size the windows, their
+text and the map's tiles come up twice the size. If you'd rather have the
+tiles another size, it's on the Display page of the Options window.
 
 .. code-block:: sh
 
@@ -439,8 +446,8 @@ The AppImage needs no installation and nothing installed alongside it:
    ./Zangband-<version>-linux64.AppImage
 
 It bundles its own SDL2 and ncurses, so it doesn't care which distribution
-it's on. It is built on Ubuntu 18.04, so it runs on x86-64 with glibc 2.27 or
-newer: Ubuntu 18.04, Debian 10, RHEL 8 and everything after them. Older
+it's on. It is built on Ubuntu 18.04, so it runs with glibc 2.27 or newer:
+Ubuntu 18.04, Debian 10, RHEL 8 and everything after them. Older
 distributions may need ``libfuse2`` installed for AppImages to mount; failing
 that, ``--appimage-extract`` unpacks it into a directory you can run from.
 
@@ -449,9 +456,21 @@ The path comes from Angband and stays as it is so that nothing has to move
 later. That's also why it still has the project's name: ZangbandTK was the
 game's name too, up to 3.128.0.
 
-There's no 32-bit Linux build. Ubuntu dropped the i386 archive in 19.10, Fedora
-and Arch dropped 32-bit years ago, and the source archive covers anyone still
-running it.
+There's no 32-bit Linux build, for a PC or for ARM. Ubuntu dropped the i386
+archive in 19.10, Fedora and Arch dropped 32-bit years ago, and the source
+archive covers anyone still running it.
+
+x86-64 or ARM
+-------------
+
+Every Linux download comes twice. The names on this page are the x86-64 builds,
+for an ordinary PC. The same names with ``-arm`` on the end are for 64-bit ARM:
+a Raspberry Pi running a 64-bit system, an ARM laptop or server, or Linux in a
+virtual machine on an Apple Silicon Mac. If you're not sure, ``uname -m`` tells
+you: ``x86_64`` or ``aarch64``.
+
+The wrong one won't start. An AppImage stops with ``Exec format error``, and the
+terminal build may go straight back to the prompt without a word.
 
 The Linux terminal build
 ------------------------
@@ -472,8 +491,8 @@ It's the executable, its data, and nothing else. Keep the ``lib`` directory
 beside the executable and start the game from inside the unpacked folder,
 because that's where it looks for its data.
 
-It needs x86-64 and glibc 2.27 or newer: Ubuntu 18.04, Debian 10, RHEL 8 and
-anything after those. Nothing needs to be installed alongside it. ncurses is
+It needs glibc 2.27 or newer: Ubuntu 18.04, Debian 10, RHEL 8 and anything
+after those. Nothing needs to be installed alongside it. ncurses is
 linked in statically, because a dynamically linked build does not start at all
 on a system with no ``libncursesw.so.6`` (a stock Debian container is one), and
 on the RPM distributions it starts but prints ``no version information

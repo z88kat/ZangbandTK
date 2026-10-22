@@ -31,6 +31,94 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+22 October 2026, evening — back to X11
+======================================
+
+Steven tried the SDL2 build on the ARM machine and didn't like it, and then
+found the thing I hadn't looked for: resize the plain X11 window and it comes
+back up the right size. So the problem I'd spent the morning on mostly wasn't
+there, and the cure was worse. The AppImage is back as 3.138.0 had it, X11
+first and SDL2 only for someone who asks with ``-msdl2``, and the four C files
+are exactly what was released. The ARM builds work the same way.
+
+What stays is ZangbandTK's half. The Flags page really was unreadable at twice
+the size, because that is a canvas drawn in pixels and nothing resizes it,
+and the map's tiles really were half the size of their text. Those don't
+depend on SDL at all.
+
+I should have asked what the window looked like after a resize before
+rebuilding a front end around a photo.
+
+
+22 October 2026 — half the size of everything else
+==================================================
+
+The Intel laptop was next, and Steven sent a photo of it. The Zangband window
+was a small black box beside a file manager twice its size, with no icon in
+the dock. Two things had gone wrong at once. The game tries its front ends in
+the order upstream lists them, X11 first, so the AppImage opened the plain X11
+window rather than the SDL2 one with menus and tiles. And the desktop was
+scaled to twice the size, which nothing in Zangband knew how to follow.
+
+SDL2 goes first now. I told Steven that SDL already reads the desktop's scale,
+because its source has a function that reads Xft.dpi. Then I looked at where
+it is called: only on an X server without XRandR, which is no X server anyone
+runs. So the game reads it itself, through the X11 code that is in the same
+binary anyway, and draws every window at that whole multiple. The bitmap
+fonts come out doubled pixel for pixel, which looks right for this game.
+
+Putting SDL2 first had a trap in it. With no display, over ssh, SDL2 quits
+rather than failing, so the AppImage without ``-mgcu`` never reached curses
+even before, and nobody had noticed. Making it fail gracefully wasn't enough. SDL 2.32 has an
+"offscreen" driver it falls back to when nothing else works, so it started
+happily and played the game into a window nobody could see. The terminal
+stayed blank. That one only showed up because I copied the smoke test and
+took out its ``-mgcu``.
+
+I lost a while to Xvfb. Every Xft.dpi I set with xrdb vanished before
+the game could read it, because an X server with no clients left resets
+itself. A desktop always has a window manager connected, so it never happens
+there. ``-noreset`` fixed it.
+
+Then the Flags page in ZangbandTK, which Steven couldn't read at all. Tk had
+done what the game hadn't: it read MATE's scale and doubled every font. But
+the page is drawn on canvases in pixels, so 38-pixel lines sat in 18-pixel
+rows. I assumed the Mac was the odd one out and measured it to be sure. It
+isn't: Tk makes a point 1.33 pixels there too, and the line is 19 pixels, the
+same as Linux at its natural size. So the page now scales its lengths by how
+much taller the line is than 19. The Mac's factor is exactly 1 and nothing
+there moves. The map had the same problem, so ZangbandTK's tile size now
+starts at Tk's own scale for anyone who hasn't picked one.
+
+The SDL2 window still has Angband's little @ mascot tiled behind it, and on
+the About box. Now that it's the first thing anyone sees, it looks wrong.
+
+
+21 October 2026 — the Linux machine was an ARM one
+==================================================
+
+Steven tried the Linux terminal build and it went straight back to the prompt
+without a word. I went looking for a bug in the game. I ran the published
+tarball in Docker on four distributions and it started on every one of them,
+which proved the binary was fine on four machines that weren't the one it had
+failed on. Then the AppImage said ``Exec format error``, and that was the
+answer. The VM runs on an Apple Silicon Mac, so it's ARM, and every Linux
+download we make is x86-64.
+
+The silent one still bothers me a little. The kernel refused the AppImage but
+let the plain binary start, so I think something on the VM runs x86-64
+programs under emulation and the game died in it before it could say so. I
+didn't check, and with a native build it stops mattering.
+
+So the three Linux jobs in the release now run twice, the second time on
+GitHub's ARM runner, in the same 18.04 container built for ARM. Most of the
+work was finding the places that said x86-64: the container script, CMake and
+linuxdeploy in the Dockerfile, one library path, the checks, and the README.
+I built and tested all three ARM downloads here before touching CI. That was
+quick for once, because Docker on this Mac is ARM, so the Linux builds weren't
+emulated. SDL took a minute and a half instead of forty.
+
+
 21 October 2026 — eleven options that were really four
 ======================================================
 
