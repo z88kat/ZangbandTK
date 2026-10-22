@@ -141,12 +141,43 @@ proc ui_scaled {size} {
     expr {max(6, round($size * $display(uisize) / double($display(uibase))))}
 }
 
+# The family a window's font asks for, as this machine draws it.
+#
+# On X11, Helvetica and Courier are names fontconfig resolves, and an Ubuntu
+# desktop resolves them to Nimbus Sans and Nimbus Mono PS, Ghostscript's copies.
+# Those keep far more room under the line than the real ones, and Tk centres
+# the whole line, so the text in every button and field sat a few pixels high:
+# measured in a button, 3 pixels at the natural size and 5 at twice it, and
+# worse for Courier.  Liberation Sans and Mono are drawn to Arial's and Courier
+# New's widths and sit within a pixel or two of the middle; DejaVu, which every
+# desktop has, is the fallback.  The Mac has the real Helvetica, and Tk on
+# Windows maps it to Arial, so only X11 is changed.
+proc ui_family {family} {
+    global display
+    if {[tk windowingsystem] ne "x11"} { return $family }
+    if {[info exists display(x11family,$family)]} {
+        return $display(x11family,$family)
+    }
+    set use $family
+    set choices [dict create \
+        Helvetica {{Liberation Sans} {DejaVu Sans}} \
+        Courier {{Liberation Mono} {DejaVu Sans Mono}}]
+    if {[dict exists $choices $family]} {
+        set have [font families]
+        foreach f [dict get $choices $family] {
+            if {$f in $have} { set use $f ; break }
+        }
+    }
+    set display(x11family,$family) $use
+    return $use
+}
+
 # A named font that follows the setting: ui_font_create name family size
 # ?bold? ?italic?.  The Help window's fonts are made this way under their own
 # names; uifont makes the rest.
 proc ui_font_create {name family size args} {
     global display
-    set spec [list -family $family -size [ui_scaled $size] \
+    set spec [list -family [ui_family $family] -size [ui_scaled $size] \
         -weight [expr {"bold" in $args ? "bold" : "normal"}] \
         -slant [expr {"italic" in $args ? "italic" : "roman"}]]
     if {$name in [font names]} {

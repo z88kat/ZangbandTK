@@ -414,11 +414,36 @@ proc items_refresh_burden {} {
 
 # --- painting ------------------------------------------------------------------
 
+# The figure: a woman (doll.png) or a man (doll-male.png), the two sprites the
+# handoff drew, as the character's portrait is one or the other -- portrait_sex,
+# from what birth rolled, so the doll and the Character window always agree.
+# Checked on every refresh, which is cheap, so a character loaded or made after
+# the window opened gets theirs.  The woman, the handoff's default, until there
+# is a character.
+proc items_doll_sprite {} {
+    global items
+
+    set file doll.png
+    if {![catch {angband_player age}] && [portrait_sex] eq "M"} {
+        set file doll-male.png
+    }
+    if {[info exists items(dollfile)] && $items(dollfile) eq $file} return
+    if {"items_doll" ni [image names]} { image create photo items_doll }
+    if {[catch {
+        items_doll blank
+        items_doll read [file join $items(dir) $file]
+    }]} {
+        return
+    }
+    set items(dollfile) $file
+}
+
 proc items_refresh {} {
     global items
 
     if {![winfo exists .items]} return
 
+    items_doll_sprite
     items_refresh_slots
     items_refresh_pack
     items_refresh_burden
@@ -994,9 +1019,7 @@ proc items_window {} {
     ttk::labelframe $eq -text Equipment -padding 8
     canvas $eq.doll -background black -relief sunken \
         -borderwidth $items(doll,bd) -highlightthickness 0
-    if {[lsearch -exact [image names] items_doll] < 0} {
-        image create photo items_doll -file [file join $items(dir) doll.png]
-    }
+    items_doll_sprite
     $eq.doll create image 0 0 -image items_doll -anchor center -tags sprite
     $eq.doll create rectangle 0 0 0 0 -outline #ffff00 -dash . -state hidden \
         -tags selring

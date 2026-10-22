@@ -9477,8 +9477,9 @@ published x86-64 3.138.0 AppImage, leaving out the manual, which the local
 build lacked. ZangbandTK passed the bridge test (243 checks) and the package
 test. The x86-64 leg's architecture check fails on the ARM file, as it should.
 The x86-64 image still builds, under emulation, with its own CMake and
-linuxdeploy. Not yet run on GitHub's ARM runner: that is the next release
-rehearsal.
+linuxdeploy. On GitHub's ARM runner the release rehearsal of 22 October
+(run 39816190245) passed all three ARM jobs, smoke tests included, beside their
+x86-64 twins.
 
 **DEC-166 — ZangbandTK's canvases follow its fonts on a scaled Linux desktop;
 Zangband's AppImage stays as 3.138.0 had it (22 October 2026).**

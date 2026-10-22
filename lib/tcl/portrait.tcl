@@ -15,12 +15,19 @@
 
 set portrait(dir) [file join [file dirname [info script]] portraits]
 
-# Read the index and load the sheet, once.  0 if either is missing, and then
-# the windows fall back on the character's map tile.
+# Read the index, once, and check the sheet is there.  0 if either is missing,
+# and then the windows fall back on the character's map tile.
+#
+# The sheet is not loaded whole.  Tk keeps the outline of every opaque pixel in
+# a photo, and for 784 figures on nothing that took 2.6 seconds on a Mac, and
+# about five on a Linux VM, all of it spent before the Birth window could open:
+# New Character sat there doing nothing.  A cell read on its own, by
+# portrait_cell, takes about 10 ms, decoding the file included.
 proc portrait_load {} {
     global portrait
 
     if {[info exists portrait(size)]} { return 1 }
+    if {![file readable [file join $portrait(dir) portraits.png]]} { return 0 }
     if {[catch {open [file join $portrait(dir) portraits.txt] r} f]} { return 0 }
     fconfigure $f -encoding utf-8
     set races {}
@@ -36,16 +43,30 @@ proc portrait_load {} {
     }
     close $f
     if {!$size || ![llength $races] || ![llength $classes]} { return 0 }
-    if {"portrait_sheet" ni [image names] && [catch {
-        image create photo portrait_sheet \
-            -file [file join $portrait(dir) portraits.png]
-    }]} {
-        return 0
-    }
     set portrait(races) $races
     set portrait(classes) $classes
     set portrait(size) $size
     return 1
+}
+
+# The cell of the sheet whose top left is x, y, as a photo of its own: read
+# the first time it is wanted and kept, so a window that redraws, or the Birth
+# window going up and down the list, reads each one once.  "" if it can't be.
+proc portrait_cell {x y} {
+    global portrait
+
+    set name portrait_cell_${x}_$y
+    if {$name in [image names]} { return $name }
+    set s $portrait(size)
+    image create photo $name
+    if {[catch {
+        $name read [file join $portrait(dir) portraits.png] -format png \
+            -from $x $y [expr {$x + $s}] [expr {$y + $s}]
+    }]} {
+        image delete $name
+        return ""
+    }
+    return $name
 }
 
 # M or F, from what birth rolled.
@@ -82,19 +103,21 @@ proc portrait_put_for {photo size race class sex {ground 1}} {
 
     set s $portrait(size)
     set zoom [expr {max(1, $size / $s)}]
-    set fx [expr {$col * $s}]
-    set fy [expr {(2 * $row + ($sex eq "F")) * $s}]
+    set figure [portrait_cell [expr {$col * $s}] \
+        [expr {(2 * $row + ($sex eq "F")) * $s}]]
+    set backdrop ""
+    if {$ground} {
+        set backdrop [portrait_cell [expr {$row * $s}] \
+            [expr {2 * [llength $portrait(classes)] * $s}]]
+    }
+    if {$figure eq "" || ($ground && $backdrop eq "")} { return 0 }
 
     $photo blank
     $photo configure -width [expr {$s * $zoom}] -height [expr {$s * $zoom}]
     if {$ground} {
-        set bx [expr {$row * $s}]
-        set by [expr {2 * [llength $portrait(classes)] * $s}]
-        $photo copy portrait_sheet -from $bx $by [expr {$bx + $s}] \
-            [expr {$by + $s}] -zoom $zoom -compositingrule set
+        $photo copy $backdrop -zoom $zoom -compositingrule set
     }
-    $photo copy portrait_sheet -from $fx $fy [expr {$fx + $s}] \
-        [expr {$fy + $s}] -zoom $zoom
+    $photo copy $figure -zoom $zoom
     return 1
 }
 

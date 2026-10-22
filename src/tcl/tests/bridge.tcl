@@ -1472,6 +1472,12 @@ proc birth_pass_done {} {
 	# figure in it -- a cell left empty would be a blank square in a window.
 	check "every race and class the game has, has a portrait" {
 		portrait_load
+		# The whole sheet, which the game no longer loads -- it reads one
+		# cell at a time -- but which is the way to look at all 784.
+		if {"probe_sheet" ni [image names]} {
+			image create photo probe_sheet \
+				-file [file join $::portrait(dir) portraits.png]
+		}
 		set races [angband_birth names race]
 		set classes [angband_birth names class]
 		set missing {}
@@ -1485,7 +1491,7 @@ proc birth_pass_done {} {
 		set s $::portrait(size)
 		for {set row 0} {$row < 2 * [llength $::portrait(classes)]} {incr row} {
 			for {set col 0} {$col < [llength $::portrait(races)]} {incr col} {
-				if {[portrait_sheet transparency get \
+				if {[probe_sheet transparency get \
 						[expr {$col * $s + $s / 2}] [expr {$row * $s + $s - 4}]]} {
 					incr empty
 				}
@@ -1503,7 +1509,11 @@ proc birth_pass_done {} {
 		set drawn [portrait_put probe_portrait 64]
 		set size [list [image width probe_portrait] [image height probe_portrait]]
 		set row [lsearch -exact $::portrait(classes) [angband_player class]]
-		set ground [portrait_sheet get [expr {$row * 32}] \
+		if {"probe_sheet" ni [image names]} {
+			image create photo probe_sheet \
+				-file [file join $::portrait(dir) portraits.png]
+		}
+		set ground [probe_sheet get [expr {$row * 32}] \
 			[expr {2 * [llength $::portrait(classes)] * 32}]]
 		set corner [probe_portrait get 0 0]
 		portrait_put probe_portrait 64 0
