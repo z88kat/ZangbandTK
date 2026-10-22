@@ -12,8 +12,10 @@
 # visit is over when it stops asking.  This window is a second way to answer,
 # as the Choice pane is: the keyboard still works, and what it shows and how a
 # click answers are angband_choice's.  So it opens on the building's first
-# question rather than at the door -- the inn by day says its piece and asks
-# nothing -- and closes when the building has nothing more to ask.
+# question rather than at the door, and closes when the building has nothing
+# more to ask.  A building with nothing for you still asks -- a menu of only
+# "Nothing today", the inn by day and the Chaos Tower included -- so every
+# building opens its window.
 #
 # Built from Tk's own widgets in the classic theme (decision 18), as the Store
 # window is.

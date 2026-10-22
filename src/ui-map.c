@@ -1818,6 +1818,37 @@ static bool quest_giver_business(int town)
 }
 
 /**
+ * A building with nothing to offer you, saying so the way one with something
+ * to offer does: as a menu whose only entry is the way out, as the healer's is
+ * when there is nothing to mend.  The inn by day and the Chaos Tower, for
+ * someone with no mutations, used to say their piece in the message line and
+ * ask nothing, and ZangbandTK opens a building's window only while the
+ * building is asking -- so those were the two buildings with no window.
+ */
+static void service_nothing(const char *what)
+{
+	struct menu *m;
+	char *labels;
+
+	m = menu_dynamic_new();
+	if (!m) return;
+
+	labels = menu_dynamic_labels(m);
+	menu_dynamic_add_label(m, "Nothing today", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(what, 0, 0);
+
+	(void) menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+}
+
+/**
  * The inn: a bed until morning (WLD-16c).
  *
  * Which earns its keep here in a way it would not in Angband.  Daylight is what
@@ -1830,7 +1861,8 @@ static void service_inn(void)
 	int32_t price = z_info->inn_cost;
 
 	if (is_daytime()) {
-		msg("The innkeeper says you would do better to travel while it is light.");
+		service_nothing("The innkeeper says you would do better to travel "
+			"while it is light.");
 		return;
 	}
 
@@ -1959,7 +1991,8 @@ static void service_chaostower(void)
 	}
 
 	if (!count) {
-		msg("They look you over and shake their heads.  Nothing to do.");
+		service_nothing("They look you over and shake their heads.  "
+			"Nothing to do.");
 		return;
 	}
 
