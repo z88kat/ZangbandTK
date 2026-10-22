@@ -398,6 +398,74 @@ static int test_fetching_is_finished_by_having_it(void *state) {
 }
 
 /**
+ * And what is already carried counts, at the counter (ZangbandTK).
+ *
+ * quest_check_item() counts only what enters the pack, so a fetch taken for
+ * something already in it could never be finished: Sulare took "fetch Cure
+ * Light Wounds" with five of the potions on hand, and the inn could offer only
+ * to let the job go.  quest_check_carried() is what a building that hires asks
+ * as the character walks in.
+ */
+static int test_fetching_counts_what_is_already_carried(void *state) {
+	struct player *p = state;
+	struct quest *q;
+	struct object carried, other;
+	struct object *gear = p->gear;
+
+	player_quests_reset(p);
+
+	memset(&carried, 0, sizeof(carried));
+	memset(&other, 0, sizeof(other));
+	carried.kind = &test_longsword;
+	carried.number = 1;
+	other.kind = &test_torch;
+	other.number = 1;
+
+	q = quest_take(p, QUEST_FIND_ITEM, "fetch a long sword", NULL, 1);
+	notnull(q);
+	q->kind = &test_longsword;
+
+	/* Carrying something else does not finish it. */
+	p->gear = &other;
+	require(!quest_check_carried(p));
+	eq(q->state, QUEST_TAKEN);
+
+	/* Carrying the thing does, though it was never picked up again. */
+	other.next = &carried;
+	require(quest_check_carried(p));
+	eq(q->state, QUEST_COMPLETE);
+	eq(q->cur_num, 1);
+
+	/* And a job that is done is not done twice. */
+	require(!quest_check_carried(p));
+
+	p->gear = gear;
+	ok;
+}
+
+/**
+ * What a job pays, which the inn pays and the Knowledge window quotes
+ * (WLD-16d): twenty gold a creature times one more than its depth, and never
+ * less than twenty -- so a fetch, which has no creature, pays twenty.
+ */
+static int test_work_pays_what_it_says(void *state) {
+	struct player *p = state;
+	struct quest *bounty, *fetch;
+
+	player_quests_reset(p);
+
+	bounty = quest_take(p, QUEST_BOUNTY, "3 humans", &test_r_human, 3);
+	fetch = quest_take(p, QUEST_FIND_ITEM, "fetch a long sword", NULL, 1);
+	notnull(bounty);
+	notnull(fetch);
+
+	eq(quest_reward(bounty), 3 * (test_r_human.level + 1) * 20);
+	eq(quest_reward(fetch), 20);
+
+	ok;
+}
+
+/**
  * A killing above ground is not finished underground (WLD-19, QUEST_WILD).
  *
  * The distinction is the whole of what separates this from a bounty: a bounty
@@ -492,6 +560,8 @@ struct test tests[] = {
 	{ "a-kill-finishes-only-killing-work", test_a_kill_finishes_only_killing_work },
 	{ "a-job-can-be-given-up", test_a_job_can_be_given_up },
 	{ "fetching-is-finished-by-having-it", test_fetching_is_finished_by_having_it },
+	{ "fetching-counts-what-is-already-carried", test_fetching_counts_what_is_already_carried },
+	{ "work-pays-what-it-says", test_work_pays_what_it_says },
 	{ "open-country-work-counts-only-above-ground", test_open_country_work_counts_only_above_ground },
 	{ "dungeon-work-wants-the-right-dungeon", test_dungeon_work_wants_the_right_dungeon },
 	{ "the-town-is-never-a-quest", test_the_town_is_never_a_quest },

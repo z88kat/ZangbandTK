@@ -21,6 +21,8 @@
 #include "init.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-desc.h"
+#include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -362,11 +364,91 @@ bool quest_check_item(struct player *p, const struct object *obj)
 			q->cur_num = q->max_num;
 			q->state = QUEST_COMPLETE;
 			any = true;
-			msgt(MSG_QUEST_DONE, "%s: done.", q->name ? q->name : "That errand");
+			msgt(MSG_QUEST_DONE, "%s: done. Any inn will pay you for it.",
+				q->name ? q->name : "That errand");
 		}
 	}
 
 	return any;
+}
+
+/**
+ * Somebody walked into a building that hires, carrying what they were sent for.
+ *
+ * quest_check_item() sees a thing only as it enters the pack, so a fetch taken
+ * for something already in it could never be finished: Sulare took "fetch Cure
+ * Light Wounds" with five of the potions in the pack, and the inn could do
+ * nothing but offer to let the job go.  The job is finished by having the
+ * thing, and having it at the counter is having it.  Equipment counts as well
+ * as the pack, since a sword asked for and then wielded is still a sword
+ * brought in.
+ *
+ * \return true if anything was completed.
+ */
+bool quest_check_carried(struct player *p)
+{
+	bool any = false;
+	int i;
+
+	for (i = z_info->quest_fixed; i < z_info->quest_max; i++) {
+		struct quest *q = &p->quests[i];
+		struct object *obj;
+		int have = 0;
+
+		if (q->state != QUEST_TAKEN || q->type != QUEST_FIND_ITEM) continue;
+		if (!q->kind) continue;
+
+		for (obj = p->gear; obj; obj = obj->next)
+			if (obj->kind == q->kind) have += obj->number;
+
+		if (have >= q->max_num) {
+			q->cur_num = q->max_num;
+			q->state = QUEST_COMPLETE;
+			any = true;
+		}
+	}
+
+	return any;
+}
+
+/**
+ * What a job pays (WLD-16d): twenty gold for each creature asked for, times one
+ * more than the depth the creature lives at, and never less than twenty.  The
+ * building that pays and the window that says what it will pay both ask here,
+ * so the two cannot disagree.
+ */
+int quest_reward(const struct quest *q)
+{
+	int reward = q->max_num * (q->race ? q->race->level + 1 : 1) * 20;
+
+	return MAX(reward, 20);
+}
+
+/**
+ * What a fetch job wants, named as a shop names it: "a Potion of Cure Light
+ * Wounds", where the job used to say only "Cure Light Wounds" -- which is a
+ * potion, and a staff, and a priest's spell.  The true name whatever the
+ * character knows of the flavour: it is the innkeeper speaking, and the job
+ * was always for a kind, never a flavour.
+ */
+void quest_item_name(char *buf, size_t len, const struct object_kind *kind)
+{
+	struct object body = OBJECT_NULL, known_body = OBJECT_NULL;
+
+	if (!kind) {
+		my_strcpy(buf, "something", len);
+		return;
+	}
+
+	object_prep(&body, (struct object_kind *)kind, 0, MINIMISE);
+	body.number = 1;
+	object_copy(&known_body, &body);
+	body.known = &known_body;
+	/* ODESC_STORE for the name alone, without the flavour beside it. */
+	object_desc(buf, len, &body,
+				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL | ODESC_STORE, NULL);
+	object_wipe(&known_body);
+	object_wipe(&body);
 }
 
 /**
@@ -399,7 +481,8 @@ bool quest_check_arrival(struct player *p, int town)
 		q->state = QUEST_COMPLETE;
 		any = true;
 
-		msgt(MSG_QUEST_DONE, "%s: done.", q->name ? q->name : "That errand");
+		msgt(MSG_QUEST_DONE, "%s: done. Any inn will pay you for it.",
+				q->name ? q->name : "That errand");
 	}
 
 	return any;
@@ -484,6 +567,16 @@ bool quest_check(struct player *p, const struct monster *m)
 				 */
 				q->state = q->fixed ? QUEST_FINISHED : QUEST_COMPLETE;
 				completed = true;
+
+				/*
+				 * Said, as a fetch or a delivery is, and with where to go
+				 * next.  The kill used to pass in silence, and nothing told
+				 * the character the job was over.  Plain msg: the sound below
+				 * is this one's.
+				 */
+				if (!q->fixed)
+					msg("%s: done. Any inn will pay you for it.",
+						q->name ? q->name : "That job");
 			}
 		}
 

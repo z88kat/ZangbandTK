@@ -1658,27 +1658,42 @@ static bool quest_offer_item(void)
 {
 	struct object_kind *kind = NULL;
 	struct quest *q;
-	char name[80];
+	char name[80], thing[80];
 	int tries;
 
 	for (tries = 0; tries < 400 && !kind; tries++) {
 		struct object_kind *pick =
 			&k_info[randint0(z_info->k_max ? z_info->k_max : 1)];
+		struct object *obj;
+		bool carried = false;
 
 		if (!pick->name) continue;
 		if (pick->alloc_min > player->max_depth + 5) continue;
 		if (!pick->alloc_max) continue;
 		if (tval_is_money_k(pick)) continue;
 
+		/*
+		 * Not something already carried: having it is fetching it, so the job
+		 * would be done before the door had shut behind you.
+		 */
+		for (obj = player->gear; obj && !carried; obj = obj->next)
+			if (obj->kind == pick) carried = true;
+		if (carried) continue;
+
 		kind = pick;
 	}
 
 	if (!kind) return false;
 
-	strnfmt(name, sizeof(name), "fetch %s", kind->name);
+	/*
+	 * By its full name, as a shop would say it: the kind's own name was all
+	 * this said, and "Cure Light Wounds" is a potion and a staff both.
+	 */
+	quest_item_name(thing, sizeof(thing), kind);
+	strnfmt(name, sizeof(name), "fetch %s", thing);
 
 	if (!get_check(format("\"We're wanting %s brought in. Take it? \"",
-						  kind->name)))
+						  thing)))
 		return true;
 
 	q = quest_take(player, QUEST_FIND_ITEM, name, NULL, 1);
@@ -1713,16 +1728,19 @@ static bool quest_offer_item(void)
  */
 static bool quest_giver_business(int town)
 {
-	struct quest *done = quest_carried(player, true);
-	struct quest *doing = quest_carried(player, false);
+	struct quest *done, *doing;
 	struct monster_race *race = NULL;
 	char name[80];
 	int number, reward, tries, unknown = -1;
 
+	/* What a fetch asked for, carried in through the door, is fetched. */
+	quest_check_carried(player);
+	done = quest_carried(player, true);
+	doing = quest_carried(player, false);
+
 	/* Pay for what has been finished. */
 	if (done) {
-		reward = done->max_num * (done->race ? done->race->level + 1 : 1) * 20;
-		reward = MAX(reward, 20);
+		reward = quest_reward(done);
 
 		msg("\"That's the %s dealt with. Here's what we promised.\"",
 			done->name ? done->name : "business");
@@ -2144,6 +2162,12 @@ void ui_enter_service(game_event_type type, game_event_data *data, void *user)
 									  player->grid.y + player->wild_offset.y));
 
 		if (wild_gives_quests(wild, town, service)) {
+			/*
+			 * Before the menu is made, so that walking in with what a fetch
+			 * asked for offers to be paid for it, not to talk about what is
+			 * owed -- which offered only to give the job up.
+			 */
+			quest_check_carried(player);
 			switch (service_visit_choice(service)) {
 				case VISIT_WORK:
 					(void)quest_giver_business(town);

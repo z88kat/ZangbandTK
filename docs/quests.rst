@@ -56,9 +56,13 @@ go to could never be done.
 **A killing in the open.** The same, but it counts only what dies above ground.
 What you kill underground is nobody's business.
 
-**Fetching something.** Bring a particular thing back. It's finished by having
-it, and the check is on your pack, so buying it or taking it out of a chest is
-fetching it just as much as finding it lying about.
+**Fetching something.** Bring a particular thing back. The job names it in full,
+as a shop would: *a Potion of Cure Light Wounds*, since there's a Staff of Cure
+Light Wounds as well. It's finished by having it. One that comes
+into your pack counts as it arrives, so buying it or taking it out of a chest is
+fetching it just as much as finding it lying about, and one you were already
+carrying counts as you walk into an inn. You keep it: the inn doesn't take it
+off you.
 
 Carrying and reporting
 ----------------------
@@ -74,8 +78,13 @@ enough on your plate already."* The two quests the game ends on do not take any
 of the eight, because nobody handed them to you. The number is in
 ``constants.txt`` as ``wild:quest-slots``.
 
+In ZangbandTK the Knowledge window has a Quests page. Pick a job and *What Is
+Known* says what it wants, what finishes it, and what it will pay. Finish one
+and a message tells you any inn will pay you for it.
+
 Any building that hires will tell you how far along you are, or pay you when
-you're done. There's no haggling over the reward. It's twenty gold for each
+you're done. Walk in and choose *Be paid for the work you have done*. There's no
+haggling over the reward. It's twenty gold for each
 creature you were asked for, multiplied by one more than how deep that creature
 lives, with a floor of twenty gold so that nothing pays nothing. A job for six
 of something at depth 20 is worth two and a half thousand; the same six at

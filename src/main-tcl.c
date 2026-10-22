@@ -41,7 +41,9 @@
 #include "obj-knowledge.h"
 #include "obj-curse.h"
 #include "obj-util.h"
+#include "dun-type.h"
 #include "player-history.h"
+#include "player-quest.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "player-mutation.h"
@@ -4534,6 +4536,135 @@ static const char *quest_type_name(int type)
 }
 
 /**
+ * What a job is, and what to do about it, for the Knowledge window's What Is
+ * Known: the thing the job asks for, what finishes it, and where and how much
+ * it is paid.
+ *
+ * It used to say only the kind and the state -- "something to fetch, in hand."
+ * -- and a player who had taken a fetch for "Cure Light Wounds" could not tell
+ * from anything the game said that it meant a potion, that buying one would do,
+ * or where to go once they had it.  The rules are the game's own: the reward
+ * is quest_reward(), which is what the inn pays, and what finishes each kind is
+ * what quest_check(), quest_check_item(), quest_check_carried() and
+ * quest_check_arrival() test.
+ */
+/* A name in the middle of a sentence: "The Courts of Chaos" is "the Courts". */
+static void quest_name_inline(char *buf, size_t len, const char *name)
+{
+	my_strcpy(buf, name, len);
+	if (!strncmp(buf, "The ", 4)) buf[0] = 't';
+}
+
+static void quest_describe(char *buf, size_t len, const struct quest *q)
+{
+	char race[96], dungeon[96];
+	const char *town = "the town";
+	bool have_dungeon = false;
+	char some[96], thing[96], what[320], then[320];
+	bool fetch = (q->type == QUEST_FIND_ITEM);
+
+	quest_name_inline(race, sizeof(race),
+			(q->race && q->race->name) ? q->race->name : "creature");
+	if (q->town > 0 && wild && q->town <= wild_town_count(wild)
+			&& wild->towns[q->town - 1].name)
+		town = wild->towns[q->town - 1].name;
+	if (q->dungeon > 0) {
+		struct dun_type *type = dun_type_by_index(q->dungeon - 1);
+
+		if (type && type->name) {
+			quest_name_inline(dungeon, sizeof(dungeon), type->name);
+			have_dungeon = true;
+		}
+	}
+
+	/* "3 cave spiders", or the one creature by name. */
+	if (q->max_num > 1 && q->race && q->race->plural)
+		strnfmt(some, sizeof(some), "%d %s", q->max_num, q->race->plural);
+	else if (q->max_num > 1)
+		strnfmt(some, sizeof(some), "%d %ss", q->max_num, race);
+	else if (q->race && rf_has(q->race->flags, RF_UNIQUE))
+		my_strcpy(some, race, sizeof(some));
+	else
+		strnfmt(some, sizeof(some), "%s %s", is_a_vowel(race[0]) ? "an" : "a",
+				race);
+
+	/* The two the game is won by have nobody to report to. */
+	if (q->fixed) {
+		if (q->state == QUEST_FINISHED) {
+			strnfmt(buf, len, "Done: %s is dead. That was one of the two "
+					"quests the game is won by.", race);
+		} else {
+			strnfmt(buf, len, "Kill %s, on level %d%s%s. This is one of the "
+					"two quests the game is won by: nobody gave it to you, "
+					"and there is no one to report back to.", race,
+					q->level, have_dungeon ? " of " : "",
+					have_dungeon ? dungeon : "");
+		}
+		return;
+	}
+
+	switch (q->type) {
+	case QUEST_BOUNTY:
+		strnfmt(what, sizeof(what), "Kill %s (%d so far). %s wherever you "
+				"meet %s, in a dungeon or above ground.", some, q->cur_num,
+				q->max_num > 1 ? "They count" : "It counts",
+				q->max_num > 1 ? "them" : "it");
+		break;
+	case QUEST_DUNGEON:
+		strnfmt(what, sizeof(what), "Kill %s on level %d of %s (%d so far). "
+				"%s there count%s.", some, q->level,
+				have_dungeon ? dungeon : "the dungeon you were sent to",
+				q->cur_num,
+				q->max_num > 1 ? "Only the ones that die" : "Only one that dies",
+				q->max_num > 1 ? "" : "s");
+		break;
+	case QUEST_WILD:
+		strnfmt(what, sizeof(what), "Kill %s above ground (%d so far). "
+				"Anything you kill in a dungeon does not count.", some,
+				q->cur_num);
+		break;
+	case QUEST_DELIVERY:
+		strnfmt(what, sizeof(what), "Carry word to %s. It is delivered the "
+				"moment you arrive there.", town);
+		break;
+	case QUEST_FIND_PLACE:
+		strnfmt(what, sizeof(what), "Go and look at %s, which nobody here "
+				"has seen. It is done the moment you arrive, and once you "
+				"have been there a magetower will take you back.", town);
+		break;
+	case QUEST_FIND_ITEM:
+		quest_item_name(thing, sizeof(thing), q->kind);
+		strnfmt(what, sizeof(what), "Get %s into your pack: buy one, find "
+				"one, or take one out of a chest. One you are already "
+				"carrying counts as well.", thing);
+		break;
+	default:
+		my_strcpy(what, "An errand.", sizeof(what));
+		break;
+	}
+
+	/*
+	 * In the words of the inn's own menu (service_visit_choice in ui-map.c),
+	 * so that what to choose there is what this says.
+	 */
+	if (q->state == QUEST_COMPLETE) {
+		strnfmt(then, sizeof(then), "It is done. Walk into any inn and choose "
+				"\"Be paid for the work you have done\", and you will get %d "
+				"gold.%s", quest_reward(q),
+				fetch ? " You keep what you fetched." : "");
+	} else {
+		strnfmt(then, sizeof(then), "Then walk into any inn and choose \"Be "
+				"paid for the work you have done\", and you will get %d gold."
+				"%s If you would rather not do it, \"Talk about the work you "
+				"owe\" at any inn lets you give it up.", quest_reward(q),
+				fetch ? " You keep it: the inn does not take it from you." :
+				"");
+	}
+
+	strnfmt(buf, len, "%s %s", what, then);
+}
+
+/**
  * Is this slot a quest at all?  A fixed one always is; a taken one is while
  * it has a state other than untaken.
  */
@@ -4606,24 +4737,9 @@ static int objcmd_quest(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		struct quest *q = &player->quests[idx];
 
 		if (verb == TABLE_LORE) {
-			char text[256];
+			char text[640];
 
-			if (q->race && q->max_num > 1) {
-				strnfmt(text, sizeof(text),
-						"%s: %d %s, and %d so far.",
-						quest_type_name(q->type), q->max_num,
-						q->race->name ? q->race->name : "creatures",
-						q->cur_num);
-			} else if (q->race) {
-				strnfmt(text, sizeof(text), "%s: %s.",
-						quest_type_name(q->type),
-						q->race->name ? q->race->name : "a creature");
-			} else {
-				strnfmt(text, sizeof(text), "%s, %s.",
-						quest_type_name(q->type),
-						quest_state_name(q->state));
-			}
-
+			quest_describe(text, sizeof(text), q);
 			Tcl_SetObjResult(ip, Tcl_NewStringObj(text, -1));
 			return TCL_OK;
 		}

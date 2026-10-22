@@ -33,6 +33,9 @@ struct quest *quest_take(struct player *p, int type, const char *name,
 						 struct monster_race *race, int number);
 bool quest_check_arrival(struct player *p, int town);
 bool quest_check_item(struct player *p, const struct object *obj);
+bool quest_check_carried(struct player *p);
+int quest_reward(const struct quest *q);
+void quest_item_name(char *buf, size_t len, const struct object_kind *kind);
 struct quest *quest_carried(struct player *p, bool done);
 void quest_hand_back(struct player *p, struct quest *q);
 extern struct file_parser quests_parser;
