@@ -562,7 +562,19 @@ T	h3	Tcl/Tk
 T	h3	\n
 T	p0	The Tcl/Tk front end, 
 T	p0 code	ZangbandTK.app
-T	p0	, keeps the map and its panes in one window. Drag the dividers between the panes to change their sizes. F1 in any window opens this manual where it covers that window; from the main window, that’s Playing the Game. How the window draws is set on the Display page of the Options window (Other ▸ Preferences ▸ Options, or Preferences in the application menu):
+T	p0	, keeps the map and its panes in one window. Drag the dividers between the panes to change their sizes. F1 in any window opens this manual where it covers that window; from the main window, that’s Playing the Game.
+T	p0	\n
+T	p0	Point at the map and the line under it says what’s there, in the look command’s words: 
+T	p0 em	You see a Kobold (unhurt, asleep)
+T	p0	, 
+T	p0 em	You recall a granite wall
+T	p0	. Over a monster or an item, the Recall pane shows what you know about it, as it does when you look at it with 
+T	p0 code	l
+T	p0	. Pointing takes no time, and tells you nothing 
+T	p0 code	l
+T	p0	 wouldn’t. The line stays empty while the game is waiting for you to answer something else, and while you run or rest.
+T	p0	\n
+T	p0	How the window draws is set on the Display page of the Options window (Other ▸ Preferences ▸ Options, or Preferences in the application menu):
 T	p0	\n
 T	li1	•\t
 T	li1 strong	Tile set

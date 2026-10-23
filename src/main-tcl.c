@@ -31,6 +31,7 @@
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "obj-desc.h"
 #include "obj-info.h"
 #include "obj-make.h"
@@ -53,6 +54,7 @@
 #include "player-virtue.h"
 #include "savefile.h"
 #include "score.h"
+#include "target.h"
 #include "trap.h"
 #include "ui-knowledge.h"
 #include "ui-birth.h"
@@ -9376,6 +9378,187 @@ static int objcmd_rename(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * The square of the level under a point on the map pane, in the pane's own
+ * pixels.  False for anywhere that is not map: the message line, the sidebar,
+ * the status line, and the column SCREEN_WID leaves spare on the right.
+ *
+ * The same arithmetic as cell_is_seen(), but for td[0]'s term in particular
+ * rather than whichever is current: ROW_MAP and its friends read Term, and a
+ * Tcl command can arrive while the game is drawing on any of them.
+ */
+static bool map_grid_at(double px, double py, struct loc *grid)
+{
+	const term *t;
+	int col, row, top, left, rows, cols;
+
+	if (td_count < 1 || td[0].cw <= 0 || td[0].ch <= 0) return false;
+	if (px < 0 || py < 0) return false;
+
+	t = &td[0].t;
+	top = row_top_map[t->sidebar_mode];
+	left = col_map[t->sidebar_mode];
+	rows = (t->hgt - top - row_bottom_map[t->sidebar_mode]) / tile_height;
+	cols = (t->wid - left - 1) / tile_width;
+
+	col = (int)px / td[0].cw;
+	row = (int)py / td[0].ch;
+	if (row < top || col < left) return false;
+	row = (row - top) / tile_height;
+	col = (col - left) / tile_width;
+	if (row >= rows || col >= cols) return false;
+
+	grid->y = row + t->offset_y;
+	grid->x = col + t->offset_x;
+	return square_in_bounds(cave, *grid);
+}
+
+/**
+ * What the look command says of a square, as one line and without waiting
+ * for a key: "You see a tree", "You see a Kobold (unhurt, asleep)".  Empty for
+ * a square the character knows nothing about.
+ *
+ * Not target_set_interactive_aux(), because every one of its handlers prompts
+ * and waits.  The same pieces, in the same order of precedence -- a monster,
+ * then a trap, then what lies on the floor, then the terrain -- and from the
+ * same places: the monster from the level, but only if it is obvious, and
+ * everything else from the character's memory of it, so a pointer can tell a
+ * player nothing that pressing 'l' would not.  The look command's distance
+ * ("3 N, 4 E") is left off, because the pointer is already on the square.
+ *
+ * With recall, the Recall pane and the health bar follow, as they follow the
+ * look command: aux_monster() tracks what it describes, and aux_object() the
+ * first thing in the pile.
+ */
+static void look_describe(struct loc grid, bool recall, char *buf, size_t len)
+{
+	struct monster *mon = square_monster(cave, grid);
+	struct object **pile;
+	const char *phrase1, *phrase2 = "";
+	int i, found, n = 0;
+
+	buf[0] = '\0';
+	if (mon && !monster_is_obvious(mon)) mon = NULL;
+
+	/*
+	 * What is remembered as lying here, which detection can tell of too.
+	 * The list is of the objects themselves, looked up from the memory of
+	 * them; one with nothing behind it is passed over rather than described.
+	 */
+	pile = mem_zalloc(z_info->floor_size * sizeof(*pile));
+	found = scan_distant_floor(pile, z_info->floor_size, player, grid);
+	for (i = 0; i < found; i++)
+		if (pile[i]) pile[n++] = pile[i];
+
+	if (!mon && !n && !square_isknown(cave, grid)) {
+		mem_free(pile);
+		return;
+	}
+
+	/* aux_reinit()'s choice of words. */
+	if (square(cave, grid)->mon < 0) {
+		phrase1 = "You are ";
+		phrase2 = "on ";
+	} else if (square_isseen(cave, grid)) {
+		phrase1 = "You see ";
+	} else if (mon) {
+		phrase1 = "You sense ";
+	} else {
+		phrase1 = "You recall ";
+	}
+
+	if (player->timed[TMD_IMAGE]) {
+		strnfmt(buf, len, "%s%ssomething strange", phrase1, phrase2);
+	} else if (mon) {
+		char m_name[80], state[80];
+
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
+		look_mon_desc(state, sizeof(state), square(cave, grid)->mon);
+		strnfmt(buf, len, "%s%s%s (%s)", phrase1, phrase2, m_name, state);
+		if (recall && (player->upkeep->monster_race != mon->race
+				|| player->upkeep->health_who != mon)) {
+			monster_race_track(player->upkeep, mon->race);
+			health_track(player->upkeep, mon);
+			redraw_stuff(player);
+		}
+	} else if (square_isvisibletrap(player->cave, grid)) {
+		const struct trap *trap = square(player->cave, grid)->trap;
+
+		strnfmt(buf, len, "%s%s%s%s", phrase1, phrase2,
+			is_a_vowel(trap->kind->desc[0]) ? "an " : "a ",
+			trap->kind->desc);
+	} else if (n) {
+		char o_name[80];
+
+		if (n > 1) {
+			strnfmt(buf, len, "%s%sa pile of %d objects", phrase1,
+				phrase2, n);
+		} else {
+			object_desc(o_name, sizeof(o_name), pile[0],
+				ODESC_PREFIX | ODESC_FULL, player);
+			strnfmt(buf, len, "%s%s%s", phrase1, phrase2, o_name);
+		}
+		if (recall) recall_object(pile[0]);
+	} else {
+		strnfmt(buf, len, "%s%s%s%s", phrase1,
+			*phrase2 ? square_apparent_look_in_preposition(
+				player->cave, grid) : "",
+			square_apparent_look_prefix(player->cave, grid),
+			square_apparent_name(player->cave, grid));
+	}
+
+	mem_free(pile);
+}
+
+/**
+ * angband_look <x> <y> ?recall? -- what the look command would say of the
+ * square under a point on the map pane, the point in the pane's own pixels.
+ * The original's Main Window put this in its status bar as the pointer moved,
+ * which is interface.html's hover rule; lib/tcl/look.tcl does the same.
+ *
+ * With recall, the Recall pane follows the pointer as well, as it follows the
+ * look command.  Without, it is only the words, for asking again about a
+ * square the pointer has not left while the things on it have moved.
+ *
+ * Only while the game is waiting for a command, and empty otherwise.  Not in
+ * a prompt, where the look and targeting commands have the top line and the
+ * sidebar for themselves, and not while running or resting, which do not
+ * wait for a command between steps and so answer empty until they stop.
+ */
+static int objcmd_look(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	double x, y;
+	bool recall = false;
+	struct loc grid;
+	char text[160];
+
+	(void)dummy;
+
+	if (objc != 3 && objc != 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "x y ?recall?");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDoubleFromObj(ip, objv[1], &x) != TCL_OK
+			|| Tcl_GetDoubleFromObj(ip, objv[2], &y) != TCL_OK)
+		return TCL_ERROR;
+	if (objc == 4) {
+		if (!streq(Tcl_GetString(objv[3]), "recall")) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"expected recall, not: %s",
+				Tcl_GetString(objv[3])));
+			return TCL_ERROR;
+		}
+		recall = true;
+	}
+
+	text[0] = '\0';
+	if (command_may_start() && !player->is_dead && map_grid_at(x, y, &grid))
+		look_describe(grid, recall, text, sizeof(text));
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(text, -1));
+	return TCL_OK;
+}
+
+/**
  * angband_version -- the game's name and version, as its own Version info
  * command gives them: for the About window.
  */
@@ -11219,6 +11402,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_rename", objcmd_rename, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_path", objcmd_path, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_look", objcmd_look, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_version", objcmd_version, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tilescale", objcmd_tilescale, NULL,

@@ -551,9 +551,17 @@ Tcl/Tk
 The Tcl/Tk front end, ``ZangbandTK.app``, keeps the map and its panes in one
 window.  Drag the dividers between the panes to change their sizes.  F1 in any
 window opens this manual where it covers that window; from the main window,
-that's Playing the Game.  How the window draws is set on the Display page of
-the Options window (Other ▸ Preferences ▸ Options, or Preferences in the
-application menu):
+that's Playing the Game.
+
+Point at the map and the line under it says what's there, in the look
+command's words: *You see a Kobold (unhurt, asleep)*, *You recall a granite
+wall*.  Over a monster or an item, the Recall pane shows what you know about
+it, as it does when you look at it with ``l``.  Pointing takes no time, and
+tells you nothing ``l`` wouldn't.  The line stays empty while the game is
+waiting for you to answer something else, and while you run or rest.
+
+How the window draws is set on the Display page of the Options window
+(Other ▸ Preferences ▸ Options, or Preferences in the application menu):
 
 * **Tile set** chooses the graphical tiles, or None to draw the map in letters.
 * **Tile size** draws the map's tiles Small, Medium or Large.  The overhead map

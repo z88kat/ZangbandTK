@@ -300,6 +300,16 @@ check "the layout built five panes, four of them terms" {
 		[winfo class .pw.bottom.choice.t]
 } "4 5 Text"
 
+# --- pointing at the map, before there is a map -------------------------------
+
+check "pointing at the map says nothing before there is a character" {
+	list [angband_look 100 100] [angband_look 100 100 recall] \
+		[.pw.top.map.look cget -text]
+} {{} {} {}}
+check "angband_look names the one word it takes" {
+	list [catch {angband_look 1 1 nope} e] $e
+} {1 {expected recall, not: nope}}
+
 # --- the input hooks --------------------------------------------------------
 
 check "the hooks are listed, and none is taken yet" {
@@ -1605,6 +1615,46 @@ proc birth_pass_held {} {
 	check "a pushed command is carried out once there is a character" {
 		list [expr {[angband_player turn] > $::turn0}] $::pushed $::pusherr
 	} "1 0 {}"
+
+	# --- pointing at the map ---------------------------------------------
+
+	# Every cell of the map pane asked in turn, as a pointer passing over it
+	# would.  The character's own square is the one the look command calls
+	# "You are on ...", so it is found that way rather than by arithmetic
+	# this file would have to keep in step with the C; and the message line
+	# at the top is not map, so it says nothing.
+	check "pointing at the map says what the look command would" {
+		set c .pw.top.map.c
+		set here {}
+		set bad {}
+		for {set y [expr {$::angband(cellh) / 2}]} {$y < [winfo height $c]} \
+				{incr y $::angband(cellh)} {
+			for {set x [expr {$::angband(cellw) / 2}]} \
+					{$x < [winfo width $c]} {incr x $::angband(cellw)} {
+				set s [angband_look $x $y]
+				if {[string match "You are *" $s]} {
+					set ::look_here [list $x $y]
+					lappend here $s
+				} elseif {$s ne "" && ![string match "You *" $s]} {
+					lappend bad $s
+				}
+			}
+		}
+		list [llength [lsort -unique $here]] [lsort -unique $bad] \
+			[angband_look 1 1]
+	} {1 {} {}}
+
+	# Through the bindings, as the pointer itself would arrive and leave.
+	check "the line under the map follows the pointer and clears behind it" {
+		set c .pw.top.map.c
+		lassign $::look_here x y
+		event generate $c <Motion> -x $x -y $y
+		update
+		set over [.pw.top.map.look cget -text]
+		event generate $c <Leave>
+		update
+		list [string match "You are *" $over] [.pw.top.map.look cget -text]
+	} {1 {}}
 
 	# The roguelike keyset fires at the nearest target with Tab, which the
 	# game codes as KC_TAB, above ASCII.  It came through as that byte, which

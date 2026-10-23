@@ -31,6 +31,32 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 October 2026 — pointing at things
+====================================
+
+Steven sent a screenshot of the original ZAngbandTk 2.4.0 with the pointer
+over a tree and *You see a tree* in the status bar under the map, and asked
+for that. None of the original's mouse rules for the map had come across yet.
+They belong to the map work that has been on hold since the map was judged
+good enough, and this is the first of them.
+
+The look command already knows how to describe a square, but every part of it
+stops and waits for a key, so a mouse can't ask it anything. The new command
+builds the same sentence from the same pieces, in the same order: a monster
+first, then a trap, then whatever is lying there, then the ground. It reads
+the character's memory of the square rather than the square, so pointing
+can't tell you anything ``l`` wouldn't. I left off the "3 N, 4 E" the look
+command adds, because the pointer is already on the square.
+
+One decision took longer than the code. The line has to be asked again when
+something moves under a pointer that isn't moving, or it goes stale. If the
+Recall pane followed those re-asks as well, a monster wandering under a mouse
+nobody was touching would take the pane away from whatever you were reading,
+and an item picked out in the Items window would lose to the potion the
+pointer happened to be resting on. So the words follow the game, and the
+Recall pane only follows the pointer when it moves.
+
+
 22 October 2026, evening — back to X11
 ======================================
 

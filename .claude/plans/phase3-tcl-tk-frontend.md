@@ -1190,6 +1190,17 @@ window, reads live, and closes without disturbing the game.
 > failed to better. The four findings from that attempt are recorded under T3's minimap note
 > and are the starting conditions for whenever this is picked up.
 
+> **Hover done (23 October 2026), and only hover.** `angband_look <x> <y> ?recall?` says what
+> the look command would say of the square under a point on the map pane, built from
+> `ui-target.c`'s pieces in its order (monster, trap, floor, terrain) because every one of its
+> handlers waits for a key. `lib/tcl/look.tcl` puts the answer in a line under the map, as the
+> original's status bar, and passes `recall` on pointer motion so the Recall pane and health
+> bar follow the pointer. On `<<Angband_REFRESH>>` it asks again for the words only: things
+> move under a still pointer, and re-tracking there would take the Recall pane from whatever
+> the player was reading. Answers only while `command_may_start()`; empty in a prompt, at a
+> `-more-`, and while running or resting. Clicking to walk, the targeting clicks, the Micro
+> Map and the linked cursor are all still to do.
+
 `cave`, `m_list`, `o_list`, `f_info`. The scrolling map widget and the level overview, with
 hover tooltips and the hovered-monster health bar.
 

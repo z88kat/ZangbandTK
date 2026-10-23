@@ -208,6 +208,16 @@ set recall   [termpane .pw.bottom recall   44 10]
 set choice [ttk::frame .pw.bottom.choice \
     -width [expr {44 * $angband(cellw)}] -height [expr {10 * $angband(cellh)}]]
 
+# Under the map, a line for what the pointer is over: the original's status
+# bar, filled in by look.tcl.  Made here and not there because it takes its
+# height from the map pane, and the map's term is measured before look.tcl is
+# sourced.
+label $map.look -font panefont -anchor w -padx 6 -pady 1 \
+    -background black -foreground white
+frame $map.rule -height 1 -background #404040
+pack $map.look -side bottom -fill x -before $map.c
+pack $map.rule -side bottom -fill x -before $map.look
+
 # The Progress strip likewise: a frame here, its bars from progress.tcl.
 ttk::style configure Progress.TFrame -background black
 set strip [ttk::frame .pw.top.side.progress -style Progress.TFrame \
@@ -226,7 +236,8 @@ pack .pw -fill both -expand 1
 
 # Let the requested sizes above decide how big the window starts: they already
 # add up to a map at its floor with the other panes beside and below it.
-wm minsize . [expr {80 * $angband(cellw)}] [expr {24 * $angband(cellh)}]
+wm minsize . [expr {80 * $angband(cellw)}] \
+    [expr {24 * $angband(cellh) + [winfo reqheight $map.look] + 1}]
 
 # Geometry has to be real before C measures these canvases: an unmapped widget
 # reports 1x1, and every term would come out one cell wide.
@@ -359,6 +370,7 @@ source [file join [file dirname [info script]] spellmenu.tcl]
 source [file join [file dirname [info script]] store.tcl]
 source [file join [file dirname [info script]] building.tcl]
 source [file join [file dirname [info script]] progress.tcl]
+source [file join [file dirname [info script]] look.tcl]
 source [file join [file dirname [info script]] birth.tcl]
 source [file join [file dirname [info script]] choose.tcl]
 source [file join [file dirname [info script]] tomb.tcl]
