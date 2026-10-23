@@ -345,9 +345,10 @@ rebuilt on Tcl/Tk 9 and not ported:
   character record, and tips at the start.
 - The original's menu bar, built from the game's own commands, so every entry
   shows its key in the keyset you play with.
-- One Options window for everything: the tile set, the fonts, the size of every
-  window's text, and palettes including high contrast and colour-blind, with a
-  colour-blind version of the Neon tiles to go with it.
+- One Options window for everything: the game's options and its item ignoring,
+  the tile set, the fonts, the size of every window's text, and palettes
+  including high contrast and colour-blind, with a colour-blind version of the
+  Neon tiles to go with it.
 - Sound, and your own music. There are Angband 4.2's sounds, with 38 more for
   events the original sounded and 4.2 didn't, and music from a folder of your
   own, shuffled. Both are off until you turn them on.

@@ -588,6 +588,46 @@ proc items_actions {} {
             default { $m entryconfigure [items_menu_label $action] -state $state }
         }
     }
+    lassign [items_can] - - - chosen
+    $m entryconfigure "Ignore" -state [expr {$chosen ? "normal" : "disabled"}]
+}
+
+# The game's ignore menu for what is chosen, as its own entries: this one,
+# every one like it, or every one of its ego or quality, and burning a book.
+proc items_ignore_menu {} {
+    global items
+
+    set m .items.mb.items.ignore
+    $m delete 0 end
+    lassign $items(sel) view index
+    if {$view eq "" || $items(selname) eq ""
+            || [catch {angband_ignore item $view $index} choices]} {
+        $m add command -label "Choose an item first" -state disabled
+        return
+    }
+    foreach c $choices {
+        lassign $c value label
+        $m add command -label $label -command [list items_ignore $value $label]
+    }
+}
+
+proc items_ignore {value label} {
+    global items
+
+    lassign $items(sel) view index
+    if {[catch {angband_ignore item $view $index $value} err]} {
+        set items(message) [string toupper $err 0 0]
+        bell
+        return
+    }
+    # Burning asks and answers for itself.
+    switch -glob -- $label {
+        "This item only"     { set items(message) "Ignoring $items(selname)." }
+        "Unignore this item" { set items(message) "Unignoring $items(selname)." }
+        "Unignore *"         { set items(message) "Unignoring [string range $label 9 end]." }
+        "Burn *"             {}
+        default              { set items(message) "Ignoring [string tolower $label 0 0]." }
+    }
 }
 
 proc items_menu_label {action} {
@@ -916,6 +956,9 @@ proc items_menus {} {
     $mb.items add command -label "Inscribe" -underline 2 -command items_inscribe
     $mb.items add command -label "Uninscribe" -underline 0 \
         -command {items_inscribe "" 1}
+    $mb.items add separator
+    menu $mb.items.ignore -tearoff 0 -postcommand items_ignore_menu
+    $mb.items add cascade -label "Ignore" -underline 1 -menu $mb.items.ignore
 
     # Not $mb.help: on macOS Tk treats a menu with that name as the platform's
     # own Help menu and fills it with things this window does not have.

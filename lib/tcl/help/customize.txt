@@ -210,6 +210,10 @@ T	p0	 for
 T	p0 code	Item ignoring setup
 T	p0	. This allows ignore settings for non-wearable items, and quality and ego ignore settings (described below) for wearable items, to be viewed or changed.
 T	p0	\n
+T	p0	In the Tcl/Tk front end the same setup is the Ignoring page of the Options window (Other ▸ Preferences ▸ Options). Quality sets how good each kind of gear has to be for you to keep it, Ego items lists the egos you’ve seen, and each group under those lists its kinds: by name, and by look for the ones you haven’t identified. A change takes effect as soon as you make it. An item’s own menu, in the Choice pane or the Items window, has Ignore as a submenu of the choices 
+T	p0 code	k
+T	p0	 would give you.
+T	p0	\n
 T	p0	There is a quality setting for each wearable item type. Ignoring a wearable item will prompt you with a question about whether you wish to ignore all of that type of item with a certain quality setting, or of an ego type, or both.
 T	p0	\n
 T	p0	The quality settings are:
@@ -239,6 +243,12 @@ T	p0 code	{
 T	p0	 command. You can use this to give the game commands about the object, which are listed below. You can also set up the game to automatically inscribe certain items whenever you find them, using the object knowledge screens, accessed using 
 T	p0 code	~
 T	p0	.
+T	p0	\n
+T	p0	In the Tcl/Tk front end, choose an object or a rune in the Knowledge window and type the inscription under Inscribe When Found; what you’re carrying is inscribed straight away. File ▸ Save Inscriptions writes them to 
+T	p0 code	user.prf
+T	p0	, which every character reads, as 
+T	p0 code	Save autoinscriptions to pref file
+T	p0	 on the options menu does. Only the kinds you’ve identified are saved there.
 T	p0	\n
 T	dt0 strong	Inscribing an item with ‘!!’:
 T	dt0	\n

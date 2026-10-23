@@ -1734,35 +1734,38 @@ static bool ignore_menu_burn(struct object *obj)
 }
 
 /**
- * The ignore menu for one item.
+ * What the ignore menu offers for one item, in its order, for the menu below
+ * and for a front end that shows them its own way (ZangbandTK).  Each is a
+ * value for ignore_menu_apply() and the menu's words for it.  Returns how
+ * many, up to max.
  *
- * Returns true if it queued a command, which only burning a book does: a
- * Warrior's or a Paladin's way to destroy one for the experience, since 4.2
- * has no destroy command for it to belong to.  It goes last, so that the
- * menu's first choice, and the key pressed to take it, are what they were.
+ * Burning a book goes last, so that the menu's first choice, and the key
+ * pressed to take it, are what they were.
  */
-bool textui_cmd_ignore_menu(struct object *obj)
+int ignore_menu_choices(struct object *obj, struct ignore_menu_entry *out,
+		int max)
 {
-	char out_val[160];
-
-	struct menu *m;
-	region r;
-	int selected;
+	int n = 0;
 	uint8_t value;
 	int type;
-	bool queued = false;
+
+#define CHOICE(v, ...) \
+	do { \
+		if (n < max) { \
+			out[n].value = (v); \
+			strnfmt(out[n].label, sizeof(out[n].label), __VA_ARGS__); \
+			n++; \
+		} \
+	} while (0)
 
 	if (!obj)
-		return false;
-
-	m = menu_dynamic_new();
-	m->selections = all_letters_nohjkl;
+		return 0;
 
 	/* Basic ignore option */
 	if (!(obj->known->notice & OBJ_NOTICE_IGNORE)) {
-		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
+		CHOICE(IGNORE_THIS_ITEM, "This item only");
 	} else {
-		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
+		CHOICE(UNIGNORE_THIS_ITEM, "Unignore this item");
 	}
 
 	/* Flavour-aware ignore */
@@ -1775,11 +1778,9 @@ bool textui_cmd_ignore_menu(struct object *obj)
 		object_desc(tmp, sizeof(tmp), obj,
 			ODESC_NOEGO | ODESC_BASE | ODESC_PLURAL, player);
 		if (!ignored) {
-			strnfmt(out_val, sizeof out_val, "All %s", tmp);
-			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
+			CHOICE(IGNORE_THIS_FLAVOR, "All %s", tmp);
 		} else {
-			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
-			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
+			CHOICE(UNIGNORE_THIS_FLAVOR, "Unignore all %s", tmp);
 		}
 	}
 
@@ -1796,11 +1797,9 @@ bool textui_cmd_ignore_menu(struct object *obj)
 		choice.short_name = "";
 		(void) ego_item_name(tmp, sizeof(tmp), &choice);
 		if (!ego_is_ignored(choice.e_idx, choice.itype)) {
-			strnfmt(out_val, sizeof out_val, "All %s", tmp + 4);
-			menu_dynamic_add(m, out_val, IGNORE_THIS_EGO);
+			CHOICE(IGNORE_THIS_EGO, "All %s", tmp + 4);
 		} else {
-			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp + 4);
-			menu_dynamic_add(m, out_val, UNIGNORE_THIS_EGO);
+			CHOICE(UNIGNORE_THIS_EGO, "Unignore all %s", tmp + 4);
 		}
 	}
 
@@ -1811,32 +1810,30 @@ bool textui_cmd_ignore_menu(struct object *obj)
 		value = IGNORE_MAX;
 
 	if (value != IGNORE_MAX && type != ITYPE_MAX) {
-		strnfmt(out_val, sizeof out_val, "All %s %s",
+		CHOICE(IGNORE_THIS_QUALITY, "All %s %s",
 				quality_values[value].name, ignore_name_for_type(type));
-
-		menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
 	}
 
 	/* Burning, for a book to hand whose burning pays (not one across the room) */
 	if (player_book_burn_exp(player, obj) > 0 && item_is_available(obj)
 			&& obj->known && obj->known->kind == obj->kind) {
-		menu_dynamic_add(m, "Burn this book", BURN_THIS_BOOK);
+		CHOICE(BURN_THIS_BOOK, "Burn this book");
 	}
 
-	/* Work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
-	r.page_rows = m->count;
+#undef CHOICE
 
-	screen_save();
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	return n;
+}
 
-	prt("(Enter to select, ESC) Ignore:", 0, 0);
-	selected = menu_dynamic_select(m);
-
-	screen_load();
+/**
+ * Do what the ignore menu was asked for one item; -1, for nothing chosen,
+ * does nothing.  Returns true if it queued a command, which only burning a
+ * book does: a Warrior's or a Paladin's way to destroy one for the
+ * experience, since 4.2 has no destroy command for it to belong to.
+ */
+bool ignore_menu_apply(struct object *obj, int selected)
+{
+	bool queued = false;
 
 	if (selected == IGNORE_THIS_ITEM) {
 		obj->known->notice |= OBJ_NOTICE_IGNORE;
@@ -1860,6 +1857,49 @@ bool textui_cmd_ignore_menu(struct object *obj)
 	}
 
 	player->upkeep->notice |= PN_IGNORE;
+
+	return queued;
+}
+
+/**
+ * The ignore menu for one item.
+ *
+ * Returns true if it queued a command; see ignore_menu_apply().
+ */
+bool textui_cmd_ignore_menu(struct object *obj)
+{
+	struct ignore_menu_entry choices[8];
+	struct menu *m;
+	region r;
+	int selected, i, n;
+	bool queued;
+
+	if (!obj)
+		return false;
+
+	m = menu_dynamic_new();
+	m->selections = all_letters_nohjkl;
+
+	n = ignore_menu_choices(obj, choices, (int)N_ELEMENTS(choices));
+	for (i = 0; i < n; i++)
+		menu_dynamic_add(m, choices[i].label, choices[i].value);
+
+	/* Work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Ignore:", 0, 0);
+	selected = menu_dynamic_select(m);
+
+	screen_load();
+
+	queued = ignore_menu_apply(obj, selected);
 
 	menu_dynamic_free(m);
 	return queued;

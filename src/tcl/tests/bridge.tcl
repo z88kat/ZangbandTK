@@ -346,6 +346,17 @@ check "options need a character" {
 	set e
 } "the options belong to a character, and there is not one yet"
 
+# Ignoring is the character's too, and its page in the Options window says so
+# rather than showing an empty list.
+check "ignoring needs a character, and its page says so" {
+	catch {angband_ignore quality} e
+	options_window ignore
+	update
+	set said [lmap w [winfo children $::ignore(inner)] {$w cget -text}]
+	destroy .options
+	list $e $said
+} {{there is no character yet} {{Ignoring belongs to a character, and there is not one yet.}}}
+
 # --- the player ---------------------------------------------------------------
 
 # The names are discoverable without a character, because a window is laid out
@@ -1689,6 +1700,81 @@ proc birth_pass_held {} {
 		set m [choice_menu_build 0]
 		list [$m entrycget 2 -label] [$m entrycget 2 -accelerator]
 	} [list Inspect [commands_accel I]]
+
+	# --- ignoring and auto-inscription ---------------------------------------
+
+	# The game's own lists, as its ignoring menu has them: a quality setting
+	# for each of 26 kinds of gear, rings and amulets with only two of the
+	# five, and 22 groups ignored by kind.
+	check "the ignoring rules are the game's lists" {
+		set q [angband_ignore quality]
+		set bad {}
+		foreach row $q { if {[llength $row] != 4} { lappend bad $row } }
+		list [llength $q] [llength [lindex [lsearch -inline -index 1 $q Rings] 3]] \
+			[llength [lindex $q 0 3]] [llength [angband_ignore groups]] $bad
+	} {26 2 5 22 {}}
+
+	check "a quality setting is set, read back and put back" {
+		angband_ignore quality 1 2
+		set was [lindex [angband_ignore quality] 0 2]
+		angband_ignore quality 1 0
+		list $was [lindex [angband_ignore quality] 0 2]
+	} {2 0}
+
+	check "a setting the game does not have is refused by name" {
+		catch {angband_ignore quality 24 3} e1
+		catch {angband_ignore kind 1 maybe 1} e2
+		catch {angband_ignore sideways} e3
+		list $e1 $e2 [string match "expected quality,*" $e3]
+	} {{Rings take a setting from 0 to 1} {expected aware or unaware, not: maybe} 1}
+
+	# The ignore menu for one item, as the game's k shows it, and in the
+	# Choice pane's item menu as a submenu of its choices.
+	check "an item's Ignore is a submenu of the game's choices for it" {
+		set choices [angband_ignore item inventory 0]
+		set m [choice_menu_build 0]
+		set sub ""
+		for {set e 0} {$e <= [$m index end]} {incr e} {
+			if {[$m type $e] eq "cascade"} { set sub [$m entrycget $e -menu] }
+		}
+		list [lindex $choices 0 1] \
+			[expr {$sub ne "" ? [$sub entrycget 0 -label] : "no submenu"}] \
+			[expr {$sub ne "" ? [$sub index end] + 1 == [llength $choices] : 0}]
+	} {{This item only} {This item only} 1}
+
+	check "the Options window's Ignoring page is Tk's own widgets" {
+		options_window ignore
+		update
+		set r [list [.options.f.nb.ignore.list.lb size] \
+			[llength [lsearch -all [lmap w [winfo children $::ignore(inner)] \
+				{winfo class $w}] TMenubutton]] \
+			[stock_widgets_only .options]]
+		destroy .options
+		set r
+	} {24 26 {classic {}}}
+
+	# A kind the character knows, inscribed for good and then not, as the
+	# knowledge screen's { and } do.
+	check "an object kind is inscribed when found, and stops" {
+		set k [lindex [lsearch -inline -index 3 [angband_object list] 1] 0]
+		angband_object inscribe $k "=g"
+		set on [dict get [angband_object info $k] inscription]
+		angband_object inscribe $k ""
+		list $on [dict get [angband_object info $k] inscription]
+	} {=g {}}
+
+	check "the Knowledge window offers inscriptions for objects and runes only" {
+		knowledge_window
+		set r {}
+		foreach cat {objects runes monsters} {
+			set ::knowledge(cat) $cat
+			knowledge_switch
+			update
+			lappend r [expr {[winfo manager .knowledge.f.body.detail.insc] ne ""}]
+		}
+		destroy .knowledge
+		set r
+	} {1 1 0}
 
 	# --- the Flags page, with a character -----------------------------------
 

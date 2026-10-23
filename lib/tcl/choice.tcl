@@ -270,11 +270,31 @@ proc choice_menu_build {i} {
     $m add separator
     foreach action $actions {
         lassign $action id text key valid
+        # Ignore offers its choices here, rather than opening the game's
+        # menu of them for a second click.
+        if {$text in {Ignore Unignore}
+                && ![catch {angband_ignore item inventory $n} choices]
+                && [llength $choices]} {
+            menu $m.ignore -tearoff 0
+            foreach c $choices {
+                lassign $c value label
+                $m.ignore add command -label $label \
+                    -command [list choice_ignore $n $value]
+            }
+            $m add cascade -label $text -accelerator [commands_accel $key] \
+                -menu $m.ignore
+            continue
+        }
         $m add command -label $text -accelerator [commands_accel $key] \
             -state [expr {$valid ? "normal" : "disabled"}] \
             -command [list choice_act $n $id $name]
     }
     return $m
+}
+
+# Refused, as choice_act is, only when the game has something else on screen.
+proc choice_ignore {n value} {
+    if {[catch {angband_ignore item inventory $n $value}]} { bell }
 }
 
 proc choice_act {n id name} {

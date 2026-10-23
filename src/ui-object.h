@@ -59,6 +59,14 @@ void display_object_recall(struct object *obj);
 void display_object_kind_recall(struct object_kind *kind);
 void display_object_recall_interactive(struct object *obj);
 void textui_obj_examine(void);
+/* One of the ignore menu's choices: a value for ignore_menu_apply(). */
+struct ignore_menu_entry {
+	int value;
+	char label[160];
+};
+int ignore_menu_choices(struct object *obj, struct ignore_menu_entry *out,
+		int max);
+bool ignore_menu_apply(struct object *obj, int selected);
 bool textui_cmd_ignore_menu(struct object *obj);
 void textui_cmd_ignore(void);
 void textui_cmd_toggle_ignore(void);

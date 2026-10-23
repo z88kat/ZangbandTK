@@ -1867,8 +1867,33 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   game's own — the options screen's s, r and x — with birth restore and reset only while a
 >   character is being made, as there.
 >
->   Still to come from the list above: the item-ignoring and auto-inscription setups, which
->   are still the game's screens. The Display page is done — see its note below.
+>   The item-ignoring and auto-inscription setups followed on 23 October 2026 (below). The
+>   Display page is done — see its note below.
+>
+> **Ignoring and auto-inscription, 23 October 2026.** The last of the game's own screens the
+> Options window left behind, and the item menus' Ignore.
+>
+> - **The Ignoring page** ([lib/tcl/ignore.tcl](../../lib/tcl/ignore.tcl)) is
+>   `do_cmd_options_item()`'s menu: Quality (a menubutton of `quality_values` per `ITYPE`,
+>   rings and amulets two of them; menubuttons, not comboboxes, because the page scrolls and a
+>   combobox takes the wheel), Ego items (`ego_menu()`'s seen egos per item type), and the 22
+>   groups, each `sval_menu()`'s kinds by name and by look. `angband_ignore` reads and sets
+>   the game's tables; `ignore_kind_group()` and `ignore_kinds_of()` were added to
+>   ui-options.c so the groups and their order come from the menu itself. Each change sets
+>   `PN_IGNORE` and, while idle, nudges, so `ignore_drop()` runs in the game's loop with its
+>   drops and its worn-item question, as when the game's screen closes.
+> - **Auto-inscription** is the Knowledge window's: an "Inscribe When Found" row for objects
+>   and runes. `angband_object inscribe` is `o_xtra_act()`'s `{`/`}` and pushes
+>   `CMD_AUTOINSCRIBE`; `angband_rune inscribe` is `rune_xtra_act()`'s. File ▸ Save
+>   Inscriptions is `angband_object dump`, `dump_autoinscriptions()` into user.prf.
+> - **Ignore in the item menus.** The game's menu already reached the Choice pane through
+>   `menu_dynamic_select_hook`, so this is a shortcut, not a first: `textui_cmd_ignore_menu()`
+>   is split into `ignore_menu_choices()` and `ignore_menu_apply()` (ui-object.c), and the
+>   Choice pane's and the Items window's menus show the choices as an Ignore submenu, through
+>   `angband_ignore item`. The `k` key keeps the game's menu.
+> - Found on the way: an Ignore started through `angband_choice act` leaves `inkey_flag`
+>   false behind the nested menu's `inkey()`, so nothing nudges and the item stays in the pack
+>   until the next key. The submenu does not take that route; `angband_choice act` still does.
 
 > **Choosing a character, and the death flow — first cut, 12 October 2026.** The native
 > launcher promised for T9 under T1, and the Tomb window, as views of the game's own screens

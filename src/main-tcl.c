@@ -74,6 +74,7 @@
 #include "ui-menu.h"
 #include "ui-mon-lore.h"
 #include "ui-object.h"
+#include "ui-options.h"
 #include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
@@ -3606,6 +3607,11 @@ static int objcmd_monster(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  *    angband_object list ?pattern?   {index name kind aware level cost} rows
  *    angband_object info <index>     one kind, as a name/value dict
  *    angband_object lore <index>     what the game says about it
+ *    angband_object inscribe <index> <text>   auto-inscribe the kind, as
+ *                                    the knowledge screen's { does, or with
+ *                                    "" stop, as its } does
+ *    angband_object dump             save the identified kinds' inscriptions
+ *                                    in the user folder's user.prf
  *
  * The same shape as angband_monster, for the same reason: a table of six
  * hundred rows is queried, not fetched.  `set` is absent here too.
@@ -3685,7 +3691,8 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	(void)dummy;
 
 	if (objc < 2) {
-		Tcl_WrongNumArgs(ip, 1, objv, "max|list|info|lore ?argument ...?");
+		Tcl_WrongNumArgs(ip, 1, objv,
+				"max|list|info|lore|inscribe|dump ?argument ...?");
 		return TCL_ERROR;
 	}
 
@@ -3777,6 +3784,9 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			PUT("level", Tcl_NewIntObj(kind->level));
 			PUT("cost", Tcl_NewIntObj(kind->cost));
 			PUT("weight", Tcl_NewIntObj(kind->weight));
+			PUT("inscription", Tcl_NewStringObj(
+					get_autoinscription(kind, kind->aware)
+						? get_autoinscription(kind, kind->aware) : "", -1));
 			kind_glyph_put(ip, d, kind);
 
 #undef PUT
@@ -3810,14 +3820,78 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	 * lore, not: max", which contradicts itself and sends the reader looking
 	 * for a spelling mistake that is not there.
 	 */
+	/*
+	 * Auto-inscriptions, as o_xtra_act() in ui-knowledge.c sets them: on the
+	 * kind as the character knows it, so that an unidentified potion's goes
+	 * with its look.  Then CMD_AUTOINSCRIBE, which that screen pushes too and
+	 * which inscribes what is carried and underfoot; so only while the game
+	 * waits for a command, as inscribing one item is.  Stopping leaves what
+	 * is already inscribed, as } does.
+	 */
+	if (strcmp(what, "inscribe") == 0 && objc == 4) {
+		const char *text = Tcl_GetString(objv[3]);
+		struct object_kind *kind;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &idx) != TCL_OK) return TCL_ERROR;
+		if (idx < 1 || idx >= (int)z_info->k_max || !k_info[idx].name) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such object: %d", idx));
+			return TCL_ERROR;
+		}
+		kind = &k_info[idx];
+		if (!object_kind_known(kind)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"object %d is not known to this character", idx));
+			return TCL_ERROR;
+		}
+		if (strlen(text) >= 80) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"an inscription can be at most 79 characters", -1));
+			return TCL_ERROR;
+		}
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		remove_autoinscription(idx);
+		if (*text) {
+			add_autoinscription(idx, text, kind->aware);
+			cmdq_push(CMD_AUTOINSCRIBE);
+			command_nudge();
+		}
+		return command_done(ip);
+	}
+
+	/* As the options screen's "Save autoinscriptions to pref file". */
+	if (strcmp(what, "dump") == 0 && objc == 2) {
+		char buf[1024];
+
+		if (!player) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"there is no character yet", -1));
+			return TCL_ERROR;
+		}
+		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "user.prf");
+		if (!prefs_save(buf, dump_autoinscriptions, "Dump autoinscriptions")) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("could not write %s", buf));
+			return TCL_ERROR;
+		}
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
+		return TCL_OK;
+	}
+
 	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
-			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
-		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0
+			|| strcmp(what, "inscribe") == 0 || strcmp(what, "dump") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n"
+				" | inscribe n text | dump");
 		return TCL_ERROR;
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected max, list, info or lore, not: %s", what));
+			"expected max, list, info, lore, inscribe or dump, not: %s",
+			what));
 
 	return TCL_ERROR;
 }
@@ -4250,6 +4324,8 @@ static int objcmd_ego(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * max_runes(), rune_name() and rune_desc(), and what the character knows
  * behind player_knows_rune().  So this reads exactly like the others and is
  * backed by four function calls rather than an array.
+ *
+ * And one verb more, `inscribe <index> <text>`, the rune's auto-inscription.
  */
 static int objcmd_rune(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
@@ -4259,6 +4335,51 @@ static int objcmd_rune(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	int idx, i, n;
 
 	(void)dummy;
+
+	/*
+	 * As rune_xtra_act() in ui-knowledge.c sets it: what is carried or
+	 * underfoot with the rune on it is inscribed at once, and "" stops it
+	 * without taking it off what already has it.  Only while the game waits
+	 * for a command, as inscribing one item is.
+	 */
+	if (objc == 4 && streq(Tcl_GetString(objv[1]), "inscribe")) {
+		const char *text = Tcl_GetString(objv[3]);
+
+		if (!player) {
+			Tcl_SetObjResult(ip,
+					Tcl_NewStringObj("the rune list is not loaded yet", -1));
+			return TCL_ERROR;
+		}
+		if (Tcl_GetIntFromObj(ip, objv[2], &idx) != TCL_OK) return TCL_ERROR;
+		if (idx < 0 || idx >= max_runes() || !rune_name(idx)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such rune: %d", idx));
+			return TCL_ERROR;
+		}
+		if (!player_knows_rune(player, idx)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"rune %d is not known to this character", idx));
+			return TCL_ERROR;
+		}
+		if (strlen(text) >= 80) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"an inscription can be at most 79 characters", -1));
+			return TCL_ERROR;
+		}
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		rune_set_note(idx, NULL);
+		if (*text) {
+			rune_set_note(idx, text);
+			rune_autoinscribe(player, idx);
+			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+			command_nudge();
+		}
+		return command_done(ip);
+	}
 
 	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
 	if (verb == TABLE_BAD) return TCL_ERROR;
@@ -4314,6 +4435,8 @@ static int objcmd_rune(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		table_put(ip, d, "index", Tcl_NewIntObj(idx));
 		table_put(ip, d, "name", Tcl_NewStringObj(rune_name(idx), -1));
 		table_put(ip, d, "kind", Tcl_NewStringObj("rune", -1));
+		table_put(ip, d, "inscription", Tcl_NewStringObj(
+				rune_note(idx) ? quark_str(rune_note(idx)) : "", -1));
 		Tcl_SetObjResult(ip, d);
 		return TCL_OK;
 	}
@@ -6969,6 +7092,320 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected list, burden, pick <n>, actions <n> or act <n> <id>,"
+			" not: %s", what));
+	return TCL_ERROR;
+}
+
+/**
+ * angband_ignore -- the ignoring rules, for the Options window's Ignoring
+ * page and the item menus' Ignore.
+ *
+ *    angband_ignore quality       {itype name level levels}: each kind of
+ *                                 gear's quality setting, and the settings it
+ *                                 can have, by name
+ *    angband_ignore quality <itype> <level>      set one
+ *    angband_ignore egos          {eidx itype name type ignored}: each ego the
+ *                                 character has seen, once for each kind of
+ *                                 gear it comes on
+ *    angband_ignore ego <eidx> <itype> <bool>    ignore it there, or not
+ *    angband_ignore groups        {tval name seen}: the things ignored by kind
+ *    angband_ignore kinds <tval>  {kidx aware name ignored}: one group's kinds,
+ *                                 by name, and by look while not yet known
+ *    angband_ignore kind <kidx> aware|unaware <bool>
+ *    angband_ignore item <where> <n> ?value?     the ignore menu for one item,
+ *                                 as {value label}, or do one of its choices
+ *
+ * The lists and their order are the game's ignoring menus', from the
+ * functions behind them, and each change is what that menu does when the
+ * entry is chosen.  Then ignore_changed().
+ */
+
+/*
+ * PN_IGNORE, as the game's menus set it on the way out, and a key to wake the
+ * game while it waits for a command, so that what is now ignored is dropped
+ * and hidden at once rather than at the next command.  The dropping is
+ * ignore_drop()'s, in the game's own loop, which is where its drops and its
+ * question about worn things belong.
+ */
+static void ignore_changed(void)
+{
+	player->upkeep->notice |= PN_IGNORE;
+	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST | PR_INVEN | PR_EQUIP);
+	if (command_may_start()) command_nudge();
+}
+
+/* How many quality settings a kind of gear can have, as quality_action(). */
+static int ignore_levels(int itype)
+{
+	return (itype == ITYPE_RING || itype == ITYPE_AMULET)
+		? IGNORE_BAD + 1 : IGNORE_MAX;
+}
+
+/* Whether the ignoring menu lists that kind, by name or by look. */
+static bool ignore_kind_listed(struct object_kind *kind, bool aware)
+{
+	int max = 2 * z_info->k_max, n, i;
+	struct object_kind **kinds = mem_zalloc(max * sizeof(*kinds));
+	bool *awares = mem_zalloc(max * sizeof(*awares));
+	bool found = false;
+
+	n = ignore_kinds_of(kind->tval, kinds, awares, max);
+	for (i = 0; i < n && i < max; i++)
+		if (kinds[i] == kind && awares[i] == aware) found = true;
+	mem_free(kinds);
+	mem_free(awares);
+	return found;
+}
+
+static int objcmd_ignore(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	Tcl_Obj *list;
+	char name[120];
+	int i, j;
+
+	(void)dummy;
+
+	if (!player || !player->upkeep || !in_play()) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv,
+				"quality|egos|ego|groups|kinds|kind|item ?argument ...?");
+		return TCL_ERROR;
+	}
+	what = Tcl_GetString(objv[1]);
+	list = Tcl_NewListObj(0, NULL);
+
+	if (streq(what, "quality") && objc == 2) {
+		for (i = ITYPE_NONE + 1; i < ITYPE_MAX; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			Tcl_Obj *levels = Tcl_NewListObj(0, NULL);
+
+			for (j = 0; j < ignore_levels(i); j++)
+				Tcl_ListObjAppendElement(ip, levels,
+						Tcl_NewStringObj(quality_values[j].name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(quality_choices[i].name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(ignore_level[i]));
+			Tcl_ListObjAppendElement(ip, row, levels);
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "quality") && objc == 4) {
+		int itype, level;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &itype) != TCL_OK
+				|| Tcl_GetIntFromObj(ip, objv[3], &level) != TCL_OK)
+			return TCL_ERROR;
+		if (itype <= ITYPE_NONE || itype >= ITYPE_MAX) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such kind of gear: %d",
+					itype));
+			return TCL_ERROR;
+		}
+		if (level < 0 || level >= ignore_levels(itype)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"%s take a setting from 0 to %d",
+					quality_choices[itype].name, ignore_levels(itype) - 1));
+			return TCL_ERROR;
+		}
+		ignore_level[itype] = (uint8_t)level;
+		ignore_changed();
+		return command_done(ip);
+	}
+
+	/* As ego_menu() gathers them: seen, and once for each kind of gear. */
+	if (streq(what, "egos") && objc == 2) {
+		for (i = 0; i < z_info->e_max; i++) {
+			struct ego_item *ego = &e_info[i];
+
+			if (!ego->name || !ego->everseen) continue;
+			for (j = ITYPE_NONE + 1; j < ITYPE_MAX; j++) {
+				Tcl_Obj *row;
+
+				if (!ego_has_ignore_type(ego, j)) continue;
+				row = Tcl_NewListObj(0, NULL);
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(j));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(ego->name, -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(quality_choices[j].name, -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewBooleanObj(ego_is_ignored(i, j)));
+				Tcl_ListObjAppendElement(ip, list, row);
+			}
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "ego") && objc == 5) {
+		int eidx, itype, want;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &eidx) != TCL_OK
+				|| Tcl_GetIntFromObj(ip, objv[3], &itype) != TCL_OK
+				|| Tcl_GetBoolFromObj(ip, objv[4], (int)sizeof(want),
+					(char *)&want) != TCL_OK)
+			return TCL_ERROR;
+		if (eidx < 0 || eidx >= z_info->e_max || !e_info[eidx].name
+				|| !e_info[eidx].everseen || itype <= ITYPE_NONE
+				|| itype >= ITYPE_MAX
+				|| !ego_has_ignore_type(&e_info[eidx], itype)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"no ego %d on that kind of gear that the character"
+					" has seen", eidx));
+			return TCL_ERROR;
+		}
+		if (ego_is_ignored(eidx, itype) != (want != 0))
+			ego_ignore_toggle(eidx, itype);
+		ignore_changed();
+		return command_done(ip);
+	}
+
+	if (streq(what, "groups") && objc == 2) {
+		const char *desc;
+		bool seen;
+		int tval;
+
+		for (i = 0; ignore_kind_group((size_t)i, &tval, &desc, &seen); i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(tval));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(desc, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(seen));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "kinds") && objc == 3) {
+		int tval, max = 2 * z_info->k_max, n;
+		struct object_kind **kinds;
+		bool *awares;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &tval) != TCL_OK) return TCL_ERROR;
+		kinds = mem_zalloc(max * sizeof(*kinds));
+		awares = mem_zalloc(max * sizeof(*awares));
+		n = ignore_kinds_of(tval, kinds, awares, max);
+		for (i = 0; i < n && i < max; i++) {
+			struct object_kind *kind = kinds[i];
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			object_kind_name(name, sizeof(name), kind, awares[i]);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(kind->kidx));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(awares[i]));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(
+					(kind->ignore & (awares[i]
+						? IGNORE_IF_AWARE : IGNORE_IF_UNAWARE)) != 0));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		mem_free(kinds);
+		mem_free(awares);
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	/* As ignore_sval_menu_action(), with the bit set or cleared outright. */
+	if (streq(what, "kind") && objc == 5) {
+		const char *how = Tcl_GetString(objv[3]);
+		struct object_kind *kind;
+		int kidx, want;
+		uint8_t bit;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &kidx) != TCL_OK
+				|| Tcl_GetBoolFromObj(ip, objv[4], (int)sizeof(want),
+					(char *)&want) != TCL_OK)
+			return TCL_ERROR;
+		if (!streq(how, "aware") && !streq(how, "unaware")) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected aware or unaware, not: %s", how));
+			return TCL_ERROR;
+		}
+		kind = (kidx > 0 && kidx < z_info->k_max) ? &k_info[kidx] : NULL;
+		if (!kind || !kind->name
+				|| !ignore_kind_listed(kind, streq(how, "aware"))) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"the ignoring menu has no %s entry for object %d", how,
+					kidx));
+			return TCL_ERROR;
+		}
+		bit = streq(how, "aware") ? IGNORE_IF_AWARE : IGNORE_IF_UNAWARE;
+		if (want)
+			kind->ignore |= bit;
+		else
+			kind->ignore &= ~bit;
+		ignore_changed();
+		return command_done(ip);
+	}
+
+	if (streq(what, "item") && (objc == 4 || objc == 5)) {
+		struct ignore_menu_entry choices[8];
+		const char *view = Tcl_GetString(objv[2]);
+		struct object *obj;
+		int n, count, value;
+		bool queued;
+
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) return TCL_ERROR;
+		obj = gear_at(view, n, NULL);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %s %d", view, n));
+			return TCL_ERROR;
+		}
+		count = ignore_menu_choices(obj, choices, (int)N_ELEMENTS(choices));
+
+		if (objc == 4) {
+			for (i = 0; i < count; i++) {
+				Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewIntObj(choices[i].value));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(choices[i].label, -1));
+				Tcl_ListObjAppendElement(ip, list, row);
+			}
+			Tcl_SetObjResult(ip, list);
+			return TCL_OK;
+		}
+
+		/*
+		 * Asked again rather than trusted, as angband_choice act is; and
+		 * inside a command while it runs, because burning a book asks how
+		 * many and whether you mean it.
+		 */
+		if (Tcl_GetIntFromObj(ip, objv[4], &value) != TCL_OK)
+			return TCL_ERROR;
+		for (i = 0; i < count; i++)
+			if (choices[i].value == value) break;
+		if (i == count) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"that is not one of its choices just now", -1));
+			return TCL_ERROR;
+		}
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+		{
+			COMMAND_INSIDE_HELD;
+			queued = ignore_menu_apply(obj, value);
+		}
+		ignore_changed();
+		if (queued) command_nudge();
+		return command_done(ip);
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected quality, egos, ego, groups, kinds, kind or item,"
 			" not: %s", what));
 	return TCL_ERROR;
 }
@@ -11614,6 +12051,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_path", objcmd_path, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_look", objcmd_look, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_walk", objcmd_walk, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_ignore", objcmd_ignore, NULL,
+			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_version", objcmd_version, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tilescale", objcmd_tilescale, NULL,

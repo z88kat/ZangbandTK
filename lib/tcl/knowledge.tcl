@@ -27,6 +27,7 @@ set knowledge(pos) ""
 set knowledge(header) ""
 set knowledge(name) ""
 set knowledge(kind) ""
+set knowledge(insc) ""
 
 # {key Label accessor right depth {field Label ...}}
 #
@@ -303,6 +304,8 @@ proc knowledge_show {} {
             set knowledge(v,$field) "—"
         }
         set knowledge(pos) "0 of [llength $knowledge(rows)]"
+        set knowledge(insc) ""
+        knowledge_insc_state 0
         knowledge_text [expr {[llength $knowledge(rows)]
             ? "Choose one to read what your character has learned of it."
             : ""}]
@@ -332,6 +335,9 @@ proc knowledge_show {} {
     foreach {field label} $knowledge(fields,$key) {
         set knowledge(v,$field) [knowledge_fact $key $field $info]
     }
+    set knowledge(insc) [expr {[dict exists $info inscription]
+        ? [dict get $info inscription] : ""}]
+    knowledge_insc_state 1
 
     # A monster's recall opens with its name and symbol, "The scruffy little
     # dog ('C')", which is set in bold as the heading of what follows.
@@ -370,6 +376,57 @@ proc knowledge_facts {} {
         incr i
     }
     grid columnconfigure $f {1 3} -weight 1 -uniform value
+
+    set d .knowledge.f.body.detail
+    if {$knowledge(cat) in {objects runes}} {
+        pack $d.insc -after $d.facts -fill x -pady {8 0}
+    } else {
+        pack forget $d.insc
+    }
+}
+
+# --- auto-inscriptions -----------------------------------------------------------
+
+# Objects and runes can be inscribed for good, as the game's knowledge screen
+# does with { and }: everything of that kind, or bearing that rune, is
+# inscribed when it is found, and what is carried now is inscribed at once.  A
+# kind not yet identified is inscribed by its look, as there.
+proc knowledge_insc_state {on} {
+    set i .knowledge.f.body.detail.insc
+    if {![winfo exists $i]} return
+    foreach w [list $i.e $i.set $i.clear] {
+        $w state [expr {$on ? "!disabled" : "disabled"}]
+    }
+}
+
+proc knowledge_inscribe {{erase 0}} {
+    global knowledge
+
+    set key $knowledge(cat)
+    if {$key ni {objects runes} || ![info exists knowledge(sel,$key)]} return
+    set text [expr {$erase ? "" : [string trim $knowledge(insc)]}]
+    if {[catch {$knowledge(accessor,$key) inscribe $knowledge(sel,$key) $text} err]} {
+        set knowledge(msg) [string toupper $err 0 0]
+        bell
+        return
+    }
+    set knowledge(insc) $text
+    set knowledge(msg) [expr {$text eq ""
+        ? "$knowledge(name) is no longer inscribed when found."
+        : "$knowledge(name) is inscribed $text when found."}]
+}
+
+# As the options screen's "Save autoinscriptions to pref file", into the pref
+# file every character reads.  Only the identified kinds' go, as there.
+proc knowledge_save_inscriptions {} {
+    global knowledge
+    if {[catch {angband_object dump} path]} {
+        set knowledge(msg) [string toupper $path 0 0]
+        bell
+        return
+    }
+    set knowledge(msg) "Saved the inscriptions to [file tail $path], for\
+        every character."
 }
 
 proc knowledge_switch {} {
@@ -459,6 +516,8 @@ proc knowledge_menus {} {
     $mb add cascade -label File -underline 0 -menu $mb.file
     $mb.file add command -label "Dump to File..." -underline 0 \
         -accelerator Ctrl+S -command knowledge_dump
+    $mb.file add command -label "Save Inscriptions" -underline 5 \
+        -command knowledge_save_inscriptions
     $mb.file add separator
     $mb.file add command -label Close -underline 0 -command {destroy .knowledge}
 
@@ -604,6 +663,17 @@ proc knowledge_window {} {
     grid $h.kind  -row 1 -column 1 -sticky w
 
     ttk::labelframe $d.facts -text Facts -padding 8
+
+    # Packed by knowledge_facts, for objects and runes.
+    set i [ttk::labelframe $d.insc -text "Inscribe When Found" -padding 8]
+    ttk::entry $i.e -textvariable knowledge(insc) -font [uifont Courier 12]
+    ttk::button $i.set -text Inscribe -underline 0 -width 9 \
+        -command knowledge_inscribe
+    ttk::button $i.clear -text Clear -width 7 -command {knowledge_inscribe 1}
+    pack $i.clear -side right
+    pack $i.set -side right -padx {6 6}
+    pack $i.e -side left -fill x -expand 1
+    bind $i.e <Return> { knowledge_inscribe ; break }
     ttk::labelframe $d.known -text "What Is Known" -padding 6
     text $d.known.txt -height 8 -width 40 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black \
@@ -636,6 +706,7 @@ proc knowledge_window {} {
     accel_bind .knowledge p { .knowledge.f.btns.prev invoke ; break }
     accel_bind .knowledge n { .knowledge.f.btns.next invoke ; break }
     accel_bind .knowledge c { destroy .knowledge ; break }
+    accel_bind .knowledge i { knowledge_inscribe ; break }
 
     knowledge_switch
     focus $l.lb

@@ -108,6 +108,8 @@ ZangbandTK allows you to ignore specific items that you don't want to see anymor
 
 The entire ignoring system can also be accessed from the options menu (``=``) by choosing ``i`` for ``Item ignoring setup``.  This allows ignore settings for non-wearable items, and quality and ego ignore settings (described below) for wearable items, to be viewed or changed.
 
+In the Tcl/Tk front end the same setup is the Ignoring page of the Options window (Other ▸ Preferences ▸ Options). Quality sets how good each kind of gear has to be for you to keep it, Ego items lists the egos you've seen, and each group under those lists its kinds: by name, and by look for the ones you haven't identified. A change takes effect as soon as you make it. An item's own menu, in the Choice pane or the Items window, has Ignore as a submenu of the choices ``k`` would give you.
+
 There is a quality setting for each wearable item type. Ignoring a wearable item will prompt you with a question about whether you wish to ignore all of that type of item with a certain quality setting, or of an ego type, or both.
 
 The quality settings are:
@@ -132,6 +134,8 @@ Inscribing items
 ================
 
 Inscriptions are notes you can mark on objects using the ``{`` command.  You can use this to give the game commands about the object, which are listed below. You can also set up the game to automatically inscribe certain items whenever you find them, using the object knowledge screens, accessed using ``~``.
+
+In the Tcl/Tk front end, choose an object or a rune in the Knowledge window and type the inscription under Inscribe When Found; what you're carrying is inscribed straight away. File ▸ Save Inscriptions writes them to ``user.prf``, which every character reads, as ``Save autoinscriptions to pref file`` on the options menu does. Only the kinds you've identified are saved there.
 
 Inscribing an item with '!!':
 	This will alert you when the item has finished recharging.

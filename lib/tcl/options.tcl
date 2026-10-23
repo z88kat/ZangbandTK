@@ -5,9 +5,10 @@
 # file -- and the front end's beside them, so that the player never has to
 # know which layer owns a setting.  A tab a page: Interface, with the three
 # numeric settings under it; Birth, which can be changed only while a
-# character is being made; Cheats; Display, the front end's own, which is
-# display.tcl's: the tile set and its size, the panes' fonts and the colours;
-# and Sound, sound.tcl's: the game's use_sound beside the front end's volume.
+# character is being made; Cheats; Ignoring, ignore.tcl's, the game's item
+# ignoring setup; Display, the front end's own, which is display.tcl's: the
+# tile set and its size, the panes' fonts and the colours; and Sound,
+# sound.tcl's: the game's use_sound beside the front end's volume.
 #
 # Every change is made through angband_option and so through the game's own
 # rules: a birth option is refused once a character exists, a cheat marks the
@@ -79,6 +80,7 @@ proc options_refresh {} {
         set options(score) "High score: [expr {$eligible ? "eligible" : "not eligible"}]"
     }
     sound_page_refresh
+    ignore_page_refresh
 }
 
 # The checkbutton or spinbox standing for an option, wherever it is.
@@ -329,6 +331,11 @@ proc options_build {} {
         incr r
     }
 
+    # Ignoring: the game's item ignoring setup -- ignore.tcl's.
+    set p [ttk::frame $nb.ignore -padding 8]
+    $nb add $p -text "Ignoring" -underline 1
+    ignore_page $p
+
     # Display: the front end's, beside the game's -- display.tcl's.
     set p [ttk::frame $nb.display -padding 8]
     $nb add $p -text "Display" -underline 0
@@ -343,8 +350,10 @@ proc options_build {} {
     bind .options <F1> {options_help; break}
     accel_bind .options c {destroy .options}
     # The tabs answer their underlined letters too.  Cheats is h, because C
-    # is Close.
-    foreach {letter page} {i interface b birth h cheat d display s sound} {
+    # is Close, and Ignoring g, because I is Interface.
+    foreach {letter page} {
+        i interface b birth h cheat g ignore d display s sound
+    } {
         accel_bind .options $letter \
             [list .options.f.nb select .options.f.nb.$page]
     }
@@ -353,7 +362,7 @@ proc options_build {} {
     # notch, as Tk's own lists scroll: Tk 9 reports a notch as 120, and this
     # used to scroll by that many units, which is the whole page at once.
     bind .options <MouseWheel> {
-        if {[winfo class %W] ni {TSpinbox TEntry}} {
+        if {[winfo class %W] ni {TSpinbox TEntry Listbox}} {
             set c "[.options.f.nb select].scroll.c"
             if {[winfo exists $c]} { tk::MouseWheel $c y %D -40.0 }
         }
@@ -370,6 +379,7 @@ proc options_help {} {
         interface option#user-interface-options
         birth option#birth-options
         cheat option#cheating-options
+        ignore customize#ignoring
         display customize#tcl-tk
         sound customize#tcl-tk
     } $page] option]

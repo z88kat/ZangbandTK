@@ -25,6 +25,9 @@
 void do_cmd_options_birth(void);
 int ego_item_name(char *buf, size_t buf_size, struct ego_desc *desc);
 bool ignore_tval(int tval);
+bool ignore_kind_group(size_t i, int *tval, const char **desc, bool *seen);
+int ignore_kinds_of(int tval, struct object_kind **kinds, bool *aware,
+		int max);
 void do_cmd_options_item(const char *title, int row);
 void do_cmd_options(void);
 void cleanup_options(void);

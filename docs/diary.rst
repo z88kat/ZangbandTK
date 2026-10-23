@@ -31,6 +31,33 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 October 2026, late — ignoring without the text screens
+=========================================================
+
+Item ignoring and auto-inscription were the last of the options the Tk front
+end still left to the game's own screens, reached by pressing ``=`` in the main
+window. The Options window has an Ignoring page now, laid out as the game's
+menu is: Quality, Ego items, and the 22 groups of things ignored by kind. The
+lists and their order come from the game's menu code, so the page can't offer
+anything the game's screen wouldn't. The quality settings are menubuttons,
+because the page scrolls and a combobox under the pointer changes its value
+when the wheel turns. A change takes effect the moment it's made. Ticking
+Rations of Food dropped the three in the pack straight away, which is what the
+game does when its own screen is closed.
+
+Auto-inscription went into the Knowledge window, where the game keeps it too:
+an object or a rune has an "Inscribe When Found" line, and what you're carrying
+is inscribed at once. Saving writes them to ``user.prf``, as the game's own
+menu does.
+
+I told Steven the third piece, the menu for ignoring one item, was still a
+text screen. It wasn't. Every one of the game's small menus already reached
+the Choice pane, this one included, so a click could answer it. What was
+missing was a shorter way, and that's what got built: an Ignore submenu in an
+item's own menu, with the same choices, so it takes one click instead of two.
+The game's menu still comes up for the ``k`` key.
+
+
 23 October 2026, evening — what it comes to
 ===========================================
 

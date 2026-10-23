@@ -1871,21 +1871,11 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 }
 
 /**
- * Display list of svals to be ignored.
+ * Sort by name in ignore menus except for categories of items that are
+ * aware from the start
  */
-static bool sval_menu(int tval, const char *desc)
+static void ignore_sort_kinds(int tval, ignore_choice *choices, int n_choices)
 {
-	struct menu *menu;
-	region area = { 1, 2, -1, -1 };
-
-	ignore_choice *choices;
-
-	int n_choices = ignore_collect_kind(tval, &choices);
-	if (!n_choices)
-		return false;
-
-	/* Sort by name in ignore menus except for categories of items that are
-	 * aware from the start */
 	switch (tval)
 	{
 		case TV_LIGHT:
@@ -1906,7 +1896,23 @@ static bool sval_menu(int tval, const char *desc)
 			/* sort by name */
 			sort(choices, n_choices, sizeof(*choices), cmp_ignore);
 	}
+}
 
+/**
+ * Display list of svals to be ignored.
+ */
+static bool sval_menu(int tval, const char *desc)
+{
+	struct menu *menu;
+	region area = { 1, 2, -1, -1 };
+
+	ignore_choice *choices;
+
+	int n_choices = ignore_collect_kind(tval, &choices);
+	if (!n_choices)
+		return false;
+
+	ignore_sort_kinds(tval, choices, n_choices);
 
 	/* Save the screen and clear it */
 	screen_save();
@@ -1953,6 +1959,45 @@ static bool seen_tval(int tval)
 
 
 	return false;
+}
+
+
+/**
+ * The groups of kinds the ignoring menu offers, for a front end with a menu
+ * of its own (ZangbandTK): the i'th group's tval and name, and whether the
+ * character has seen anything in it.  False past the last.
+ */
+bool ignore_kind_group(size_t i, int *tval, const char **desc, bool *seen)
+{
+	if (i >= N_ELEMENTS(sval_dependent)) return false;
+
+	*tval = sval_dependent[i].tval;
+	*desc = sval_dependent[i].desc;
+	*seen = seen_tval(*tval);
+	return true;
+}
+
+/**
+ * The kinds of one group, as sval_menu() lists them and in its order, for a
+ * front end with a menu of its own (ZangbandTK).  For each, the kind and
+ * whether the entry is for the kind once it is known, which ignores it
+ * whatever it looks like, or for its look while it is not.  Fills up to max;
+ * returns how many there are.
+ */
+int ignore_kinds_of(int tval, struct object_kind **kinds, bool *aware,
+		int max)
+{
+	ignore_choice *choices;
+	int i, n = ignore_collect_kind(tval, &choices);
+
+	if (!n) return 0;
+	ignore_sort_kinds(tval, choices, n);
+	for (i = 0; i < n && i < max; i++) {
+		kinds[i] = choices[i].kind;
+		aware[i] = choices[i].aware;
+	}
+	mem_free(choices);
+	return n;
 }
 
 
