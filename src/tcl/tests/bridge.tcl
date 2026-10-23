@@ -1192,8 +1192,17 @@ proc second_pass {} {
 	# and no Store window, which opens only on walking into one.
 	check "outside a store there is no store" {
 		catch {angband_store stock} e
-		list [angband_store] $e [winfo exists .store]
-	} "{} {you are not in a store} 0"
+		catch {angband_store price stock 0 1} p
+		list [angband_store] $e $p [winfo exists .store]
+	} "{} {you are not in a store} {you are not in a store} 0"
+
+	# The Store window's totals, asked with no window there, say nothing
+	# and break nothing.
+	check "a running total with no store to total is empty" {
+		store_total buy
+		store_total sell
+		list $::store(tbuy) $::store(tsell)
+	} {{} {}}
 
 	# Nor in a building: a visit is what ENTER_SERVICE and LEAVE_SERVICE
 	# bracket, and none is under way.

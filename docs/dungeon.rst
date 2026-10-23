@@ -313,6 +313,13 @@ Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
 for any one item, and the store inventory, listed along with the prices.
 
+In the Tcl/Tk front end a Store window opens as you walk in, with the shelves
+on one side and your pack on the other. Under each Quantity box is what that
+many comes to and the gold you'd have afterwards, such as *Costs 9 au; you'd
+have 344*, and it changes as you type. It's the amount the trade will take or
+pay. For wands and staffs that can be a little off the price column times the
+number, because their charges are shared out among the ones you take.
+
 You can press ``?`` for a partial list of the available commands. Note that
 many of the commands which work in the dungeon work in the stores as well,
 but some do not, especially those which involve "using" objects.

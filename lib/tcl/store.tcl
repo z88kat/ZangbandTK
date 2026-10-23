@@ -1,8 +1,9 @@
 # The Store window.
 #
 # T7's transfer window: the store's shelves on one side, what it will buy on
-# the other, each with a quantity and Buy or Sell, the game's description of
-# what is chosen beneath, and gold in the status bar.  It opens by itself when
+# the other, each with a quantity, Buy or Sell and what that many comes to,
+# the game's description of what is chosen beneath, and gold in the status
+# bar.  It opens by itself when
 # the character walks into a store and closes when they walk out, which is what
 # the original's did.  The home is the same window with Take and Leave for Buy
 # and Sell and no prices.
@@ -25,6 +26,8 @@ set store(stock) {}
 set store(wares) {}
 set store(qbuy) 1
 set store(qsell) 1
+set store(tbuy) ""
+set store(tsell) ""
 set store(note) ""
 set store(home) 0
 
@@ -136,6 +139,7 @@ proc store_pick {side} {
         $w.act.do state disabled
         $w.act.q configure -to 1
         if {$side eq "buy"} { store_text "" "" }
+        store_total $side
         return
     }
     lassign $row n name number weight price glyph colour flag
@@ -151,7 +155,41 @@ proc store_pick {side} {
         if {[catch {angband_store lore $n} lore]} { set lore "" }
         store_text $name $lore
     }
+    store_total $side
 }
+
+# What the quantity comes to, beside it, as the original's Total Cost and Gold
+# Remaining had it, and kept up as the quantity is typed.  The price is the
+# game's for that many, which is not always the price for one times the
+# number.  Nothing at home, where nothing is paid, nor for a sale when this
+# character was born with no selling.
+proc store_total {side} {
+    global store
+
+    set store(t$side) ""
+    set tv .store.f.body.$side.tv
+    if {$store(home) || ![winfo exists $tv]} return
+    set id [lindex [$tv selection] 0]
+    set q $store([expr {$side eq "buy" ? "qbuy" : "qsell"}])
+    if {$id eq "" || ![string is integer -strict $q]} return
+    if {$side eq "sell" && ![catch {angband_option birth_no_selling} nosell]
+            && $nosell} return
+    if {[catch {angband_store price [expr {$side eq "buy" ? "stock" : "wares"}] \
+            [string range $id 1 end] $q} price]} return
+    if {[catch {angband_store} here] || ![llength $here]} return
+    set gold [lindex $here 4]
+
+    if {$side eq "sell"} {
+        set store(tsell) "Pays $price au; you'd have [expr {$gold + $price}]"
+    } elseif {$price <= $gold} {
+        set store(tbuy) "Costs $price au; you'd have [expr {$gold - $price}]"
+    } else {
+        set store(tbuy) "Costs $price au; you're [expr {$price - $gold}] short"
+    }
+}
+
+trace add variable store(qbuy) write {apply {args { store_total buy }}}
+trace add variable store(qsell) write {apply {args { store_total sell }}}
 
 # A row chosen by hand.  A refusal is about the row it refused, so choosing
 # another clears it rather than leaving it under the wrong thing.  And what is
@@ -268,6 +306,10 @@ proc store_side {parent side title verb} {
     pack $f.act.q -side left -padx {4 8}
     pack $f.act.do -side left
 
+    # A line of its own, because beside the button it had too little room
+    # once the window was near its smallest.  None at home.
+    ttk::label $f.total -textvariable store(t$side) -font [uifont 12]
+
     # The quantity keeps what is typed into it.
     bindtags $f.act.q [list $f.act.q TSpinbox all]
     bind $f.act.q <Return> [list store_trade $side]
@@ -275,6 +317,9 @@ proc store_side {parent side title verb} {
     grid $tv -row 0 -column 0 -sticky nsew
     grid $f.sb -row 0 -column 1 -sticky ns
     grid $f.act -row 1 -column 0 -columnspan 2 -sticky w -pady {8 0}
+    if {!$store(home)} {
+        grid $f.total -row 2 -column 0 -columnspan 2 -sticky w -pady {4 0}
+    }
     grid rowconfigure $f 0 -weight 1
     grid columnconfigure $f 0 -weight 1
 

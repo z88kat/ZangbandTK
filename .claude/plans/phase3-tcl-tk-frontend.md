@@ -1739,6 +1739,17 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > `angband_gear recall` and `angband_store recall` share one helper; a store's stock is as
 > safe to track as the pack, because `object_delete()` stops tracking whatever it deletes.
 
+> **The Store window's running total (23 October 2026)**, OBS-48's `Total Cost` and `Gold
+> Remaining`. A line under each side's Quantity box, kept up by a trace on the quantity and
+> by `store_pick`: "Costs N au; you'd have M" (or "you're K short"), "Pays N au; you'd have
+> M" for the pack, nothing at home or for a no-selling character's sale.
+> `angband_store price stock|wares <n> <q>` is `price_item()` on an `object_copy_amt()` copy,
+> as `store_purchase()` and `store_sell()` price a trade, because charges are shared out in
+> the copy: Begma's Magic Shop listed two Staves of Teleportation at 2800 each and one cost
+> 2700. Probed buying and selling in four shops, each trade's gold change equal to the line.
+> Beside the Buy button it was cut off at the window's minimum width (177 of 240 px), so it
+> has a row of its own, one table row less. The shop's purse stays in the owner's line.
+
 > **Deferred: the Recall window growing on hover** (owner's decision, 11 October 2026). The
 > original's grew to show the whole of a recall while the pointer was inside it and shrank
 > back when it left — `NSRecall::Expand` in `recall.tcl`, and only when the text did not fit,

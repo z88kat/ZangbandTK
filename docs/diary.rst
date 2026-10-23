@@ -31,6 +31,30 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 October 2026, evening — what it comes to
+===========================================
+
+Steven asked whether the stores' running total had been done. It hadn't. The
+original's Store window had a row of fields, Quantity, Total Cost, Purse and
+Gold Remaining, and the total changed as the quantity was typed. Ours had the
+quantity and a price for one, and left the multiplying to the player. Now each
+side has a line under its quantity: *Costs 9 au; you'd have 344* on the
+shelves, *Pays 2 au; you'd have 355* for the pack, and nothing at home.
+
+I nearly multiplied in Tcl. The game prices a trade on a copy of the item
+holding just the number being bought, and a wand or a staff takes its share of
+the stack's charges into that copy, so the price for two isn't always twice
+the price for one. The Magic Shop in Begma showed it: two Staves of
+Teleportation at 2800 each in the price column, and one of them costs 2700,
+because the column prices one staff with both staffs' charges. So the total
+asks the game the way the trade does. In four shops, every purchase and sale
+took or paid what the line had said.
+
+The first version put the total beside the Buy button, where the window at its
+smallest cut it off. It has a line of its own now, which costs each table one
+row.
+
+
 23 October 2026, later — clicking to walk
 =========================================
 

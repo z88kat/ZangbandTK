@@ -7248,6 +7248,8 @@ static struct object *store_row(struct store *store, bool stock, int n)
  *                              worn}, price offered for one
  *    angband_store lore <n>    what the game says about stock item n
  *    angband_store recall stock|wares <n>  show row n in the Recall pane
+ *    angband_store price stock|wares <n> <quantity>  what that many of row
+ *                              n cost, or fetch, all told; 0 at home
  *    angband_store buy <n> <quantity>     buy, or take from the home
  *    angband_store sell <n> <quantity>    sell, or leave in the home
  *
@@ -7373,6 +7375,47 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
+	/*
+	 * For the Store window's running total.  Priced as store_purchase() and
+	 * store_sell() price a trade, on a copy holding just that many, and not
+	 * as the price for one times the number: a wand's charges are shared out
+	 * among the copies, and a stack of them is not worth a multiple of one.
+	 */
+	if (streq(what, "price") && objc == 5) {
+		const char *side = Tcl_GetString(objv[2]);
+		bool stock = streq(side, "stock");
+		struct object *obj, part;
+		int price;
+
+		if (!stock && !streq(side, "wares")) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected stock or wares, not: %s", side));
+			return TCL_ERROR;
+		}
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK
+				|| Tcl_GetIntFromObj(ip, objv[4], &qty) != TCL_OK)
+			return TCL_ERROR;
+		obj = store_row(store, stock, n);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %d", n));
+			return TCL_ERROR;
+		}
+		if (qty < 1 || qty > obj->number) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"there are %d to choose from", obj->number));
+			return TCL_ERROR;
+		}
+		if (home) {
+			price = 0;
+		} else {
+			object_copy_amt(&part, obj, qty);
+			price = price_item(store, &part, !stock, qty);
+			object_wipe(&part);
+		}
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(price));
+		return TCL_OK;
+	}
+
 	if ((streq(what, "lore") && objc == 3)
 			|| ((streq(what, "buy") || streq(what, "sell")) && objc == 4)) {
 		bool stock = !streq(what, "sell");
@@ -7472,7 +7515,8 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected stock, wares, lore, recall, buy or sell, not: %s", what));
+			"expected stock, wares, lore, recall, price, buy or sell, not: %s",
+			what));
 	return TCL_ERROR;
 }
 
