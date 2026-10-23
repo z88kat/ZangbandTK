@@ -422,15 +422,14 @@ main window) and 7 are:
 SDL2
 ~~~~
 
-With the SDL2 front end, the application has one window that can contain the
-main window and any of the subwindows.  The application may also have up to
-three additional windows which can contain any of the subwindows.  A subwindow
-may not appear in more than one of those application windows:  adding a
-subwindow to a window automatically removes it from the other window, if any,
-that had it.  Unused portions of an application window are tiled with
-repetitions of the game's logo.
+With the SDL2 front end, the application has one window that contains the
+main window and any of the subwindows.  Unused portions of the application
+window are black.
 
-Each of the application windows has a menu bar along the top.  The "Menu"
+The first time you start it, the game opens in a window just big enough for
+the main window and the menu bar.  After that it opens the way you left it.
+
+The application window has a menu bar along the top.  The "Menu"
 entry at the left end of the menu bar has the main menu for controlling
 aspects of the SDL2 interface.
 
@@ -439,6 +438,12 @@ terminal windows shown in the application window.  Click on one to toggle it
 between on (drawn with a filled rectangle next to it) and off (drawn with an
 empty rectangle next to it).  It is not possible to toggle off the main window
 shown in the primary application window.
+
+A subwindow you open goes beside the main window, and the application window
+grows to make room if it isn't fullscreen, as far as the screen allows.  Until
+you change it, subwindow 1 shows messages, 2 your inventory, 3 the monsters you
+can see, 4 the items you can see, 5 monster and object recall, 6 the overhead
+map and 7 a compact summary of your character.
 
 At the end of the menu bar are two toggle buttons labeled "Move" and "Size".
 When the rectangle next to "Move" is empty, the positions of the subwindows
@@ -481,15 +486,14 @@ problems that can be avoided by not sending the keypad modifier.
 
 Below "Send Keypad Modifier" in the primary application window's "Menu" is
 "Menu Shortcuts...".  That allows you to set a keystroke to transfer control
-to a window's menu.  By default, no such keystrokes are defined.  That avoids
+to the menu bar.  By default, no such keystroke is defined.  That avoids
 potential conflicts with any keymaps you may have.  While in the menus,
 keystrokes can be used for navigation.  The in-game horizontal and vertical
 movement keys will work to move between controls as will Tab (to go to the
 "next" control) and Shift-Tab (to go to the previous control).  Enter will
 activate a menu item if it can be activated.  Trying to descend further into
 the menus with the in-game movement keys will also activate if a menu item if
-it is as deep as you can go.  Below "Menu Shortcuts..." is "Windows":  use
-that to bring up or hide one of the additional application windows.
+it is as deep as you can go.
 
 The final three entries in "Menu" are "About" for displaying an information
 dialog about the game, "SDL Details" for displaying an information dialog

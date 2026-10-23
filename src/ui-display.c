@@ -2607,19 +2607,57 @@ static void subwindow_set_flags(int win_idx, uint32_t new_flags)
 /**
  * Called with an array of the new flags for all the subwindows, in order
  * to set them to the new values, with a chance to perform housekeeping.
+ *
+ * A subwindow with no term keeps its new flags without anything being drawn,
+ * so that it shows them once a front end gives it a term and calls
+ * subwindow_term_arrived().  Dropping them instead lost what the preference
+ * files asked for every term not open when they were read, and a term opened
+ * later came up blank.
  */
 void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows)
 {
 	size_t j;
 
 	for (j = 0; j < n_subwindows; j++) {
-		/* Dead window */
-		if (!angband_term[j]) continue;
+		/* No term to draw in yet */
+		if (!angband_term[j]) {
+			window_flag[j] = new_flags[j];
+			continue;
+		}
 
 		/* Ignore non-changes */
 		if (window_flag[j] != new_flags[j])
 			subwindow_set_flags(j, new_flags[j]);
 	}
+}
+
+/**
+ * A front end has just given subwindow win_idx a term: start showing in it
+ * what the subwindow is set to show.
+ */
+void subwindow_term_arrived(int win_idx)
+{
+	uint32_t flags = window_flag[win_idx];
+
+	if (!angband_term[win_idx]) return;
+
+	/* Nothing has been drawing to it, so every flag is a change */
+	window_flag[win_idx] = 0;
+	subwindow_set_flags(win_idx, flags);
+}
+
+/**
+ * A front end is about to take subwindow win_idx's term away: stop drawing
+ * to it, and keep what it showed for the next term it is given.
+ */
+void subwindow_term_leaving(int win_idx)
+{
+	uint32_t flags = window_flag[win_idx];
+
+	if (!angband_term[win_idx]) return;
+
+	subwindow_set_flags(win_idx, 0);
+	window_flag[win_idx] = flags;
 }
 
 /**

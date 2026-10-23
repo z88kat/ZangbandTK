@@ -36,6 +36,8 @@ void idle_update(void);
 size_t animation_frame(void);
 void toggle_inven_equip(void);
 void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows);
+void subwindow_term_arrived(int win_idx);
+void subwindow_term_leaving(int win_idx);
 void init_display(void);
 
 #endif /* INCLUDED_UI_DISPLAY_H */

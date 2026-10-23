@@ -86,22 +86,14 @@
 #define DEFAULT_ALPHA_STEP 10
 #define DEFAULT_ALPHA_LOWEST 0
 
-#define DEFAULT_WALLPAPER "att-128.png"
-#define DEFAULT_WALLPAPER_DIR \
-	ANGBAND_DIR_ICONS
 #define DEFAULT_WINDOW_ICON "att-32.png"
 #define DEFAULT_WINDOW_ICON_DIR \
-	ANGBAND_DIR_ICONS
-#define DEFAULT_ABOUT_ICON "att-128.png"
-#define DEFAULT_ABOUT_ICON_DIR \
 	ANGBAND_DIR_ICONS
 
 #define DEFAULT_FONT_HINTING \
 	TTF_HINTING_LIGHT
 /* border of subwindows, in pixels */
 #define DEFAULT_BORDER 8
-#define DEFAULT_XTRA_BORDER \
-	(DEFAULT_BORDER * 2)
 #define DEFAULT_VISIBLE_BORDER 2
 
 /* XXX hack: the widest character present in a font
@@ -111,7 +103,15 @@
 
 #define DEFAULT_FONT "10x20x.fon"
 
-#define DEFAULT_DIALOG_FONT "8x13x.fon"
+/* The menus read at the size of the game's own text. */
+#define DEFAULT_DIALOG_FONT "10x20x.fon"
+
+/*
+ * The menus' font before that.  Nothing in the menus chooses their font, so a
+ * saved configuration naming this one has it only because it was the default
+ * when the file was written, and is given the default of now instead.
+ */
+#define OLD_DEFAULT_DIALOG_FONT "8x13x.fon"
 
 #define MAX_VECTOR_FONT_SIZE 64
 #define MIN_VECTOR_FONT_SIZE 4
@@ -120,7 +120,7 @@
 #define DEFAULT_IDLE_UPDATE_PERIOD 10
 
 #define DEFAULT_WINDOW_BG_COLOR \
-	COLOUR_L_DARK
+	COLOUR_DARK
 #define DEFAULT_SUBWINDOW_BG_COLOR \
 	COLOUR_DARK
 #define DEFAULT_SUBWINDOW_CURSOR_COLOR \
@@ -152,15 +152,6 @@
 #define MAX_TILE_HEIGHT 9
 
 #define DEFAULT_SNAP_RANGE(window) (window->app->def_font_w)
-
-enum wallpaper_mode {
-	/* so that we won't forget to actually set wallpaper */
-	WALLPAPER_INVALID = 0,
-	WALLPAPER_DONT_SHOW,
-	WALLPAPER_TILED,
-	WALLPAPER_CENTERED,
-	WALLPAPER_SCALED
-};
 
 enum font_type {
 	FONT_TYPE_INVALID = 0,
@@ -234,7 +225,6 @@ struct window_config {
 	int renderer_index;
 	int window_flags;
 
-	char *wallpaper_path;
 	char *font_name;
 	int font_size;
 };
@@ -332,13 +322,6 @@ struct size_state {
 	struct subwindow *subwindow;
 };
 
-struct wallpaper {
-	int w;
-	int h;
-	SDL_Texture *texture;
-	enum wallpaper_mode mode;
-};
-
 /** struct sdlpui_window is a real window on screen, it has one or more
  * subwindows (terms) in it */
 struct sdlpui_window {
@@ -400,7 +383,6 @@ struct sdlpui_window {
 
 	int pixelformat;
 
-	struct wallpaper wallpaper;
 	struct sdlpui_stipple stipple;
 	struct move_state move_state;
 	struct size_state size_state;
@@ -433,11 +415,19 @@ struct font_info {
 	enum font_type type;
 };
 
+/*
+ * The shortcut editor has a row for the main window's menu bar alone: no other
+ * window can be opened from the menus.  menu_shortcuts[] still has one for each
+ * window, so that a configuration naming the others reads and is written back
+ * as it was.
+ */
+#define SHORTCUT_EDITOR_ROWS 1
+
 struct shortcut_editor_data {
-	struct sdlpui_control labels[MAX_WINDOWS];
-	struct sdlpui_control shortcut_displays[MAX_WINDOWS];
-	struct sdlpui_control change_buttons[MAX_WINDOWS];
-	struct sdlpui_control clear_buttons[MAX_WINDOWS];
+	struct sdlpui_control labels[SHORTCUT_EDITOR_ROWS];
+	struct sdlpui_control shortcut_displays[SHORTCUT_EDITOR_ROWS];
+	struct sdlpui_control change_buttons[SHORTCUT_EDITOR_ROWS];
+	struct sdlpui_control clear_buttons[SHORTCUT_EDITOR_ROWS];
 	struct sdlpui_control prompt_label;
 	struct sdlpui_control close_button;
 	struct sdlpui_control reset_button;
@@ -509,8 +499,6 @@ static struct font *make_font(const struct sdlpui_window *window,
 		const char *name, int size);
 static struct sdlpui_window *get_new_window(struct my_app *a, unsigned index);
 static void wipe_window(struct sdlpui_window *window, int display);
-/* create default config for spawning a window via gui */
-static void wipe_window_aux_config(struct sdlpui_window *window);
 static void adjust_window_geometry(struct sdlpui_window *window);
 static void free_window(struct sdlpui_window *window);
 static struct sdlpui_window *get_window_by_id(struct my_app *a, Uint32 id);
@@ -543,7 +531,6 @@ static void reload_all_graphics(struct my_app *a, graphics_mode *mode);
 static void free_graphics(struct graphics *graphics);
 static void load_terms(struct my_app *a);
 static void load_term(struct subwindow *subwindow);
-static void clear_pw_flag(struct subwindow *subwindow);
 static bool adjust_subwindow_geometry(const struct sdlpui_window *window,
 		struct subwindow *subwindow);
 static bool is_ok_col_row(const struct subwindow *subwindow,
@@ -599,13 +586,17 @@ const SDL_Color *sdlpui_get_color(struct sdlpui_window *w, int role)
 		idx = COLOUR_DARK;
 		break;
 
+	/*
+	 * Menus are black, like the window behind them, and without a white
+	 * edge a menu that drops down over it cannot be told from it.
+	 */
 	case SDLPUI_COLOR_MENU_FG:
+	case SDLPUI_COLOR_MENU_BORDER:
 	case SDLPUI_COLOR_DIALOG_FG:
 	case SDLPUI_COLOR_DIALOG_BORDER:
 		idx = COLOUR_WHITE;
 		break;
 
-	case SDLPUI_COLOR_MENU_BORDER:
 	case SDLPUI_COLOR_DIALOG_BG:
 		idx = COLOUR_SHADE;
 		break;
@@ -802,64 +793,9 @@ static void render_clear(const struct sdlpui_window *window,
 	SDL_RenderClear(window->renderer);
 }
 
-static void render_wallpaper_tiled(const struct sdlpui_window *window)
-{
-	SDL_SetRenderTarget(window->renderer, NULL);
-
-	SDL_Rect rect = {0, 0, window->wallpaper.w, window->wallpaper.h};
-	for (rect.y = window->inner_rect.y;
-			rect.y < window->inner_rect.h;
-			rect.y += rect.h)
-	{
-		for (rect.x = window->inner_rect.x;
-				rect.x < window->inner_rect.w;
-				rect.x += rect.w)
-		{
-			SDL_RenderCopy(window->renderer, window->wallpaper.texture, NULL, &rect);
-		}
-	}
-}
-
-static void render_wallpaper_scaled(const struct sdlpui_window *window)
-{
-	SDL_SetRenderTarget(window->renderer, NULL);
-	SDL_RenderCopy(window->renderer, window->wallpaper.texture, NULL, NULL);
-}
-
-static void render_wallpaper_centered(const struct sdlpui_window *window)
-{
-	SDL_Rect rect;
-
-	rect.w = window->wallpaper.w;
-	rect.h = window->wallpaper.h;
-	rect.x = window->inner_rect.x + (window->inner_rect.w - rect.w) / 2;
-	rect.y = window->inner_rect.y + (window->inner_rect.h - rect.h) / 2;
-
-	SDL_SetRenderTarget(window->renderer, NULL);
-	SDL_RenderCopy(window->renderer, window->wallpaper.texture, NULL, &rect);
-}
-
 static void render_background(const struct sdlpui_window *window)
 {
 	render_clear(window, NULL, &window->color);
-
-	switch (window->wallpaper.mode) {
-		case WALLPAPER_DONT_SHOW:
-			return;
-		case WALLPAPER_TILED:
-			render_wallpaper_tiled(window);
-			return;
-		case WALLPAPER_CENTERED:
-			render_wallpaper_centered(window);
-			return;
-		case WALLPAPER_SCALED:
-			render_wallpaper_scaled(window);
-			return;
-		default:
-			quit_fmt("bad wallpaper mode %d in window %u",
-					window->wallpaper.mode, window->index);
-			break;
-	}
 }
 
 static void render_outline_rect(const struct sdlpui_window *window,
@@ -1494,7 +1430,7 @@ static SDL_bool handle_shortcut_editor_key(struct sdlpui_dialog *d,
 		struct keypress tmp[2];
 
 		SDL_assert(pse->changing_shortcut >= 0
-			&& pse->changing_shortcut < MAX_WINDOWS);
+			&& pse->changing_shortcut < SHORTCUT_EDITOR_ROWS);
 		w->app->menu_shortcuts[pse->changing_shortcut].type = EVT_KBRD;
 		w->app->menu_shortcuts[pse->changing_shortcut].code = ch;
 		w->app->menu_shortcuts[pse->changing_shortcut].mods = mods;
@@ -1535,7 +1471,7 @@ static SDL_bool handle_shortcut_editor_textin(struct sdlpui_dialog *d,
 		struct keypress tmp[2];
 
 		SDL_assert(pse->changing_shortcut >= 0
-			&& pse->changing_shortcut < MAX_WINDOWS);
+			&& pse->changing_shortcut < SHORTCUT_EDITOR_ROWS);
 		w->app->menu_shortcuts[pse->changing_shortcut].type = EVT_KBRD;
 		w->app->menu_shortcuts[pse->changing_shortcut].code = ch;
 		w->app->menu_shortcuts[pse->changing_shortcut].mods = mods;
@@ -1577,7 +1513,7 @@ static void render_shortcut_editor(struct sdlpui_dialog *d,
 	} else {
 		SDL_RenderFillRect(r, &dst_r);
 	}
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
 		if (pse->labels[i].ftb->render) {
 			(*pse->labels[i].ftb->render)(&pse->labels[i], d, w, r);
 		}
@@ -1632,11 +1568,11 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
 	while (1) {
-		if (i >= MAX_WINDOWS) {
+		if (i >= SHORTCUT_EDITOR_ROWS) {
 			if (c->id == pse->close_button.id) {
 				new_c = (forward) ?
 					&pse->reset_button :
-					&pse->clear_buttons[MAX_WINDOWS - 1];
+					&pse->clear_buttons[SHORTCUT_EDITOR_ROWS - 1];
 			} else if (c->id == pse->reset_button.id) {
 				new_c = (forward) ?
 					&pse->change_buttons[0] :
@@ -1656,7 +1592,7 @@ static void step_shortcut_editor_control(struct sdlpui_dialog *d,
 				&pse->reset_button);
 			break;
 		} else if (c->id == pse->clear_buttons[i].id) {
-			new_c = (forward) ? ((i < MAX_WINDOWS - 1) ?
+			new_c = (forward) ? ((i < SHORTCUT_EDITOR_ROWS - 1) ?
 				&pse->change_buttons[i + 1] :
 				&pse->close_button) : &pse->change_buttons[i];
 			break;
@@ -1688,25 +1624,28 @@ static struct sdlpui_control *find_shortcut_editor_control_containing(
 
 	*comp_ind = 0;
 	if (y < pse->close_button.rect.y) {
-		if (y >= pse->change_buttons[0].rect.y) {
-			int i = (y - pse->change_buttons[0].rect.y) /
-				(pse->change_buttons[1].rect.y
-					- pse->change_buttons[0].rect.y);
+		/*
+		 * Row by row: finding the row by dividing by the spacing
+		 * between the first two needs there to be two.
+		 */
+		int i;
 
-			if (i < MAX_WINDOWS && i >= 0
-					&& y >= pse->change_buttons[i].rect.y
-					&& y < pse->change_buttons[i].rect.y
+		for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
+			if (y < pse->change_buttons[i].rect.y
+					|| y >= pse->change_buttons[i].rect.y
 					+ pse->change_buttons[i].rect.h) {
-				if (x >= pse->change_buttons[i].rect.x
-						&& x < pse->change_buttons[i].rect.x
-						+ pse->change_buttons[i].rect.w) {
-					c = &pse->change_buttons[i];
-				} else if (x >= pse->clear_buttons[i].rect.x
-						&& x < pse->clear_buttons[i].rect.x
-						+ pse->clear_buttons[i].rect.w) {
-					c = &pse->clear_buttons[i];
-				}
+				continue;
 			}
+			if (x >= pse->change_buttons[i].rect.x
+					&& x < pse->change_buttons[i].rect.x
+					+ pse->change_buttons[i].rect.w) {
+				c = &pse->change_buttons[i];
+			} else if (x >= pse->clear_buttons[i].rect.x
+					&& x < pse->clear_buttons[i].rect.x
+					+ pse->clear_buttons[i].rect.w) {
+				c = &pse->clear_buttons[i];
+			}
+			break;
 		}
 	} else if (y < pse->close_button.rect.y + pse->close_button.rect.h) {
 		if (x >= pse->close_button.rect.x
@@ -1750,7 +1689,7 @@ static void query_shortcut_editor_natural_size(struct sdlpui_dialog *d,
 	roww += cw;
 	rowh = MAX(rowh, ch);
 	dw = MAX(dw, roww);
-	dh += MAX_WINDOWS * rowh;
+	dh += SHORTCUT_EDITOR_ROWS * rowh;
 	(*pse->close_button.ftb->query_natural_size)(&pse->close_button,
 		d, w, &roww, &rowh);
 	(*pse->reset_button.ftb->query_natural_size)(&pse->reset_button,
@@ -1785,7 +1724,7 @@ static void resize_shortcut_editor(struct sdlpui_dialog *d,
 #endif
 
 	y = 0;
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
 		x = 0;
 		rowh = 0;
 		(*pse->labels[i].ftb->query_natural_size)(&pse->labels[i], d, w,
@@ -1905,23 +1844,23 @@ static Uint32 reassign_shortcut_editor_ids(struct sdlpui_dialog *d,
 	struct shortcut_editor_data *pse;
 	int i;
 
-	if (start > SDL_MAX_UINT32 - 4 * (MAX_WINDOWS + 1)) {
+	if (start > SDL_MAX_UINT32 - 4 * (SHORTCUT_EDITOR_ROWS + 1)) {
 		return 0;
 	}
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
 	d->id = start;
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
 		pse->labels[i].id = start + 1 + 4 * i;
 		pse->shortcut_displays[i].id = start + 2 + 4 * i;
 		pse->change_buttons[i].id = start + 3 + 4 * i;
 		pse->clear_buttons[i].id = start + 4 + 4 * i;
 	}
-	pse->prompt_label.id = start + 1 + 4 * MAX_WINDOWS;
-	pse->close_button.id = start + 2 + 4 * MAX_WINDOWS;
-	pse->reset_button.id = start + 3 + 4 * MAX_WINDOWS;
+	pse->prompt_label.id = start + 1 + 4 * SHORTCUT_EDITOR_ROWS;
+	pse->close_button.id = start + 2 + 4 * SHORTCUT_EDITOR_ROWS;
+	pse->reset_button.id = start + 3 + 4 * SHORTCUT_EDITOR_ROWS;
 
-	return 4 * (MAX_WINDOWS + 1);
+	return 4 * (SHORTCUT_EDITOR_ROWS + 1);
 }
 
 static void cleanup_shortcut_editor(struct sdlpui_dialog *d)
@@ -1931,7 +1870,7 @@ static void cleanup_shortcut_editor(struct sdlpui_dialog *d)
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
 		if (pse->labels[i].ftb->cleanup) {
 			(*pse->labels[i].ftb->cleanup)(&pse->labels[i]);
 		}
@@ -1968,11 +1907,10 @@ static void handle_shortcut_change(struct sdlpui_control *c,
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
-	SDL_assert(tag >= 0 && tag < MAX_WINDOWS);
+	SDL_assert(tag >= 0 && tag < SHORTCUT_EDITOR_ROWS);
 	pse->changing_shortcut = tag;
 	sdlpui_change_caption(&pse->prompt_label, d, w,
-		format("Press key combination for window %d's new shortcut",
-		tag + 1));
+		"Press the keys that will go to the menu bar");
 }
 
 static void handle_shortcut_clear(struct sdlpui_control *c,
@@ -1983,7 +1921,7 @@ static void handle_shortcut_clear(struct sdlpui_control *c,
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
-	SDL_assert(tag >= 0 && tag < MAX_WINDOWS);
+	SDL_assert(tag >= 0 && tag < SHORTCUT_EDITOR_ROWS);
 	if (w->app->menu_shortcuts[tag].type != EVT_NONE) {
 		w->app->menu_shortcuts[tag].type = EVT_NONE;
 		w->app->menu_shortcuts[tag].code = 0;
@@ -2012,7 +1950,7 @@ static void handle_shortcut_editor_reset(struct sdlpui_control *c,
 
 	SDL_assert(d->type_code == SHORTCUT_EDITOR_CODE && d->priv);
 	pse = d->priv;
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
 		if (w->app->menu_shortcuts[i].type == EVT_NONE) {
 			continue;
 		}
@@ -2093,11 +2031,11 @@ static void show_shortcut_editor(struct sdlpui_window *w, int x, int y)
 		sdlpui_force_quit();
 	}
 
-	for (i = 0; i < MAX_WINDOWS; ++i) {
+	for (i = 0; i < SHORTCUT_EDITOR_ROWS; ++i) {
 		char keypress_desc[40];
 
-		sdlpui_create_label(&pse->labels[i],
-			format("Window %d menu", i + 1),  SDLPUI_HOR_LEFT);
+		sdlpui_create_label(&pse->labels[i], "Go to menu bar:",
+			SDLPUI_HOR_LEFT);
 		if (w->app->menu_shortcuts[i].type == EVT_KBRD) {
 			struct keypress tmp[2];
 
@@ -2165,55 +2103,12 @@ static void hide_about(struct sdlpui_dialog *d, struct sdlpui_window *w,
 	}
 }
 
-static void recreate_about_dialog_textures(struct sdlpui_dialog *d,
-		struct sdlpui_window *w, SDL_bool all)
-{
-	struct sdlpui_simple_info *psi;
-	int i;
-
-	if (!all) {
-		return;
-	}
-
-	SDL_assert(d->type_code == SDLPUI_DIALOG_SIMPLE_INFO);
-	psi = (struct sdlpui_simple_info*)d->priv;
-
-	/* Recreate the static texture for the one image in the dialog. */
-	for (i = 0; i < psi->number; ++i) {
-		if (psi->labels[i].type_code == SDLPUI_CTRL_IMAGE) {
-			char path[4096];
-			struct sdlpui_image *pi =
-				(struct sdlpui_image*)psi->labels[i].priv;
-
-			if (pi->image) {
-				SDL_DestroyTexture(pi->image);
-			}
-			path_build(path, sizeof(path), DEFAULT_ABOUT_ICON_DIR,
-				DEFAULT_ABOUT_ICON);
-			pi->image = load_image(w, path);
-
-			d->dirty = SDL_TRUE;
-			sdlpui_signal_redraw(w);
-			break;
-		}
-	}
-}
-
 static void show_about(struct sdlpui_window *window, int x, int y)
 {
 	if (!window->infod) {
-		char path[4096];
-		SDL_Texture *texture;
 		const char *line;
 
-		window->infod = sdlpui_start_simple_info("Ok", NULL,
-			recreate_about_dialog_textures, 0);
-		path_build(path, sizeof(path), DEFAULT_ABOUT_ICON_DIR,
-			DEFAULT_ABOUT_ICON);
-		texture = load_image(window, path);
-		sdlpui_simple_info_add_image(window->infod, texture,
-			SDLPUI_HOR_CENTER, DEFAULT_XTRA_BORDER, 0,
-			DEFAULT_XTRA_BORDER, DEFAULT_XTRA_BORDER);
+		window->infod = sdlpui_start_simple_info("Ok", NULL, NULL, 0);
 		sdlpui_simple_info_add_label(window->infod, buildid,
 			SDLPUI_HOR_CENTER);
 		/*
@@ -2579,51 +2474,6 @@ static void handle_menu_shortcuts(struct sdlpui_control *ctrl,
 	show_shortcut_editor(window, x, y);
 }
 
-static void handle_menu_window(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window)
-{
-	int tag;
-	struct sdlpui_window *other;
-
-	SDL_assert(ctrl->ftb->get_tag);
-	tag = (*ctrl->ftb->get_tag)(ctrl);
-	SDL_assert(tag >= 0);
-	sdlpui_popdown_dialog(dlg, window, SDL_TRUE);
-	other = get_window_direct(window->app, (unsigned int)tag);
-	if (other == NULL) {
-		other = get_new_window(window->app, (unsigned int)tag);
-		SDL_assert(other != NULL);
-		wipe_window_aux_config(other);
-		start_window(other);
-	} else {
-		/* Previous versions didn't close.  Is that better? */
-		handle_window_closed(window->app, other);
-	}
-}
-
-static struct sdlpui_dialog *handle_menu_windows(struct sdlpui_control *ctrl,
-		struct sdlpui_dialog *dlg, struct sdlpui_window *window,
-		int ul_x_win, int ul_y_win)
-{
-	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
-		dlg, ctrl, MAX_WINDOWS, SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
-	unsigned int i;
-
-	for (i = 1; i < MAX_WINDOWS; ++i) {
-		struct sdlpui_control *c = sdlpui_get_simple_menu_next_unused(
-			result, SDLPUI_MFLG_NONE);
-
-		sdlpui_create_menu_toggle(c, format("Window-%u", i),
-			SDLPUI_HOR_LEFT, handle_menu_window, i, SDL_FALSE,
-			get_window_direct(window->app, i) != NULL);
-	}
-	sdlpui_complete_simple_menu(result, window);
-	result->rect.x = ul_x_win;
-	result->rect.y = ul_y_win;
-
-	return result;
-}
-
 static bool toggle_fullscreen(struct sdlpui_window *window)
 {
 	bool was_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -2810,7 +2660,7 @@ static struct sdlpui_dialog *handle_menu_tile_sizes(struct sdlpui_control *ctrl,
 	SDL_bool disabled = ((window->graphics.id == GRAPHICS_NONE
 		|| !character_generated || !inkey_flag)) ? SDL_TRUE : SDL_FALSE;
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
-		SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
+		SDL_TRUE, SDL_TRUE, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
@@ -2843,7 +2693,7 @@ static struct sdlpui_dialog *handle_menu_tile_sets(struct sdlpui_control *ctrl,
 	SDL_bool disabled = (!character_generated || !inkey_flag)
 		? SDL_TRUE : SDL_FALSE;
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl,
-		0, SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
+		0, SDL_TRUE, SDL_TRUE, NULL, NULL, 0);
 	graphics_mode *mode = graphics_modes;
 
 	while (mode) {
@@ -2867,7 +2717,7 @@ static struct sdlpui_dialog *handle_menu_tiles(struct sdlpui_control *ctrl,
 		int ul_x_win, int ul_y_win)
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(dlg, ctrl, 2,
-		SDL_TRUE, SDL_FALSE, NULL, NULL, 0);
+		SDL_TRUE, SDL_TRUE, NULL, NULL, 0);
 	struct sdlpui_control *c;
 
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
@@ -3060,7 +2910,7 @@ static struct sdlpui_dialog *handle_menu_font_sizes(
 	calculate_subwindow_font_size_bounds(subwindow, NULL,
 		&subwindow->min_font_size, &subwindow->max_font_size);
 	SDL_assert(subwindow);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_FALSE,
+	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_TRUE,
 		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_ranged_int(c, "- %2d points +", SDLPUI_HOR_LEFT,
@@ -3110,7 +2960,7 @@ static struct sdlpui_dialog *handle_menu_font_names(struct sdlpui_control *ctrl,
 		count = window->app->font_count - start;
 	}
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		count + ((more_nesting) ? 1 : 0), SDL_TRUE, SDL_FALSE, NULL,
+		count + ((more_nesting) ? 1 : 0), SDL_TRUE, SDL_TRUE, NULL,
 		NULL, 0);
 	if (more_nesting) {
 		c = sdlpui_get_simple_menu_next_unused(result,
@@ -3149,7 +2999,7 @@ static struct sdlpui_dialog *handle_menu_purpose(struct sdlpui_control *ctrl,
 	subw_idx = (*ctrl->ftb->get_tag)(ctrl);
 	SDL_assert(subw_idx >= 0 && subw_idx != MAIN_SUBWINDOW);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
-		(int)N_ELEMENTS(window_flag_desc), SDL_TRUE, SDL_FALSE, NULL,
+		(int)N_ELEMENTS(window_flag_desc), SDL_TRUE, SDL_TRUE, NULL,
 		NULL, 0);
 	while (i < (int)N_ELEMENTS(window_flag_desc)) {
 		if (window_flag_desc[i]) {
@@ -3182,7 +3032,7 @@ static struct sdlpui_dialog *handle_menu_font(struct sdlpui_control *ctrl,
 
 	SDL_assert(ctrl->ftb->get_tag);
 	tag = (*ctrl->ftb->get_tag)(ctrl);
-	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_FALSE,
+	result = sdlpui_start_simple_menu(dlg, ctrl, 2, SDL_TRUE, SDL_TRUE,
 		NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Name", SDLPUI_HOR_LEFT,
@@ -3283,7 +3133,7 @@ static struct sdlpui_dialog *handle_menu_alpha(struct sdlpui_control *ctrl,
 	SDL_assert(subwindow);
 	nstep = 1 + ((100 - DEFAULT_ALPHA_LOWEST + (DEFAULT_ALPHA_STEP - 1))
 		/ DEFAULT_ALPHA_STEP);
-	result = sdlpui_start_simple_menu(dlg, ctrl, nstep, SDL_TRUE, SDL_FALSE,
+	result = sdlpui_start_simple_menu(dlg, ctrl, nstep, SDL_TRUE, SDL_TRUE,
 		NULL, NULL, 0);
 	for (i = 0; i < nstep; ++i) {
 		int alpha_pct = MIN(100,
@@ -3350,7 +3200,7 @@ static struct sdlpui_dialog *handle_menu_terms(struct sdlpui_control *ctrl,
 	SDL_assert(subwindow);
 	result = sdlpui_start_simple_menu(dlg, ctrl,
 		(subwindow->index == MAIN_SUBWINDOW) ? 4 : 5, SDL_TRUE,
-		SDL_FALSE, handle_menu_term_pop, NULL, tag);
+		SDL_TRUE, handle_menu_term_pop, NULL, tag);
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Font", SDLPUI_HOR_LEFT,
 		handle_menu_font, SDLPUI_CHILD_MENU_RIGHT, tag, SDL_FALSE);
@@ -3400,7 +3250,7 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 {
 	struct sdlpui_dialog *result = sdlpui_start_simple_menu(
 		parent, ctrl, 3 + (int)N_ELEMENTS(angband_term_name)
-		+ ((window->index == MAIN_WINDOW) ? 2 : 0), SDL_TRUE, SDL_FALSE,
+		+ ((window->index == MAIN_WINDOW) ? 2 : 0), SDL_TRUE, SDL_TRUE,
 		NULL, NULL, 0);
 	unsigned int i;
 	struct sdlpui_control *c;
@@ -3450,19 +3300,6 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_menu_button(c, "Menu Shortcuts...",
 			SDLPUI_HOR_LEFT, handle_menu_shortcuts, 0, SDL_FALSE);
-#endif /* !__EMSCRIPTEN__ */
-#ifndef __EMSCRIPTEN__
-		/*
-		 * This submenu opens and closes additional operating-system
-		 * windows.  A page has one canvas and no way to ask for a
-		 * second, so there is nothing here for the browser build to
-		 * open.
-		 */
-		c = sdlpui_get_simple_menu_next_unused(result,
-			SDLPUI_MFLG_NONE);
-		sdlpui_create_submenu_button(c, "Windows", SDLPUI_HOR_LEFT,
-			handle_menu_windows, SDLPUI_CHILD_MENU_RIGHT, 0,
-			SDL_FALSE);
 #endif /* !__EMSCRIPTEN__ */
 	}
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
@@ -3722,7 +3559,7 @@ static void handle_window_closed(struct my_app *a, struct sdlpui_window *window)
 		for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
 			struct subwindow *subwindow = window->subwindows[i];
 			if (subwindow != NULL) {
-				clear_pw_flag(subwindow);
+				subwindow_term_leaving(subwindow->index);
 			}
 		}
 		if (a->w_mouse && a->w_mouse->index == window->index) {
@@ -5533,65 +5370,6 @@ static SDL_Texture *load_image(const struct sdlpui_window *window,
 	return texture;
 }
 
-static void load_wallpaper(struct sdlpui_window *window, const char *path)
-{
-	if (window->wallpaper.mode == WALLPAPER_DONT_SHOW) {
-		return;
-	}
-	if (window->wallpaper.mode == WALLPAPER_INVALID) {
-		quit_fmt("invalid wallpaper mode in window %u", window->index);
-	}
-
-	SDL_Texture *wallpaper = load_image(window, path);
-	assert(wallpaper != NULL);
-
-	if (window->wallpaper.mode == WALLPAPER_TILED) {
-		int w;
-		int h;
-		SDL_QueryTexture(wallpaper, NULL, NULL, &w, &h);
-
-		SDL_Rect dst = {0, 0, w, h};
-
-		/* make wallpaper 1/4 to 1/2 of the window's width and height
-		 * that would be 4 to 16 calls to RenderCopy in wallpaper rendering function */
-		while (w < window->inner_rect.w / 4) {
-			w *= 2;
-		}
-		while (h < window->inner_rect.h / 4) {
-			h *= 2;
-		}
-		window->wallpaper.texture = make_subwindow_texture(window, w, h);
-		window->wallpaper.w = w;
-		window->wallpaper.h = h;
-
-		SDL_Color color = {0};
-		render_clear(window, window->wallpaper.texture, &color);
-
-		for (dst.y = 0; dst.y < h; dst.y += dst.h) {
-			for (dst.x = 0; dst.x < w; dst.x += dst.w) {
-				SDL_RenderCopy(window->renderer, wallpaper, NULL, &dst);
-			}
-		}
-		SDL_DestroyTexture(wallpaper);
-	} else {
-		SDL_QueryTexture(wallpaper, NULL, NULL,
-				&window->wallpaper.w, &window->wallpaper.h);
-		window->wallpaper.texture = wallpaper;
-	}
-}
-
-static void load_default_wallpaper(struct sdlpui_window *window)
-{
-	if (window->wallpaper.mode == WALLPAPER_DONT_SHOW) {
-		return;
-	}
-
-	char path[4096];
-	path_build(path, sizeof(path), DEFAULT_WALLPAPER_DIR, DEFAULT_WALLPAPER);
-
-	load_wallpaper(window, path);
-}
-
 static void load_default_window_icon(const struct sdlpui_window *window)
 {
 	char path[4096];
@@ -5927,23 +5705,6 @@ static void recreate_textures(struct my_app *a, bool all)
 		}
 
 		/*
-		 * Recreate the texture used for the wallpaper.  That texture
-		 * is dynamic if the wallpapering mode is WALLPAPER_TILED;
-		 * otherwise, that texture is static.
-		 */
-		if (w->wallpaper.mode != WALLPAPER_DONT_SHOW
-				&& w->wallpaper.texture && (all
-				|| w->wallpaper.mode == WALLPAPER_TILED)) {
-			SDL_DestroyTexture(w->wallpaper.texture);
-			w->wallpaper.texture = NULL;
-			if (w->config) {
-				load_wallpaper(w, w->config->wallpaper_path);
-			} else {
-				load_default_wallpaper(w);
-			}
-		}
-
-		/*
 		 * Recreate the textures for subwindows; those are all
 		 * dynamic.
 		 */
@@ -6276,7 +6037,7 @@ static void load_status_bar(struct sdlpui_window *window)
 	/*
 	 * Move and Size drag a term around inside the window and resize it.
 	 * The browser build gives the one term the whole window and keeps it
-	 * there, so moving it could only uncover wallpaper and resizing it
+	 * there, so moving it could only uncover background and resizing it
 	 * could only undo that -- and the fields these fill stay NULL, which
 	 * the two places that read them already allow for.
 	 */
@@ -6454,13 +6215,6 @@ static void load_window(struct sdlpui_window *window)
 	window->detaild = NULL;
 	adjust_window_geometry(window);
 	set_window_delay(window);
-	if (window->wallpaper.mode != WALLPAPER_DONT_SHOW) {
-		if (window->config == NULL) {
-			load_default_wallpaper(window);
-		} else {
-			load_wallpaper(window, window->config->wallpaper_path);
-		}
-	}
 	load_default_window_icon(window);
 	if (window->graphics.id != GRAPHICS_NONE) {
 		graphics_mode *mode = get_graphics_mode(window->graphics.id);
@@ -6532,8 +6286,17 @@ static void start_window(struct sdlpui_window *window)
 	assert(!window->loaded);
 
 	if (window->config == NULL) {
-		window_flags = (SDL_WINDOW_FULLSCREEN_DESKTOP
-			| SDL_WINDOW_RESIZABLE) & ~stripped_flags;
+		/*
+		 * A first start is in a window, sized below to fit the game, and
+		 * fullscreen is the menu's to turn on.  Hidden until it has been
+		 * sized: how tall the game is depends on the menu bar's font,
+		 * which cannot be loaded until there is a renderer, which needs
+		 * the window.
+		 */
+		window_flags = SDL_WINDOW_RESIZABLE;
+#ifndef __EMSCRIPTEN__
+		window_flags |= SDL_WINDOW_HIDDEN;
+#endif
 	} else {
 		/*
 		 * For newer configuration files, stored_rect will have the
@@ -6625,59 +6388,37 @@ static void start_window(struct sdlpui_window *window)
 	get_minimum_window_size(window, &minw, &minh);
 	SDL_SetWindowMinimumSize(window->window, minw, minh);
 
+#ifndef __EMSCRIPTEN__
+	if (window->config == NULL) {
+		struct subwindow *main_term =
+			get_subwindow_by_index(window, MAIN_SUBWINDOW, false);
+		int w, h;
+
+		/*
+		 * Just big enough for the main term and the whole menu bar: any
+		 * narrower and the menu bar drops the terms' buttons from its
+		 * end.  The term is centred in whatever width that leaves over.
+		 */
+		SDL_assert(window->status_bar->ftb->query_natural_size);
+		(*window->status_bar->ftb->query_natural_size)(
+			window->status_bar, window, &w, &h);
+		w = MAX(w, minw);
+		SDL_SetWindowSize(window->window, w, minh);
+		resize_window(window, w, minh);
+		if (main_term != NULL) {
+			main_term->full_rect.x = window->inner_rect.x
+				+ (window->inner_rect.w - main_term->full_rect.w) / 2;
+			main_term->full_rect.y = window->inner_rect.y
+				+ (window->inner_rect.h - main_term->full_rect.h) / 2;
+		}
+		SDL_SetWindowPosition(window->window,
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		SDL_ShowWindow(window->window);
+	}
+#endif
+
 	window->flags = SDL_GetWindowFlags(window->window);
 	window->id = SDL_GetWindowID(window->window);
-}
-
-static void wipe_window_aux_config(struct sdlpui_window *window)
-{
-	window->config = mem_zalloc(sizeof(*window->config));
-	assert(window->config != NULL);
-
-	const struct sdlpui_window *main_window =
-		get_window_direct(window->app, MAIN_WINDOW);
-	assert(main_window != NULL);
-
-	SDL_RendererInfo rinfo;
-	if (SDL_GetRendererInfo(main_window->renderer, &rinfo) != 0) {
-		quit_fmt("cannot get renderer info for main window: %s", SDL_GetError());
-	}
-	window->config->renderer_flags = rinfo.flags;
-	window->config->renderer_index = -1;
-
-	window->config->window_flags= SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-
-	if (main_window->config == NULL) {
-		char path[4096];
-		path_build(path, sizeof(path), DEFAULT_WALLPAPER_DIR, DEFAULT_WALLPAPER);
-		window->config->wallpaper_path = string_make(path);
-		window->config->font_name = string_make(DEFAULT_DIALOG_FONT);
-	} else {
-		window->config->wallpaper_path = string_make(main_window->config->wallpaper_path);
-		window->config->font_name = string_make(main_window->config->font_name);
-		window->config->font_size = main_window->config->font_size;
-	}
-
-	int display = SDL_GetWindowDisplayIndex(main_window->window);
-	if (display < 0) {
-		quit_fmt("cannot get display from main window: %s", SDL_GetError());
-	}
-
-	/* center it on the screen */
-	SDL_DisplayMode mode;
-	SDL_GetCurrentDisplayMode(display, &mode);
-	window->full_rect.w = mode.w / 2;
-	window->full_rect.h = mode.h / 2;
-	window->full_rect.x = mode.w / 4;
-	window->full_rect.y = mode.h / 4;
-	window->stored_rect.w = 0;
-	window->stored_rect.h = 0;
-	window->stored_rect.x = 0;
-	window->stored_rect.y = 0;
-
-	if (current_graphics_mode != NULL) {
-		window->graphics.id = current_graphics_mode->grafID;
-	}
 }
 
 /* initialize window with suitable hardcoded defaults */
@@ -6711,9 +6452,6 @@ static void wipe_window(struct sdlpui_window *window, int display)
 
 	window->color = window->app->colors[DEFAULT_WINDOW_BG_COLOR];
 	window->alpha = DEFAULT_ALPHA_FULL;
-
-	window->wallpaper.texture = NULL;
-	window->wallpaper.mode = WALLPAPER_TILED;
 
 	window->stipple.texture = NULL;
 
@@ -6791,17 +6529,6 @@ static void dump_window(const struct sdlpui_window *window, ang_file *config)
 	DUMP_WINDOW("renderer", "%s",
 			(rinfo.flags & SDL_RENDERER_ACCELERATED) ? "hardware" : "software");
 
-	if (window->config) {
-		DUMP_WINDOW("wallpaper-path", "%s", window->config->wallpaper_path);
-	} else {
-		DUMP_WINDOW("wallpaper-path", "%s", "default");
-	}
-	DUMP_WINDOW("wallpaper-mode", "%s",
-			window->wallpaper.mode == WALLPAPER_DONT_SHOW ? "none"     :
-			window->wallpaper.mode == WALLPAPER_TILED     ? "tiled"    :
-			window->wallpaper.mode == WALLPAPER_CENTERED  ? "centered" :
-			window->wallpaper.mode == WALLPAPER_SCALED    ? "scaled"   :
-			"ERROR");
 	DUMP_WINDOW("status-bar-font", "%d:%s",
 			window->dialog_font->size, window->dialog_font->name);
 
@@ -6866,6 +6593,89 @@ static void attach_subwindow_to_window(struct sdlpui_window *window,
 	window->subwindows[i] = subwindow;
 }
 
+static bool overlaps_other_subwindow(const struct sdlpui_window *window,
+		const struct subwindow *subwindow, const SDL_Rect *rect)
+{
+	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
+		const struct subwindow *other = window->subwindows[i];
+
+		if (other != NULL && other != subwindow && other->visible
+				&& SDL_HasIntersection(rect, &other->full_rect)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Put a term the player has just opened beside the main term, not on top of
+ * it: down a column to the right of the main term, then the next column
+ * along, at the first place clear of the other terms.  A window that is not
+ * fullscreen grows to hold it, as far as the display allows.  Where it still
+ * does not fit, it is kept inside the window as any term is, and overlaps.
+ */
+static void place_new_subwindow(struct sdlpui_window *window,
+		struct subwindow *subwindow)
+{
+	const struct subwindow *main_term =
+		get_subwindow_by_index(window, MAIN_SUBWINDOW, true);
+	SDL_Rect rect = subwindow->full_rect;
+	int left = window->inner_rect.x, top = window->inner_rect.y;
+	int column_h = window->inner_rect.h;
+	int col, row;
+	bool placed = false;
+
+	if (main_term != NULL) {
+		left = main_term->full_rect.x + main_term->full_rect.w;
+		top = main_term->full_rect.y;
+		column_h = main_term->full_rect.h;
+	}
+	for (col = 0; !placed && col < MAX_SUBWINDOWS; col++) {
+		/* At least one to a column, however tall the term */
+		for (row = 0; !row || (row + 1) * rect.h <= column_h; row++) {
+			rect.x = left + col * rect.w;
+			rect.y = top + row * rect.h;
+			if (!overlaps_other_subwindow(window, subwindow, &rect)) {
+				placed = true;
+				break;
+			}
+		}
+	}
+	if (!placed) {
+		return;
+	}
+	subwindow->full_rect.x = rect.x;
+	subwindow->full_rect.y = rect.y;
+
+	if (!(window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+		int w = MAX(window->full_rect.w, rect.x + rect.w);
+		int h = MAX(window->full_rect.h, rect.y + rect.h);
+		int display = SDL_GetWindowDisplayIndex(window->window);
+		SDL_Rect usable;
+		int border_top = 0, x, y;
+
+		if (w == window->full_rect.w && h == window->full_rect.h) {
+			return;
+		}
+		if (display < 0
+				|| SDL_GetDisplayUsableBounds(display, &usable) != 0) {
+			return;
+		}
+		SDL_GetWindowBordersSize(window->window, &border_top,
+			NULL, NULL, NULL);
+		w = MIN(w, usable.w);
+		h = MIN(h, usable.h - border_top);
+		SDL_SetWindowSize(window->window, w, h);
+		resize_window(window, w, h);
+
+		/* Grown off the edge of the display, so move it back on */
+		SDL_GetWindowPosition(window->window, &x, &y);
+		x = MAX(usable.x, MIN(x, usable.x + usable.w - w));
+		y = MAX(usable.y + border_top, MIN(y, usable.y + usable.h - h));
+		SDL_SetWindowPosition(window->window, x, y);
+	}
+}
+
 static struct subwindow *make_subwindow(struct sdlpui_window *window,
 		unsigned index)
 {
@@ -6874,7 +6684,9 @@ static struct subwindow *make_subwindow(struct sdlpui_window *window,
 
 	load_subwindow(window, subwindow);
 	attach_subwindow_to_window(window, subwindow);
+	place_new_subwindow(window, subwindow);
 	load_term(subwindow);
+	subwindow_term_arrived(subwindow->index);
 
 	return subwindow;
 }
@@ -7038,20 +6850,6 @@ static void load_subwindow(struct sdlpui_window *window,
 	subwindow->loaded = true;
 
 	render_borders(subwindow);
-}
-
-static void clear_pw_flag(struct subwindow *subwindow)
-{
-	assert(subwindow->index < N_ELEMENTS(angband_term));
-
-	uint32_t new_flags[N_ELEMENTS(window_flag)];
-	assert(sizeof(new_flags) == sizeof(window_flag));
-	memcpy(new_flags, window_flag, sizeof(new_flags));
-
-	assert(subwindow->index < N_ELEMENTS(new_flags));
-	new_flags[subwindow->index] = 0;
-
-	subwindows_set_flags(new_flags, N_ELEMENTS(new_flags));
 }
 
 static void unload_term(struct subwindow *subwindow)
@@ -7261,9 +7059,6 @@ static void free_font_info(struct font_info *font_info)
 
 static void free_window_config(struct window_config *config)
 {
-	if (config->wallpaper_path != NULL) {
-		mem_free(config->wallpaper_path);
-	}
 	if (config->font_name != NULL) {
 		mem_free(config->font_name);
 	}
@@ -7334,11 +7129,6 @@ static void free_window(struct sdlpui_window *window)
 			free_subwindow(subwindow);
 			window->subwindows[i] = NULL;
 		}
-	}
-
-	if (window->wallpaper.texture != NULL) {
-		SDL_DestroyTexture(window->wallpaper.texture);
-		window->wallpaper.texture = NULL;
 	}
 
 	if (window->stipple.texture != NULL) {
@@ -8053,51 +7843,21 @@ static enum parser_error config_window_renderer(struct parser *parser)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error config_window_wallpaper_path(struct parser *parser)
+/*
+ * There is no wallpaper; the window's background is black.  The two wallpaper
+ * lines are still read so that a configuration written when there was one is
+ * still accepted: any line the parser does not know throws the whole file
+ * away for the defaults.
+ */
+static enum parser_error config_window_wallpaper(struct parser *parser)
 {
 	struct sdlpui_window *window = get_window_from_parser(parser);
-	const char *path = parser_getstr(parser, "path");
 
 	if (!window) {
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 	}
 	if (!window->inited) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	}
-	if (streq(path, "default")) {
-		char buf[4096];
-		path_build(buf, sizeof(buf), DEFAULT_WALLPAPER_DIR, DEFAULT_WALLPAPER);
-
-		window->config->wallpaper_path = string_make(buf);
-	} else {
-		window->config->wallpaper_path = string_make(path);
-	}
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error config_window_wallpaper_mode(struct parser *parser)
-{
-	struct sdlpui_window *window = get_window_from_parser(parser);
-	const char *mode = parser_getstr(parser, "mode");
-
-	if (!window) {
-		return PARSE_ERROR_OUT_OF_BOUNDS;
-	}
-	if (!window->inited) {
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	}
-
-	if (streq(mode, "none")) {
-		window->wallpaper.mode = WALLPAPER_DONT_SHOW;
-	} else if (streq(mode, "tiled")) {
-		window->wallpaper.mode = WALLPAPER_TILED;
-	} else if (streq(mode, "centered")) {
-		window->wallpaper.mode = WALLPAPER_CENTERED;
-	} else if (streq(mode, "scaled")) {
-		window->wallpaper.mode = WALLPAPER_SCALED;
-	} else {
-		return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -8114,6 +7874,11 @@ static enum parser_error config_window_font(struct parser *parser)
 	}
 	if (!window->inited) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+
+	if (streq(name, OLD_DEFAULT_DIALOG_FONT)) {
+		name = DEFAULT_DIALOG_FONT;
+		size = 0;
 	}
 
 	/* Checking whether the font is usable will be done in load_window(). */
@@ -8414,9 +8179,9 @@ static struct parser *init_parse_config(struct my_app *a)
 	parser_reg(parser, "window-renderer uint index sym type",
 			config_window_renderer);
 	parser_reg(parser, "window-wallpaper-path uint index str path",
-			config_window_wallpaper_path);
+			config_window_wallpaper);
 	parser_reg(parser, "window-wallpaper-mode uint index str mode",
-			config_window_wallpaper_mode);
+			config_window_wallpaper);
 	parser_reg(parser, "window-status-bar-font uint index int size str name",
 			config_window_font);
 	parser_reg(parser, "window-graphics-id uint index int id",

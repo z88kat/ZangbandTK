@@ -203,8 +203,8 @@ static int td_count = 0;
  * overhead map -- and it does so after the front end has been initialised,
  * overwriting anything set beforehand.  Rather than fight that, each pane is
  * given the index whose content it wants, and the indices nobody asked for
- * are left without a term at all: subwindows_set_flags skips those, and the
- * game is used to front ends with fewer windows than the maximum.
+ * are left without a term at all: nothing is drawn for those, and the game
+ * is used to front ends with fewer windows than the maximum.
  *
  * The alternative was to set window_flag ourselves once textui_init had
  * finished.  That was tried: the flags took, and the panes still drew their
