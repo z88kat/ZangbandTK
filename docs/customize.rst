@@ -560,6 +560,18 @@ it, as it does when you look at it with ``l``.  Pointing takes no time, and
 tells you nothing ``l`` wouldn't.  The line stays empty while the game is
 waiting for you to answer something else, and while you run or rest.
 
+Click on the map and you take one step towards the click.  The map is cut into
+eight slices around you, one for each point of the compass, and a click
+anywhere in the north-east slice is a step north-east, however far out it is.
+Shift-click runs that way.  Double-click a square to walk
+there.  The first click takes its step as usual, and the game finds the rest of
+the way, through squares you haven't seen yet if it must.  The walk stops if a
+monster comes into view or stands in the way, and a click stops it, as it stops
+a run or a rest.  When there's no way to the square, the line under the map
+reads *You know of no way there.*  A click at ``-more-`` shows the next message.  The option *Allow
+mouse clicks to move the player*, on the Interface page of the Options window,
+turns all of this off.
+
 How the window draws is set on the Display page of the Options window
 (Other ▸ Preferences ▸ Options, or Preferences in the application menu):
 

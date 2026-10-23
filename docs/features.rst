@@ -337,8 +337,9 @@ rebuilt on Tcl/Tk 9 and not ported:
 - Windows of its own. The map and its panes are in the main one, and the
   character, the items on a paper doll, the knowledge browser, the spell books,
   the shops and the buildings each have theirs. Pointing at an item recalls it,
-  pointing at the map says what's there, and the Choice pane answers the
-  game's prompts with a click.
+  pointing at the map says what's there, a click on the map steps that way and
+  a double-click walks to the square, and the Choice pane answers the game's
+  prompts with a click.
 - The original's way in and out: a Choose Game window, a Birth window with a
   portrait for every race and class, the tombstone, the Hall of Fame, a
   character record, and tips at the start.

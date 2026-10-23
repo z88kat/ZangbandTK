@@ -31,6 +31,37 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 October 2026, later — clicking to walk
+=========================================
+
+Next Steven asked for walking with the mouse. A click anywhere on the map
+should be one step towards it, by the points of the compass, and a double
+click should go to the square, if that could be made to work with monsters in
+the way, squares nobody has seen and squares there is no way to. The original
+did the single click by asking only whether the click was above or below the
+character's row and left or right of its column, so anything not exactly in
+line came out as a diagonal: ten squares east and one up was north-east. Mine
+cuts the map into eight slices around the character instead.
+
+The double click turned out to be the easy half. Angband 4.2 already walks to
+a clicked square in its other front ends, and its pathfinder already stops for
+a monster in the way, walks through unknown squares and turns into an ordinary
+run when one of them is wall. When there's no way at all it does nothing,
+which with a mouse looks like a broken click, so the line under the map now
+says *You know of no way there.*
+
+The first test of the double click walked two squares and stopped. Both
+clicks had arrived while the game was still taking the first, so each put its
+command on the queue with a key to wake the game, and the second key was still
+waiting when the walk began. The game reads any key during a walk as the
+player asking to stop, and stopped. Now no wake-up key is sent while one is
+already waiting, in the one place every command the front end pushes goes
+through. The tests had their own excitement: the probe's first step east hit
+the Black Market's agent instead of moving, which put every later step one
+square out, and one of them went through the inn's door. Later a jumping
+fireball killed Sulare outright. It was a scratch copy.
+
+
 23 October 2026 — pointing at things
 ====================================
 

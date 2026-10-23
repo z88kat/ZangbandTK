@@ -1198,8 +1198,25 @@ window, reads live, and closes without disturbing the game.
 > bar follow the pointer. On `<<Angband_REFRESH>>` it asks again for the words only: things
 > move under a still pointer, and re-tracking there would take the Recall pane from whatever
 > the player was reading. Answers only while `command_may_start()`; empty in a prompt, at a
-> `-more-`, and while running or resting. Clicking to walk, the targeting clicks, the Micro
-> Map and the linked cursor are all still to do.
+> `-more-`, and while running or resting.
+>
+> **Clicking done the same day: rules 1, 2, 9 and 10, but not the hold.** `angband_walk <x> <y>
+> ?step|run|travel?` and `lib/tcl/walk.tcl`. A click steps the way of the pointer, by the
+> eighth of the compass it lies in from the middle of the character's square, in pixels; the
+> original took only the signs of dx and dy, so every point off the row and column was a
+> diagonal. Shift-click runs. Double-click is `CMD_PATHFIND` to the square, after the step the
+> first click took: 4.2's pathfinder already stops for a visible monster, walks through
+> unknown squares and becomes a run at a wall, and opens doors and tunnels rubble. Next to the
+> character, or while confused, it is a step, as `textui_process_click()` does. No path at all
+> (`find_path` < 0) answers `nowhere`, and the line under the map says *You know of no way
+> there.* A click during a run, rest or repeat sends a key, which `check_for_player_interrupt()`
+> takes as stop; one at `-more-` (read off the main term's top line, since nothing records the
+> wait) sends a key to go on. Respects `mouse_movement`. Found on the way: two pushes inside one
+> wait sent two `\a` nudges, and the second cancelled the walk after a step;
+> `command_nudge()` now sends none while a key is already waiting. Still to do: hold to walk
+> continuously (rule 1's second half), Control-click to alter (rule 3), the targeting and
+> direction-prompt clicks (rules 7 and 8), the item popups (5, 6), the Micro Map and the
+> linked cursor.
 
 `cave`, `m_list`, `o_list`, `f_info`. The scrolling map widget and the level overview, with
 hover tooltips and the hovered-monster health bar.

@@ -309,6 +309,10 @@ check "pointing at the map says nothing before there is a character" {
 check "angband_look names the one word it takes" {
 	list [catch {angband_look 1 1 nope} e] $e
 } {1 {expected recall, not: nope}}
+check "clicking the map does nothing before there is a character" {
+	list [angband_walk 100 100] [angband_walk 100 100 run] \
+		[angband_walk 100 100 travel]
+} {{} {} {}}
 
 # --- the input hooks --------------------------------------------------------
 
@@ -2800,6 +2804,109 @@ proc ctrl_wait {} {
 			[string match "Debug Command*" $top]
 	} "0 1"
 	angband_key 0xff1b 0 "\x1b"
+	set ::waits 0
+	after 500 walk_pass
+}
+
+# --- clicking on the map -----------------------------------------------------
+
+# A click on the map is a step the way of the pointer.  The character's own
+# square and the message line are nowhere to go, and a square there is no way
+# to says so.  Then one step for real, through the binding: the first of east,
+# west, south and north whose square is open ground, clicked well beyond it
+# where the map reaches that far, so that it is the way that counts and not
+# the square.  The town is a new
+# character's and different every run, so nothing here assumes what is in it.
+proc walk_pass {} {
+	set enabled [llength [lsearch -all -index 5 [angband_commands] 1]]
+	if {!$enabled && [incr ::waits] < 25} {
+		after 200 walk_pass
+		return
+	}
+
+	set c .pw.top.map.c
+	set cw $::angband(cellw)
+	set ch $::angband(cellh)
+	set me ""
+	set walls {}
+	for {set y [expr {$ch / 2}]} {$y < [winfo height $c]} {incr y $ch} {
+		for {set x [expr {$cw / 2}]} {$x < [winfo width $c]} {incr x $cw} {
+			set s [angband_look $x $y]
+			if {$me eq "" && [string match "You are *" $s]} {
+				set me [list $x $y]
+			} elseif {[string match "*permanent wall" $s]} {
+				lappend walls [list $x $y]
+			}
+		}
+	}
+	lassign $me mx my
+
+	check "a click on the character's own square, or the message line, does nothing" {
+		list [angband_walk $mx $my] [angband_walk $mx $my travel] \
+			[angband_walk 1 1]
+	} {{} {} {}}
+	check "angband_walk names the ways it takes" {
+		list [catch {angband_walk 1 1 fly} e] $e
+	} {1 {bad way "fly": must be step, run, or travel}}
+
+	if {[llength $walls]} {
+		check "a double click on a wall says there is no way there" {
+			set far {}
+			foreach w $walls {
+				lassign $w x y
+				lappend far [list [expr {hypot($x - $mx, $y - $my)}] $x $y]
+			}
+			lassign [lindex [lsort -real -decreasing -index 0 $far] 0] d x y
+			walk_click $x $y travel
+			.pw.top.map.look cget -text
+		} "You know of no way there."
+	} else {
+		say "skip a double click on a wall: no permanent wall in view"
+	}
+
+	set ::walk_dir ""
+	foreach {dx dy key} {1 0 6 -1 0 4 0 1 2 0 -1 8} {
+		set x $mx
+		set y $my
+		while {[string match "You are *" [angband_look $x $y]]} {
+			incr x [expr {$dx * $cw}]
+			incr y [expr {$dy * $ch}]
+		}
+		set s [angband_look $x $y]
+		if {[regexp {^You (see|recall) (an? |the )?(open floor|grass|bare earth|sand|road)$} $s]} {
+			set ::walk_dir [list $dx $dy $key]
+			set fx [expr {$x + 6 * $dx * $cw}]
+			set fy [expr {$y + 6 * $dy * $ch}]
+			if {[angband_look $fx $fy] eq ""} { lassign [list $x $y] fx fy }
+			set ::walk_at [list $fx $fy]
+			break
+		}
+	}
+	if {$::walk_dir eq ""} {
+		say "skip a click steps that way: no open ground beside the character"
+		after 500 death_pass
+		return
+	}
+	set ::walk_from [angband_player position]
+	set ::walk_turn [angband_player turn]
+	lassign $::walk_at x y
+	event generate $c <ButtonPress-1> -x $x -y $y
+	event generate $c <ButtonRelease-1> -x $x -y $y
+	set ::waits 0
+	walk_wait
+}
+
+proc walk_wait {} {
+	if {[angband_player turn] == $::walk_turn && [incr ::waits] < 25} {
+		after 200 walk_wait
+		return
+	}
+	check "a click off to one side steps one square that way" {
+		lassign $::walk_from x0 y0
+		lassign [angband_player position] x1 y1
+		lassign $::walk_dir dx dy
+		list [expr {$x1 - $x0}] [expr {$y1 - $y0}]
+	} [lrange $::walk_dir 0 1]
 	after 500 death_pass
 }
 

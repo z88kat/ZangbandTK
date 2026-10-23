@@ -48,6 +48,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "player-mutation.h"
+#include "player-path.h"
 #include "obj-ignore.h"
 #include "player-spell.h"
 #include "store.h"
@@ -9206,9 +9207,17 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * the key left unset, and textui_process_command() returns silently on
  * "if (!key && done)".  Of those four, \a is the one nothing else means:
  * escape cancels a prompt and space pages one.
+ *
+ * One key waiting is enough.  Once awake, run_game_loop() carries on until the
+ * queue is empty, and a second key would still be waiting when it got to the
+ * second command -- where check_for_player_interrupt() takes any key for the
+ * player asking a run to stop.  A double click on the map pushes a step and
+ * then a walk to the square, both inside one wait when the game is slow to
+ * take the first, and the walk was cancelled after a single step.
  */
 static void command_nudge(void)
 {
+	if (keys_owed_n > 0 || Term->key_head != Term->key_tail) return;
 	bridge_key('\a');
 }
 
@@ -9378,15 +9387,16 @@ static int objcmd_rename(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
- * The square of the level under a point on the map pane, in the pane's own
- * pixels.  False for anywhere that is not map: the message line, the sidebar,
- * the status line, and the column SCREEN_WID leaves spare on the right.
+ * The grid the map pane shows at a point, in the pane's own pixels, whether or
+ * not the level reaches that far.  False for anywhere that is not map: the
+ * message line, the sidebar, the status line, and the column SCREEN_WID leaves
+ * spare on the right.
  *
  * The same arithmetic as cell_is_seen(), but for td[0]'s term in particular
  * rather than whichever is current: ROW_MAP and its friends read Term, and a
  * Tcl command can arrive while the game is drawing on any of them.
  */
-static bool map_grid_at(double px, double py, struct loc *grid)
+static bool map_point_grid(double px, double py, struct loc *grid)
 {
 	const term *t;
 	int col, row, top, left, rows, cols;
@@ -9409,7 +9419,55 @@ static bool map_grid_at(double px, double py, struct loc *grid)
 
 	grid->y = row + t->offset_y;
 	grid->x = col + t->offset_x;
-	return square_in_bounds(cave, *grid);
+	return true;
+}
+
+/**
+ * Whether the game is stopped at -more-, waiting for a key before the next
+ * message.  msg_flush() writes the word on the main term's top line, waits in
+ * anykey(), and erases the line once it has a key.  Nothing else records that
+ * it is waiting, so the line is read.
+ */
+static bool map_at_more(void)
+{
+	const term *t;
+	int x;
+
+	if (td_count < 1 || !td[0].t.scr) return false;
+	t = &td[0].t;
+	for (x = 0; x + 6 <= t->wid; x++)
+		if (wcsncmp(&t->scr->c[0][x], L"-more-", 6) == 0) return true;
+	return false;
+}
+
+/**
+ * The square of the level under a point on the map pane.
+ */
+static bool map_grid_at(double px, double py, struct loc *grid)
+{
+	return map_point_grid(px, py, grid) && square_in_bounds(cave, *grid);
+}
+
+/**
+ * The way from the character to a point on the map pane, as a keypad
+ * direction: the eighth of the compass the point lies in, seen from the middle
+ * of the character's square, in pixels, so that it is the way the player sees.
+ * 0.41421356 is the tangent of 22.5 degrees, where one eighth meets the next.
+ */
+static int map_point_dir(double px, double py)
+{
+	const term *t = &td[0].t;
+	int tw = tile_width * td[0].cw, th = tile_height * td[0].ch;
+	double dx = px - (((player->grid.x - t->offset_x) * tile_width
+		+ col_map[t->sidebar_mode]) * td[0].cw + tw / 2.0);
+	double dy = (((player->grid.y - t->offset_y) * tile_height
+		+ row_top_map[t->sidebar_mode]) * td[0].ch + th / 2.0) - py;
+	double ax = dx < 0 ? -dx : dx, ay = dy < 0 ? -dy : dy;
+	int ew = 0, ns = 0;
+
+	if (ax > ay * 0.41421356) ew = dx > 0 ? 1 : -1;
+	if (ay > ax * 0.41421356) ns = dy > 0 ? 1 : -1;
+	return 5 + ew + 3 * ns;
 }
 
 /**
@@ -9555,6 +9613,114 @@ static int objcmd_look(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	if (command_may_start() && !player->is_dead && map_grid_at(x, y, &grid))
 		look_describe(grid, recall, text, sizeof(text));
 	Tcl_SetObjResult(ip, Tcl_NewStringObj(text, -1));
+	return TCL_OK;
+}
+
+/**
+ * angband_walk <x> <y> ?step|run|travel? -- the left button on the map pane,
+ * the point in the pane's own pixels; lib/tcl/walk.tcl binds it.
+ *
+ * step, the default, takes one step the way of the point, and run runs that
+ * way: interface.html's first two mouse rules.  The way is map_point_dir()'s,
+ * so anywhere in the north-east eighth of the map is north-east.  The original
+ * looked only at which side of the character's row and column the point fell,
+ * which made a diagonal of every point not exactly in line.
+ *
+ * travel goes to the square under the point by the game's own pathfinder,
+ * CMD_PATHFIND, as 4.2's front ends do with a click.  It stops for a monster in
+ * the way, goes through squares the character has never seen and turns into an
+ * ordinary run when one of them is wall, and opens doors and clears rubble as
+ * it goes.  A square next to the character is a step, as in
+ * textui_process_click(), and so is travel while confused, which the
+ * pathfinder refuses without a word.
+ *
+ * During a run, a rest or a repeated command a click stops it, as any key
+ * does: the original's last mouse rule, and the way to cut a long walk short.
+ * At -more- it goes on to the next message, as the rule before that one has
+ * it, so that a fight fought with clicks is not left waiting for a key.
+ *
+ * Answers with what it did -- "step 9", "run 6", "travel {x y}", "stop" or
+ * "more" -- or "nowhere" when no way to the square exists, and empty when it
+ * did nothing: off the map, on the character's own square, in a prompt, or
+ * with the mouse_movement option off.
+ */
+static int objcmd_walk(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	static const char *const hows[] = { "step", "run", "travel", NULL };
+	enum { HOW_STEP, HOW_RUN, HOW_TRAVEL };
+	int how = HOW_STEP, dir;
+	double x, y;
+	struct loc grid;
+	cmd_code code;
+
+	(void)dummy;
+
+	if (objc != 3 && objc != 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "x y ?step|run|travel?");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDoubleFromObj(ip, objv[1], &x) != TCL_OK
+			|| Tcl_GetDoubleFromObj(ip, objv[2], &y) != TCL_OK)
+		return TCL_ERROR;
+	if (objc == 4 && Tcl_GetIndexFromObj(ip, objv[3], hows, "way", 0,
+			&how) != TCL_OK)
+		return TCL_ERROR;
+
+	if (!in_play() || player->is_dead || !OPT(player, mouse_movement))
+		return command_done(ip);
+
+	/*
+	 * check_for_player_interrupt() takes any key as the word to stop, and
+	 * anykey() any key, or click, as the word to go on.
+	 */
+	if (!inkey_flag) {
+		const char *did;
+
+		if (map_at_more())
+			did = "more";
+		else if (!command_inside && (player->upkeep->running
+				|| cmd_get_nrepeats() > 0 || player_is_resting(player)))
+			did = "stop";
+		else
+			return command_done(ip);
+		bridge_key(ESCAPE);
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(did, -1));
+		return TCL_OK;
+	}
+
+	if (command_inside || !map_point_grid(x, y, &grid)
+			|| loc_eq(grid, player->grid))
+		return command_done(ip);
+
+	dir = map_point_dir(x, y);
+	code = how == HOW_RUN ? CMD_RUN : CMD_WALK;
+	if (how == HOW_TRAVEL) {
+		int dx = grid.x - player->grid.x, dy = grid.y - player->grid.y;
+
+		if (dx >= -1 && dx <= 1 && dy >= -1 && dy <= 1) {
+			dir = motion_dir(player->grid, grid);
+		} else if (!player->timed[TMD_CONFUSED]) {
+			if (!square_in_bounds_fully(cave, grid))
+				return command_done(ip);
+			if (find_path(player, player->grid, grid, NULL) < 0) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj("nowhere", -1));
+				return TCL_OK;
+			}
+			if (cmdq_push(CMD_PATHFIND) != 0) return command_done(ip);
+			cmd_set_arg_point(cmdq_peek(), "point", grid);
+			command_nudge();
+			Tcl_SetObjResult(ip,
+				Tcl_ObjPrintf("travel {%d %d}", grid.x, grid.y));
+			return TCL_OK;
+		}
+	}
+
+	if (cmdq_push(code) != 0) return command_done(ip);
+	cmd_set_arg_direction(cmdq_peek(), "direction", dir);
+	command_nudge();
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("%s %d",
+		code == CMD_RUN ? "run" : "step", dir));
 	return TCL_OK;
 }
 
@@ -11403,6 +11569,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_path", objcmd_path, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_look", objcmd_look, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_walk", objcmd_walk, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_version", objcmd_version, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tilescale", objcmd_tilescale, NULL,

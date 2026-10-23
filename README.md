@@ -24,16 +24,14 @@ system that Zangband never had.
 ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 2005 codebase is not what is worth preserving. Its *character* is.
 
-> **Status: playable, and most of the way built.** Every gameplay milestone but
-> the last is closed — the wilderness, the towns, the quests, the bestiary, the
-> races and classes, the mutations, the virtues, the seven realms of magic and
-> the pets. The last one is nightmare mode, and what remains of it is a decision
-> not yet taken rather than work not yet done. Beside the game there are two
-> workstreams the milestones do not cover: a [Tcl/Tk front end](#the-tcltk-front-end),
-> which is built and exercised by CI, and [the borg](#the-borg), which is the
-> only thing here that plays the game. It has gone out only as pre-releases, and
-> it has not been played through by anybody but its author. See
-> [Current state](#current-state).
+> **Status: playable, and every gameplay milestone is closed** — the wilderness,
+> the towns, the quests, the bestiary, the races and classes, the mutations, the
+> virtues, the seven realms of magic, the pets and, last, nightmare mode, on
+> 4 October 2026. Beside the game there are two workstreams the milestones do
+> not cover: a [Tcl/Tk front end](#the-tcltk-front-end), which the releases have
+> shipped for the Mac, Windows and Linux since 3.138.0, and [the borg](#the-borg),
+> which is the only thing here that plays the game. Nobody but its author has
+> played the game through. See [Current state](#current-state).
 
 ## Current state
 
@@ -42,7 +40,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 | **Base** | Angband 4.2.6 |
 | **Platform** | macOS, Windows, Linux, DOS, Nintendo DS, 3DS and the browser (see [Portability](#portability)) |
 | **Playable** | Yes |
-| **Releases** | On the [Releases page](https://github.com/z88kat/ZangbandTK/releases), and every one of them so far is a pre-release. The version in the tree is ahead of the newest tag most of the time; `src/buildid.h` is the authority for what you have built |
+| **Releases** | On the [Releases page](https://github.com/z88kat/ZangbandTK/releases). Those up to 3.94.3 are marked as pre-releases; 3.111.3 and later are not. The version in the tree is ahead of the newest tag most of the time; `src/buildid.h` is the authority for what you have built |
 | **Savefiles** | Not compatible with Angband or Zangband, and never will be. Across ZangbandTK versions the rule is that **content can be dropped and identity cannot be invented**: a character whose objects have been renamed or removed wakes up without them and loads, and a caster whose spell list was replaced under it is refused rather than guessed at. The refusals in force are named, with reasons, in [tests/saves/EXPECTED-FAILURES](tests/saves/EXPECTED-FAILURES) |
 
 **Done:**
@@ -130,6 +128,15 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   two nightmares are not built: one has no hook,
   because 4.2 has no player sleep state for it to land on, and the other would
   mean choosing a number nobody has a source for. See DEC-81 and DEC-82.
+
+  **Four more are ours**, taken from the menu Zangband's spoiler describes and
+  its code never built (DEC-126 to DEC-129): a level holds 255 breeders rather
+  than 100; your own reflection lets two bolts in ten through rather than one,
+  while the monsters' is unchanged; the ten mutations that are pure penalty
+  are twice as likely to be the one you get; and every shop is kept by its
+  poorest owner, who never retires. [docs/nightmare.rst](docs/nightmare.rst)
+  keeps them apart from the port, because that list is Zangband's and this one
+  is a design.
 - **Closed stores and small levels.** Two more of Zangband's ironman birth
   options: every shop door locked for the whole game, the home's too, and every
   dungeon level somewhere between one screen and a little short of a full one,
@@ -137,10 +144,12 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   documented nine more options with nothing here; seven of those it had removed
   itself before 2.7.5, and the other two were ruled out (DEC-163).
 
-**Not yet:** nightmare mode's stage 2 — the things its spoiler describes and
-Zangband never actually built — which is a decision that has not been taken
-rather than work that has not been started, and is what keeps the milestone
-open. See DEC-84.
+**Not yet:** nothing the gameplay milestones cover. Nightmare mode's stage 2,
+the things its spoiler describes and Zangband never built, was the last open
+question; DEC-84 put it off until after a release, and it ended in the four
+additions above. What is left is the Tk front end's last milestone and the
+borg, below, and a few things that wait on something the game does not have —
+a sleep attack's nightmare needs a way to put the player to sleep.
 
 ## The Tcl/Tk front end
 
@@ -153,8 +162,23 @@ starts the real game with the real front end and drives it from a script, and
 packages it: `ZangbandTK.app`, an AppImage and a zip, each started once more to
 check it runs on the Tcl and Tk it carries rather than the build machine's.
 
-The releases ship it from the next one on, for all three, beside the Zangband
-downloads. Where it stands milestone by milestone is in
+The releases have shipped it since 3.138.0, beside the Zangband downloads:
+`ZangbandTK-<version>-osx-tk.dmg`, `-win64-tk.zip`, `-linux64-tk.AppImage`
+and, for Linux on ARM, `-linux64-tk-arm.AppImage`. The Mac's is the one that
+gets played; Windows and Linux are checked on every push and not yet played
+through.
+
+What is in it: the map and its panes in one main window, and around them the
+Character window, the Items window with a paper doll, a Knowledge browser, the
+Spell Book, and Store and Building windows that open as you walk in. A Choose
+Game window and a Birth window with a portrait for every race and class; the
+Tomb window and the Hall of Fame on the way out; the original's menu bar, built
+from the game's own command table; one Options window for the game's options
+and the front end's; sound, and music of your own; a Keymaps window that draws
+your keyboard; and the manual, readable in a Help window. The
+[release log](docs/releases.rst) tells it in full.
+
+Where it stands milestone by milestone is in
 [.claude/plans/phase3-tcl-tk-frontend.md](.claude/plans/phase3-tcl-tk-frontend.md),
 which is the honest account and is worth more than a line here that would go
 stale between one week and the next.
