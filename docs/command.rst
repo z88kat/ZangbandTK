@@ -314,9 +314,13 @@ Use a power (``N``) or Use a power (``&``)
   (twenty-two of the twenty-eight) have something they can do by blood: an
   Amberite walks into shadow, a Draconian breathes, a Vampire drinks. A
   Mindcrafter has no realm of magic at all, and its whole craft is a list of
-  twelve psionic powers. This command lists everything your character can call
-  on from either source, what each one costs, and how likely each is to fail.
-  See :ref:`Racial powers <racial-powers>` and :ref:`Psionics <psionics>`.
+  twelve psionic powers. Three more classes have something of their own: a
+  Druid, a Necromancer and a Blackguard change shape, which is a power and not
+  a spell, so it sits here and not in a book. This command lists everything
+  your character can call on, from whichever of those sources, what each one
+  costs, and how likely each is to fail. See :ref:`Racial powers
+  <racial-powers>`, :ref:`Shape powers <shape-powers>` and :ref:`Psionics
+  <psionics>`.
 
   A power draws on spell points like a spell. A character with none left pays
   in hit points instead, at the same price (a warrior never has any, having no
@@ -328,9 +332,12 @@ Use a power (``N``) or Use a power (``&``)
   and so does being afraid. A failed power still costs the price, but being
   told you're too junior, too confused or too spent costs nothing.
 
-  A *racial* power that fails just fails. A Mindcrafter's psionics are the
-  exception: half as often as one of those fails, it goes off inside your head
-  instead (see :ref:`Psionics <psionics>`). This command takes some energy.
+  A *racial* power that fails just fails, and so does a shape power. A
+  Mindcrafter's psionics are the exception: half as often as one of those
+  fails, it goes off inside your head instead (see :ref:`Psionics
+  <psionics>`). That backfire belongs to the Mindcrafter alone, and it stayed
+  that way when the shapes arrived: a Druid who fumbles a Bear Form has simply
+  wasted the mana. This command takes some energy.
 
 Object Manipulation Commands
 ============================
@@ -661,8 +668,12 @@ Check knowledge (``~``)
 
   shapechange effects
     Provides a more detailed description of the "shapes", magical effects
-    from some spells and a few items which change the shape of your
-    character's body.
+    which change the shape of your character's body. In this game they come
+    from a Druid's, a Necromancer's or a Blackguard's own powers
+    (:ref:`Shape powers <shape-powers>`), from a Potion of Surprise, and from
+    a Chaos patron in one of its moods. The page describes what a shape does
+    to you once you are in it. For which shapes your character can reach, and
+    at what level, see :doc:`birth`.
 
   stores and home
     Each of these will display the contents of the corresponding store

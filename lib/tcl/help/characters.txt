@@ -62,12 +62,20 @@ T	p0	Angband has nothing like these. A race there is a set of adjustments and fl
 T	p0 em	does
 T	p0	 comes from a spell, an object or a shape.
 T	p0	\n
-T	p0	Twenty-two of the twenty-eight races can do something no class will ever teach. Press 
+T	p0	Twenty-two of the twenty-eight races can do something that comes with the blood, and no class teaches any of it. Press 
 T	p0 code	N
-T	p0	 for the list. An Amberite shifts into shadow and, thirty levels later, walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek screams, a Half-Titan sizes up what it is looking at.
+T	p0	 for the list. An Amberite shifts into shadow and, thirty levels later, walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek screams, a Half-Titan sizes up what it is looking at. Choose a different class and you keep every one of them; that is what makes them racial.
+T	p0	\n
+T	p0	A class can grant a power too, and four of them do. The Druid, the Necromancer and the Blackguard change shape, eight shapes between them, the first of which a Druid has at level 1 (
+L	p0 link	3	birth#shape-powers	Shape powers
+T	p0	). The Mindcrafter’s whole craft is twelve psionic powers (
+L	p0 link	4	birth#psionics	Psionics
+T	p0	). 
+T	p0 code	N
+T	p0	 puts all of it in one list, whatever the source, because the question it answers is the same either way: what can this character do that no book holds?
 T	p0	\n
 T	p0	Powers cost mana if you have any and hit points if you don’t, so they’re worth having whatever class you chose. The levels, costs and failure rates are Zangband’s own numbers. See 
-L	p0 link	3	birth#racial-powers	Racial powers
+L	p0 link	5	birth#racial-powers	Racial powers
 T	p0	.
 T	p0	\n
 M	the-monk-and-martial-arts
@@ -80,7 +88,7 @@ T	p0	\n
 T	p0	Which technique lands is decided fresh on every swing, so a Grand Master usually throws something from the top of the ladder, but never reliably. Some strikes stun, a knee doubles a male opponent up, and a kick to the ankle leaves anything that walks limping.
 T	p0	\n
 T	p0	It’s also the one class in the game that is punished for wearing armour. Over the weight limit, the strikes halve and every bonus is withdrawn. Under it, each empty armour slot is worth armour class in its own right. See 
-L	p0 link	4	birth#martial-arts	Martial arts
+L	p0 link	6	birth#martial-arts	Martial arts
 T	p0	.
 T	p0	\n
 T	p0	Two more things hang off that limit. A Monk speeds up from level 10, by one point for every ten levels, and cannot be held from level 25. Both go away the moment it’s carrying too much armour, along with the blows and the armour class. Nothing else in the game gates an intrinsic on what you’re wearing. Every one of a Monk’s advantages stops being true when it puts something on.
@@ -117,7 +125,7 @@ T	p0 em	See what is coming
 T	p0	 spots monsters at level 2, finds traps and doors at 5, sees invisibility at 15, maps the level at 20, grants telepathy from 25, detects everything at 30 and lights the whole level at 45. That’s one power on one key for a whole career.
 T	p0	\n
 T	p0	Psionic force is a new kind of damage, too. Every damaging type Angband has is an element, resisted with a flag or with armour. This one asks whether there’s a mind there to hurt. A golem, a mould or an animated weapon is completely unaffected however hard it is hit, and a strange or feeble mind takes a third. Against anything else, nothing resists it. See 
-L	p0 link	5	birth#psionics	Psionics
+L	p0 link	7	birth#psionics	Psionics
 T	p0	.
 T	p0	\n
 M	the-chaos-warrior-and-who-owns-it
@@ -170,7 +178,7 @@ T	p0 em	Burn this book
 T	p0	 at the bottom of the menu. You’re asked how many if there’s more than one, and then whether you really mean it. It takes a turn.
 T	p0	\n
 T	p0	Your 
-L	p0 link	6	virtues	Virtues
+L	p0 link	8	virtues	Virtues
 T	p0	 notice, too. A Life book burnt moves you towards Unlife and away from Vitality, a Death book the other way, and a book worth more than 10,000 gold counts as a sacrifice.
 T	p0	\n
 M	still-to-come

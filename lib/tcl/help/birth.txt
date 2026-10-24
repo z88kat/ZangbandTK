@@ -400,6 +400,12 @@ T	dt0 strong	Druid
 T	dt0	\n
 T	p1	A Druid is a lover of nature, and at one with the natural world. Druids have control of their environment and direct power over creatures. Druid skills are moderate, and they have some fighting ability. A druid will usually seek to shape the flow of events to their purpose rather than using devices or missiles, but at high levels they do gain access to potent nature-based magic. Druids rely on their wisdom, and have good saving throws.
 T	p1	\n
+T	p1	A Druid also changes shape, and is the only class that can do so from the first level: a fox at 1, a Pukel-man at 30, an eagle at 35 and a bear at 40. These are powers on 
+T	p1 code	N
+T	p1	 and not spells, so they cost no book slot and cannot be lost with the books. See 
+L	p1 link	3	#shape-powers	Shape powers
+T	p1	.
+T	p1	\n
 M	priest
 T	dt0 strong	Priest
 T	dt0	\n
@@ -410,11 +416,15 @@ T	dt0 strong	Necromancer
 T	dt0	\n
 T	p1	A Necromancer seeks to master the spirits of sentient creatures, creating servants of their own will. They have chosen a dark and wicked path, and run a continual risk of harm to their own body and mind. Necromancers love shadows and hate light, automatically shrouding themselves in darkness. Their spells require high intelligence, and frequently harm the caster or place them in danger. In return they achieve awesome power at high levels. The ultimate aim of the necromancer is to supplant Oberon and set up a tyranny in Amber in his place.
 T	p1	\n
+T	p1	A Necromancer also changes shape: a bat at level 3, which is cheap and early and good for getting out of a room; a warg at 28; and a vampire at 37, which leaps to the nearest living creature as it arrives and bites it for your character’s level, healing and feeding you by what it takes. See 
+L	p1 link	4	#shape-powers	Shape powers
+T	p1	.
+T	p1	\n
 M	paladin
 T	dt0 strong	Paladin
 T	dt0	\n
 T	p1	A Paladin is a warrior/priest. Paladins are very good fighters, though a Warrior and a Chaos-Warrior are better, and so is a Warrior-Mage from about level 15. They are not very good at missile weapons. They receive prayers at a slower pace than the priest, but can learn every one of them, the last at level 50. A paladin lacks much in the way of abilities. Paladins have poor stealth, perception, searching, and magical device use. They have a decent saving throw due to their divine alliance. Their primary stats are strength and wisdom. A paladin gains experience for burning the rare books of a faith it opposes (see 
-L	p1 link	3	characters#burning-books	Burning books
+L	p1 link	5	characters#burning-books	Burning books
 T	p1	).
 T	p1	\n
 M	rogue
@@ -432,6 +442,10 @@ T	dt0 strong	Blackguard
 T	dt0	\n
 T	p1	A Blackguard is a brawler of no principle, who lives for the joy of maiming and killing. Blackguards prefer heavy weapons and shields, and learn a few spells for the purpose of wreaking more destruction. Their lust for blood is legendary, with a blackguard in full cry nigh on impossible to kill. Blackguards scorn skills apart from slaughter, and require strength and intelligence (or rat-cunning) to thrive in the dungeon.
 T	p1	\n
+T	p1	A Blackguard also changes shape, once: a werewolf at level 32, which as it arrives tries to send everything in sight running and leaves you berserk. It charges a quarter of your hit points to enter, which is the steepest entry price in the game and the reason it is not free to spam. See 
+L	p1 link	6	#shape-powers	Shape powers
+T	p1	.
+T	p1	\n
 T	p0	The five classes below are Zangband’s, and are new to ZangbandTK.
 T	p0	\n
 M	monk
@@ -440,14 +454,14 @@ T	dt0	\n
 T	p1	A Monk carries no weapon because it doesn’t need one. Every other class fighting bare-handed does a single point of damage a blow. A Monk strikes with a trained technique, and strikes far more often than a Warrior with a sword ever will. It is dextrous, quick, poor with a bow it has no reason to carry, and expensive: a Monk costs 40 per cent more experience for every level, which is Zangband’s price for what the class can do.
 T	p1	\n
 T	p1	A Monk is the one class in the game that is punished for wearing armour. See 
-L	p1 link	4	#martial-arts	Martial arts
+L	p1 link	7	#martial-arts	Martial arts
 T	p1	 for what it gains by going without, and what it loses by not.
 T	p1	\n
 M	mindcrafter
 T	dt0 strong	Mindcrafter
 T	dt0	\n
 T	p1	A Mindcrafter has no spellbooks and will never find any. Its craft is twelve psionic powers that arrive as it grows. It doesn’t study them; it just becomes able to do them. Wisdom is what makes them work. It is physically frail, with hit dice no better than a Priest’s, a Druid’s or a Necromancer’s, and only a Mage and a High-Mage have worse. Its attacks go for the mind, which makes it formidable against most things and useless against a golem. See 
-L	p1 link	5	#psionics	Psionics
+L	p1 link	8	#psionics	Psionics
 T	p1	 for the list.
 T	p1	\n
 M	chaos-warrior
@@ -456,9 +470,9 @@ T	dt0	\n
 T	p1	A Chaos-Warrior is a fighter who belongs to somebody. At birth it is sworn to one of the nine Lords of the Courts of Chaos. It doesn’t choose which, and it can’t leave. Every time it gains a level its Lord looks up and decides how it feels. Usually that’s a gift. Sometimes it isn’t.
 T	p1	\n
 T	p1	It fights nearly as well as a Warrior, and it casts Chaos: every spell in the realm, from level 2, and no other realm ever. There’s no realm choice to make at birth because there is nothing to choose between. See 
-L	p1 link	6	#patrons	Patrons
+L	p1 link	9	#patrons	Patrons
 T	p1	 and 
-L	p1 link	7	realms	The Realms of Magic
+L	p1 link	10	realms	The Realms of Magic
 T	p1	.
 T	p1	\n
 M	warrior-mage
@@ -588,12 +602,45 @@ T	p0 warn strong	Warning
 T	p0 warn	\n
 T	p0 warn	A failed power can go off inside your head. Half as often as a power fails, it backfires instead of just fizzling, so the chance falls away as the power becomes reliable. You get one of five things: most often a stunning, or your brain addled for a few turns; less often visions dancing in front of you; rarely the map wiped from your memory; and about one time in nine a mana storm, a ball of raw magic centred on you at twice your level, which also tears a hole in the pool you were casting from.
 T	p0 warn	\n
-T	p0 warn	This is the Mindcrafter’s equivalent of the Chaos backfire and the Death miscast, and it is the reason a low-level psionicist should think twice about leaning on a power it has only just learned. Racial powers do not backfire: a Draconian’s breath that fails just fizzles.
+T	p0 warn	This is the Mindcrafter’s equivalent of the Chaos backfire and the Death miscast, and it is the reason a low-level psionicist should think twice about leaning on a power it has only just learned. Racial powers do not backfire, and neither do shape powers: a Draconian’s breath that fails, or a Druid’s Bear Form, just fizzles.
 T	p0 warn	\n
 T	p0 warn	One mercy arrives at 30, with the class’s own resistance to confusion: from there the most common of the five bands stops reaching you.
 T	p0 warn	\n
-M	patrons
+M	shape-powers
 M	id4
+T	h3	Shape powers
+T	h3	\n
+T	p0	Three classes can become something else. They are on 
+T	p0 code	N
+T	p0	 with everything else a character can do without a book, and they are powers and not spells, so a realm cannot hold them and losing your books does not lose them.
+T	p0	\n
+T	th0	Class        Shape      Level  Mana  Stat  Failure  Entry cost\n
+T	rule0	──────────────────────────────────────────────────────────────\n
+T	tr0	Druid        fox        1      2     WIS   20%      none\n
+T	tr0 odd	Druid        Pukel-man  30     20    WIS   75%      none\n
+T	tr0	Druid        eagle      35     20    WIS   80%      1d(level)\n
+T	tr0 odd	Druid        bear       40     20    WIS   85%      none\n
+T	tr0	Necromancer  bat        3      4     INT   20%      5\n
+T	tr0 odd	Necromancer  warg       28     20    INT   60%      1d(level)\n
+T	tr0	Necromancer  vampire    37     20    INT   60%      a quarter\n
+T	tr0 odd	Blackguard   werewolf   32     30    INT   40%      a quarter\n
+T	tbllast0	\n
+T	p0	The levels, mana and failure figures are 4.2’s own, carried over unchanged. The casting stat is the realm’s, so a Druid’s shapes lean on wisdom with the rest of nature and a Necromancer’s and a Blackguard’s lean on intelligence with death.
+T	p0	\n
+T	p0	The entry cost is hit points, taken as the shape arrives and on top of the mana. “A quarter” means a quarter of your current hit points. That is the steepest price in the game, and the vampire and the werewolf pay it because each of them attacks on the way in. A warg or an eagle costs one roll of a die the size of your level, so it hurts least when you first reach the shape and most when you have the hit points to spare.
+T	p0	\n
+T	p0	Leaving costs nothing. Revert and you are yourself again for free, so a shape that strikes as it arrives could otherwise be assumed, fired and dropped all day for the mana alone; the entry price exists to stop that. The Druid’s fox, Pukel-man and bear only change what you are, and cost nothing either way.
+T	p0	\n
+T	p0	One shape at a time. Ask for a second one while you are already in the first and the game says so and declines, so a fox has to be a Druid again before it can be a bear. Only the shape powers are gated this way. Everything else on 
+T	p0 code	N
+T	p0	 still works while you are changed, which matters for the Vampire: in vampire form, with the pack shut, drinking blood is the only food it can reach.
+T	p0	\n
+T	p0	You keep your equipment. Every ring, every resistance and every point of armour you were wearing when you changed goes on working, and the shape adds its own on top. What you lose is the pack, the quiver, casting, and activating anything you wear. Players coming from Zangband’s polymorph expect to lose the lot, and the game’s own design notes said so too until somebody read the code. See 
+L	p0 link	11	playing#shape-changes	Shape Changes
+T	p0	 for the rest of what changes in play.
+T	p0	\n
+M	patrons
+M	id5
 T	h3	Patrons
 T	h3	\n
 T	p0	The nine Lords are Zelazny’s. The original’s sixteen patrons were Moorcock’s Elric gods with four Warhammer ones among them, and not one of them had anything to do with Amber.

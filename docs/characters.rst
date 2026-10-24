@@ -97,10 +97,19 @@ Racial powers
 Angband has nothing like these. A race there is a set of adjustments and flags,
 and everything a character *does* comes from a spell, an object or a shape.
 
-Twenty-two of the twenty-eight races can do something no class will ever teach.
-Press ``N`` for the list. An Amberite shifts into shadow and, thirty levels
-later, walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek
-screams, a Half-Titan sizes up what it is looking at.
+Twenty-two of the twenty-eight races can do something that comes with the
+blood, and no class teaches any of it. Press ``N`` for the list. An Amberite
+shifts into shadow and, thirty levels later, walks the Pattern. A Draconian
+breathes, a Golem turns to stone, a Yeek screams, a Half-Titan sizes up what
+it is looking at. Choose a different class and you keep every one of them;
+that is what makes them racial.
+
+A class can grant a power too, and four of them do. The Druid, the Necromancer
+and the Blackguard change shape, eight shapes between them, the first of which
+a Druid has at level 1 (:ref:`Shape powers <shape-powers>`). The Mindcrafter's
+whole craft is twelve psionic powers (:ref:`Psionics <psionics>`). ``N`` puts
+all of it in one list, whatever the source, because the question it answers is
+the same either way: what can this character do that no book holds?
 
 Powers cost mana if you have any and hit points if you don't, so they're worth
 having whatever class you chose. The levels, costs and failure rates are

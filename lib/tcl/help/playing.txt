@@ -97,7 +97,7 @@ T	tr0 odd	j  (unused)                      J   Quests you have taken on\n
 T	tr0	k  Ignore an item                K   Toggle ignore\n
 T	tr0 odd	l  Look around                   L   Locate player on map\n
 T	tr0	m  Cast a spell                  M   Display map of entire level\n
-T	tr0 odd	n  Repeat previous command       N   Use a racial power\n
+T	tr0 odd	n  Repeat previous command       N   Use a power\n
 T	tr0	o  Open a door or chest          O   (unused)\n
 T	tr0 odd	p  (normally unused; see note)   P   Command pets\n
 T	tr0	q  Quaff a potion                Q   Retire character & quit\n
@@ -153,8 +153,12 @@ T	p0 note	 lists the work you’ve taken on (
 L	p0 note link	3	quests	Quests
 T	p0 note	) and 
 T	p0 note code	N
-T	p0 note	 uses a racial power (
+T	p0 note	 uses a power, whether it comes from the race (
 L	p0 note link	4	birth#racial-powers	Racial powers
+T	p0 note	) or from the class (
+L	p0 note link	5	birth#shape-powers	Shape powers
+T	p0 note	, 
+L	p0 note link	6	birth#psionics	Psionics
 T	p0 note	). In the roguelike keyset they’re 
 T	p0 note code	!
 T	p0 note	, 
@@ -173,7 +177,7 @@ T	p0 code	>
 T	p0	, and 
 T	p0 code	p
 T	p0	 commands are affected by the autoexplore_commands option (see 
-L	p0 link	5	option#autoexplore-commands-option	Autoexplore Commands Option
+L	p0 link	7	option#autoexplore-commands-option	Autoexplore Commands Option
 T	p0	). When that option is off (that is the default), the commands act as described above. When that option is on, 
 T	p0 code	<
 T	p0	 or 
@@ -218,7 +222,7 @@ T	tr0	#    (unused)                      ^c  (special - break)\n
 T	tr0 odd	$    (unused)                      ^d  Ignore an item\n
 T	tr0	%    Quests you have taken on      ^e  Toggle inven/equip window\n
 T	tr0 odd	^    (special - control key)       ^f  Repeat level feeling\n
-T	tr0	&    Use a racial power            ^g  Do autopickup\n
+T	tr0	&    Use a power                   ^g  Do autopickup\n
 T	tr0 odd	*    Target monster or location    ^h  (alter - west)\n
 T	tr0	(    (unused)                      ^i  (special - tab)\n
 T	tr0 odd	)    Dump screen to a file         ^j  (alter - south)\n
@@ -252,7 +256,7 @@ T	p0 code	>
 T	p0	, and 
 T	p0 code	p
 T	p0	 commands are affected by the autoexplore_commands option (see 
-L	p0 link	6	option#autoexplore-commands-option	Autoexplore Commands Option
+L	p0 link	8	option#autoexplore-commands-option	Autoexplore Commands Option
 T	p0	). When that option is off (that is the default), the commands act as described above. When that option is on, 
 T	p0 code	<
 T	p0	 or 
@@ -287,7 +291,7 @@ T	li1	 (one of your allies fighting, or two hostiles fighting each other), but o
 T	li1	\n
 T	li1	•\t
 T	li1	A monster that is visible and in the line of sight and either moves or performs a melee attack on the player will disturb if the 
-L	li1 link	7	option#disturb-near-option	Disturb whenever viewable monster moves
+L	li1 link	9	option#disturb-near-option	Disturb whenever viewable monster moves
 T	li1	 is on. With that option on, a monster that enters the line of sight and is visible or leaves the line of sight while visible, also disturbs the player.
 T	li1	\n
 T	li1	•\t
@@ -340,7 +344,7 @@ T	li1	The player’s light source has run out of fuel or is close to running out
 T	li1	\n
 T	li1	•\t
 T	li1	An item that is equipped or in the pack has recharged and that item’s inscription includes ‘!!’ or the 
-L	li1 link	8	option#notify-recharge-option	notify on object recharge
+L	li1 link	10	option#notify-recharge-option	notify on object recharge
 T	li1	 is on.
 T	li1	\n
 T	li1	•\t
@@ -395,7 +399,7 @@ M	command-counts
 T	h2	Command Counts
 T	h2	\n
 T	p0	Some commands can be executed a fixed number of times by preceding them with a count. Counted commands will execute until the count expires, until you type any character, or until 
-L	p0 link	9	#disturb-player	something significant happens
+L	p0 link	11	#disturb-player	something significant happens
 T	p0	, such as being attacked. Thus, a counted command doesn’t work to attack another creature. While the command is being repeated, the number of times left to be repeated will flash by on the line at the bottom of the screen.
 T	p0	\n
 T	p0	To give a count to a command, type 0, the repeat count, and then the command. If you want to give a movement command and you are using the original command set (where the movement commands are digits), press space after the count and you will be prompted for the command. The open, tunnel, disarm, alter, close, aim a wand, use a staff, zap a rod, and activate equipment commands default to having a repeat count of 99. The generic use an item command also defaults to having a repeat count of 99 when it is used with a wand, staff, rod, or equipped item. All other commands default to not repeating at all.
@@ -427,7 +431,7 @@ T	p0 code	l
 T	p0	 or 
 T	p0 code	x
 T	p0	, or the options in context menus to look at a grid. When other commands prompt for a target, they will automatically use the current target, if there is one, when the 
-L	p0 link	10	option#old-target-option	Use old target by default
+L	p0 link	12	option#old-target-option	Use old target by default
 T	p0	 option is on. Otherwise, you will be asked for a target: ESCAPE or a mouse click with the second mouse button breaks out of the prompt; 
 T	p0 code	5
 T	p0	, if there is a current target, will use that target; 
@@ -499,7 +503,7 @@ T	p1	\n
 T	dt0 strong code	g
 T	dt0	\n
 T	p1	Does nothing if the target interface was invoked by the targeting prompt for a command. Otherwise, break out of the targeting interface and initiate 
-L	p1 link	11	#pathfinding-player	pathfinding
+L	p1 link	13	#pathfinding-player	pathfinding
 T	p1	 to move the player to that location.
 T	p1	\n
 T	dt0 strong code	k
@@ -553,7 +557,7 @@ T	p1	\n
 T	dt0 strong	Alt (Option with the Mac front end) + click with second mouse button
 T	dt0	\n
 T	p1	Does nothing if the target interface was invoked by the targeting prompt for a command. Otherwise, break out of the targeting interface and initiate 
-L	p1 link	12	#pathfinding-player	pathfinding
+L	p1 link	14	#pathfinding-player	pathfinding
 T	p1	 to move the player to the click’s location.
 T	p1	\n
 T	p0	When targeting, it can sometimes be useful to target a grid or monster that is not the target you intend to hit. The direct path a missile would follow to the monster could be blocked by a wall or other obstacle. The path to the other location could avoid that obstacle while still hitting the intended target. When invoked from the targeting command or another command’s targeting prompt, the targeting interface will show the path a beam spell or missile would follow to the targeting cursor and beyond with coloring to indicate what is known about the path:
@@ -586,7 +590,7 @@ M	pathfinding-player
 T	h2	Pathfinding
 T	h2	\n
 T	p0	If you use ‘g’ from targeting or looking to move to a location, click with the first mouse button on the map, click with the second mouse button on the map and select the option to pathfind, or use ‘<’, ‘>’, or ‘p’ when the 
-L	p0 link	13	option#autoexplore-commands-option	Autoexplore Commands Option
+L	p0 link	15	option#autoexplore-commands-option	Autoexplore Commands Option
 T	p0	 is on, the game computes a path to the destination and then launches you along that path. The computation of the path looks for a path which will take the minimum amount of turns to traverse. In doing so, it uses your current state to compute how many turns would be needed to open a locked door or tunnel through impassable rubble. It optimistically assumes that any grid with unknown terrain is passable. It pessimistically assumes that any locked doors have the hardest to open locks since the game does not indicate the difficulty of the lock when you look at the door. The game considers paths in this order using the first path that is feasible given your knowledge of the map:
 T	p0	\n
 T	li1	1.\t
@@ -604,7 +608,7 @@ T	li1	\n
 T	p0	Note that magic mapping and enlightment do not mark floor grids as known terrain. So, unless you have also seen a floor that was revealed by magic mapping or enlightment, pathfinding treats that floor as unknown terrain. Paths are never allowed to cross passable, but damaging terrain, like lava.
 T	p0	\n
 T	p0	When the game move you along the selected path, you can interrupt the process with a keypress (space or ESCAPE are recommended as they can not be interpreted as a command) or, when the front end supports it, pressing a mouse button. The process will also be interrupted by other events that 
-L	p0 link	14	#disturb-player	disturb
+L	p0 link	16	#disturb-player	disturb
 T	p0	. If following the path was interrupted and you have not issued another command, repeating the previous command (
 T	p0 code	n
 T	p0	 in the original keyset, 
@@ -614,7 +618,14 @@ T	p0	\n
 T	p0	Following a path can automatically open a door or dig out impassable rubble that is in the path. It will only do so if you know the terrain in all the neighbors of the door or rubble. If any neighbors have unknown terrain, you stop at the grid before the door or rubble.
 T	p0	\n
 M	shape-changes
+M	id3
 T	h2	Shape Changes
 T	h2	\n
 T	p0	Some classes, objects, or races may allow your character to change shape: becoming, for instance, a fox or a wolf. While in the alternate shape, your character will not have access to items in the pack or quiver and will not be able to access items on the floor except for eating or pickup. The items your character was wearing upon changing shape will remain equipped and continue to affect the character’s statistics, resistances, number of blows, and damage. Your character will not be able to activate any equipped items while in the alternate shape. To have your character change back to normal, cast a spell or use one of the commands, like drop, that uses an item.
+T	p0	\n
+T	p0	In this game the classes that allow it are the Druid, the Necromancer and the Blackguard. They use a power on 
+T	p0 code	N
+T	p0	, not a spell, so no book carries it: eight shapes between them, the first at level 1. A Potion of Surprise and a Chaos patron in the right mood can also put you in one, without asking. For the levels, costs and entry prices see 
+L	p0 link	17	birth#shape-powers	Shape powers
+T	p0	; for what a shape does to you once you are in it, the knowledge browser’s shapechange effects page.
 T	p0	\n

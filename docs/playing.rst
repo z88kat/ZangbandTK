@@ -112,7 +112,7 @@ Original Keyset Command Summary
 ``k``  Ignore an item                ``K``  Toggle ignore
 ``l``  Look around                   ``L``  Locate player on map
 ``m``  Cast a spell                  ``M``  Display map of entire level
-``n``  Repeat previous command       ``N``  Use a racial power
+``n``  Repeat previous command       ``N``  Use a power
 ``o``  Open a door or chest          ``O``  (unused)
 ``p``  (normally unused; see note)   ``P``  Command pets
 ``q``  Quaff a potion                ``Q``  Retire character & quit
@@ -161,7 +161,9 @@ Original Keyset Command Summary
 
    Three of these keys are ZangbandTK's. ``P`` commands your pets
    (:doc:`pets`), ``J`` lists the work you've taken on (:doc:`quests`) and
-   ``N`` uses a racial power (:ref:`Racial powers <racial-powers>`). In the
+   ``N`` uses a power, whether it comes from the race
+   (:ref:`Racial powers <racial-powers>`) or from the class
+   (:ref:`Shape powers <shape-powers>`, :ref:`Psionics <psionics>`). In the
    roguelike keyset they're ``!``, ``%`` and ``&``.
 
    Each takes a letter in the original keyset and a symbol in the roguelike
@@ -221,7 +223,7 @@ Roguelike Keyset Command Summary
  ``$``  (unused)                      ``^d`` Ignore an item
  ``%``  Quests you have taken on      ``^e`` Toggle inven/equip window
  ``^``  (special - control key)       ``^f`` Repeat level feeling
- ``&``  Use a racial power            ``^g`` Do autopickup
+ ``&``  Use a power                   ``^g`` Do autopickup
  ``*``  Target monster or location    ``^h`` (alter - west)
  ``(``  (unused)                      ``^i`` (special - tab)
  ``)``  Dump screen to a file         ``^j`` (alter - south)
@@ -638,6 +640,8 @@ that is in the path.  It will only do so if you know the terrain in all the
 neighbors of the door or rubble.  If any neighbors have unknown terrain, you
 stop at the grid before the door or rubble.
 
+.. _shape-changes:
+
 Shape Changes
 =============
 
@@ -651,3 +655,11 @@ number of blows, and damage.  Your character will not be able to activate
 any equipped items while in the alternate shape.  To have your character
 change back to normal, cast a spell or use one of the commands, like drop,
 that uses an item.
+
+In this game the classes that allow it are the Druid, the Necromancer and the
+Blackguard. They use a power on ``N``, not a spell, so no book carries it:
+eight shapes between them, the first at level 1. A Potion of Surprise and a
+Chaos patron in the right mood can also put you in one, without asking. For
+the levels, costs and entry prices see :ref:`Shape powers <shape-powers>`;
+for what a shape does to you once you are in it, the knowledge browser's
+shapechange effects page.

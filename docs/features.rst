@@ -151,9 +151,16 @@ Races, classes and racial powers
   120 per cent; Zangband ran 100 to 255 and priced races with it. This game
   uses Zangband's figures, so a Half-Titan is slow to level.
 - Racial powers, on ``N``, which Angband doesn't have. Twenty-two of the
-  twenty-eight races can do something no class teaches, from a Vampire drinking
-  blood at level 5 to an Amberite walking the Pattern at 40. They're paid for in
-  mana, or in hit points where there's none.
+  twenty-eight races can do something that comes with the blood and that no
+  class teaches, from a Vampire drinking blood at level 5 to an Amberite
+  walking the Pattern at 40. They're paid for in mana, or in hit points where
+  there's none.
+- Class powers, on the same key. A Druid, a Necromancer and a Blackguard
+  change shape: eight shapes, 4.2's own, which this game had lost when those
+  classes took Zangband's realms. A Druid is a fox at level 1 and a bear at
+  40; a Necromancer is a bat at 3 and a vampire at 37; a Blackguard is a
+  werewolf at 32. Five of the eight charge hit points to enter, on top of the
+  mana, and none charges anything to leave.
 - The Monk, and martial arts with it: seventeen unarmed techniques, eight
   strikes a turn at the top, and the only class in the game that's punished for
   wearing armour. Angband's answer to an empty weapon slot is one point of

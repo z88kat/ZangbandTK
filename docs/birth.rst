@@ -785,6 +785,11 @@ Druid
   potent nature-based magic.  Druids rely on their wisdom, and have good
   saving throws.
 
+  A Druid also changes shape, and is the only class that can do so from the
+  first level: a fox at 1, a Pukel-man at 30, an eagle at 35 and a bear at
+  40. These are powers on ``N`` and not spells, so they cost no book slot and
+  cannot be lost with the books. See :ref:`Shape powers <shape-powers>`.
+
 .. _Priest:
 
 Priest
@@ -810,6 +815,12 @@ Necromancer
   place them in danger.  In return they achieve awesome power at high levels.
   The ultimate aim of the necromancer is to supplant Oberon and set up a
   tyranny in Amber in his place.
+
+  A Necromancer also changes shape: a bat at level 3, which is cheap and
+  early and good for getting out of a room; a warg at 28; and a vampire at
+  37, which leaps to the nearest living creature as it arrives and bites it
+  for your character's level, healing and feeding you by what it takes. See
+  :ref:`Shape powers <shape-powers>`.
 
 .. _Paladin:
 
@@ -862,6 +873,12 @@ Blackguard
   is legendary, with a blackguard in full cry nigh on impossible to kill.
   Blackguards scorn skills apart from slaughter, and require strength and
   intelligence (or rat-cunning) to thrive in the dungeon.
+
+  A Blackguard also changes shape, once: a werewolf at level 32, which as it
+  arrives tries to send everything in sight running and leaves you berserk.
+  It charges a quarter of your hit points to enter, which is the steepest
+  entry price in the game and the reason it is not free to spam. See
+  :ref:`Shape powers <shape-powers>`.
 
 The five classes below are Zangband's, and are new to ZangbandTK.
 
@@ -1091,10 +1108,65 @@ feeds you as well as a fresh one.
    This is the Mindcrafter's equivalent of the Chaos backfire and the Death
    miscast, and it is the reason a low-level psionicist should think twice
    about leaning on a power it has only just learned. Racial powers do not
-   backfire: a Draconian's breath that fails just fizzles.
+   backfire, and neither do shape powers: a Draconian's breath that fails, or
+   a Druid's Bear Form, just fizzles.
 
    One mercy arrives at 30, with the class's own resistance to confusion: from
    there the most common of the five bands stops reaching you.
+
+.. _shape-powers:
+
+Shape powers
+------------
+
+Three classes can become something else. They are on ``N`` with everything
+else a character can do without a book, and they are powers and not spells,
+so a realm cannot hold them and losing your books does not lose them.
+
+=============  ================  =====  ====  =====  =======  ===========
+Class          Shape             Level  Mana  Stat   Failure  Entry cost
+=============  ================  =====  ====  =====  =======  ===========
+Druid          fox                   1     2  WIS       20%   none
+Druid          Pukel-man            30    20  WIS       75%   none
+Druid          eagle                35    20  WIS       80%   1d(level)
+Druid          bear                 40    20  WIS       85%   none
+Necromancer    bat                   3     4  INT       20%   5
+Necromancer    warg                 28    20  INT       60%   1d(level)
+Necromancer    vampire              37    20  INT       60%   a quarter
+Blackguard     werewolf             32    30  INT       40%   a quarter
+=============  ================  =====  ====  =====  =======  ===========
+
+The levels, mana and failure figures are 4.2's own, carried over unchanged.
+The casting stat is the realm's, so a Druid's shapes lean on wisdom with the
+rest of nature and a Necromancer's and a Blackguard's lean on intelligence
+with death.
+
+The entry cost is hit points, taken as the shape arrives and on top of the
+mana. "A quarter" means a quarter of your current hit points. That is the
+steepest price in the game, and the vampire and the werewolf pay it because
+each of them attacks on the way in. A warg or an eagle costs one roll of a
+die the size of your level, so it hurts least when you first reach the shape
+and most when you have the hit points to spare.
+
+Leaving costs nothing. Revert and you are yourself again for free, so a shape
+that strikes as it arrives could otherwise be assumed, fired and dropped all
+day for the mana alone; the entry price exists to stop that. The Druid's fox,
+Pukel-man and bear only change what you are, and cost nothing either way.
+
+One shape at a time. Ask for a second one while you are already in the first
+and the game says so and declines, so a fox has to be a Druid again before it
+can be a bear. Only the shape powers are gated this way. Everything else on
+``N`` still works while you are changed, which matters for the Vampire: in
+vampire form, with the pack shut, drinking blood is the only food it can
+reach.
+
+You keep your equipment. Every ring, every resistance and every point of
+armour you were wearing when you changed goes on working, and the shape adds
+its own on top. What you lose is the pack, the quiver, casting, and
+activating anything you wear. Players coming from Zangband's polymorph
+expect to lose the lot, and the game's own design notes said so too until
+somebody read the code. See :ref:`Shape Changes <shape-changes>` for the rest
+of what changes in play.
 
 .. _patrons:
 
