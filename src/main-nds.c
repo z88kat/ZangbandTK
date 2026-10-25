@@ -33,12 +33,16 @@
 
 #include "angband.h"
 #include "buildid.h"
+#include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "main.h"
+#include "monster.h"
 #include "savefile.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
 #include "ui-init.h"
@@ -60,6 +64,55 @@
 #include <malloc.h>
 #include <unistd.h>
 
+#ifdef BLOCKSDS
+
+/*
+ * Free main RAM in two parts: in holes in the heap, and above it.  A large
+ * block can only come from above it, so a lot free in holes still runs out.
+ * The alternative heap is the RAM in slot 2, or else VRAM.  Above the
+ * keyboard, as the sidebar is under it.  And how long the last command took,
+ * from its key to the game waiting again.
+ */
+static u32 turn_began;
+static int turn_ms = -1;
+static bool turn_timing;
+
+static void show_memory(void)
+{
+	char str[96];
+
+	snprintf(str, sizeof(str), "Free: %d+%d main, %d alt, %d ms   ",
+		(int) mallinfo().fordblks, (int) (getHeapLimit() - getHeapEnd()),
+		(int) mem_free_space_alt(), turn_ms);
+	nds_draw_str(0, NDS_SCREEN_LINES, str, NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
+}
+
+/*
+ * The same figures appended to a file on the card, with what the game was
+ * doing, as a record of where the memory goes that outlasts the screen:
+ * holes, above the heap, alternative heap, and then the occasion.
+ */
+static void log_memory(const char *what)
+{
+	FILE *f = fopen("/zangbandtk/memlog.txt", "a");
+
+	if (!f)
+		return;
+
+	fprintf(f, "%d\t%d\t%d\t%s\n", (int) mallinfo().fordblks,
+		(int) (getHeapLimit() - getHeapEnd()), (int) mem_free_space_alt(),
+		what);
+	fclose(f);
+}
+
+static void log_memory_event(game_event_type type, game_event_data *data,
+	void *user)
+{
+	log_memory(type == EVENT_INITSTATUS ? data->message.msg : "new level");
+}
+
+#else
+
 /* https://devkitpro.org/viewtopic.php?f=6&t=3057 */
 
 extern uint8_t *fake_heap_end;
@@ -69,6 +122,16 @@ static int nds_free_memory_bytes(void) {
 	struct mallinfo info = mallinfo();
 	return info.fordblks + (fake_heap_end - (uint8_t*)sbrk(0));
 }
+
+static void show_memory(void)
+{
+	char str[96];
+
+	snprintf(str, sizeof(str), "Free mem: %d bytes", nds_free_memory_bytes());
+	nds_draw_str(0, NDS_SCREEN_LINES * 2 - 1, str, NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
+}
+
+#endif
 
 #endif
 
@@ -150,22 +213,15 @@ static void handle_touch(int x, int y, int button, bool press)
 		Term_mousepress(x, y, button);
 }
 
-void do_vblank()
+/* The frame the buttons and the touch screen were last read in */
+static unsigned int scanned_frame;
+
+/*
+ * Read the buttons and the touch screen, and turn what changed into events.
+ */
+static void scan_input(void)
 {
-#ifdef DEBUG_MEMORY_USAGE
-	char mem_usage_str[96];
-	snprintf(mem_usage_str, sizeof(mem_usage_str), "Free mem: %d bytes", nds_free_memory_bytes());
-	nds_draw_str(0, NDS_SCREEN_LINES * 2 - 1, mem_usage_str, NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
-#endif
-
-	nds_video_vblank();
-
-#ifdef __3DS__
-	/* Handle home menu, poweroff, etc */
-	if (!aptMainLoop()) {
-		quit(NULL);
-	}
-#endif
+	scanned_frame = nds_video_frames();
 
 	hidScanInput();
 
@@ -177,6 +233,24 @@ void do_vblank()
 
 	/* Handle on-screen key inputs */
 	nds_scrkey_vblank();
+}
+
+void do_vblank()
+{
+#ifdef DEBUG_MEMORY_USAGE
+	show_memory();
+#endif
+
+	nds_video_vblank();
+
+#ifdef __3DS__
+	/* Handle home menu, poweroff, etc */
+	if (!aptMainLoop()) {
+		quit(NULL);
+	}
+#endif
+
+	scan_input();
 }
 
 /*END JUST MOVED */
@@ -195,7 +269,28 @@ static errr CheckEvents(bool wait)
 {
 	nds_event e;
 
+#if defined(DEBUG_MEMORY_USAGE) && defined(BLOCKSDS)
+	if (wait && turn_timing) {
+		turn_ms = timerTicks2usec(cpuGetTiming() - turn_began) / 1000;
+		turn_timing = false;
+	}
+#endif
+
+#ifdef __3DS__
 	do_vblank();
+#else
+	/*
+	 * Waiting for a key waits for the next frame, but only looking to see
+	 * whether there is one does not: the game looks during a turn, and every
+	 * look waited up to a frame, a sixtieth of a second each, before the
+	 * screen could be updated.  The buttons are still read at most once a
+	 * frame.
+	 */
+	if (wait)
+		do_vblank();
+	else if (nds_video_frames() != scanned_frame)
+		scan_input();
+#endif
 
 	if (!wait && !nds_event_ready())
 		return (1);
@@ -211,6 +306,10 @@ static errr CheckEvents(bool wait)
 		handle_touch(e.mouse.x, e.mouse.y, 1, true);
 		break;
 	case NDS_EVENT_KEYBOARD:
+#if defined(DEBUG_MEMORY_USAGE) && defined(BLOCKSDS)
+		turn_began = cpuGetTiming();
+		turn_timing = true;
+#endif
 		Term_keypress(e.keyboard.key, e.keyboard.mods);
 		break;
 	default:
@@ -236,6 +335,156 @@ static void init_color_data(void)
 		                      angband_color_table[i][3] >> 3) | 0x8000;
 #endif
 	}
+}
+
+/*
+ * The colours of a term attribute.
+ */
+static void attr_colours(int a, nds_pixel *fg, nds_pixel *bg)
+{
+	*fg = color_data[a % MAX_COLORS];
+
+	switch (a / MULT_BG) {
+	case BG_SAME:
+		*bg = *fg;
+		break;
+
+	case BG_DARK:
+		*bg = color_data[COLOUR_SHADE];
+		break;
+
+	case BG_BLACK:
+	default:
+		*bg = color_data[COLOUR_DARK];
+		break;
+	}
+}
+
+/*
+ * Keep what matters in view, on the DS, whose screen shows only part of the
+ * term: the cursor if there is one, and otherwise the player, in the middle,
+ * while nothing covers the map.  The message and status lines stay where they
+ * begin over the map, so the cursor on one of them moves nothing.  Anything
+ * else stays where L and R put it.
+ *
+ * Not only while the game waits for a command: it draws a move during the
+ * turn, so by the time it asks for the next one nothing has changed, the
+ * refresh is skipped as trivial, and a player who walked off the side of the
+ * screen stayed off it.
+ */
+static void follow_on_screen(void)
+{
+	bool map = character_dungeon && textui_map_is_visible();
+	int w = nds_font->width;
+
+	nds_video_split(map ? 0 : -1, map ? COL_MAP * w : -1);
+
+	if (Term->scr->cv && !Term->scr->cu) {
+		if (!map || (Term->scr->cy > 0 && Term->scr->cy < Term->hgt - 1))
+			nds_video_show(Term->scr->cx * w, w);
+	} else if (map) {
+		int col = (player->grid.x - Term->offset_x) * tile_width + COL_MAP;
+
+		nds_video_centre(col * w, tile_width * w);
+	}
+}
+
+#ifndef __3DS__
+/* The bottom screen's rows under the keyboard, and its two columns */
+#define NDS_PANEL_ROW	(NDS_SCREEN_LINES + 12)
+#define NDS_PANEL_ROWS	12
+#define NDS_PANEL_LEFT	2
+#define NDS_PANEL_RIGHT	18
+
+/* The sidebar has changed since the bottom screen last showed it. */
+static bool sidebar_changed;
+
+/*
+ * The sidebar goes on the bottom screen, under the keyboard, instead of the
+ * top: the top screen shows only part of the term, and while it follows the
+ * player the left edge is out of sight.  The game still writes the sidebar
+ * into the term, and the front end draws it elsewhere.
+ *
+ * Only while the map is showing.  The screens which cover it -- the character
+ * sheet, the stores, the tombstone -- save the screen first, and what they draw
+ * down the left is not the sidebar; restoring the screen redraws all of it,
+ * which brings this back up to date.
+ */
+static bool sidebar_row(int y)
+{
+	return y >= 1 && y < Term->hgt - 1 && Term->sidebar_mode == SIDEBAR_LEFT &&
+		character_dungeon && textui_map_is_visible();
+}
+
+static bool sidebar_row_blank(int y)
+{
+	for (int x = 0; x < COL_MAP; x++)
+		if (Term->scr->c[y][x] != L' ' && Term->scr->c[y][x] != 0)
+			return false;
+
+	return true;
+}
+
+/*
+ * Draw row y of the sidebar at col, line of the bottom screen's panel, or
+ * blanks if y is past its end.
+ */
+static void draw_sidebar_row(int y, int col, int line)
+{
+	nds_pixel fg, bg;
+
+	for (int x = 0; x < COL_MAP; x++) {
+		if (y < Term->hgt - 1) {
+			attr_colours(Term->scr->a[y][x], &fg, &bg);
+			nds_draw_char(col + x, NDS_PANEL_ROW + line, Term->scr->c[y][x],
+				fg, bg);
+		} else {
+			nds_draw_char(col + x, NDS_PANEL_ROW + line, 0,
+				color_data[COLOUR_DARK], color_data[COLOUR_DARK]);
+		}
+	}
+}
+
+/*
+ * Two columns: who the character is and their stats, as the sidebar has them,
+ * and beside them the rest -- armour, hit points, speed, where they are --
+ * without the sidebar's gaps, as several of those rows are blank more often
+ * than not and would leave the column straggling down the screen.
+ */
+static void draw_sidebar_on_bottom(void)
+{
+	int y = 1, line;
+
+	if (!sidebar_changed || !sidebar_row(1))
+		return;
+
+	sidebar_changed = false;
+
+	for (line = 0; line < NDS_PANEL_ROWS; line++)
+		draw_sidebar_row(y++, NDS_PANEL_LEFT, line);
+
+	for (line = 0; line < NDS_PANEL_ROWS; line++) {
+		while (y < Term->hgt - 1 && sidebar_row_blank(y))
+			y++;
+		draw_sidebar_row(y++, NDS_PANEL_RIGHT, line);
+	}
+}
+#endif
+
+/*
+ * How many of the n cells from x on row y are the sidebar, which the DS draws
+ * on the bottom screen and not the top, noting that it has changed.
+ */
+static int sidebar_cells(int x, int y, int n)
+{
+#ifndef __3DS__
+	if (x < COL_MAP && sidebar_row(y)) {
+		sidebar_changed = true;
+		return MIN(n, COL_MAP - x);
+	}
+#endif
+
+	return 0;
 }
 
 /*
@@ -281,10 +530,15 @@ static errr Term_xtra_nds(int n, int v)
 		int x, y;
 
 		for (y = 0; y < NDS_SCREEN_LINES; y++) {
-			for (x = 0; x < NDS_SCREEN_COLS; x++) {
+			for (x = 0; x < NDS_TERM_COLS; x++) {
 				nds_draw_char(x, y, 0, color_data[COLOUR_DARK], color_data[COLOUR_DARK]);
 			}
 		}
+
+#ifndef __3DS__
+		if (sidebar_row(1))
+			sidebar_changed = true;
+#endif
 
 		return (0);
 	}
@@ -308,6 +562,11 @@ static errr Term_xtra_nds(int n, int v)
 	}
 
 	case TERM_XTRA_FRESH: {
+		follow_on_screen();
+#ifndef __3DS__
+		draw_sidebar_on_bottom();
+#endif
+
 		return (0);
 	}
 
@@ -433,6 +692,8 @@ static errr Term_wipe_nds(int x, int y, int n)
 	for (i = 0; i < n; i++)
 		nds_draw_char(x + i, y, 0, color_data[COLOUR_DARK], color_data[COLOUR_DARK]);
 
+	(void)sidebar_cells(x, y, n);
+
 	/* Success */
 	return (0);
 }
@@ -467,25 +728,17 @@ static errr Term_wipe_nds(int x, int y, int n)
  */
 static errr Term_text_nds(int x, int y, int n, int a, const wchar_t *s)
 {
-	nds_pixel fg = color_data[a % MAX_COLORS], bg;
+	int hide = sidebar_cells(x, y, n);
+	nds_pixel fg, bg;
 
-	switch (a / MULT_BG) {
-	case BG_SAME:
-		bg = fg;
-		break;
-
-	case BG_DARK:
-		bg = color_data[COLOUR_SHADE];
-		break;
-
-	case BG_BLACK:
-	default:
-		bg = color_data[COLOUR_DARK];
-		break;
-	}
+	attr_colours(a, &fg, &bg);
 
 	for (int i = 0; i < n; i++) {
-		nds_draw_char(x + i, y, s[i], fg, bg);
+		if (i < hide)
+			nds_draw_char(x + i, y, 0, color_data[COLOUR_DARK],
+				color_data[COLOUR_DARK]);
+		else
+			nds_draw_char(x + i, y, s[i], fg, bg);
 	}
 
 	return (0);
@@ -517,7 +770,7 @@ static void term_data_link(int i)
 	term *t = &td->t;
 
 	/* Initialize the term */
-	term_init(t, NDS_SCREEN_COLS, NDS_SCREEN_LINES, 256);
+	term_init(t, NDS_TERM_COLS, NDS_SCREEN_LINES, 256);
 
 	/* Choose "soft" or "hard" cursor XXX XXX XXX */
 	/* A "soft" cursor must be explicitly "drawn" by the program */
@@ -599,6 +852,70 @@ errr init_nds(void)
 	return (0);
 }
 
+#ifndef __3DS__
+/* Whether the alternative heap has filled, after which moving is no gain */
+static bool alt_full;
+
+static void move_to_alt(char **s)
+{
+	char *alt;
+
+	if (!*s || alt_full || mem_is_alt_alloc(*s))
+		return;
+
+	alt = string_make_alt(*s);
+	if (!mem_is_alt_alloc(alt))
+		alt_full = true;
+	string_free(*s);
+	*s = alt;
+}
+
+/*
+ * Move text out of the DS's 4 MB into the alternative heap, which is the 8 MB
+ * Memory Expansion Pak when there is one in slot 2.  Without this the surface
+ * does not fit: the data leaves about 200 KB, and generating the world runs
+ * out of memory.
+ *
+ * Only text which nothing changes once it is loaded, because slot-2 RAM
+ * cannot be written a byte at a time.  Vault and room layouts, and monster and
+ * spell descriptions, are about half a megabyte of it.  Artifact descriptions
+ * are not moved: randarts rewrite them.
+ *
+ * Called as each file of game data is about to be read, to move what the
+ * files before it left, so that what is read next fills the holes this leaves
+ * rather than piling up above them; and once more at the end.  Each global is
+ * set only when its file is finished, so what is found is complete.
+ */
+static void move_text_to_alt(void)
+{
+	struct vault *v;
+	struct room_template *t;
+	struct player_class *c;
+	int i, b, s;
+
+	for (v = vaults; v; v = v->next)
+		move_to_alt(&v->text);
+	for (t = room_templates; t; t = t->next)
+		move_to_alt(&t->text);
+	for (i = 0; r_info && i < z_info->r_max; i++)
+		move_to_alt(&r_info[i].text);
+	for (c = classes; c; c = c->next) {
+		for (b = 0; b < c->magic.num_books; b++) {
+			struct class_book *book = &c->magic.books[b];
+
+			for (s = 0; s < book->num_spells; s++)
+				move_to_alt(&book->spells[s].text);
+		}
+	}
+}
+
+static void move_text_on_init(game_event_type type, game_event_data *data,
+	void *user)
+{
+	move_text_to_alt();
+}
+#endif
+
 /*
  * Initialize file path information
  *
@@ -668,6 +985,15 @@ static void hook_quit(const char *str)
 	if (str) {
 		nds_log(str);
 	}
+
+#ifdef DEBUG_MEMORY_USAGE
+	/* As it was when the game stopped: often out of memory */
+	show_memory();
+#ifdef BLOCKSDS
+	if (str)
+		log_memory(str);
+#endif
+#endif
 
 	/* Bail */
 	nds_exit(str ? 1 : 0);
@@ -742,9 +1068,29 @@ int main(int argc, char *argv[])
 	/* Set command hook */
 	cmd_get_hook = textui_get_cmd;
 
+#ifndef __3DS__
+	/* Over the map the message line stays at the left; see nds-draw.c */
+	msg_line_width = NDS_SCREEN_COLS;
+#endif
+
 	/* Initialize */
 	init_display();
+#if defined(DEBUG_MEMORY_USAGE) && defined(BLOCKSDS)
+	cpuStartTiming(2);
+	event_add_handler(EVENT_INITSTATUS, log_memory_event, NULL);
+	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, log_memory_event, NULL);
+#endif
+#ifndef __3DS__
+	event_add_handler(EVENT_INITSTATUS, move_text_on_init, NULL);
+#endif
 	init_angband();
+#ifndef __3DS__
+	event_remove_handler(EVENT_INITSTATUS, move_text_on_init, NULL);
+	move_text_to_alt();
+#endif
+#if defined(DEBUG_MEMORY_USAGE) && defined(BLOCKSDS)
+	log_memory("loaded");
+#endif
 	textui_init();
 
 	/* Wait for response */

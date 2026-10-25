@@ -34,6 +34,8 @@ void *mem_zalloc_alt(size_t len);
 void mem_free_alt(void *p);
 void *mem_realloc_alt(void *p, size_t len);
 bool mem_is_alt_alloc(void *p);
+void *mem_realloc_to_main(void *p, size_t len);
+char *string_make_alt(const char *str);
 #else
 #define mem_alloc_alt mem_alloc
 #define mem_zalloc_alt mem_zalloc

@@ -80,7 +80,11 @@ size_t randname_make(randname_type name_type, size_t min, size_t max,
 	size_t lnum = 0;
 	bool found_word = false;
 
-	static name_probs lprobs;
+	/*
+	 * 40 KB of 16-bit counts, allocated rather than static so that on the
+	 * Nintendo DS it can go in slot-2 RAM, which takes them (see z-virt.h).
+	 */
+	static unsigned short (*lprobs)[S_WORD+1][TOTAL+1];
 	static randname_type cached_type = RANDNAME_NUM_TYPES;
 
 	assert(name_type > 0 && name_type < RANDNAME_NUM_TYPES);
@@ -96,7 +100,9 @@ size_t randname_make(randname_type name_type, size_t min, size_t max,
 
 		wordlist = sections[name_type];
 
-		(void)memset(lprobs, 0, sizeof(name_probs));
+		/* Zeroed afresh: memset() could write that RAM a byte at a time */
+		mem_free_alt(lprobs);
+		lprobs = mem_zalloc_alt(sizeof(name_probs));
 		build_prob(lprobs, wordlist);
 
 		cached_type = name_type;

@@ -42,6 +42,16 @@ wild:block-size:4
 # Dijkstra per road on a 67 MHz ARM9.
 wild:blocks:65
 
+# Monster slots on a level.  Every chunk allocates its monster table up front,
+# sized from its area and capped by this, and on the DS a monster is 392 bytes:
+# a full-sized dungeon level's 1024 slots are 400 KB in one block, which is what
+# going down the stairs ran out of memory asking for.  128 is 50 KB, and the
+# floor every chunk gets anyway (MONSTERS_MIN in cave.h).  A level rarely holds
+# more than a few dozen, and the game compacts monsters once there are more
+# than 96, as it would past 992 with the desktop's 1024; only a breeder left
+# breeding gets near it.  256 was tried first and the level still did not fit.
+level-max:monsters:128
+
 # One town: the starting village and nothing else. A dozen towns on a 520x520
 # world would be crowded, and roads are routed between towns, so this also
 # removes nearly all of the routing work rather than merely shrinking it.

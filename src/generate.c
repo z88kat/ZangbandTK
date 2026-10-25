@@ -1139,7 +1139,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		chunk = arena_gen(p, height, width);
 
 		/* Allocate new known level, light it if requested */
-		p->cave = cave_new(chunk->height, chunk->width);
+		p->cave = cave_new_known(chunk->height, chunk->width);
 		p->cave->depth = chunk->depth;
 		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
 									   * sizeof(struct object*));
@@ -1352,7 +1352,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	chunk_validate_objects(chunk);
 
 	/* Allocate new known level, light it if requested */
-	p->cave = cave_new(chunk->height, chunk->width);
+	p->cave = cave_new_known(chunk->height, chunk->width);
 	p->cave->depth = chunk->depth;
 	p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
 								   * sizeof(struct object*));
@@ -2147,7 +2147,7 @@ void prepare_next_level(struct player *p)
 		 * have done: the parallel chunk holding what the player knows, and the
 		 * turn the level came into being.
 		 */
-		p->cave = cave_new(cave->height, cave->width);
+		p->cave = cave_new_known(cave->height, cave->width);
 		p->cave->depth = cave->depth;
 		p->cave->objects = mem_realloc(p->cave->objects,
 									   (cave->obj_max + 1)

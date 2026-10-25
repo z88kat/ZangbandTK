@@ -2127,6 +2127,15 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 
 	/* Update view and search */
 	update_view(cave, p);
+
+	/*
+	 * And say so.  The move asked for the view to be updated, and this has
+	 * done it; left standing, the request had update_stuff() run the whole
+	 * thing a second time a moment later, two passes over every grid of the
+	 * level on every step.  Anything from here on that changes the view
+	 * asks again.
+	 */
+	p->upkeep->update &= ~(PU_UPDATE_VIEW);
 	search(p);
 }
 

@@ -2119,8 +2119,9 @@ static int rd_dungeon_aux(struct chunk **c, uint8_t planes)
 	rd_u16b(&height);
 	rd_u16b(&width);
 
-	/* We need a cave struct */
-	c1 = cave_new(height, width);
+	/* We need a cave struct: the player's knowledge holds no monsters */
+	c1 = (c == &player->cave) ? cave_new_known(height, width)
+		: cave_new(height, width);
 	c1->name = string_make(name);
 
     /* Run length decoding of cave->squares[y][x].info */

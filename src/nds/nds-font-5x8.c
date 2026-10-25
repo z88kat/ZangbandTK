@@ -1025,10 +1025,10 @@ EMPTY, EMPTY, EMPTY, EMPTY,
 EMPTY, EMPTY, EMPTY, EMPTY,
 };
 
-static void nds_font_draw(char c, nds_pixel *pixels, nds_pixel clr_fg, nds_pixel clr_bg) {
+static void nds_font_draw(char c, nds_pixel *pixels, int y_pitch, nds_pixel clr_fg, nds_pixel clr_bg) {
 	const char *font = ds_subfont + (c * 5 * 8);
 
-	for (uint8_t yy = 0; yy < 8; yy++, pixels += NDS_Y_PITCH) {
+	for (uint8_t yy = 0; yy < 8; yy++, pixels += y_pitch) {
 		for (uint8_t xx = 0; xx < 5; xx++, font++) {
 			pixels[xx * NDS_X_PITCH] = ((*font) ? clr_fg : clr_bg);
 		}

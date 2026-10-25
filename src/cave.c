@@ -339,41 +339,56 @@ const char *get_feat_code_name(int idx)
 }
 
 /**
- * Allocate a new chunk of the world
+ * Allocate a new chunk of the world, with room for mon_size monsters
  */
-struct chunk *cave_new(int height, int width) {
+static struct chunk *cave_new_sized(int height, int width, int mon_size) {
 	int y, x;
+	bitflag *info;
 
 	struct chunk *c = mem_zalloc(sizeof *c);
 	c->height = height;
 	c->width = width;
 	c->feat_count = mem_zalloc((FEAT_MAX + 1) * sizeof(int));
 
+	/*
+	 * Every square's info flags in one allocation, which cave_free() frees
+	 * through the first square's pointer.  One each was a few bytes of flags
+	 * apiece and four times that in allocator overhead, many thousands of
+	 * times over in a dungeon: on the Nintendo DS, the difference between
+	 * the surface fitting in memory and not.
+	 */
+	info = mem_zalloc((size_t) c->height * c->width * SQUARE_SIZE
+		* sizeof(bitflag));
+
+	/*
+	 * The squares and the noise and scent maps go in the alternative heap:
+	 * the Memory Expansion Pak's 8 MB on a Nintendo DS that has one, and
+	 * ordinary memory everywhere else.  A full-sized level's and the
+	 * player's knowledge of it are some 700 KB, in a machine with 4 MB for
+	 * everything.  That RAM cannot be written a byte at a time, which is why
+	 * struct square has no byte-sized field; the info flags are bytes, so
+	 * they stay where they are.  So do the tables of rows, a few hundred
+	 * bytes, which every look at a square goes through: that RAM is several
+	 * times slower to read, and the DS spent a third of a second a step on
+	 * it.
+	 */
 	c->squares = mem_zalloc(c->height * sizeof(struct square*));
 	c->noise.grids = mem_zalloc(c->height * sizeof(uint16_t*));
 	c->scent.grids = mem_zalloc(c->height * sizeof(uint16_t*));
 	for (y = 0; y < c->height; y++) {
-		c->squares[y] = mem_zalloc(c->width * sizeof(struct square));
+		c->squares[y] = mem_zalloc_alt(c->width * sizeof(struct square));
 		for (x = 0; x < c->width; x++) {
-			c->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
+			c->squares[y][x].info = info;
+			info += SQUARE_SIZE;
 		}
-		c->noise.grids[y] = mem_zalloc(c->width * sizeof(uint16_t));
-		c->scent.grids[y] = mem_zalloc(c->width * sizeof(uint16_t));
+		c->noise.grids[y] = mem_zalloc_alt(c->width * sizeof(uint16_t));
+		c->scent.grids[y] = mem_zalloc_alt(c->width * sizeof(uint16_t));
 	}
 
 	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
 	c->obj_max = OBJECT_LIST_SIZE - 1;
 
-	/*
-	 * ZangbandTK (WLD-26): size the monster arrays from this chunk's own area
-	 * rather than the global maximum.  Vanilla's density is roughly one monster
-	 * per twelve grids at the dungeon's 13,068, so a dungeon level still caps
-	 * at level_monster_max and is unaffected; a 16x16 wilderness block gets 21
-	 * slots instead of 1024, and 26 KB instead of 437 KB.
-	 */
-	c->mon_size = MIN((int) z_info->level_monster_max,
-					  MAX(MONSTERS_MIN, (c->height * c->width) / 12));
-
+	c->mon_size = mon_size;
 	c->monsters = mem_zalloc(c->mon_size * sizeof(struct monster));
 	c->mon_max = 1;
 	c->mon_current = -1;
@@ -383,6 +398,36 @@ struct chunk *cave_new(int height, int width) {
 
 	c->turn = turn;
 	return c;
+}
+
+/**
+ * Allocate a new chunk of the world
+ */
+struct chunk *cave_new(int height, int width) {
+	/*
+	 * ZangbandTK (WLD-26): size the monster arrays from this chunk's own area
+	 * rather than the global maximum.  Vanilla's density is roughly one monster
+	 * per twelve grids at the dungeon's 13,068, so a dungeon level still caps
+	 * at level_monster_max and is unaffected; a 16x16 wilderness block gets 21
+	 * slots instead of 1024, and 26 KB instead of 437 KB.
+	 */
+	return cave_new_sized(height, width,
+		MIN((int) z_info->level_monster_max,
+			MAX(MONSTERS_MIN, (height * width) / 12)));
+}
+
+/**
+ * Allocate the chunk of what the player knows of a level, p->cave.
+ *
+ * It remembers terrain, objects and traps, and never holds a monster: those
+ * are always looked up in the level itself.  So it gets one monster slot, the
+ * unused slot 0, rather than a table sized like the level's -- at 392 bytes a
+ * monster on the Nintendo DS, that was 50 KB on the surface and 400 KB in a
+ * full-sized dungeon, never touched.  Saving it writes a count of one and no
+ * monsters, which loading accepts against a capacity of one.
+ */
+struct chunk *cave_new_known(int height, int width) {
+	return cave_new_sized(height, width, 1);
 }
 
 /**
@@ -404,8 +449,11 @@ void cave_connectors_free(struct connector *join)
  */
 void cave_free(struct chunk *c) {
 	struct chunk *p_c = (c == cave && player) ? player->cave : NULL;
+	/* All the squares' info is one allocation: see cave_new() */
+	bitflag *info = (c->height && c->width) ? c->squares[0][0].info : NULL;
 	int y, x, i;
 
+	cave_view_forget(c);
 	cave_connectors_free(c->join);
 
 	/* Look for orphaned objects and delete them. */
@@ -417,16 +465,16 @@ void cave_free(struct chunk *c) {
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			mem_free(c->squares[y][x].info);
 			if (c->squares[y][x].trap)
 				square_free_trap(c, loc(x, y));
 			if (c->squares[y][x].obj)
 				object_pile_free(c, p_c, c->squares[y][x].obj);
 		}
-		mem_free(c->squares[y]);
-		mem_free(c->noise.grids[y]);
-		mem_free(c->scent.grids[y]);
+		mem_free_alt(c->squares[y]);
+		mem_free_alt(c->noise.grids[y]);
+		mem_free_alt(c->scent.grids[y]);
 	}
+	mem_free(info);
 	mem_free(c->squares);
 	mem_free(c->noise.grids);
 	mem_free(c->scent.grids);

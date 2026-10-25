@@ -197,6 +197,15 @@ void options_init_defaults(struct player_options *opts)
 	for (opt = 0; opt < OPT_MAX; opt++)
 		(*opts).opt[opt] = options[opt].normal;
 
+#if defined(NDS) && !defined(__3DS__)
+	/*
+	 * The DS screen shows three quarters of the map's width and follows the
+	 * player across it; with the map kept centred on the player, it can
+	 * stay still and the player in the middle of it.
+	 */
+	(*opts).opt[OPT_center_player] = true;
+#endif
+
 	/* Override with the player's customizations. */
 	options_restore_custom(opts, OP_BIRTH);
 	options_restore_custom(opts, OP_INTERFACE);

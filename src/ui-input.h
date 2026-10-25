@@ -83,6 +83,7 @@ extern uint32_t inkey_scan;
 extern bool inkey_flag;
 extern uint8_t lazymove_delay;
 extern bool msg_flag;
+extern int msg_line_width;
 
 /**
  * If exiting a game because the UI is disconnecting and this hook is not

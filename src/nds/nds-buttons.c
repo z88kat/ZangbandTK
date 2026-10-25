@@ -223,12 +223,41 @@ void nds_btn_check_cpad()
 #endif
 }
 
+/*
+ * L or R pressed and let go on its own pans the DS's top screen a step, since
+ * it shows only part of the term.  Both stay modifiers: pressing anything else
+ * while one is held makes it a modifier for that press, and it does not pan.
+ */
+#ifndef __3DS__
+void nds_btn_check_pan(u32 kd, u32 kh)
+{
+	static u32 alone = 0;
+
+	if (kd & (KEY_L | KEY_R))
+		alone = kh & NDS_BTN_ALL;
+	if (kh & NDS_BTN_ALL & ~alone)
+		alone = 0;
+
+	if (keysUp() & alone) {
+		if (alone == KEY_L)
+			nds_video_pan_step(-1);
+		else if (alone == KEY_R)
+			nds_video_pan_step(1);
+		alone = 0;
+	}
+}
+#endif
+
 void nds_btn_vblank()
 {
 	nds_btn_check_cpad();
 
 	u32 kd = hidKeysDown();
 	u32 kh = hidKeysHeld();
+
+#ifndef __3DS__
+	nds_btn_check_pan(kd, kh);
+#endif
 
 	/* Check all mapped inputs */
 	for (int i = 0; i < nds_btn_map_num; i++) {

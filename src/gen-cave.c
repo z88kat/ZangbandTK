@@ -1705,7 +1705,8 @@ static void mutate_cavern(struct chunk *c) {
 	int h = c->height;
 	int w = c->width;
 
-	int *temp = mem_zalloc(h * w * sizeof(int));
+	/* An int a grid, 50 KB for a whole level: the DS's slot-2 RAM can hold it */
+	int *temp = mem_zalloc_alt(h * w * sizeof(int));
 
 	for (grid.y = 1; grid.y < h - 1; grid.y++) {
 		for (grid.x = 1; grid.x < w - 1; grid.x++) {

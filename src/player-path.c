@@ -317,9 +317,10 @@ struct pfdistances *prepare_pfdistances(struct player *p, struct loc start,
 	}
 
 	result = mem_alloc(sizeof(*result));
-	result->buffer = mem_alloc(p->cave->height * p->cave->width
+	/* An int a grid, 50 KB for a whole level: the DS's slot-2 RAM can hold it */
+	result->buffer = mem_alloc_alt(p->cave->height * p->cave->width
 		* sizeof(*result->buffer));
-	result->rows = mem_alloc(p->cave->height * sizeof(*result->rows));
+	result->rows = mem_alloc_alt(p->cave->height * sizeof(*result->rows));
 	result->start = start;
 	result->height = p->cave->height;
 	result->width = p->cave->width;

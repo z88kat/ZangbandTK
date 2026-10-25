@@ -512,9 +512,13 @@ Nintendo DS and 3DS
 ===================
 
 Yes, really. The DS build is inherited from Angband, and it's the least tested
-build here by a wide margin. Under the melonDS emulator it boots, reads its data
-off the card, makes a character and generates a world. On DS hardware it has so
-far stopped at "Unable to access filesystem", the DLDI problem described below.
+build here by a wide margin. It runs on an original DS from a DSpico flashcart,
+and under the melonDS emulator.
+
+It needs a DS with a Slot-2, the GBA slot, and the Nintendo DS Memory Expansion
+Pak in it: the 8 MB pak that came with the DS Browser. The game doesn't fit in
+the DS's own 4 MB any more, and without the pak it runs out of memory. A DSi has
+no Slot-2, and nobody has tried it on one. The 3DS build doesn't need the pak.
 
 The game reads its data from the card, not from inside the ROM, so you need both
 halves of the zip. Copy the ``zangbandtk`` folder to the *root* of the SD card,
@@ -534,20 +538,34 @@ screen, which means the surface is rebuilt as you walk. All thirteen dungeons
 are still placed. The settings live in ``constants.txt`` on the card, so anyone
 who wants to try the full-size world can, without rebuilding anything.
 
+Rebuilding the surface every step has a cost you'll see in a town: the
+townspeople are placed again each time, so they jump about. That's a known
+problem, and it's being worked on.
+
+The top screen shows 51 of the game's 80 columns. On the map it keeps you in
+the middle, with the message and status lines held in place; everywhere else it
+follows the cursor, and L or R on its own slides it about fourteen columns
+for anything off the edge. Your stats are on the bottom screen, under the touch
+keyboard. The D-pad moves you, A is Enter, B is Escape and Y says yes. New
+characters on the DS have *Center map continuously* switched on, which is what
+keeps you in the middle.
+
 .. important::
 
    "Unable to access filesystem" means a DLDI problem, not a broken download.
    Homebrew on a DS needs a driver for the particular card it runs from, written
-   into the ROM, and that's what DLDI patching is. Flashcarts like the R4, and
-   loaders such as TWiLight Menu++ or the Homebrew Menu, do this for you as they
-   launch, and a DSi or 3DS running from its own SD card doesn't need it at all.
+   into the ROM, and that's what DLDI patching is. Flashcarts like the R4, the
+   DSpico's Pico Launcher, and loaders such as TWiLight Menu++ or the Homebrew
+   Menu do this for you as they launch, and a DSi or 3DS running from its own SD
+   card doesn't need it at all.
    Launching the ``.nds`` directly, or in an emulator, generally does need it:
    patch it with ``dlditool <driver>.dldi Zangband-<version>.nds``, using the
    driver for the card in question. The ``README.txt`` in the zip goes through
    this.
 
 There's one save slot, at ``/zangbandtk/lib/save/PLAYER``. That's a limit of
-this port, not of the game.
+this port, not of the game. A character can't move between the DS and the
+desktop builds either: the DS's world is a different size.
 
 .. note::
 
@@ -560,8 +578,8 @@ this port, not of the game.
    roughly 3.2 MB. That's why the full-size world gets through character
    creation and then runs out.
 
-   If you have a RAM expansion pak in Slot-2, this port knows how to use it, and
-   that's the first thing to try.
+   The pak is what makes up the difference. The map of the level you're on, and
+   a good part of the game's text, are kept in it.
 
    The card path changed from ``/angband/`` to ``/zangbandtk/`` so that a card
    can hold both games without either finding the other's saves. A card set up

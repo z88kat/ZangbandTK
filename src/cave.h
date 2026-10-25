@@ -175,7 +175,12 @@ struct grid_data {
 #define MONSTERS_MIN 128
 
 struct square {
-	uint8_t feat;
+	/*
+	 * 16 bits, not 8, which costs nothing: the pointer after it is aligned
+	 * anyway.  On the Nintendo DS a chunk's squares live in slot-2 RAM, which
+	 * cannot be written a byte at a time (see cave_new()).
+	 */
+	uint16_t feat;
 	bitflag *info;
 	int light;
 	int16_t mon;
@@ -261,6 +266,7 @@ extern uint16_t chunk_list_max;
 int distance(struct loc grid1, struct loc grid2);
 bool los(struct chunk *c, struct loc grid1, struct loc grid2);
 void update_view(struct chunk *c, struct player *p);
+void cave_view_forget(const struct chunk *c);
 bool no_light(const struct player *p);
 
 /* cave-map.c */
@@ -465,6 +471,7 @@ int lookup_feat(const char *name);
 int lookup_feat_code(const char *code);
 const char *get_feat_code_name(int idx);
 struct chunk *cave_new(int height, int width);
+struct chunk *cave_new_known(int height, int width);
 void cave_connectors_free(struct connector *join);
 void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);

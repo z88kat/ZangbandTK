@@ -460,6 +460,13 @@ static int message_column = 0;
 bool msg_flag;
 
 /**
+ * How much of the message line a front end shows, when that is less than the
+ * width of the term, so that messages break and "-more-" comes within it.  The
+ * Nintendo DS shows a window onto a wider term.  Zero means the whole line.
+ */
+int msg_line_width;
+
+/**
  * Output a message to the top line of the screen.
  *
  * Break long messages into multiple pieces (40-72 chars).
@@ -510,6 +517,7 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 
 	/* Obtain the size */
 	(void)Term_get_size(&w, &h);
+	if (msg_line_width > 0 && msg_line_width < w) w = msg_line_width;
 
 	/* Reset */
 	if (!msg_flag) message_column = 0;

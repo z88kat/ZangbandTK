@@ -431,14 +431,37 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 
 
 /**
+ * The level the view was last worked out on, and the part of it the player
+ * could see from where they stood then: max-sight in every direction.
+ *
+ * Only update_view() marks grids as in view or seen, and only within that
+ * distance of the player, so that box holds every grid that can carry those
+ * flags.  The next update need only clear them there and judge the grids
+ * around the player now, rather than four passes over every grid of the level
+ * -- which on the Nintendo DS was the larger part of a step.
+ */
+static const struct chunk *view_chunk;
+static struct loc view_min, view_max;
+
+/**
+ * Forget where the view of a level was, as it is about to be freed: a level
+ * allocated at the same address later is another level.
+ */
+void cave_view_forget(const struct chunk *c)
+{
+	if (c == view_chunk)
+		view_chunk = NULL;
+}
+
+/**
  * Mark the currently seen grids, then wipe in preparation for recalculating
  */
-static void mark_wasseen(struct chunk *c)
+static void mark_wasseen(struct chunk *c, struct loc min, struct loc max)
 {
 	int x, y;
 	/* Save the old "view" grids for later */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
+	for (y = min.y; y <= max.y; y++) {
+		for (x = min.x; x <= max.x; x++) {
 			struct loc grid = loc(x, y);
 			if (square_isseen(c, grid))
 				sqinfo_on(square(c, grid)->info, SQUARE_WASSEEN);
@@ -896,9 +919,21 @@ static void update_one(struct chunk *c, struct loc grid, struct player *p)
 void update_view(struct chunk *c, struct player *p)
 {
 	int x, y;
+	int r = z_info->max_sight;
+	struct loc now_min = loc(MAX(0, p->grid.x - r), MAX(0, p->grid.y - r));
+	struct loc now_max = loc(MIN(c->width - 1, p->grid.x + r),
+		MIN(c->height - 1, p->grid.y + r));
+	struct loc min = loc(0, 0), max = loc(c->width - 1, c->height - 1);
+
+	/* What was in view, and what may be now; all of it on a new level */
+	if (c == view_chunk) {
+		min = loc(MIN(view_min.x, now_min.x), MIN(view_min.y, now_min.y));
+		max = loc(MIN(MAX(view_max.x, now_max.x), c->width - 1),
+			MIN(MAX(view_max.y, now_max.y), c->height - 1));
+	}
 
 	/* Record the current view */
-	mark_wasseen(c);
+	mark_wasseen(c, min, max);
 
 	/* Calculate light levels */
 	calc_lighting(c, p);
@@ -938,14 +973,18 @@ void update_view(struct chunk *c, struct player *p)
 	}
 
 	/* Squares we have LOS to get marked as in the view, and perhaps seen */
-	for (y = 0; y < c->height; y++)
-		for (x = 0; x < c->width; x++)
+	for (y = now_min.y; y <= now_max.y; y++)
+		for (x = now_min.x; x <= now_max.x; x++)
 			update_view_one(c, loc(x, y), p);
 
 	/* Update each grid */
-	for (y = 0; y < c->height; y++)
-		for (x = 0; x < c->width; x++)
+	for (y = min.y; y <= max.y; y++)
+		for (x = min.x; x <= max.x; x++)
 			update_one(c, loc(x, y), p);
+
+	view_chunk = c;
+	view_min = now_min;
+	view_max = now_max;
 }
 
 

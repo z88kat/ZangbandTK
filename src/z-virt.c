@@ -36,8 +36,18 @@ void *mem_alloc(size_t len)
 		return NULL;
 
 	void *p = malloc(len);
-	if (!p)
+	if (!p) {
+#if defined(NDS) && !defined(__3DS__)
+		/* On a 4 MB machine, how much is the clue to what wanted it */
+		char msg[48];
+
+		snprintf(msg, sizeof(msg), "Out of memory! (%lu bytes)",
+			(unsigned long) len);
+		quit(msg);
+#else
 		quit("Out of memory!");
+#endif
+	}
 	return p;
 }
 
@@ -51,6 +61,13 @@ void *mem_zalloc(size_t len)
 
 void mem_free(void *p)
 {
+#if defined(NDS) && !defined(__3DS__)
+	/* The DS moves some text to the alternative heap once it is loaded */
+	if (mem_is_alt_alloc(p)) {
+		mem_free_alt(p);
+		return;
+	}
+#endif
 	free(p);
 }
 
@@ -60,6 +77,12 @@ void *mem_realloc(void *p, size_t len)
 	 * wrapper has different behavior. */
 	if (!len)
 		return NULL;
+
+#if defined(NDS) && !defined(__3DS__)
+	/* Growing it is for writing to it, which that heap cannot take bytewise */
+	if (mem_is_alt_alloc(p))
+		return mem_realloc_to_main(p, len);
+#endif
 
 	p = realloc(p, len);
 	if (!p)

@@ -5,6 +5,7 @@
 
 #ifndef __3DS__
 void mem_init_alt(void);
+size_t mem_free_space_alt(void);
 #endif
 
 #endif

@@ -5,6 +5,8 @@
 #ifndef __3DS__
 
 #include <nds.h>
+/* For struct mallinfo, which dlmalloc.h leaves to it */
+#include <malloc.h>
 #include "../z-virt.h"
 #include "../z-util.h"
 #include "dlmalloc.h"
@@ -58,13 +60,19 @@ void *mem_alloc_alt(size_t len)
 	return mem;
 }
 
+/*
+ * Zeroed two bytes at a time rather than with memset(), which is free to
+ * write single bytes at either end: see string_make_alt().  The length was
+ * rounded up to even when the block was allocated.
+ */
 void *mem_zalloc_alt(size_t len)
 {
-	void *mem = mem_alloc_alt(len);
-	if (len) {
-		memset(mem, 0, len);
-	}
-	return mem;
+	volatile uint16_t *mem = mem_alloc_alt(len);
+
+	for (size_t i = 0; i < (len + 1) / 2; i++)
+		mem[i] = 0;
+
+	return (void *) mem;
 }
 
 void mem_free_alt(void *p)
@@ -102,6 +110,45 @@ void *mem_realloc_alt(void *p, size_t len)
 	SZ(m) = len;
 
 	return m;
+}
+
+/*
+ * Take a block back out of the alternative heap, keeping len bytes of it, for
+ * mem_realloc(): whoever grows a block means to write to it.
+ */
+void *mem_realloc_to_main(void *p, size_t len)
+{
+	void *m = mem_alloc(len);
+
+	memcpy(m, p, MIN(len, SZ(p)));
+	mem_free_alt(p);
+
+	return m;
+}
+
+/*
+ * A copy of a string in the alternative heap, written two bytes at a time:
+ * the slot-2 bus, like VRAM, cannot write one byte on its own, and writes it
+ * to both halves of the halfword instead.  Volatile, so that the compiler can
+ * neither turn the loop into a memcpy() nor split its stores.  The copy is to
+ * be read from and not written to; mem_realloc() takes it back out first.
+ */
+char *string_make_alt(const char *str)
+{
+	size_t len = strlen(str) + 1;
+	volatile uint16_t *m = mem_alloc_alt(len);
+
+	for (size_t i = 0; i < len; i += 2) {
+		uint16_t hi = (i + 1 < len) ? (uint8_t) str[i + 1] : 0;
+
+		m[i / 2] = (uint8_t) str[i] | (hi << 8);
+	}
+
+	return (char *) m;
+}
+
+size_t mem_free_space_alt(void) {
+	return mspace_mallinfo(mem_alt_mspace).fordblks;
 }
 
 bool mem_is_alt_alloc(void *p) {

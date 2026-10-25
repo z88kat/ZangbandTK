@@ -122,8 +122,12 @@ LDFLAGS		:= -mthumb -mthumb-interwork $(LIBDIRSFLAGS) \
 		   -Wl,--start-group $(LIBS) -lgcc -Wl,--end-group
 
 ifeq (,$(NDS_DEBUG))
-CFLAGS		+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG
-CXXFLAGS	+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG
+# Link-time optimisation, for size.  The program shares the DS's 4 MB with the
+# game data, and every byte of code is one the game cannot use: a dungeon level
+# did not fit without it.
+CFLAGS		+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG -flto
+CXXFLAGS	+= -Os -fomit-frame-pointer -ffast-math -DNDEBUG -flto
+LDFLAGS		+= -Os -flto=auto
 else
 CFLAGS		+= -Og -g
 CXXFLAGS	+= -Og -g

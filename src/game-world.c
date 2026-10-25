@@ -520,14 +520,18 @@ static void make_noise(struct player *p)
 
 			if (!square_in_bounds(cave, grid)) continue;
 
+			/*
+			 * Skip grids that already have noise, and the player's,
+			 * before asking what the grid is: most of the eight have
+			 * been reached already, and the noise map is cheaper to
+			 * read than the terrain on the Nintendo DS, where the
+			 * terrain is in slower memory.
+			 */
+			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
+			if (loc_eq(p->grid, grid)) continue;
+
 			/* Ignore features that don't transmit sound */
 			if (square_isnoflow(cave, grid)) continue;
-
-			/* Skip grids that already have noise */
-			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
-
-			/* Skip the player grid */
-			if (loc_eq(p->grid, grid)) continue;
 
 			/* Save the noise */
 			cave->noise.grids[grid.y][grid.x] = noise;

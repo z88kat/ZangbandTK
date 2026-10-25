@@ -159,7 +159,8 @@ int *cave_find_init(struct loc top_left, struct loc bottom_right)
 {
 	struct loc diff = loc_diff(bottom_right, top_left);
 	int n = (diff.y < 0 || diff.x < 0) ? 0 : (diff.x + 1) * (diff.y + 1);
-	int *state = mem_alloc((5 + n) * sizeof(*state));
+	/* An int a grid, 50 KB for a whole level: the DS's slot-2 RAM can hold it */
+	int *state = mem_alloc_alt((5 + n) * sizeof(*state));
 	int i;
 
 	state[0] = n;

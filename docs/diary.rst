@@ -31,6 +31,95 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+25 October 2026 — on a real DS, and a fix I had to take back
+============================================================
+
+Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI
+driver into whatever it starts, so the "Unable to access filesystem" that
+stopped us in August didn't come up at all. I suspect the August failure was the
+ROM rather than the card: that was the one melonDS had already stamped with its
+own driver.
+
+The first thing he reported from the hardware was the town. Every step, the
+townspeople were somewhere else. That's the live surface: 36 grids across on
+the DS, rebuilt whenever you come within 28 grids of its edge, which on a
+36-grid window is always. Each rebuild rolls the monsters afresh. With the grids
+now in the pak I thought a bigger window was affordable, made it 108 across,
+watched the townspeople stay put in melonDS, and sent it.
+
+On the DS it was worse. Every key felt slow, and a little later the game locked
+up. When I went back to the emulator a fresh character died generating the
+surface, "Out of memory! (50176 bytes)": 171 KB free, but in pieces, and the
+level's monster table wants 50 KB in one. The bigger window had cost 70 KB of
+long-lived blocks and broken up what was left. The lock-up was almost certainly
+the same thing, with the message somewhere he couldn't see it. And everything
+the game does to the whole level after each step, the noise map monsters follow
+you by, the scent trail, the view, was now done over 11,664 grids instead of
+1,296. So the window went back to 36. The townspeople jump again, and that one
+is parked: the real fix is carrying monsters across a rebuild.
+
+Then I measured instead of guessing, with timers in a scratch build and the
+keys fed from a file on the card, so melonDS could run behind Steven's windows.
+A step on the first level took 367 ms, and most of it was one function run
+twice. After a step the game works out the view directly, and the step has also
+asked for the view to be worked out, so it is, again. That's upstream Angband,
+and on a desktop nobody would notice. Then the view itself: four passes over
+every grid of the level, when only the grids within sight of where the player
+is, or was, can change. And every time the game glanced at the input queue
+during a turn, the DS front end waited for the next frame first. With those
+three fixed, the step is 106 ms. The view changes are shared code, so the
+desktop gets them too.
+
+One thing about the measuring I'll keep. Moving the tables of rows out of the
+pak, and checking the noise map before the terrain, changed nothing in
+melonDS, which I take to mean melonDS doesn't charge for how slow the pak is.
+Its numbers are the processor's work only. The DS will be slower, and only the
+debug ROM on Steven's DS will say by how much.
+
+So: a kind-of working DS build. The dungeon plays. The town jumps. The rest is
+written down in ``.claude/plans/nds-followup.md`` for when we come back to it.
+
+
+23 and 24 October 2026 — the DS again: a font nobody could read, and where 4 MB goes
+====================================================================================
+
+Steven wanted the DS build back. He owns an original DS with the GBA slot and
+the 8 MB Memory Expansion Pak, which settled the memory question before it was
+asked: the pak is the route.
+
+The first complaint was the font. The DS used a 3-by-8 font that squeezes 85
+columns into 256 pixels by colouring each glyph's pixels to light the LCD's red,
+green and blue stripes separately. It can't be read in an emulator and it's
+tiny on the hardware. The 3DS's 5-by-8 font is readable, but 80 columns of it
+are 400 pixels. So the term is 400 pixels wide in a 512-pixel bitmap and the
+top screen is a window onto it, sliding between three stops. Steven liked it
+on sight.
+
+Then memory. It ran out while loading now, not at the surface: the game data
+had grown from 1.39 to 1.82 MB since August. Measured, the program is about a
+megabyte and the parsed data about 2.4: monsters 912 KB, classes 357 KB,
+objects 355 KB. The pak has 8 MB, but it sits on the GBA slot's 16-bit bus,
+which can't write a single byte; a byte write lands in both halves. So only
+things written a halfword at a time, or never written, can go there. Monster,
+spell and vault text went across while loading, the squares of each level and
+the noise and scent maps went across (with the one byte-sized field in a square
+widened to 16 bits), and each level's flags became one allocation instead of
+one per grid. The player's map of a level stopped carrying a monster table it
+never uses, 400 KB at full size. Monsters per level are capped at 128 on the
+DS, and link-time optimisation took 26 KB off the program, less than I'd hoped.
+That reached the first dungeon level with about 360 KB to spare.
+
+Two bugs from playing it. The screen didn't follow the player off its left
+edge, because I only followed while the game was waiting for a command, and by
+then nothing had changed and the refresh was skipped as trivial. And the
+sidebar was out of sight whenever the screen panned, so it moved to the bottom
+screen, under the keyboard, in two columns. With the stats gone from the top,
+the map is kept centred on the player. Centring meant the message line lost its
+first 21 characters, so the message and status lines are now held still while
+the map rows scroll, by changing the scroll register partway down each frame,
+and messages break at the 51 columns the DS can show.
+
+
 23 October 2026, late — ignoring without the text screens
 =========================================================
 
