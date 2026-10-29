@@ -95,7 +95,15 @@ struct trap
 	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */
 };
 
+extern struct trap_kind *trap_kind_glyph;
+extern struct trap_kind *trap_kind_rune;
+extern struct trap_kind *trap_kind_decoy;
+extern struct trap_kind *trap_kind_lock;
+extern struct trap_kind *trap_kind_web;
+
 struct trap_kind *lookup_trap(const char *desc);
+void trap_kinds_find(void);
+void trap_kinds_forget(void);
 bool square_trap_specific(struct chunk *c, struct loc grid, int t_idx);
 bool square_trap_flag(struct chunk *c, struct loc grid, int flag);
 bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,

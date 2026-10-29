@@ -2795,11 +2795,13 @@ static errr finish_parse_trap(struct parser *p) {
     }
 
     parser_destroy(p);
+    trap_kinds_find();
     return 0;
 }
 
 static void cleanup_trap(void)
 {
+	trap_kinds_forget();
 	int i;
 	for (i = 0; i < z_info->trap_max; i++) {
 		string_free(trap_info[i].name);

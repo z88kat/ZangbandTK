@@ -1587,8 +1587,8 @@ static bool monster_turn_attack_glyph(struct monster *mon, struct loc new)
 
 	/* Break the ward */
 	if (randint1(hardness) < mon->race->level) {
-		struct trap_kind *rune = lookup_trap(explosive ? "explosive rune" :
-			"glyph of warding");
+		struct trap_kind *rune = explosive ? trap_kind_rune :
+			trap_kind_glyph;
 
 		/* Break the rune */
 		assert(rune);
@@ -1886,14 +1886,14 @@ static void monster_turn(struct monster *mon)
 				/* Insubstantial monsters go right through */
 			} else if (monster_passes_walls(mon)) {
 				/* If you can destroy a wall, you can destroy a web */
-				struct trap_kind *web = lookup_trap("web");
+				struct trap_kind *web = trap_kind_web;
 
 				assert(web);
 				square_remove_all_traps_of_type(cave,
 					mon->grid, web->tidx);
 			} else if (rf_has(mon->race->flags, RF_CLEAR_WEB)) {
 				/* Clearing costs a turn (assume there are no other "traps") */
-				struct trap_kind *web = lookup_trap("web");
+				struct trap_kind *web = trap_kind_web;
 
 				assert(web);
 				square_remove_all_traps_of_type(cave,

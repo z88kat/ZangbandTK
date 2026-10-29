@@ -36,15 +36,21 @@
 struct trap_kind *trap_info;
 
 /**
+ * The kinds the game's own rules ask about, found once when trap.txt has been
+ * read: see trap_kinds_find().
+ */
+struct trap_kind *trap_kind_glyph;
+struct trap_kind *trap_kind_rune;
+struct trap_kind *trap_kind_decoy;
+struct trap_kind *trap_kind_lock;
+struct trap_kind *trap_kind_web;
+
+/**
  * Find a trap kind based on its short description: the first that matches it
  * exactly, or failing that the first that contains it, ignoring case.
  *
- * The exact match is looked for on its own first.  Searching for a close match
- * as it went, as this did, cost a case-blind substring search of every kind
- * before the one named -- and the rules name a few kinds ("web", "decoy",
- * "door lock") from predicates such as square_isempty() that level generation
- * and monster movement ask of square after square.  That search was more than
- * a third of the time it took to generate a level.  The answer is the same.
+ * For a name only known as the game runs -- a savefile's, a pref file's, the
+ * debug commands'.  The kinds the rules name are found once, below.
  */
 struct trap_kind *lookup_trap(const char *desc)
 {
@@ -64,6 +70,36 @@ struct trap_kind *lookup_trap(const char *desc)
 			return kind;
 	}
 	return NULL;
+}
+
+/**
+ * Find the kinds the rules ask about, once, when trap.txt has been read.
+ *
+ * They were looked up by name every time, and some are asked about of square
+ * after square: square_isempty() asks whether a square is webbed, and level
+ * generation and monster movement ask square_isempty().  Walking the list
+ * comparing names was more than a third of the time it took to generate a
+ * level.
+ */
+void trap_kinds_find(void)
+{
+	trap_kind_glyph = lookup_trap("glyph of warding");
+	trap_kind_rune = lookup_trap("explosive rune");
+	trap_kind_decoy = lookup_trap("decoy");
+	trap_kind_lock = lookup_trap("door lock");
+	trap_kind_web = lookup_trap("web");
+}
+
+/**
+ * Forget them with the list they point into.
+ */
+void trap_kinds_forget(void)
+{
+	trap_kind_glyph = NULL;
+	trap_kind_rune = NULL;
+	trap_kind_decoy = NULL;
+	trap_kind_lock = NULL;
+	trap_kind_web = NULL;
 }
 
 /**
@@ -712,7 +748,7 @@ int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx)
  */
 void square_set_door_lock(struct chunk *c, struct loc grid, int power)
 {
-	struct trap_kind *lock = lookup_trap("door lock");
+	struct trap_kind *lock = trap_kind_lock;
 	struct trap *trap;
 
 	/* Verify it's a closed door */
@@ -737,7 +773,7 @@ void square_set_door_lock(struct chunk *c, struct loc grid, int power)
  */
 int square_door_power(struct chunk *c, struct loc grid)
 {
-	struct trap_kind *lock = lookup_trap("door lock");
+	struct trap_kind *lock = trap_kind_lock;
 	struct trap *trap;
 
 	/* Verify it's a closed door */

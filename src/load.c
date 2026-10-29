@@ -2345,7 +2345,7 @@ static int rd_traps_aux(struct chunk *c)
 			square_set_trap(c, grid, trap);
 
 			/* Set decoy if appropriate */
-			if ((trap->kind == lookup_trap("decoy")) &&
+			if ((trap->kind == trap_kind_decoy) &&
 			    (c == cave)) {
 				c->decoy = grid;
 			}

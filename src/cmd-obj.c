@@ -505,7 +505,7 @@ static bool use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
-	struct trap_kind *rune = lookup_trap("glyph of warding");
+	struct trap_kind *rune = trap_kind_glyph;
 
 	/* Get arguments */
 	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK) assert(0);

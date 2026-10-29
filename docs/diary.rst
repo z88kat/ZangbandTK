@@ -120,6 +120,13 @@ locked doors on square after square, searched every kind before the one named fo
 a near match, though the names the rules use are always exact. It looks for the
 exact name first now, which is six to eight times faster, and the same seeded game
 plays out the same.
+
+That wasn't what the review had said, though, and Steven asked again: look each
+one up once. So the five kinds the rules name are found when ``trap.txt`` is read,
+and ``lookup_trap()`` is left for names that only turn up as the game runs, from a
+savefile or a pref file. Asking whether every square of a level is empty is
+another two and a half times faster again, seventeen to twenty times what it was
+this morning, and the seeded game still plays out the same.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI
