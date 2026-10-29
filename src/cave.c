@@ -397,6 +397,9 @@ static struct chunk *cave_new_sized(int height, int width, int mon_size) {
 								   sizeof(struct monster_group*));
 
 	c->turn = turn;
+
+	/* Traps loaded or moved into it may come with timers running */
+	c->trap_timers = true;
 	return c;
 }
 

@@ -365,17 +365,23 @@ same platform as the Apple Silicon the macOS jobs build on: Apple's ABI keeps
 job that compiles the game with the signedness a Raspberry Pi gives it.
 64-bit only, deliberately; 32-bit Raspberry Pi OS is out of scope.
 
-The Nintendo DS has a script of its own for testing, which needs only Docker:
+The Nintendo DS and 3DS have a script each for testing, and need only Docker:
 
 ```sh
 scripts/build-nds                       # build/nds/Zangband.nds and the card data
 scripts/build-nds --card /Volumes/SD    # ...and copy both to the card
+scripts/build-3ds --azahar              # build/3ds/Zangband.3dsx, onto Azahar's card
+scripts/build-3ds --cia                 # ...and Zangband.cia, to install
 ```
 
-It builds the ROM in the same BlocksDS container as `nintendo.yaml`, from a
-copy of `src` under `build/nds`, so nothing lands in the tree, and lays out the
-`zangbandtk` folder the card needs as the release does. `--card` leaves the
-save on the card alone. `--debug` adds the memory readout.
+Each builds in the same container as `nintendo.yaml`, from a copy of `src`
+under `build`, so nothing lands in the tree, and lays out the `zangbandtk`
+folder the card needs. `--card` leaves the save on the card alone. `--debug`
+adds the memory readout. The 3DS gets the full desktop world, not the DS's
+smaller one, which the release zip still gives both. Its `.cia` has a title
+ID of its own, `0004000007A6B000`, so that it installs beside upstream
+Angband's rather than over it; the tools that make it are built once into an
+image from [scripts/3ds-cia/Dockerfile](scripts/3ds-cia/Dockerfile).
 
 ### The tests
 

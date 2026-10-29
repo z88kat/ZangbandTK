@@ -11,7 +11,25 @@
 # Basic compiler stuff
 CC = i586-pc-msdosdjgpp-gcc
 WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
-CFLAGS = -O2 -D'iswprint(...)=0' -D'wcschr(...)=NULL' -D'wcslen(...)=0' $(WARNINGS)
+CFLAGS = -O2 -D'iswprint(...)=0' -D'wcschr(...)=NULL' -D'wcslen(...)=0' $(WARNINGS) $(LTO)
+
+# Link-time optimisation, which lets the compiler inline the game's small and
+# much-called helpers (square(), loc(), flag_has()) into the files that call
+# them, as every other download does.  Under DOSBox-X the same seeded borg game
+# played out the same with it and took a quarter fewer cycles once started.  In
+# one piece, because DJGPP's COFF has no symbol visibility: split into the
+# usual 35, the link warned 482 times that it could not hide what the pieces
+# share, and took longer.  "make LTO=" builds without.  Objects do not depend
+# on the flags, so a build directory made before this needs a "make clean".
+LTO ?= -flto -flto-partition=one
+
+# Seeing the whole game at the link, GCC 12 decides that three getters whose
+# results upstream casts away -- cmd_get_arg_string(), get_panel() and
+# ui_entry_combiner_get_funcs() -- might leave their answers unset, and warns
+# seven times.  None can fail where it is called, and no other GCC the
+# downloads are built with says so, though all of them use -Werror.  Each
+# file's own compile still checks.
+LDFLAGS += -Wno-maybe-uninitialized
 
 # Add additional search directives here
 INCLUDES = -I.

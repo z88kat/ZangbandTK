@@ -220,6 +220,14 @@ struct chunk {
 	struct heatmap scent;
 	struct loc decoy;
 
+	/**
+	 * Whether a trap here may have its timer running: true for a new chunk,
+	 * set whenever a timer is started, and cleared by process_world() once
+	 * none is left, so that it need not look at every grid each turn for
+	 * timers that nothing has started.
+	 */
+	bool trap_timers;
+
 	struct object **objects;
 	uint16_t obj_max;
 

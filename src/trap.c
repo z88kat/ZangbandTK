@@ -690,6 +690,7 @@ bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 		/* Set the timer */
 		current_trap->timeout = time;
 		disabled = true;
+		if (time > 0) c->trap_timers = true;
 
 		/* Message if requested */
 		if (domsg) {

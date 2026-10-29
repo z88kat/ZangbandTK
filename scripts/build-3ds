@@ -1,0 +1,200 @@
+#!/bin/bash
+#
+# Build the Nintendo 3DS executable, and the card data it reads, for testing.
+#
+# Use from anywhere in the tree, like so:
+#    scripts/build-3ds [--debug] [--clean] [--cia] [--card <dir> | --azahar]
+#
+#    --debug        compile in the memory readout (DEBUG_MEMORY_USAGE): free
+#                   memory, on screen
+#    --clean        throw away the objects and build everything again
+#    --cia          make a .cia as well, to install to the home menu with FBI
+#                   or with Azahar's File > Install CIA
+#    --card <dir>   then copy the game and the data to a mounted SD card, or a
+#                   folder standing in for one, leaving its saves alone
+#    --azahar       the same, to the SD card Azahar emulates on this machine
+#
+# The result is in build/3ds: Zangband.3dsx, which goes in /3ds/zangband/ on
+# the card; with --cia, Zangband.cia, which goes in /cias/; and
+# card/zangbandtk, the folder that goes at the root.  An installed .cia reads
+# the same folder as the .3dsx.
+#
+# The data is the full desktop world, not the DS's smaller one: the 3DS has
+# the memory for it, and a desktop save plays on it.  The release zip still
+# gives the 3DS the DS's world, as both read the one zangbandtk folder, so a
+# character made on a released build belongs to that world and not this one.
+#
+# It needs Docker and nothing else.  The build runs in the devkitARM container
+# CI uses (nintendo.yaml), with the release's -Werror.  The first --cia also
+# builds an image with the two tools a .cia needs (scripts/3ds-cia), which
+# takes a minute or two; after that it is reused.
+#
+set -o errexit
+
+usage() {
+	sed -n -e '3,30p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit "${1:-1}"
+}
+
+DEBUG=
+CLEAN=
+CIA=
+CARD=
+AZAHAR=
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--debug) DEBUG=1 ;;
+		--clean) CLEAN=1 ;;
+		--cia) CIA=1 ;;
+		--card)
+			[ $# -ge 2 ] || usage
+			CARD=$2
+			shift ;;
+		--azahar)
+			AZAHAR=1
+			if [ "$(uname)" = Darwin ]; then
+				CARD="$HOME/Library/Application Support/Azahar/sdmc"
+			else
+				CARD="${XDG_DATA_HOME:-$HOME/.local/share}/azahar-emu/sdmc"
+			fi ;;
+		-h|--help) usage 0 ;;
+		*) usage ;;
+	esac
+	shift
+done
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$ROOT"
+
+IMAGE=devkitpro/devkitarm
+OUT=build/3ds
+TREE=$OUT/tree
+# The four lib directories the game reads, as the release's Nintendo job
+# copies them.  The rest of lib is tilesets and audio a text build cannot use.
+DATA="gamedata help screens customize"
+
+if [ -n "$CARD" ] && [ ! -d "$CARD" ]; then
+	echo "No such folder: $CARD.  Is the card mounted, or Azahar set up?" >&2
+	exit 1
+fi
+if ! docker info >/dev/null 2>&1; then
+	echo "Docker is not running, or not installed.  Start it and try again." >&2
+	exit 1
+fi
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+	docker pull "$IMAGE"
+fi
+
+# Make cannot see a change of flags or of toolchain, and an executable linked
+# from objects built both ways is neither build.  So the object tree remembers
+# what built it, and is thrown away when that changes.
+CFLAGS=-Werror
+if [ -n "$DEBUG" ]; then
+	CFLAGS="$CFLAGS -DDEBUG_MEMORY_USAGE"
+fi
+STAMP="$(docker image inspect -f '{{.Id}}' "$IMAGE") $CFLAGS"
+if [ -n "$CLEAN" ] || [ "$(cat "$TREE/stamp" 2>/dev/null)" != "$STAMP" ]; then
+	rm -rf "$TREE"
+fi
+mkdir -p "$TREE/src"
+echo "$STAMP" > "$TREE/stamp"
+
+# Built from a copy of what git sees in src, tracked or not but never ignored,
+# so that uncommitted work is in the game and nothing lands in the tree; see
+# scripts/build-nds.  Makefile.3ds leaves what it links beside the sources
+# rather than with the objects, so those survive the refresh too, or every
+# build would link again.
+echo "==> Copying src to $TREE"
+find "$TREE/src" -mindepth 1 -maxdepth 1 ! -name 3ds-build \
+	! -name angband.elf ! -name angband.smdh ! -name angband.3dsx \
+	-exec rm -rf {} +
+git ls-files -z --cached --others --exclude-standard -- src |
+	while IFS= read -r -d '' f; do
+		if [ -e "$f" ]; then
+			printf '%s\0' "$f"
+		fi
+	done |
+	tar -cf - --null -T - | tar -xf - -C "$TREE"
+
+echo "==> Building with $IMAGE (CFLAGS=$CFLAGS)"
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/$TREE":/work -w /work/src \
+	-e CFLAGS="$CFLAGS" "$IMAGE" \
+	sh -c 'make -f Makefile.3ds -j"$(nproc)"'
+EXE=$TREE/src/angband.3dsx
+test -e "$EXE"
+cp "$EXE" "$OUT/Zangband.3dsx"
+
+# The .cia is made as nintendo.yaml makes it, with the same name and title ID,
+# and the two must keep agreeing.  The ID is this game's own rather than
+# upstream Angband's 000400000616E600, because a .cia installs over any title
+# with the same ID: the same reason the data is in /zangbandtk and not
+# /angband.  The icon and title are the ones Makefile.3ds builds into the
+# .3dsx, which cxitool carries over.  There is no banner, so the top screen
+# shows none when the game is picked in the home menu.
+CIA_IMAGE=zangband-3ds-cia
+CIA_TID=0004000007A6B000
+rm -f "$OUT/Zangband.cia"
+if [ -n "$CIA" ]; then
+	if ! docker image inspect "$CIA_IMAGE" >/dev/null 2>&1; then
+		echo "==> Building cxitool and makerom into $CIA_IMAGE, once"
+	fi
+	docker build --quiet --tag "$CIA_IMAGE" scripts/3ds-cia >/dev/null
+	echo "==> Making the .cia"
+	docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/$TREE":/work \
+		-w /work/src "$CIA_IMAGE" sh -c "
+			cxitool --name=Zangband --code=CTR-P-ZANGBAND --tid=$CIA_TID \
+				angband.3dsx angband.cxi &&
+			makerom -f cia -o angband.cia -target t \
+				-i angband.cxi:0:0 -ignoresign"
+	cp "$TREE/src/angband.cia" "$OUT/Zangband.cia"
+fi
+
+echo "==> Card data in $OUT/card"
+rm -rf "$OUT/card"
+mkdir -p "$OUT/card/zangbandtk/lib/user/save"
+for d in $DATA; do
+	cp -R "lib/$d" "$OUT/card/zangbandtk/lib/"
+done
+
+if [ -n "$CARD" ]; then
+	echo "==> Copying to $CARD"
+	# Only the directories the build owns are replaced.  save holds the
+	# character.
+	for d in $DATA; do
+		rm -rf "$CARD/zangbandtk/lib/$d"
+	done
+	# Through tar, with COPYFILE_DISABLE, so that macOS writes no ._ files
+	# onto the card's FAT for the extended attributes.
+	(cd "$OUT/card" && COPYFILE_DISABLE=1 tar -cf - zangbandtk) |
+		tar -xf - -C "$CARD"
+	mkdir -p "$CARD/3ds/zangband"
+	cat "$EXE" > "$CARD/3ds/zangband/Zangband.3dsx"
+	# Azahar installs a .cia from wherever it is on the Mac, so only a real
+	# card needs it, where FBI will find it.
+	if [ -n "$CIA" ] && [ -z "$AZAHAR" ]; then
+		mkdir -p "$CARD/cias"
+		cat "$OUT/Zangband.cia" > "$CARD/cias/Zangband.cia"
+	fi
+	sync
+fi
+
+echo
+echo "Game: $OUT/Zangband.3dsx ($(($(wc -c < "$OUT/Zangband.3dsx") / 1024)) KB)${DEBUG:+, with the memory readout}"
+if [ -n "$CIA" ]; then
+	echo "CIA:  $OUT/Zangband.cia ($(($(wc -c < "$OUT/Zangband.cia") / 1024)) KB), title ID $CIA_TID"
+fi
+echo "Data: $OUT/card/zangbandtk"
+if [ -n "$CARD" ]; then
+	echo "Both are on $CARD, the game in 3ds/zangband."
+	if [ -n "$CIA" ] && [ -n "$AZAHAR" ]; then
+		echo "Install the .cia with Azahar's File > Install CIA."
+	elif [ -n "$CIA" ]; then
+		echo "The .cia is in cias, to install with FBI."
+	fi
+	case "$CARD" in
+		/Volumes/*) echo "Eject it before taking it out: diskutil eject \"$CARD\"" ;;
+	esac
+else
+	echo "Copy the data to the root of the card and the game to /3ds/zangband,"
+	echo "or run again with --card <dir>, or --azahar."
+fi

@@ -1628,6 +1628,7 @@ static uint8_t flicker = 0;
 static void do_animation(void)
 {
 	int i;
+	bool moving = false;
 
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		uint8_t attr;
@@ -1657,7 +1658,8 @@ static void do_animation(void)
 			continue;
 
 		mon->attr = attr;
-		player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
+		player->upkeep->redraw |= PR_MONLIST;
+		moving = true;
 	}
 
 	/*
@@ -1667,7 +1669,7 @@ static void do_animation(void)
 	 * colour never reaches the screen.  One visible piece is enough to ask
 	 * for it, so this stops at the first.
 	 */
-	if (cave) {
+	if (cave && !moving) {
 		int j;
 
 		for (j = 1; j < cave->obj_max; j++) {
@@ -1678,12 +1680,56 @@ static void do_animation(void)
 			if (!square_in_bounds(cave, obj->grid)) continue;
 			if (!square_isseen(cave, obj->grid)) continue;
 
-			player->upkeep->redraw |= PR_MAP;
+			moving = true;
 			break;
 		}
 	}
 
 	flicker++;
+
+	/*
+	 * Then draw again, square by square, everything whose colour comes from
+	 * the frame just moved to -- which is why it is after the frame moves.
+	 * The redraw this asked for was the whole map, and with a monster of
+	 * many colours or a heap of gold in sight it asked every turn, whether
+	 * the animations were turned on or not.  What it changed was the same:
+	 * these monsters, and every piece of treasure the player knows of, in
+	 * sight or remembered, since that is recoloured wherever it is drawn.
+	 * Signalled rather than lit with square_light_spot(), which would have
+	 * the item list drawn again too.
+	 *
+	 * Except while hallucinating, when the whole map is still drawn again:
+	 * every square is then drawn at random, from the game's own dice, and
+	 * drawing fewer of them would change every roll that came after.
+	 */
+	if (moving && player->timed[TMD_IMAGE]) {
+		player->upkeep->redraw |= PR_MAP;
+	} else if (moving) {
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+
+			if (!mon || !mon->race || !monster_is_visible(mon)) continue;
+			if (!rf_has(mon->race->flags, RF_ATTR_MULTI)
+					&& !rf_has(mon->race->flags, RF_ATTR_FLICKER))
+				continue;
+			event_signal_point(EVENT_MAP, mon->grid.x, mon->grid.y);
+		}
+		if (player->cave) {
+			int j;
+
+			for (j = 1; j < player->cave->obj_max; j++) {
+				struct object *obj = player->cave->objects[j];
+
+				if (!obj || !obj->kind) continue;
+				if (!kf_has(obj->kind->kind_flags, KF_SHIMMER))
+					continue;
+				if (loc_is_zero(obj->grid)) continue;
+				if (!square_in_bounds(cave, obj->grid)) continue;
+				event_signal_point(EVENT_MAP, obj->grid.x,
+					obj->grid.y);
+			}
+		}
+	}
 }
 
 /**
@@ -2185,18 +2231,68 @@ static struct minimap_flags
 {
 	int win_idx;
 	bool needs_redraw;
+	/*
+	 * Whether anything on the map has changed since it was last drawn, and
+	 * the size of window it was drawn for.
+	 */
+	bool changed;
+	int drawn_wid, drawn_hgt;
+	size_t drawn_frame;
 } minimap_data[ANGBAND_TERM_MAX];
 
+/**
+ * Whether the player knows of any treasure on this level, which is drawn in
+ * the colour of the animation frame wherever it is, in sight or not.
+ */
+static bool known_shimmer(void)
+{
+	int j;
+
+	if (!player->cave) return false;
+	for (j = 1; j < player->cave->obj_max; j++) {
+		struct object *obj = player->cave->objects[j];
+
+		if (obj && obj->kind && !loc_is_zero(obj->grid)
+				&& kf_has(obj->kind->kind_flags, KF_SHIMMER))
+			return true;
+	}
+	return false;
+}
+
+/**
+ * The whole level, scaled down into its window -- drawn again only when
+ * something on the map has changed.  Every change to what the map shows is
+ * signalled square by square (or as a whole) with EVENT_MAP, which is how the
+ * main map keeps up too; this was drawn again from every square of the level
+ * at the end of every redraw, whatever it was for: a turn's regeneration, the
+ * sidebar, a message.  Two things change it with no signal, and for those it
+ * is drawn every time as it was: the animation frame moving on, when there is
+ * known treasure on the level to glint, and hallucination, which draws every
+ * square at random with the game's own dice.
+ */
 static void update_minimap_subwindow(game_event_type type,
 	game_event_data *data, void *user)
 {
 	struct minimap_flags *flags = user;
+
+	/* Noted even while resting or running, when the drawing waits */
+	if (type == EVENT_MAP || type == EVENT_DUNGEONLEVEL)
+		flags->changed = true;
+	if (type == EVENT_MAP) return;
 
 	if (player_resting_count(player) || player->upkeep->running) return;
 
 	if (type == EVENT_END) {
 		term *old = Term;
 		term *t = angband_term[flags->win_idx];
+
+		/* Nothing to draw that is not already there */
+		if (!flags->changed && t->wid == flags->drawn_wid
+				&& t->hgt == flags->drawn_hgt
+				&& !player->timed[TMD_IMAGE]
+				&& (animation_frame() == flags->drawn_frame
+					|| !known_shimmer()))
+			return;
 
 		/* Activate */
 		Term_activate(t);
@@ -2213,6 +2309,10 @@ static void update_minimap_subwindow(game_event_type type,
 		Term_activate(old);
 
 		flags->needs_redraw = false;
+		flags->changed = false;
+		flags->drawn_wid = t->wid;
+		flags->drawn_hgt = t->hgt;
+		flags->drawn_frame = animation_frame();
 	} else if (type == EVENT_DUNGEONLEVEL) {
 		/* XXX map_height and map_width need to be kept in sync with
 		 * display_map() */
@@ -2496,6 +2596,7 @@ static void subwindow_flag_changed(int win_idx, uint32_t flag, bool new_state)
 		case PW_MAP:
 		{
 			minimap_data[win_idx].win_idx = win_idx;
+			minimap_data[win_idx].changed = true;
 
 			register_or_deregister(EVENT_MAP,
 					       update_minimap_subwindow,

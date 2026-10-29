@@ -171,6 +171,55 @@ the size of the level each turn, and whether each kind of terrain carries sound
 looked up once a turn instead of through three calls for every neighbour of every
 square. It's three and a half times faster, the noise on every square is the same
 (18.7 million squares compared), and the seeded game plays out the same.
+
+Then the smaller jobs at the bottom of the review's list, all of them work done
+over the whole level when it needn't be. Every ten game turns, which at normal
+speed is every step, the game looked at every square for a trap with its timer
+running. There almost never is one. A level now notes when a timer is started, and
+once a pass finds none still running it stops looking until another is.
+
+A monster of many colours, or a heap of gold in sight, had the whole map drawn
+again. The review said that happened every 200 ms with the animations on. It
+happened every step as well, with them off, because the call that moves the
+colours on is made before every step whatever the option says. Now only the
+squares that change are drawn: those monsters, and every piece of treasure the
+player knows of, since remembered treasure glints too. Hallucination still has the
+whole map drawn. Every square is then made up from the game's own dice, and
+drawing fewer of them would change every roll that came after.
+
+The map window, which in ZangbandTK is the minimap pane, drew the whole level each
+time the screen was updated, and that's many times a step. Now it waits until
+something on the map has changed. To check it I had a scratch build compare the
+minimap with a fresh drawing at every update, and the main map square by square.
+My first version skipped six redraws it shouldn't have, all for remembered gold:
+the minimap shows it in whatever colour the current frame gives it, so it has to
+draw again when the frame has moved and the player knows of treasure on the level.
+With that, over four borg games, it skipped between a quarter and two-fifths of
+the redraws and never one it needed. The main map came out exactly as before,
+down to the same mismatches at the same turns. With all three changes the seeded
+game is 2% cheaper and plays out the same.
+
+The last one I've left with Steven. Every change of level saves the game, and the
+save writes ``lore.txt``, the monster memory, which for him is 312 monsters and
+160 KB now. On this Mac that takes 1.3 ms against the savefile's 0.8, and it
+matters most where saves go to an SD card. Most of it goes on building the text,
+which could be done faster without a byte of it changing. Writing it only when he
+saves or quits would be cheaper still, but a crash would lose whatever that
+session had learned about monsters, and that is his call.
+
+Steven asked me to check the link-time optimisation again, and nothing had yet
+tested it where it counts: no release had been built since the 22nd. A rehearsal
+of the release built every download, LTO on in each that should have it, and all
+of them passed. On today's code it still takes a third off the seeded game's
+cycles, and the game still plays out the same. DOS was the one download without
+it. Its linker can't load GCC's plugin, but GCC manages without one, and under
+DOSBox-X the same seeded borg game played out the same with it and took a
+quarter fewer cycles once it had started. It has to be linked in one piece,
+though. Split into the usual 35, the link printed 482 warnings, because COFF has
+no way to hide a symbol.
+
+
+25 October 2026 — on a real DS, and a fix I had to take back
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

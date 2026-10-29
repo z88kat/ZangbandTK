@@ -1152,26 +1152,37 @@ void process_world(struct chunk *c)
 	if (!(turn % 100))
 		equip_learn_after_time(player);
 
-	/* Decrease trap timeouts */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct loc grid = loc(x, y);
-			struct trap *trap = square(c, grid)->trap;
-			bool changed = false;
-			while (trap) {
-				if (trap->timeout) {
-					trap->timeout--;
-					if (!trap->timeout) {
-						changed = true;
+	/*
+	 * Decrease trap timeouts -- if any trap here may have one running
+	 * (see chunk.trap_timers); usually none has, and every grid of the
+	 * level was looked at every turn to find that out.
+	 */
+	if (c->trap_timers) {
+		bool running = false;
+
+		for (y = 0; y < c->height; y++) {
+			for (x = 0; x < c->width; x++) {
+				struct loc grid = loc(x, y);
+				struct trap *trap = square(c, grid)->trap;
+				bool changed = false;
+				while (trap) {
+					if (trap->timeout) {
+						trap->timeout--;
+						if (!trap->timeout) {
+							changed = true;
+						} else {
+							running = true;
+						}
 					}
+					trap = trap->next;
 				}
-				trap = trap->next;
-			}
-			if (changed && square_isseen(c, grid)) {
-				square_memorize_traps(c, grid);
-				square_light_spot(c, grid);
+				if (changed && square_isseen(c, grid)) {
+					square_memorize_traps(c, grid);
+					square_light_spot(c, grid);
+				}
 			}
 		}
+		c->trap_timers = running;
 	}
 
 

@@ -57,19 +57,30 @@ jobs:
           cp -rv bin/makerom /usr/local/bin
           popd
 
+      # The .cia is named for the game, not for the executable, and has a title
+      # ID of its own.  The 000400000616E600 this step had came with the recipe
+      # from upstream Angband and is Angband's, and a .cia installs over any
+      # title with the same ID: this one would have replaced Angband on a 3DS
+      # that had both.  The same reason the data is in /zangbandtk on the card
+      # and not /angband.  scripts/build-3ds --cia makes the same .cia locally,
+      # and the two must keep agreeing.  cxitool takes at most 8 characters for
+      # --name, which Zangband just fits.
+      #
+      # No -icon for makerom.  It was given src/nds/icon.smdh from inside src,
+      # which is not there, and makerom ignores -icon anyway when it builds a
+      # .cia from a .cxi.  The icon and title come from the .smdh Makefile.3ds
+      # builds into the .3dsx, which cxitool carries over.
+      #
       # The quoting to get progname may be too simple-minded:  what if there
-      # are single quotes in the steps.*.outputs.* stuff.  Restrict what's
-      # passed to cxitool's --name option to at most 8 characters since that
-      # is a limitation of that tool.
+      # are single quotes in the steps.*.outputs.* stuff.
       - name: Build Nintendo 3DS (cia)
         shell: bash
         run: |
           prog='${{ steps.get_names.outputs.progname }}'
-          procname=`echo "$prog" | head -c 8`
           pushd src/
           test -e "$prog".3dsx
-          cxitool --name "$procname" --code=CTR-P-`echo "$procname" | tr [:lower:] [:upper:]` --tid=000400000616E600 "$prog".3dsx "$prog".cxi
-          makerom -v -f cia -o "$prog".cia -target t -i "$prog".cxi:0:0 -ignoresign -icon src/nds/icon.smdh
+          cxitool --name=Zangband --code=CTR-P-ZANGBAND --tid=0004000007A6B000 "$prog".3dsx "$prog".cxi
+          makerom -v -f cia -o "$prog".cia -target t -i "$prog".cxi:0:0 -ignoresign
           test -e "$prog".cia
           popd
 
