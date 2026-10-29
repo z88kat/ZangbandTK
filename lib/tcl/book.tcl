@@ -96,6 +96,7 @@ proc book_show {} {
 
     set w .book.f
     set tv [book_tree]
+    book_headings $tv
     $tv delete [$tv children {}]
     set book(rows) {}
 
@@ -220,6 +221,20 @@ proc book_use {} {
     if {$cast} { book_cast } elseif {$study} { book_study }
 }
 
+# The sorted column's heading says so, and which way: up for the smallest
+# first, down for the largest.  Clicking it again turns the order round, which
+# without this left nothing on the screen to say that it had.
+proc book_headings {tv} {
+    global book
+    foreach col {name level mana fail info} {
+        set title [regsub { [▴▾]$} [$tv heading $col -text] {}]
+        if {$col eq $book(sort)} {
+            append title [expr {$book(down) ? " ▾" : " ▴"}]
+        }
+        $tv heading $col -text $title
+    }
+}
+
 proc book_sort {column} {
     global book
     if {$book(sort) eq $column} {
@@ -247,7 +262,8 @@ proc book_help {} {
     help_window [help_first [expr {$realm ne "" ? "realms#$realm" : ""}] \
         [expr {$realm ne "" ? "birth#$realm" : ""}] realms]
     set book(msg) "Choose a book and a spell; double-click to cast it, or to\
-        learn it if it is new.  Click a heading to sort."
+        learn it if it is new.  Click a heading to sort, and again to\
+        reverse."
 }
 
 # What the window uses itself stays here: the keys that move about the table.

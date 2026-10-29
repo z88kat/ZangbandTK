@@ -18,6 +18,8 @@
 # Built from Tk's own widgets in the classic theme (decision 18).
 
 set choose(sort) name
+# Clicking the sorted column's heading again turns its order round.
+set choose(reverse) 0
 set choose(rows) {}
 set choose(file) ""
 set choose(msg) ""
@@ -119,6 +121,7 @@ proc choose_fill {} {
         }
         saved { set rows [lsort -integer -decreasing -index 3 $rows] }
     }
+    if {$choose(reverse)} { set rows [lreverse $rows] }
     foreach row $rows {
         lassign $row n name desc saved state
         set when [expr {$saved ? [clock format $saved -format "%d %b %Y  %H:%M"] : ""}]
@@ -129,9 +132,14 @@ proc choose_fill {} {
         $tv see $keep
     }
 
-    # The sorted column's heading says so.
-    foreach {col title} {name Name desc Description saved Saved} {
-        $tv heading $col -text [expr {$col eq $choose(sort) ? "$title ▾" : $title}]
+    # The sorted column's heading says so, and which way: up for A to Z, down
+    # for the newest or the highest level first, which is where the dates and
+    # the descriptions start.
+    foreach {col title down} {name Name 0 desc Description 1 saved Saved 1} {
+        if {$col eq $choose(sort)} {
+            append title [expr {$down != $choose(reverse) ? " ▾" : " ▴"}]
+        }
+        $tv heading $col -text $title
     }
 }
 
@@ -142,7 +150,12 @@ proc choose_alive_first {a b} {
 
 proc choose_sort {col} {
     global choose
-    set choose(sort) $col
+    if {$choose(sort) eq $col} {
+        set choose(reverse) [expr {!$choose(reverse)}]
+    } else {
+        set choose(sort) $col
+        set choose(reverse) 0
+    }
     choose_fill
 }
 
