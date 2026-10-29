@@ -36,30 +36,34 @@
 struct trap_kind *trap_info;
 
 /**
- * Find a trap kind based on its short description
+ * Find a trap kind based on its short description: the first that matches it
+ * exactly, or failing that the first that contains it, ignoring case.
+ *
+ * The exact match is looked for on its own first.  Searching for a close match
+ * as it went, as this did, cost a case-blind substring search of every kind
+ * before the one named -- and the rules name a few kinds ("web", "decoy",
+ * "door lock") from predicates such as square_isempty() that level generation
+ * and monster movement ask of square after square.  That search was more than
+ * a third of the time it took to generate a level.  The answer is the same.
  */
 struct trap_kind *lookup_trap(const char *desc)
 {
 	int i;
-	struct trap_kind *closest = NULL;
 
 	/* Look for it */
 	for (i = 1; i < z_info->trap_max; i++) {
 		struct trap_kind *kind = &trap_info[i];
-		if (!kind->name)
-			continue;
-
-		/* Test for equality */
-		if (streq(desc, kind->desc))
+		if (kind->name && streq(desc, kind->desc))
 			return kind;
-
-		/* Test for close matches */
-		if (!closest && my_stristr(kind->desc, desc))
-			closest = kind;
 	}
 
-	/* Return our best match */
-	return closest;
+	/* Return the closest match, if any */
+	for (i = 1; i < z_info->trap_max; i++) {
+		struct trap_kind *kind = &trap_info[i];
+		if (kind->name && my_stristr(kind->desc, desc))
+			return kind;
+	}
+	return NULL;
 }
 
 /**

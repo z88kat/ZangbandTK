@@ -109,6 +109,17 @@ the size the fraction asks for, so a set the same size keeps it exactly. Changin
 the main window's font dropped the tiles to one cell as well, by reading the
 graphics mode where the tile size belongs. All three were upstream's, and still
 are.
+
+Two more from the same list. When the graphics device is reset under it, the SDL2
+front end is meant to make its windows' textures again, and it only ever made the
+ones that didn't exist: the test was the wrong way round, upstream too, so the
+windows went on drawing into textures that were gone. That can happen on Windows
+when the graphics driver restarts. It's rare, but the window goes blank when it
+does. And looking up a trap by name, which the rules do for webs, decoys and
+locked doors on square after square, searched every kind before the one named for
+a near match, though the names the rules use are always exact. It looks for the
+exact name first now, which is six to eight times faster, and the same seeded game
+plays out the same.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

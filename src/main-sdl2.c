@@ -5706,7 +5706,13 @@ static void recreate_textures(struct my_app *a, bool all)
 
 		/*
 		 * Recreate the textures for subwindows; those are all
-		 * dynamic.
+		 * dynamic.  After a device reset every texture is gone and
+		 * has to be made again.  After a reset of the render targets
+		 * these two keep working and lose only what was drawn on them,
+		 * which refresh_angband_terms() below puts back, so they are
+		 * left alone.  The tests here used to be the wrong way round:
+		 * a texture was made only if there was none, so a device
+		 * reset left every subwindow drawing with a dead one.
 		 */
 		for (j = 0; j < MAX_SUBWINDOWS; ++j) {
 			struct subwindow *sw = w->subwindows[j];
@@ -5714,14 +5720,18 @@ static void recreate_textures(struct my_app *a, bool all)
 			if (!sw) {
 				continue;
 			}
-			if (!sw->texture) {
-				SDL_DestroyTexture(sw->texture);
+			if (all || !sw->texture) {
+				if (sw->texture) {
+					SDL_DestroyTexture(sw->texture);
+				}
 				sw->texture = make_subwindow_texture(w,
 					sw->full_rect.w, sw->full_rect.h);
 				SDL_assert(sw->texture);
 			}
-			if (!sw->aux_texture) {
-				SDL_DestroyTexture(sw->aux_texture);
+			if (all || !sw->aux_texture) {
+				if (sw->aux_texture) {
+					SDL_DestroyTexture(sw->aux_texture);
+				}
 				sw->aux_texture =
 					make_subwindow_texture(w, 1, 1);
 				SDL_assert(sw->aux_texture);
