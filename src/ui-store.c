@@ -35,6 +35,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-spell.h"
 #include "player-util.h"
 #include "store.h"
 #include "wild.h"
@@ -791,7 +792,7 @@ static void store_examine(struct store_context *ctx, int item)
 	textblock_free(tb);
 
 	/* Browse book, then prompt for a command */
-	if (obj_can_browse(obj))
+	if (player_object_to_book(player, obj))
 		textui_book_browse(obj);
 }
 

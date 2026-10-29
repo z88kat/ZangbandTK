@@ -6759,7 +6759,9 @@ static int item_actions(struct object *obj, struct item_action *out, int max)
 			ACT(CMD_CAST, "Cast", true);
 		if (obj_can_study(obj) && player_can_study(player, false))
 			ACT(CMD_STUDY, "Study", true);
-		if (player_can_read(player, false))
+		/* Only a book of a realm studied; the pack greys the others */
+		if (player_can_read(player, false)
+				&& player_object_to_book(player, obj))
 			ACT(CMD_BROWSE_SPELL, "Browse", true);
 	} else if (obj_is_useable(obj)) {
 		if (tval_is_wand(obj))

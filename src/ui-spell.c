@@ -316,12 +316,14 @@ static void spell_menu_browse(struct menu *m, const char *noun)
  */
 void textui_book_browse(const struct object *obj)
 {
-	struct menu *m;
-	const char *noun = player_object_to_book(player, obj)->realm->spell_noun;
+	/* No book for a realm the character does not study, though the class
+	 * carries it */
+	const struct class_book *book = player_object_to_book(player, obj);
+	struct menu *m = book ? spell_menu_new(obj, spell_okay_to_browse, true)
+		: NULL;
 
-	m = spell_menu_new(obj, spell_okay_to_browse, true);
 	if (m) {
-		spell_menu_browse(m, noun);
+		spell_menu_browse(m, book->realm->spell_noun);
 		spell_menu_destroy(m);
 	} else {
 		msg("You cannot browse that.");
@@ -355,15 +357,15 @@ int textui_get_spell_from_book(struct player *p, const char *verb,
 	struct object *book, const char *error,
 	bool (*spell_filter)(const struct player *p, int spell_index))
 {
-	const char *noun = player_object_to_book(p, book)->realm->spell_noun;
+	const struct class_book *cb = player_object_to_book(p, book);
 	struct menu *m;
 
 	track_object(p->upkeep, book);
 	handle_stuff(p);
 
-	m = spell_menu_new(book, spell_filter, false);
+	m = cb ? spell_menu_new(book, spell_filter, false) : NULL;
 	if (m) {
-		int spell_index = spell_menu_select(m, noun, verb);
+		int spell_index = spell_menu_select(m, cb->realm->spell_noun, verb);
 		spell_menu_destroy(m);
 		return spell_index;
 	} else if (error) {

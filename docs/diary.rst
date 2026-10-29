@@ -127,6 +127,21 @@ and ``lookup_trap()`` is left for names that only turn up as the game runs, from
 savefile or a pref file. Asking whether every square of a level is empty is
 another two and a half times faster again, seventeen to twenty times what it was
 this morning, and the seeded game still plays out the same.
+
+Then the game crashed under Steven. Niondis, a Mage who doesn't study Trump,
+picked up a deck of cards. The pack showed it grey, as it should, but the item
+menu still offered Browse, and choosing it brought the game down. Since realm
+choice started deciding which books can be read, the lookup that finds a book's
+spells finds nothing for a book of a realm not chosen, and browsing went
+straight on to that realm's name for its title without checking. Until this
+morning that would have been an ordinary crash on a null pointer. With
+link-time optimisation the lookup is compiled into the browse, and because
+reading through a null pointer can't happen in a correct program, the compiler
+took out the test for the end of the list. The search ran off the end of the
+Mage's books and on through memory until something looked enough like a book.
+Browse says it can't now, the menus don't offer it for a grey book, and choosing
+a spell has the same check. Before trusting any of that I made the old code
+crash on a copy of his save, from the menu and from the b key.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

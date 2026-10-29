@@ -32,6 +32,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
@@ -682,7 +683,9 @@ int context_menu_object(struct object *obj)
 		if (obj_can_study(obj) && player_can_study(player, false))
 			ADD_LABEL("Study", CMD_STUDY, MN_ROW_VALID);
 
-		if (player_can_read(player, false))
+		/* Only a book of a realm the character studies */
+		if (player_can_read(player, false)
+				&& player_object_to_book(player, obj))
 			ADD_LABEL("Browse", CMD_BROWSE_SPELL, MN_ROW_VALID);
 	} else if (obj_is_useable(obj)) {
 		if (tval_is_wand(obj)) {
