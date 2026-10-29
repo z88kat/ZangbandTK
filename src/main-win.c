@@ -1820,13 +1820,26 @@ static errr Term_xtra_win_event(int v)
 	/* Wait or check for an event */
 	if (v)
 	{
-		int i = 0;
+		/*
+		 * Sleep until a message comes, updating animations every 0.2s.
+		 * It used to sleep 0.02s at a time between looks, so a key waited
+		 * up to that long before the game saw it, and a game waiting for
+		 * one woke fifty times a second.  MWMO_INPUTAVAILABLE wakes for a
+		 * message already queued, not only for one newer than the last
+		 * look.
+		 */
+		DWORD last_idle = GetTickCount() - 200;
+
 		while (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			/* Do animation updates (once every ten iterations), then
-			 * sleep 0.02s and try again */
-			if (i == 0) idle_update();
-			Sleep(20);
-			i = (i + 1) % 10;
+			DWORD waited = GetTickCount() - last_idle;
+
+			if (waited >= 200) {
+				idle_update();
+				last_idle = GetTickCount();
+				waited = 0;
+			}
+			(void) MsgWaitForMultipleObjectsEx(0, NULL, 200 - waited,
+				QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);

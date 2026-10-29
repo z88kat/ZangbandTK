@@ -435,6 +435,7 @@ proc store_window {} {
 foreach event {LEAVE_WORLD ENTER_WORLD} {
     bind . <<Angband_$event>> {+ store_check }
 }
+# A purchase sends three of these at once: see refresh_soon.
 foreach event $store(refresh) {
-    bind . <<Angband_$event>> {+ store_refresh }
+    bind . <<Angband_$event>> {+ refresh_soon store_refresh }
 }

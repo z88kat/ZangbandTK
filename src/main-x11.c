@@ -108,6 +108,8 @@
 
 #ifdef USE_X11
 
+#include <sys/select.h>
+#include <sys/time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -1808,13 +1810,38 @@ static errr CheckEvent(bool wait)
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
 
-	/* Wait in 0.02s increments while updating animations every 0.2s */
-	i = 0;
-	while (!XPending(Metadpy->dpy)) {
-		if (terms_disconnecting) return 1;
-		if (i == 0) idle_update();
-		usleep(20000);
-		i = (i + 1) % 10;
+	/*
+	 * Sleep until the server sends something, updating animations every
+	 * 0.2s.  It used to sleep 0.02s at a time between looks, so a key
+	 * waited up to that long before the game saw it, and a game waiting
+	 * for one woke fifty times a second.  XPending() has flushed what we
+	 * sent and read what was there, so an empty queue means an idle
+	 * socket, and select() wakes the moment it is not.
+	 */
+	{
+		int fd = ConnectionNumber(Metadpy->dpy);
+		struct timeval tv;
+		long long next_idle, now;
+
+		gettimeofday(&tv, NULL);
+		next_idle = (long long)tv.tv_sec * 1000000 + tv.tv_usec;
+		while (!XPending(Metadpy->dpy)) {
+			fd_set readable;
+
+			if (terms_disconnecting) return 1;
+			gettimeofday(&tv, NULL);
+			now = (long long)tv.tv_sec * 1000000 + tv.tv_usec;
+			if (now >= next_idle) {
+				idle_update();
+				next_idle = now + 200000;
+				continue;
+			}
+			tv.tv_sec = (long)((next_idle - now) / 1000000);
+			tv.tv_usec = (long)((next_idle - now) % 1000000);
+			FD_ZERO(&readable);
+			FD_SET(fd, &readable);
+			(void) select(fd + 1, &readable, NULL, NULL, &tv);
+		}
 	}
 
 	/* Load the Event */

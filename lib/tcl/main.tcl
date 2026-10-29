@@ -358,6 +358,29 @@ source [file join [file dirname [info script]] debug.tcl]
 source [file join [file dirname [info script]] accel.tcl]
 source [file join [file dirname [info script]] portrait.tcl]
 
+# Run a window's refresh once the events now queued have all been handled,
+# however many of them asked for it.
+#
+# The windows below rebuild themselves on the game's events, and one turn can
+# send several that each window listens to: a monster's blow, the experience
+# for killing it, the gold it dropped, all to the Character window; gold, the
+# pack and the store's stock to the Store window on every purchase.  Bound
+# straight to the refresh, each was a whole rebuild of a window that only the
+# last of them would show.  The Progress strip did this from the start.
+proc refresh_soon {cmd} {
+    global refresh_soon
+    if {[info exists refresh_soon($cmd)]} return
+    set refresh_soon($cmd) 1
+    after idle [list refresh_soon_run $cmd]
+}
+
+proc refresh_soon_run {cmd} {
+    global refresh_soon
+    # Cleared first, so an event the refresh itself causes asks again.
+    unset -nocomplain refresh_soon($cmd)
+    uplevel #0 $cmd
+}
+
 # Then the windows, which are Tk's own widgets in Tk's classic theme and
 # nothing else (decision 18).
 source [file join [file dirname [info script]] character.tcl]

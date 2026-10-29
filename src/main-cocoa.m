@@ -1770,6 +1770,9 @@ static void draw_image_tile(
     /* Is the last time we drew, so we can throttle drawing. */
     CFAbsoluteTime lastRefreshTime;
 
+    /* Whether a refresh came too soon and left its changes undrawn. */
+    BOOL pendingRefresh;
+
     /* Flags whether or not a fullscreen transition is in progress. */
     BOOL inFullscreenTransition;
 
@@ -1829,6 +1832,15 @@ static void draw_image_tile(
  * rectangles for the changed areas.
  */
 - (void)computeInvalidRects;
+
+/**
+ * Hand what has changed to AppKit to draw, unless whenDue is set and the last
+ * frame was too recent for the frame rate, in which case leave it for later.
+ */
+- (void)refreshChanges:(BOOL)whenDue;
+
+/** Whether a refresh left changes undrawn. */
+- (BOOL)hasPendingRefresh;
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
 
@@ -2217,22 +2229,34 @@ static BOOL initialized = NO;
 
 /**
  * If we're trying to limit ourselves to a certain number of frames per second,
- * then compute how long it's been since we last drew, and then wait until the
- * next frame has passed. */
-- (void)throttle
+ * leave a refresh that comes sooner than a frame after the last one undrawn:
+ * its changes stay marked and go with the next refresh that is due, or before
+ * the game next waits (flush_pending_refreshes()).
+ *
+ * It used to wait out the rest of the frame instead, asleep in drawRect --
+ * which runs on the thread that runs the game, so a run or a rest could take
+ * no more steps a second than there were frames, unless the frame rate was
+ * set to Infinite.  The screen still shows at most that many frames.
+ */
+- (void)refreshChanges:(BOOL)whenDue
 {
-    if (frames_per_second > 0)
+    CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
+
+    if (whenDue && frames_per_second > 0
+	    && now - self->lastRefreshTime < 1. / (double)frames_per_second)
     {
-        CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
-        CFTimeInterval timeSinceLastRefresh = now - self->lastRefreshTime;
-        CFTimeInterval timeUntilNextRefresh = (1. / (double)frames_per_second) - timeSinceLastRefresh;
-        
-        if (timeUntilNextRefresh > 0)
-        {
-            usleep((unsigned long)(timeUntilNextRefresh * 1000000.));
-        }
+	self->pendingRefresh = YES;
+	return;
     }
-    self->lastRefreshTime = CFAbsoluteTimeGetCurrent();
+    [self computeInvalidRects];
+    [self.changes clear];
+    self->pendingRefresh = NO;
+    self->lastRefreshTime = now;
+}
+
+- (BOOL)hasPendingRefresh
+{
+    return self->pendingRefresh;
 }
 
 - (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile screenFont:(NSFont*)font
@@ -3246,11 +3270,6 @@ static int compare_nsrect_yorigin_greater(const void *ap, const void *bp)
  */
 - (void)drawRect:(NSRect)rect inView:(NSView *)view
 {
-    /*
-     * Take this opportunity to throttle so we don't flush faster than desired.
-     */
-    [self throttle];
-
     CGFloat bottomY =
 	self.borderSize.height + self.cellSize.height * self.rows;
     CGFloat rightX =
@@ -4581,6 +4600,26 @@ static errr Term_xtra_cocoa_react(void)
 /**
  * Do a "special thing"
  */
+/**
+ * Hand AppKit whatever a refresh left undrawn because it came too soon after
+ * the last frame (refreshChanges:), in every term: the game is about to wait,
+ * for a key or for an animation's frame, and the screen must show where it is.
+ */
+static void flush_pending_refreshes(void)
+{
+    for (int i = 0; i < ANGBAND_TERM_MAX; i++) {
+	AngbandContext *context;
+
+	if (!angband_term[i]) {
+	    continue;
+	}
+	context = (__bridge AngbandContext*) (angband_term[i]->data);
+	if (context && [context hasPendingRefresh]) {
+	    [context refreshChanges:NO];
+	}
+    }
+}
+
 static errr Term_xtra_cocoa(int n, int v)
 {
     errr result = 0;
@@ -4608,6 +4647,10 @@ static errr Term_xtra_cocoa(int n, int v)
 
 	    /* Process pending events */
         case TERM_XTRA_EVENT:
+	    /* Show everything before waiting for a key. */
+	    if (v) {
+		flush_pending_refreshes();
+	    }
 	    /* Process an event */
 	    (void)check_events(v);
 	    break;
@@ -4644,6 +4687,9 @@ static errr Term_xtra_cocoa(int n, int v)
 	    /* If needed */
 	    if (v > 0) {
 		double seconds = v / 1000.;
+
+		/* An animation's frame is held this long: show it first. */
+		flush_pending_refreshes();
 		NSDate* date = [NSDate dateWithTimeIntervalSinceNow:seconds];
 		do {
 		    NSEvent* event;
@@ -4672,8 +4718,7 @@ static errr Term_xtra_cocoa(int n, int v)
 		if (! isVisible) {
 		    [angbandContext.contents removeCursor];
 		}
-		[angbandContext computeInvalidRects];
-		[angbandContext.changes clear];
+		[angbandContext refreshChanges:YES];
 	    }
             break;
 

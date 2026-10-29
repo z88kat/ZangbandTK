@@ -218,6 +218,42 @@ quarter fewer cycles once it had started. It has to be linked in one piece,
 though. Split into the usual 35, the link printed 482 warnings, because COFF has
 no way to hide a symbol.
 
+Then Steven, walking east along a road at night, watched the road behind him
+vanish when the map redrew, leaving only the trees. His first thought was that
+we had optimised too far today, and so was mine, but none of it was today's.
+Walking near the edge of the live surface rebuilds it, and since August the
+rebuild has carried the map across, then lit the new surface for the hour. At
+night that lighting is upstream's nightfall in town, which forgets every floor
+square not lit, and road is floor. Daytime never showed it. I got it to happen
+headless: twelve steps east at night, across a rebuild, and five of the squares
+walked were forgotten. The code as it was before this morning lost them too. On
+the surface nightfall no longer forgets, just as daylight there was already not
+allowed to teach. That holds at dusk as well, which used to forget the whole
+town's ground every evening. The road he has already lost stays lost.
+
+Then the rest of the review's list, which was about the front ends, and most of
+it was one mistake made four times: waiting for a key by sleeping and then
+looking. SDL2 slept a frame between looks and dealt with one event per look,
+and a letter is two events. X11 and Windows slept 20 ms at a time. All three
+now sleep until something arrives. Under Xvfb a key took 12.6 ms on average to
+reach the X11 game and now takes under half a millisecond, and a game waiting
+for one wakes eight times a second instead of fifty. The Mac app slept inside
+its drawing, on the thread the game runs on, so a run or a rest took no more
+steps a second than there were frames. It now skips a frame rather than wait
+for one. SDL2 was also putting every step on the screen twice.
+
+In ZangbandTK the map's tiles go to Tk without their transparency now. Every
+pane is black underneath and every tile is solid or clear, and Tk had been
+reading the alpha of the whole picture on each update and building a region out
+of it. With Neon that halved the time Tk spends taking the tiles. With David
+Gervais' set, which is mostly clear pixels, it cut it tenfold. A full redraw no
+longer sends the canvas some 4,600 commands that change nothing, and the
+windows that rebuild on the game's events now do it once per burst. The
+Character window had been rebuilding four times over for a purchase and a hit.
+The Tk changes were checked against the old code pixel by pixel and command by
+command, and nothing differed. The Mac and Windows changes were only built, not
+played: Steven will see the Mac one, and CI the Windows one.
+
 
 25 October 2026 — on a real DS, and a fix I had to take back
 ============================================================

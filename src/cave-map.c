@@ -556,7 +556,8 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
  * True for a town, where a resident may fairly be assumed to know the place.
  * False for the wilderness surface (ZangbandTK): daylight there means you can
  * see as far as the ground allows, not that you have been told what is over
- * the next hill.
+ * the next hill.  And the other way round: there nightfall does not make the
+ * player forget the ground they have walked.
  */
 void cave_illuminate(struct chunk *c, bool daytime, bool memorize)
 {
@@ -588,8 +589,15 @@ void cave_illuminate(struct chunk *c, bool daytime, bool memorize)
 				if (light && memorize) square_memorize(c, grid);
 			} else if (!square_isbright(c, grid)) {
 				sqinfo_off(square(c, grid)->info, SQUARE_GLOW);
-				/* Like cave_unlight(), forget "boring" grids */
-				if (square_isfloor(c, grid))
+				/*
+				 * Like cave_unlight(), forget "boring" grids -- but not on
+				 * the surface.  The surface is lit again every time its
+				 * window is rebuilt, which at night is every few dozen steps,
+				 * and this ran after generate_level() had carried the map
+				 * across: the road a player had just walked vanished from
+				 * behind them, all but what their light still reached.
+				 */
+				if (memorize && square_isfloor(c, grid))
 					square_forget(c, grid);
 			}
 		}

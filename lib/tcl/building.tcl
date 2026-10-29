@@ -288,4 +288,4 @@ proc building_window {} {
 foreach event {CHOOSE LEAVE_SERVICE} {
     bind . <<Angband_$event>> {+ building_check }
 }
-bind . <<Angband_GOLD>> {+ building_refresh }
+bind . <<Angband_GOLD>> {+ refresh_soon building_refresh }

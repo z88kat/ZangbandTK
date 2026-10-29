@@ -1175,7 +1175,7 @@ proc items_forget {} {
 
 # Up to date whether or not anyone is looking: the bindings live on "." and
 # cost nothing while the window is closed, because items_refresh returns at
-# once when there is none.
+# once when there is none.  Once for each burst of events: see refresh_soon.
 foreach event $items(events) {
-    bind . <<Angband_$event>> {+ items_refresh }
+    bind . <<Angband_$event>> {+ refresh_soon items_refresh }
 }

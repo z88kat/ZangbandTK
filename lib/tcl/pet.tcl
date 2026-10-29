@@ -260,5 +260,5 @@ proc pet_window {} {
 # the free allowance is a function of the character's level, so gaining one
 # can move the stable from free to charged without any pet changing.
 foreach event {MONSTERLIST PLAYERLEVEL ENTER_GAME NEW_LEVEL_DISPLAY} {
-    bind . <<Angband_$event>> {+ pet_refresh }
+    bind . <<Angband_$event>> {+ refresh_soon pet_refresh }
 }

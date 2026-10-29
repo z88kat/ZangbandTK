@@ -962,6 +962,7 @@ static void redraw_window_while_menu_active(struct sdlpui_window *window)
 	render_window_while_menu_active(window);
 	SDL_RenderPresent(window->renderer);
 	window->next_redraw = SDL_GetTicks() + window->delay;
+	window->dirty = false;
 }
 
 /** this function is mostly used while normally playing the game */
@@ -976,6 +977,14 @@ static void redraw_window(struct sdlpui_window *window)
 	render_all(window);
 	SDL_RenderPresent(window->renderer);
 	window->next_redraw = SDL_GetTicks() + window->delay;
+
+	/*
+	 * What is on the screen is now what was drawn.  Left set, a step put
+	 * two frames up: the one term_xtra_fresh() presented, and the same
+	 * again when the game next waited for a key, which redraws any window
+	 * still marked.
+	 */
+	window->dirty = false;
 }
 
 static void try_redraw_window(struct sdlpui_window *window)
@@ -985,14 +994,17 @@ static void try_redraw_window(struct sdlpui_window *window)
 	}
 }
 
+/*
+ * The menu bar is drawn by redraw_window(), with the rest of the window: it
+ * used to be drawn here first as well, every button's caption rendered again
+ * only to be painted over by the window's background.
+ */
 static void redraw_all_windows(struct my_app *a, bool dirty)
 {
 	for (unsigned i = 0; i < MAX_WINDOWS; i++) {
 		struct sdlpui_window *window = get_window_direct(a, i);
 		if (window != NULL && (dirty ? window->dirty : true)) {
-			render_status_bar(window);
 			redraw_window(window);
-			window->dirty = false;
 		}
 	}
 }
@@ -2408,6 +2420,8 @@ static void signal_move_state(struct sdlpui_window *window)
 		mb->v.toggled = (window->move_state.active)
 			? SDL_TRUE : SDL_FALSE;
 		window->status_bar->dirty = SDL_TRUE;
+		/* Or a window already put on the screen would not show it. */
+		window->dirty = true;
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -2441,6 +2455,8 @@ static void signal_size_state(struct sdlpui_window *window)
 		mb->v.toggled = (window->size_state.active)
 			? SDL_TRUE : SDL_FALSE;
 		window->status_bar->dirty = SDL_TRUE;
+		/* Or a window already put on the screen would not show it. */
+		window->dirty = true;
 	}
 
 	SDL_SetWindowGrab(window->window, was_active ? SDL_FALSE : SDL_TRUE);
@@ -4732,20 +4748,40 @@ static errr term_xtra_event(int v)
 	redraw_all_windows(subwindow->app, true);
 
 	if (v) {
+		/*
+		 * Sleep until something happens, rather than for a frame at a
+		 * time between looks.  Each look handled one event, and a letter
+		 * is two of them (SDL_KEYDOWN, then SDL_TEXTINPUT), so a key
+		 * reached the game 16 to 33 ms after it was pressed at 60 Hz, and
+		 * a game waiting for one woke sixty times a second to find
+		 * nothing.  SDL_WaitEventTimeout() returns as soon as an event is
+		 * queued, leaving it for get_event(); its timeout keeps
+		 * idle_update(), the animations, as often as it was.
+		 */
+		Uint32 period = DEFAULT_IDLE_UPDATE_PERIOD
+			* subwindow->window->delay;
+		Uint32 next_idle = SDL_GetTicks() + period;
+
 		while (true) {
-			for (int i = 0; i < DEFAULT_IDLE_UPDATE_PERIOD; i++) {
-				if (terms_suspending) {
-					signals_perform_deferred_suspend();
-				}
-				if (get_event(subwindow->app)) {
-					return 0;
-				}
-				if (terms_disconnecting) {
-					return 0;
-				}
-				SDL_Delay(subwindow->window->delay);
+			Uint32 now;
+
+			if (terms_suspending) {
+				signals_perform_deferred_suspend();
 			}
-			idle_update();
+			if (get_event(subwindow->app)) {
+				return 0;
+			}
+			if (terms_disconnecting) {
+				return 0;
+			}
+			now = SDL_GetTicks();
+			if (SDL_TICKS_PASSED(now, next_idle)) {
+				idle_update();
+				next_idle = SDL_GetTicks() + period;
+			} else {
+				(void) SDL_WaitEventTimeout(NULL,
+					(int) (next_idle - now));
+			}
 		}
 	} else {
 		if (terms_suspending) {

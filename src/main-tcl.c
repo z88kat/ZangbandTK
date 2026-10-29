@@ -185,6 +185,9 @@ struct term_data {
 
 	/* Per cell: whether its text item is drawn, or hidden as blank. */
 	unsigned char *shown;
+
+	/* Per cell: the colour its text item was last given, or -1 if not known. */
+	short *fill;
 };
 
 /*
@@ -326,13 +329,19 @@ static Tcl_Obj *cfg_normal;
 
 static void colours_init(void)
 {
-	int i;
+	int i, j;
 
 	for (i = 0; i < MAX_COLORS; i++) {
 		strnfmt(colour_name[i], sizeof(colour_name[i]), "#%02x%02x%02x",
 				angband_color_table[i][1],
 				angband_color_table[i][2],
 				angband_color_table[i][3]);
+	}
+
+	/* What the cells were given was a name, and the names may have changed. */
+	for (j = 0; j < td_count; j++) {
+		if (!td[j].fill) continue;
+		for (i = 0; i < td[j].cols * td[j].rows; i++) td[j].fill[i] = -1;
 	}
 }
 
@@ -347,6 +356,12 @@ static void colours_init(void)
  * the step.  A hidden item is passed over.  The text is set all the same, so
  * what a pane says reads back as it did; the state is sent only when it
  * changes.
+ *
+ * And nothing is sent for a cell that is already a hidden space in that
+ * colour, because nothing would change.  Every tile blanks the text of each
+ * cell it covers, whether or not there was text there (Term_pict_tcl), so a
+ * full redraw of a map in tiles was some 1,900 such commands, every one of
+ * them asking the canvas to redraw a cell that looked the same.
  */
 static void cell_set(term_data *td, int x, int y, const char *ch, int attr)
 {
@@ -357,6 +372,11 @@ static void cell_set(term_data *td, int x, int y, const char *ch, int attr)
 	int i;
 
 	if (x < 0 || y < 0 || x >= td->cols || y >= td->rows) return;
+
+	if (blank && td->shown && !td->shown[idx] && td->fill
+			&& td->fill[idx] == attr % MAX_COLORS)
+		return;
+	if (td->fill) td->fill[idx] = (short)(attr % MAX_COLORS);
 
 	objv[0] = Tcl_NewStringObj(td->path, -1);
 	objv[1] = cfg_itemconfigure;
@@ -702,12 +722,29 @@ static void tiles_dirty(term_data *t, int x, int y, int w, int h)
 }
 
 /*
+ * The block tiles_flush() hands over without transparency, and its size.
+ */
+static unsigned char *tiles_flat;
+static size_t tiles_flat_size;
+
+/*
  * Give the photo what has been drawn since it was last given anything.
  *
  * As a SET of the pixels exactly as they are here, which is the same photo the
  * tile-at-a-time puts made: the overlay rule they asked Tk for is applied in
  * blit_tile instead, with Tk's own arithmetic, so a monster on grass blends to
  * the byte as it did.
+ *
+ * And without the alpha, when that changes nothing on the screen.  A block with
+ * an alpha channel still had Tk read the alpha of the whole photo, once per
+ * refresh now rather than once per tile, and build the region its opaque
+ * pixels cover row by row (tkImgPhoto.c).  But every term is a black canvas
+ * with nothing under its photo, and tiles are either solid or clear -- Neon has
+ * no clear pixels at all -- so a clear pixel shows black, and black is what it
+ * is given.  Tk then has nothing to look at.  The few tiles with soft edges
+ * (David Gervais' set) go over as they did, alpha and all: the screen blends
+ * those itself, and a copy blended here might round them differently.  td->pix
+ * keeps the alpha either way; last_sight_notice() reads it there.
  */
 static void tiles_flush(term_data *t)
 {
@@ -715,6 +752,9 @@ static void tiles_flush(term_data *t)
 	Tk_PhotoHandle photo;
 	int x = t->dirty_x0, y = t->dirty_y0;
 	int w = t->dirty_x1 - t->dirty_x0, h = t->dirty_y1 - t->dirty_y0;
+	size_t need;
+	int row, col;
+	bool soft = false;
 
 	if (w <= 0 || h <= 0) return;
 	t->dirty_x0 = t->dirty_y0 = t->dirty_x1 = t->dirty_y1 = 0;
@@ -738,6 +778,35 @@ static void tiles_flush(term_data *t)
 	blk.offset[1] = 1;
 	blk.offset[2] = 2;
 	blk.offset[3] = 3;
+
+	need = (size_t)w * h * 4;
+	if (need > tiles_flat_size) {
+		tiles_flat = mem_realloc(tiles_flat, need);
+		tiles_flat_size = need;
+	}
+	for (row = 0; row < h && !soft; row++) {
+		const unsigned char *s = blk.pixelPtr + (size_t)row * blk.pitch;
+		unsigned char *d = tiles_flat + (size_t)row * w * 4;
+
+		for (col = 0; col < w; col++, s += 4, d += 4) {
+			if (s[3] == 255) {
+				d[0] = s[0];
+				d[1] = s[1];
+				d[2] = s[2];
+			} else if (!s[3]) {
+				d[0] = d[1] = d[2] = 0;
+			} else {
+				soft = true;
+				break;
+			}
+		}
+	}
+	if (!soft) {
+		blk.pixelPtr = tiles_flat;
+		blk.pitch = w * 4;
+		/* An alpha offset outside the pixel is Tk's "no alpha channel". */
+		blk.offset[3] = blk.pixelSize;
+	}
 
 	Tk_PhotoPutBlock(interp, photo, &blk, x, y, w, h, TK_PHOTO_COMPOSITE_SET);
 }
@@ -9164,11 +9233,24 @@ static void last_sight_notice(game_event_type type, game_event_data *data,
 	if (last_sight) mem_free(last_sight);
 	last_sight = NULL;
 
-	if (!player || !player->is_dead || !td[0].screen) return;
-	/* The photo is a refresh behind the drawing until it is given it. */
-	tiles_flush(&td[0]);
-	if (!Tk_PhotoGetImage(td[0].screen, &b) || b.width <= 0 || b.height <= 0)
-		return;
+	if (!player || !player->is_dead || !td[0].pix) return;
+
+	/*
+	 * The term's own pixels rather than the photo's.  They are what the photo
+	 * shows, a refresh sooner, and they keep the tiles' transparency, which is
+	 * how the tiles are told from the margin around them below -- and which
+	 * the photo is mostly not given now (tiles_flush).
+	 */
+	b.pixelPtr = td[0].pix;
+	b.width = td[0].pix_w;
+	b.height = td[0].pix_h;
+	b.pitch = td[0].pix_w * 4;
+	b.pixelSize = 4;
+	b.offset[0] = 0;
+	b.offset[1] = 1;
+	b.offset[2] = 2;
+	b.offset[3] = 3;
+	if (b.width <= 0 || b.height <= 0) return;
 
 	/* Only where there are tiles: not the sidebar's margin around them. */
 	x0 = b.width;
@@ -11450,6 +11532,11 @@ static void build_cells(term_data *td)
 	/* Every cell starts as a space, and so hidden: see cell_set(). */
 	if (td->shown) mem_free(td->shown);
 	td->shown = mem_zalloc((size_t)td->cols * td->rows);
+
+	/* Made white, but as "white" rather than as cell_set() names it. */
+	if (td->fill) mem_free(td->fill);
+	td->fill = mem_alloc((size_t)td->cols * td->rows * sizeof(*td->fill));
+	for (x = 0; x < td->cols * td->rows; x++) td->fill[x] = -1;
 
 	/*
 	 * The last build's photo goes with its canvas item.  It used to be left

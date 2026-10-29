@@ -713,7 +713,8 @@ proc knowledge_window {} {
 }
 
 # The lists change when the character learns something: a kill, a first
-# sighting, an identification.
+# sighting, an identification.  Once for each burst of events: see
+# refresh_soon.  knowledge_fill returns at once when the window is shut.
 foreach event {MONSTERLIST ITEMLIST INVENTORY ENTER_GAME LEAVE_BIRTH} {
-    bind . <<Angband_$event>> {+ if {[winfo exists .knowledge]} { knowledge_fill }}
+    bind . <<Angband_$event>> {+ refresh_soon knowledge_fill }
 }

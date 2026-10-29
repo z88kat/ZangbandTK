@@ -363,7 +363,7 @@ choice_build
 choice_refresh
 
 # Up to date whether or not the game is asking: the pack changes, and the
-# prompt opens and closes.
+# prompt opens and closes.  Once for each burst of events: see refresh_soon.
 foreach event {CHOOSE INVENTORY EQUIPMENT ENTER_GAME LEAVE_BIRTH ENTER_WORLD} {
-    bind . <<Angband_$event>> {+ choice_refresh }
+    bind . <<Angband_$event>> {+ refresh_soon choice_refresh }
 }

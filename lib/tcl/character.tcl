@@ -718,9 +718,10 @@ proc character_window {} {
 
 # The window stays up to date whether or not anyone is looking at it: the
 # bindings live on "." and cost nothing while it is closed, because
-# character_refresh returns immediately when there is no window.
+# character_refresh returns immediately when there is no window.  Once for each
+# burst of events, which a fight is full of: see refresh_soon.
 foreach event $character(events) {
-    bind . <<Angband_$event>> {+ character_refresh }
+    bind . <<Angband_$event>> {+ refresh_soon character_refresh }
 }
 bind . <<TilesChanged>> {+ character_portrait }
 
