@@ -188,7 +188,7 @@ static void get_tile_multipliers_from_fraction(const graphics_mode *gm,
     *tile_mult_w = MAX(1, MIN(255, *tile_mult_w));
     *tile_mult_h = (int) floor((frac * gm->cell_height)
         / (cellh * 1000.0) + 0.5);
-    *tile_mult_h = MAX(1, MIN(255, *tile_mult_w));
+    *tile_mult_h = MAX(1, MIN(255, *tile_mult_h));
 }
 
 static int get_tile_fraction_from_size(const graphics_mode *gm,
@@ -5840,7 +5840,7 @@ static void cocoa_reinit(void)
          * the native size.
          */
         get_tile_multipliers_from_fraction(get_graphics_mode(graf_mode_req),
-            [[NSUserDefaults angbandDefaults] integerForKey:AngbandGraphicsDefaultsKey],
+            [[NSUserDefaults angbandDefaults] integerForKey:AngbandTileFracDefaultsKey],
             angbandContext.cellSize.width, angbandContext.cellSize.height,
             &new_tile_width, &new_tile_height);
 
@@ -6182,13 +6182,24 @@ static void cocoa_reinit(void)
             (angband_term[0]->data);
         CGFloat target_width, target_height;
         int new_frac;
+        int frac = [[NSUserDefaults angbandDefaults]
+            integerForKey:AngbandTileFracDefaultsKey];
 
-        target_width = mainAngbandContext.cellSize.width;
-        target_height = mainAngbandContext.cellSize.width;
         if (current_graphics_mode
-                && current_graphics_mode->grafID != GRAPHICS_NONE) {
-            target_width *= tile_width;
-            target_height *= tile_height;
+                && current_graphics_mode->grafID != GRAPHICS_NONE
+                && frac > 0) {
+            /*
+             * Aim at the size the tiles are meant to be, before they are
+             * fitted to whole cells.  Aiming at the cells they fill fitted
+             * them twice, and tiles changed size on a change of set; this
+             * way a set the same size keeps the same fraction.
+             */
+            target_width = frac / 1000.0 * current_graphics_mode->cell_width;
+            target_height = frac / 1000.0
+                * current_graphics_mode->cell_height;
+        } else {
+            target_width = mainAngbandContext.cellSize.width;
+            target_height = mainAngbandContext.cellSize.height;
         }
         new_frac = get_tile_fraction_from_size(gm, target_width, target_height,
             mainAngbandContext.cellSize.width,

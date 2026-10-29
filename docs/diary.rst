@@ -98,6 +98,17 @@ value over the light it had just been given. It goes back to 2019, when Angband
 took its lighting from Sil, and you'd only notice by standing next to lava and
 counting. The starting values come first now, and a test in a dark room counts all
 eight.
+
+And the Cocoa app drew square tiles twice as tall as they were wide whenever a
+cell is taller than it is wide, which with Menlo it always is: at 100% a Neon tile
+took two cells across and two down. The height was worked out on one line and set
+from the width on the next. Fixing that alone would have made tiles change size
+every time the tile set was changed, because the code that keeps the size across
+a change measured it in a way that cancelled the first mistake out. It now aims at
+the size the fraction asks for, so a set the same size keeps it exactly. Changing
+the main window's font dropped the tiles to one cell as well, by reading the
+graphics mode where the tile size belongs. All three were upstream's, and still
+are.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI
