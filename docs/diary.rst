@@ -141,7 +141,10 @@ took out the test for the end of the list. The search ran off the end of the
 Mage's books and on through memory until something looked enough like a book.
 Browse says it can't now, the menus don't offer it for a grey book, and choosing
 a spell has the same check. Before trusting any of that I made the old code
-crash on a copy of his save, from the menu and from the b key.
+crash on a copy of his save, from the menu and from the b key. Steven then
+found the same mistake on the inspect screen, which told him he could read the
+deck. It too asked whether the class has the book rather than whether the
+character can read it.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

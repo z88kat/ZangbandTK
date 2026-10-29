@@ -36,6 +36,7 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
+#include "player-spell.h"
 #include "project.h"
 #include "z-textblock.h"
 
@@ -1985,14 +1986,18 @@ static bool describe_light(textblock *tb, const struct object *obj,
 
 
 /**
- * Describe readable books.
+ * Describe readable books, and the class's books of a realm the character
+ * does not study, which it cannot read.
  */
 static bool describe_book(textblock *tb, const struct object *obj,
 						   oinfo_detail_t mode)
 {
 	if (!obj_can_browse(obj)) return false;
 
-	textblock_append(tb, "\nYou can read this book.\n");
+	if (player_object_to_book(player, obj))
+		textblock_append(tb, "\nYou can read this book.\n");
+	else
+		textblock_append(tb, "\nYou cannot read this book.\n");
 
 	return true;
 }
