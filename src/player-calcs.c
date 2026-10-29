@@ -944,9 +944,13 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 	if (!orig) return true;
 
 	if (!store) {
-		/* Readable books always come first */
-		if (obj_can_browse(orig) && !obj_can_browse(new)) return false;
-		if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
+		/* Readable books always come first: of the class's books, those of
+		 * a realm the character studies */
+		bool orig_reads = player_object_to_book(player, orig) != NULL;
+		bool new_reads = player_object_to_book(player, new) != NULL;
+
+		if (orig_reads && !new_reads) return false;
+		if (!orig_reads && new_reads) return true;
 	}
 
 	/* Usable ammo is before other ammo */

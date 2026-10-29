@@ -144,7 +144,9 @@ a spell has the same check. Before trusting any of that I made the old code
 crash on a copy of his save, from the menu and from the b key. Steven then
 found the same mistake on the inspect screen, which told him he could read the
 deck. It too asked whether the class has the book rather than whether the
-character can read it.
+character can read it. So did two more places: the store, which would have sold
+him a deck without saying "(Can't use!)", and the pack's sort, which counted the
+deck as readable and gave it the letter a ahead of his prayer book.
 
 And the light. Every step worked out how lit every square of the level was, and
 the game only ever asks about the squares in sight and the one the player stands

@@ -713,7 +713,8 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		bool response;
 
 		bool obj_is_book = tval_is_book_k(obj->kind);
-		bool obj_can_use = !obj_is_book || obj_can_browse(obj);
+		bool obj_can_use = !obj_is_book
+			|| player_object_to_book(player, obj) != NULL;
 
 		/* Describe the object (fully) */
 		object_desc(o_name, sizeof(o_name), dummy,
