@@ -89,6 +89,15 @@ He saved, quit, rebuilt the app with the fixed script and played for a few
 minutes. The street urchin had been sighted 591 times in the spoiled file and 553
 in the one his game wrote back, so his memory is his own again. His verdict on
 the speed was "feels a lot better".
+
+The review turned up one more thing, which has nothing to do with speed. Lava lit
+only four of the eight squares round it: the three above and the one to its left.
+The game works out every square's starting light and the lava's in one pass over
+the level, so a square that came after the lava in that pass set its own starting
+value over the light it had just been given. It goes back to 2019, when Angband
+took its lighting from Sil, and you'd only notice by standing next to lava and
+counting. The starting values come first now, and a test in a dark room counts all
+eight.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

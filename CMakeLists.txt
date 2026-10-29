@@ -939,6 +939,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     borg/prepared.c
     borg/traits.c
     cave/find.c
+    cave/light.c
     cave/scatter.c
     cave/wild.c
     command/lookup.c

@@ -703,6 +703,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	int dir, k, x, y;
 	int light = p->state.cur_light, radius = ABS(light) - 1;
 	int old_light = square_light(c, p->grid);
+	bool bright = false;
 
 	/* Starting values based on permanent light */
 	for (y = 0; y < c->height; y++) {
@@ -717,11 +718,30 @@ static void calc_lighting(struct chunk *c, struct player *p)
 				c->squares[y][x].light = 0;
 			}
 
-			/* Squares with bright terrain have intensity 2 */
-			if (square_isbright(c, grid)) {
+			if (square_isbright(c, grid)) bright = true;
+		}
+	}
+
+	/*
+	 * Bright terrain adds to those, once every square has its starting
+	 * value.  Upstream did both in the one pass, so a square that came after
+	 * the bright one in the scan set its starting value over the light it
+	 * had just been given: lava lit the three squares above it and the one
+	 * to its left, and never the other four.  Most levels have no bright
+	 * terrain at all, and they are spared the second pass.
+	 */
+	if (bright) {
+		for (y = 0; y < c->height; y++) {
+			for (x = 0; x < c->width; x++) {
+				struct loc grid = loc(x, y);
+
+				if (!square_isbright(c, grid)) continue;
+
+				/* Squares with bright terrain have intensity 2 */
 				c->squares[y][x].light += 2;
 				for (dir = 0; dir < 8; dir++) {
-					struct loc adj_grid = loc_sum(grid, ddgrid_ddd[dir]);
+					struct loc adj_grid =
+						loc_sum(grid, ddgrid_ddd[dir]);
 					if (!square_in_bounds(c, adj_grid)) continue;
 					/*
 					 * Only brighten a wall if the player
