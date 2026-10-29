@@ -15,7 +15,9 @@
 #      in it.  That build takes minutes and its result does not change.
 #   2. The game, in build-tcl.  Configured every time, which is quick and makes
 #      sure the options are the ones below; Ninja then rebuilds only what
-#      changed.
+#      changed.  A Release build, as the downloads are: CMake left to itself
+#      builds with no optimisation at all, and the app played the game at a
+#      third of the speed.
 #   3. The bundle, every time.  It holds a copy of the game, so a rebuild that
 #      is not packaged again never reaches the app.
 #
@@ -82,6 +84,7 @@ fi
 
 echo "==> The game, in $BUILD"
 cmake -S . -B "$BUILD" -G Ninja \
+	-DCMAKE_BUILD_TYPE=Release \
 	-DSUPPORT_TCL_FRONTEND=ON \
 	-DTCLTK_PREFIX="$PREFIX"
 cmake --build "$BUILD" --parallel

@@ -1189,6 +1189,49 @@ static void bridge_first_wait(void)
 	choice_install();
 }
 
+/*
+ * A refresh mid-turn gives the photos what was drawn and lets Tk repaint, and
+ * the game asks for far more of them than a screen can show: every map grid
+ * that comes into view or goes out of it is drawn and refreshed on its own
+ * (update_maps() in ui-display.c), so a lit room coming into sight is a few
+ * hundred refreshes in one step.  Each gave its photo a block with an alpha
+ * channel, which has Tk read the alpha of the whole photo -- the cost the
+ * one-block-a-refresh change was made to stop paying once per tile, still paid
+ * once per grid -- and then repainted.
+ *
+ * So a refresh does that at most once a frame, and one that comes sooner only
+ * leaves what it drew in td->pix.  Nothing is lost: the photos are given it at
+ * the next refresh that is due, whenever the game waits for a key, flushes or
+ * pauses for an animation (see TERM_XTRA_DELAY), and whenever Tcl looks for
+ * events (tiles_event_setup).  What the screen can no longer show is a state
+ * that lasted less than a frame.
+ */
+#define REPAINT_INTERVAL_US 16000
+
+static Tcl_WideInt last_repaint;
+
+static bool repaint_due(void)
+{
+	Tcl_Time now;
+	Tcl_WideInt us;
+
+	Tcl_GetTime(&now);
+	us = (Tcl_WideInt)now.sec * 1000000 + now.usec;
+
+	/* A clock set back counts as due rather than stopping repaints. */
+	if (us >= last_repaint && us - last_repaint < REPAINT_INTERVAL_US)
+		return false;
+	last_repaint = us;
+	return true;
+}
+
+/* Let Tk repaint, but do not block: the game is mid-turn. */
+static void repaint_now(void)
+{
+	while (Tcl_DoOneEvent(TCL_WINDOW_EVENTS | TCL_IDLE_EVENTS | TCL_DONT_WAIT))
+		;
+}
+
 static errr Term_xtra_tcl(int n, int v)
 {
 	term_data *td = (term_data *)(Term->data);
@@ -1198,6 +1241,10 @@ static errr Term_xtra_tcl(int n, int v)
 		bridge_reinstall_if_due();
 	}
 
+	/* Too soon after the last one: see repaint_due(). */
+	if (n == TERM_XTRA_FRESH && !repaint_due())
+		return 0;
+
 	/*
 	 * Whatever was drawn goes to the photos before Tk runs anything, and in
 	 * particular before a refresh's repaint.  tiles_event_setup does this
@@ -1205,7 +1252,8 @@ static errr Term_xtra_tcl(int n, int v)
 	 * of idle events alone, as `update idletasks` is, goes past the event
 	 * sources.
 	 */
-	if (n == TERM_XTRA_EVENT || n == TERM_XTRA_FLUSH || n == TERM_XTRA_FRESH)
+	if (n == TERM_XTRA_EVENT || n == TERM_XTRA_FLUSH || n == TERM_XTRA_FRESH
+			|| (n == TERM_XTRA_DELAY && v > 0))
 		tiles_flush_all();
 
 	switch (n) {
@@ -1239,10 +1287,7 @@ static errr Term_xtra_tcl(int n, int v)
 			return 0;
 
 		case TERM_XTRA_FRESH:
-			/* Let Tk repaint, but do not block: the game is mid-turn. */
-			while (Tcl_DoOneEvent(TCL_WINDOW_EVENTS | TCL_IDLE_EVENTS
-					| TCL_DONT_WAIT))
-				;
+			repaint_now();
 			return 0;
 
 		case TERM_XTRA_REACT:
@@ -1251,7 +1296,15 @@ static errr Term_xtra_tcl(int n, int v)
 			return 0;
 
 		case TERM_XTRA_DELAY:
-			if (v > 0) Tcl_Sleep(v);
+			/*
+			 * A bolt or a ball holds each of its frames this long, and
+			 * the refresh before it may have been too soon to repaint:
+			 * put the frame on the screen first.
+			 */
+			if (v > 0) {
+				repaint_now();
+				Tcl_Sleep(v);
+			}
 			return 0;
 
 		case TERM_XTRA_SHAPE:

@@ -62,8 +62,14 @@ CFLAGS	+=	-g -Wall -mword-relocations -ffunction-sections \
 			$(ARCH)
 
 # Omit some flags for easier debugging
+#
+# Link-time optimisation as well, as the DS build has.  Without it nothing is
+# inlined from one file into another, and the game's small, much-called helpers
+# (square(), loc(), flag_has()) each live in one file: on the Mac the same
+# seeded game took a third fewer cycles with it.  A slow handheld feels that
+# most.
 ifeq (,$(NDS_DEBUG))
-CFLAGS	+=	-O2 -fomit-frame-pointer -DNDEBUG
+CFLAGS	+=	-O2 -fomit-frame-pointer -DNDEBUG -flto
 endif
 
 CFLAGS	+=	$(INCLUDE) -D__3DS__
@@ -75,6 +81,9 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+ifeq (,$(NDS_DEBUG))
+LDFLAGS	+=	-O2 -flto=auto
+endif
 
 LIBS	:= -lctru -lm
 

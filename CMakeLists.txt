@@ -171,6 +171,35 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
 endif()
 
+# Link-time optimisation for the optimised builds, which is what every download
+# is.  Without it nothing is inlined from one file into another, and the game's
+# smallest and most called helpers -- square(), loc(), flag_has(),
+# square_in_bounds() -- each live in one file and are called from all the
+# others.  The same seeded borg game took a third fewer cycles with it, and
+# the field of view was worked out in a third of the time.  Builds with no type,
+# and Debug builds, are left alone: that is what the tests build, and they keep
+# their asserts and their compile times.  Only GCC and Clang, the compilers it
+# has been tried with.  CMake's own -DCMAKE_INTERPROCEDURAL_OPTIMIZATION, given
+# either way, overrides all of this: =OFF is worth giving an optimised build
+# directory that will also build the unit tests, each of which is otherwise
+# linked with the whole game optimised again.
+if(NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION
+        AND CMAKE_BUILD_TYPE MATCHES "^(Release|RelWithDebInfo|MinSizeRel)$"
+        AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang"
+        AND NOT CMAKE_VERSION VERSION_LESS 3.9)
+    if(POLICY CMP0069)
+        cmake_policy(SET CMP0069 NEW)
+    endif()
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT OUR_LTO_SUPPORTED OUTPUT OUR_LTO_OUTPUT
+        LANGUAGES C)
+    if(OUR_LTO_SUPPORTED)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    else()
+        message(STATUS "No link-time optimisation: ${OUR_LTO_OUTPUT}")
+    endif()
+endif()
+
 add_library(OurCoreLib OBJECT
         src/buildid.c
         src/cave-map.c

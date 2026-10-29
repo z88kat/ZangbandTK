@@ -1625,6 +1625,91 @@ static int hasSameBackground(const struct TerminalCell* c)
 
 
 /**
+ * The tile set cut into one image per tile, so that drawing a tile does not
+ * cut it out of the sheet again every time.  The cutting is cheap; what it
+ * cost is that every draw was of a new image.  Quartz keeps an image's pixels
+ * converted to the window's colour space once it has drawn it, so a map that
+ * is mostly a dozen terrain tiles converts each of them once instead of on
+ * every draw.  Measured outside the game, a 100x31 map of Neon tiles at 2x in
+ * the display's colour space: 48 ms to redraw cut afresh, 16 ms kept.
+ * Only whole tiles are kept, which is nearly every draw; part of a clipped
+ * tile, or both halves of a double-height one drawn at once, is cut as it
+ * always was.  Each is made the first time it is drawn, indexed by its row and
+ * column in the sheet, and all of them go with the sheet: tile_cache_free().
+ */
+static CGImageRef *tile_cache;
+static CGImageRef tile_cache_sheet;
+static int tile_cache_cols, tile_cache_rows;
+
+static void tile_cache_free(void)
+{
+    if (tile_cache) {
+	for (int i = 0; i < tile_cache_cols * tile_cache_rows; ++i) {
+	    CGImageRelease(tile_cache[i]);
+	}
+	free(tile_cache);
+	tile_cache = NULL;
+    }
+    tile_cache_sheet = NULL;
+    tile_cache_cols = 0;
+    tile_cache_rows = 0;
+}
+
+/**
+ * The kept image of the whole tile srcRect covers, made if need be; NULL when
+ * srcRect is not exactly one tile of the current tile set.
+ */
+static CGImageRef tile_cache_get(CGImageRef image, NSRect srcRect,
+    CGRect flippedSourceRect)
+{
+    CGFloat tw, th;
+    int col, row;
+    CGImageRef *slot;
+
+    if (!current_graphics_mode || current_graphics_mode->cell_width == 0
+	    || current_graphics_mode->cell_height == 0) {
+	return NULL;
+    }
+    tw = current_graphics_mode->cell_width;
+    th = current_graphics_mode->cell_height;
+    col = (int) floor(srcRect.origin.x / tw);
+    row = (int) floor(srcRect.origin.y / th);
+    if (srcRect.size.width != tw || srcRect.size.height != th
+	    || srcRect.origin.x != col * tw || srcRect.origin.y != row * th) {
+	return NULL;
+    }
+
+    if (image != tile_cache_sheet) {
+	tile_cache_free();
+	tile_cache_cols = (int) (CGImageGetWidth(image) / tw);
+	tile_cache_rows = (int) (CGImageGetHeight(image) / th);
+	if (tile_cache_cols <= 0 || tile_cache_rows <= 0) {
+	    tile_cache_cols = 0;
+	    tile_cache_rows = 0;
+	    return NULL;
+	}
+	tile_cache = calloc((size_t) tile_cache_cols * tile_cache_rows,
+	    sizeof(*tile_cache));
+	if (!tile_cache) {
+	    tile_cache_cols = 0;
+	    tile_cache_rows = 0;
+	    return NULL;
+	}
+	tile_cache_sheet = image;
+    }
+    if (col < 0 || col >= tile_cache_cols || row < 0
+	    || row >= tile_cache_rows) {
+	return NULL;
+    }
+
+    slot = &tile_cache[row * tile_cache_cols + col];
+    if (!*slot) {
+	*slot = CGImageCreateWithImageInRect(image, flippedSourceRect);
+    }
+    return *slot;
+}
+
+/**
  * Draws one tile as a helper function for AngbandContext's drawRect.
  */
 static void draw_image_tile(
@@ -1646,11 +1731,17 @@ static void draw_image_tile(
      * When we use high-quality resampling to draw a tile, pixels from outside
      * the tile may bleed in, causing graphics artifacts. Work around that.
      */
-    CGImageRef subimage =
-	CGImageCreateWithImageInRect(image, flippedSourceRect);
+    CGImageRef subimage = tile_cache_get(image, srcRect, flippedSourceRect);
+    BOOL kept = (subimage != NULL);
+
+    if (!kept) {
+	subimage = CGImageCreateWithImageInRect(image, flippedSourceRect);
+    }
     [nsContext setCompositingOperation:op];
     CGContextDrawImage(cgContext, NSRectToCGRect(dstRect), subimage);
-    CGImageRelease(subimage);
+    if (!kept) {
+	CGImageRelease(subimage);
+    }
 }
 
 
@@ -4372,7 +4463,12 @@ static errr Term_xtra_cocoa_react(void)
 		new_mode = NULL;
 	    }
 
-	    /* Get rid of the old image. CGImageRelease is NULL-safe. */
+	    /*
+	     * Get rid of the old image, and the tiles cut from it, before a
+	     * new one can be given the old one's address. CGImageRelease is
+	     * NULL-safe.
+	     */
+	    tile_cache_free();
 	    CGImageRelease(pict_image);
 	    pict_image = NULL;
 

@@ -26,6 +26,10 @@
 CC = clang
 OPT ?= -O2
 
+# Link-time optimisation, kept out of OPT so the release job's own OPT does not
+# lose it; see Makefile.osx.  "make LTO=" builds without.
+LTO ?= -flto=thin
+
 # Where the object files, the static library and the executable are built.
 # Keeps this build entirely out of Makefile.osx's way; see the note above.
 OBJDIR = osx-tty/
@@ -92,7 +96,7 @@ JUST_C = -std=c99
 # a different place from where the Cocoa application keeps its saves
 # (~/Documents/ZangbandTK): that follows from MACH_O_CARBON, which this build
 # does not set, and the two sets of characters are deliberately separate.
-CFLAGS = -g -I. $(WARNINGS) $(OPT) \
+CFLAGS = -g -I. $(WARNINGS) $(OPT) $(LTO) \
 	-DUSE_GCU -DUSE_NCURSES -DHAVE_USE_DEFAULT_COLORS \
 	-DUSE_PRIVATE_PATHS -DALLOW_BORG -DHAVE_MKSTEMP \
 	-fno-stack-protector $(OSXVERSFLAGS) $(ARCHFLAGS)

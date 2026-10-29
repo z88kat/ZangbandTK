@@ -31,7 +31,64 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
-25 October 2026 — on a real DS, and a fix I had to take back
+29 October 2026 — a faster game, and a file of Steven's I had no business touching
+==================================================================================
+
+Yesterday was a performance review: profile the game, read each front end's
+drawing code, and say where the time goes. Today I did the four things at the top
+of its list.
+
+The first was a little embarrassing. ``scripts/build-tcl-app`` never told CMake
+what kind of build it wanted, and CMake left to itself doesn't optimise at all.
+So the ZangbandTK.app Steven plays from ``~/Applications`` was compiled at
+``-O0``, and the same seeded borg game took three times the cycles it does in a
+release build. The downloads were fine, because CI asks for Release. One line in
+the script, and the same line in the README.
+
+The second was link-time optimisation. The profile was full of calls to functions
+too small to be worth calling: ``square()``, ``loc()``, ``flag_has()``. Each lives
+in one file, and C compiles one file at a time, so nothing else can inline them.
+With LTO the same game took a third fewer cycles and played out exactly the same,
+down to the last line of the borg's status. CMake's optimised builds get it now,
+and so do the Mac makefiles and the 3DS. On the Mac it's the thin kind. Full LTO
+was barely faster and made every relink of the app take 15 seconds instead of 6,
+and Steven rebuilds after every change.
+
+The Tk change is the one you can feel. On the 22nd I made the tiles go to the photo
+once a refresh instead of once a tile, which took a step from 170 ms to 38. What I
+hadn't counted was the refreshes. The game redraws every grid that comes into view
+or leaves it on its own and refreshes after each one, as upstream Angband does, so
+a step was still dozens or hundreds of refreshes. Each made Tk read the alpha of
+the whole photo and then repaint. Now a refresh does that at most once a frame.
+Walking 256 steps round the town with Steven's settings: 16 ms a step before, 8
+after, 5 to 7 with LTO as well.
+
+The Cocoa app was cutting each tile out of the sheet every time it drew it. The
+cutting is cheap. The cost is that every draw was of a brand new image, and Quartz
+only remembers an image's colours converted for the screen once it has drawn that
+image. Keeping the pieces took a full redraw of a 100 by 31 map from 48 ms to 16. I
+checked it by drawing all 4,360 Neon tiles both ways and comparing every pixel:
+none differed. To be sure the check could fail, I broke the cache on purpose so it
+kept the old sheet's tiles after a change of tile set, and it found 2.8 MB of wrong
+pixels.
+
+Now the mistake. To measure all this I ran the borg headless, a few dozen times
+over the two days. A test build keeps its user folder in ``~/.angband/ZangbandTK``,
+which is Steven's real one, and every autosave wrote ``lore.txt`` there. That file
+is the monster memory each new character starts with; the savefile only keeps
+kills. So each run loaded his memory, added whatever the borg saw (a few runs at
+depth 30 among them) and saved it back, and it emptied his ``window.prf`` as well.
+I found out this morning from a stray file of mine in his folder. My fix was to
+point ``HOME`` somewhere else, which did nothing, because the game looks up ``~``
+in the password database. Three more borg games got through before I understood
+that. There was no backup. What saves it is that his ZangbandTK has been open since
+the 23rd and still holds his own memory, so it will write the clean version back
+the next time he saves in it. Every headless run gets ``-duser=`` now.
+
+He saved, quit, rebuilt the app with the fixed script and played for a few
+minutes. The street urchin had been sighted 591 times in the spoiled file and 553
+in the one his game wrote back, so his memory is his own again. His verdict on
+the speed was "feels a lot better".
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

@@ -207,8 +207,9 @@ will not reuse a build directory with a different generator.
 # 1. Tcl and Tk 9.0.4, into tcltk/local. Once.
 scripts/build-tcltk
 
-# 2. The game, at build-tcl/game/angband.
-cmake -S . -B build-tcl -G Ninja \
+# 2. The game, at build-tcl/game/angband. Without a build type CMake does not
+#    optimise at all, and the game runs at a third of the speed.
+cmake -S . -B build-tcl -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DSUPPORT_TCL_FRONTEND=ON \
   -DTCLTK_PREFIX="$PWD/tcltk/local"
 cmake --build build-tcl --parallel
@@ -349,7 +350,8 @@ UNIX, Windows with MinGW, MSYS2 and Visual Studio, and the cross builds; and
 version on Linux is a front-end option and a build directory:
 
 ```sh
-cmake -S . -B build -DSUPPORT_GCU_FRONTEND=ON   # or SDL2, or X11, which is the default
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+  -DSUPPORT_GCU_FRONTEND=ON   # or SDL2, or X11, which is the default
 cmake --build build --parallel
 ```
 
