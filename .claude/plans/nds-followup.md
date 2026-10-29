@@ -78,14 +78,27 @@ and reordering `make_noise()`'s checks changed nothing there. Expect the DS to b
 
 **Still to do, largest first:**
 
-- [ ] `calc_lighting()` still covers the whole level, about 30 ms. Bounding it is not
+- [x] `calc_lighting()` still covers the whole level, about 30 ms. Bounding it is not
       exact the way the view loops were: light far from the player can be read by
       monster AI. Work out who reads `square_light()` and `square_islit()` before
       choosing.
+      **Done 29 Oct 2026.** Nothing reads it far off: only `update_view()` (squares in
+      sight), `map_info()` (squares in view) and the player's own square. It now covers
+      the view box and a ring of one. Exact: 0 differences in about 11 million squares
+      compared, with and without lava, and the same seeded borg game. 6–9x faster on the
+      Mac; not yet measured on the DS.
 - [ ] `make_noise()` and `update_scent()`, about 27 ms. Scent ages every grid every
       turn; a turn stamp per grid would make that the 25 grids around the player.
       Noise is cleared and flooded over everything reachable, hearing reaches 100
       grids (200 for one monster), so bounding it changes behaviour.
+      **29 Oct 2026, noise:** confirmed that bounding changes behaviour, and by more than
+      hearing: a sleeping monster within 50 steps wakes faster for the noise
+      (`mon-move.c`, around line 2221), and fleeing and scent-following moves compare
+      noise whatever the monster's hearing. So the flood still covers the level, but is
+      about 3.5x faster on the Mac with identical values (18.7 million squares
+      compared), and its queue is kept between turns in the pak (`mem_alloc_alt`) instead
+      of a new level-sized allocation every turn. Scent is untouched; not yet measured
+      on the DS.
 - [ ] `square(c, grid)->info` reads the info pointer from the square, which is in the
       pak. The flags are one block per chunk, so the pointer can be computed instead.
 - [ ] Redraw, about 18 ms a step.

@@ -145,6 +145,30 @@ crash on a copy of his save, from the menu and from the b key. Steven then
 found the same mistake on the inspect screen, which told him he could read the
 deck. It too asked whether the class has the book rather than whether the
 character can read it.
+
+And the light. Every step worked out how lit every square of the level was, and
+the game only ever asks about the squares in sight and the one the player stands
+on. The DS notes held off bounding it in case monsters read the light far away. I
+looked: nothing does. So it covers what the player could see and a ring of one
+round it, for lava just out of sight. Run both ways at hundreds of places and on
+walks thousands of steps long, with lava scattered about and without, about
+eleven million squares compared: no difference. The light indicator is redrawn on
+the same steps it was, and once more after a teleport, when the old square is too
+far off to compare with. The lighting is six to nine times faster, and the seeded
+game plays out the same.
+
+The noise map is where the review was wrong. It said the flood that tells monsters
+how far away you are could stop at the keenest hearing on the level, with one small
+change of behaviour. Checking who reads the map turned up three readers it hadn't
+counted, and none of them cares about hearing: a sleeping monster within fifty steps
+wakes the faster for it, a frightened one picks its hiding place by it, and one
+following your scent scores its next square by it. Stopping at twenty or thirty
+steps would have changed all three across the level. So the flood still covers the
+whole level, only cheaper: a plain queue kept from turn to turn instead of a new one
+the size of the level each turn, and whether each kind of terrain carries sound
+looked up once a turn instead of through three calls for every neighbour of every
+square. It's three and a half times faster, the noise on every square is the same
+(18.7 million squares compared), and the seeded game plays out the same.
 ============================================================
 
 Steven has a DSpico, and it boots. The flashcart's loader writes its own DLDI

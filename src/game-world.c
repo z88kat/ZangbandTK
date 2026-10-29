@@ -480,68 +480,98 @@ static void decrease_timeouts(void)
  * values, thereby homing in on the player even though twisty tunnels and
  * mazes.  Monsters have a hearing value, which is the largest sound value
  * they can detect.
+ *
+ * It has to cover every grid the player can be heard from, and that is not
+ * just as far as the keenest monster on the level can hear: a sleeping monster
+ * within fifty steps wakes the faster for it, and a frightened or scent-
+ * following one compares the noise of the grids round it, all whatever their
+ * hearing.  So it is the whole of the level, every turn, done as cheaply as it
+ * can be: a breadth-first fill a step at a time, with a queue kept from one
+ * turn to the next rather than a new one the size of the level each turn, and
+ * whether each kind of terrain carries sound looked up once a turn rather than
+ * through three calls for every neighbour of every grid.  The noise every grid
+ * gets is the same as ever: the number of steps to it from the player, times
+ * the increment.
  */
 static void make_noise(struct player *p)
 {
-	struct loc next = p->grid;
-	int y, x, d;
+	static int *queue;
+	static size_t queue_size;
+	static bool no_flow[FEAT_MAX];
+	size_t need = (size_t) cave->height * cave->width;
+	int width = cave->width, height = cave->height;
+	int px = p->grid.x, py = p->grid.y;
+	int y, x, d, i;
 	int noise = 0;
 	int noise_increment = p->timed[TMD_COVERTRACKS] ? 4 : 1;
-    struct queue *queue = q_new(cave->height * cave->width);
+	size_t head = 0, tail = 0;
+
+	if (queue_size < need) {
+		if (queue) mem_free_alt(queue);
+		queue = mem_alloc_alt(need * sizeof(*queue));
+		queue_size = need;
+	}
+	for (i = 0; i < FEAT_MAX; i++) {
+		no_flow[i] = feat_is_no_flow(i);
+	}
 
 	/* Set all the grids to silence */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
+	for (y = 1; y < height - 1; y++) {
+		for (x = 1; x < width - 1; x++) {
 			cave->noise.grids[y][x] = 0;
 		}
 	}
 
 	/* Player makes noise */
-	cave->noise.grids[next.y][next.x] = noise;
-	q_push_int(queue, grid_to_i(next, cave->width));
-	noise += noise_increment;
+	cave->noise.grids[py][px] = noise;
+	queue[tail++] = py * width + px;
 
-	/* Propagate noise */
-	while (q_len(queue) > 0) {
-		/* Get the next grid */
-		i_to_grid(q_pop_int(queue), cave->width, &next);
+	/* Propagate noise, a step at a time */
+	while (head < tail) {
+		size_t step_end = tail;
 
-		/* If we've reached the current noise level, put it back and step */
-		if (cave->noise.grids[next.y][next.x] == noise) {
-			q_push_int(queue, grid_to_i(next, cave->width));
-			noise += noise_increment;
-			continue;
-		}
+		noise += noise_increment;
+		for (; head < step_end; head++) {
+			int ny = queue[head] / width, nx = queue[head] % width;
+			/* Only a grid on the edge has neighbours off the level */
+			bool edge = nx == 0 || ny == 0 || nx == width - 1
+				|| ny == height - 1;
 
-		/* Assign noise to the children and enqueue them */
-		for (d = 0; d < 8; d++)	{
-			/* Child location */
-			struct loc grid = loc_sum(next, ddgrid_ddd[d]);
+			/* Assign noise to the children and enqueue them */
+			for (d = 0; d < 8; d++)	{
+				int gx = nx + ddgrid_ddd[d].x, gy = ny + ddgrid_ddd[d].y;
 
-			if (!square_in_bounds(cave, grid)) continue;
+				if (edge && (gx < 0 || gy < 0 || gx >= width
+						|| gy >= height)) continue;
 
-			/*
-			 * Skip grids that already have noise, and the player's,
-			 * before asking what the grid is: most of the eight have
-			 * been reached already, and the noise map is cheaper to
-			 * read than the terrain on the Nintendo DS, where the
-			 * terrain is in slower memory.
-			 */
-			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
-			if (loc_eq(p->grid, grid)) continue;
+				/*
+				 * Skip grids that already have noise, and the
+				 * player's, before asking what the grid is: most
+				 * of the eight have been reached already, and the
+				 * noise map is cheaper to read than the terrain
+				 * on the Nintendo DS, where the terrain is in
+				 * slower memory.
+				 */
+				if (cave->noise.grids[gy][gx] != 0) continue;
+				if (gx == px && gy == py) continue;
 
-			/* Ignore features that don't transmit sound */
-			if (square_isnoflow(cave, grid)) continue;
+				/* Ignore features that don't transmit sound */
+				if (no_flow[cave->squares[gy][gx].feat]) continue;
 
-			/* Save the noise */
-			cave->noise.grids[grid.y][grid.x] = noise;
+				/* Save the noise */
+				cave->noise.grids[gy][gx] = noise;
 
-			/* Enqueue that entry */
-			q_push_int(queue, grid_to_i(grid, cave->width));
+				/*
+				 * Enqueue that entry.  Every grid is queued once,
+				 * so the queue holds the level -- unless the noise
+				 * outgrew its sixteen bits, which no level is deep
+				 * enough for, and then this stops the fill short
+				 * rather than writing past the queue.
+				 */
+				if (tail < queue_size) queue[tail++] = gy * width + gx;
+			}
 		}
 	}
-
-	q_free(queue);
 }
 
 /**

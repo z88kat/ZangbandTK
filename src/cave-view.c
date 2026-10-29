@@ -454,6 +454,15 @@ void cave_view_forget(const struct chunk *c)
 }
 
 /**
+ * Whether a grid is inside a box, its edges included.
+ */
+static bool grid_in_box(struct loc grid, struct loc min, struct loc max)
+{
+	return grid.x >= min.x && grid.x <= max.x
+		&& grid.y >= min.y && grid.y <= max.y;
+}
+
+/**
  * Mark the currently seen grids, then wipe in preparation for recalculating
  */
 static void mark_wasseen(struct chunk *c, struct loc min, struct loc max)
@@ -656,12 +665,15 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
  * \param sgrid Is the location of the light source.
  * \param radius Is the radius, in grids, of the light source.
  * \param inten Is the intensity of the light source.
+ * \param min Is the least x and y of the grids being lit up.
+ * \param max Is the greatest x and y of the grids being lit up; light that
+ * falls outside min and max is left out, as calc_lighting() explains.
  * This is a brute force approach.  Some computation probably could be saved by
  * propagating the light out from the source and terminating paths when they
  * reach a wall.
  */
 static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
-		int radius, int inten)
+		int radius, int inten, struct loc min, struct loc max)
 {
 	int y;
 
@@ -672,6 +684,7 @@ static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
 			struct loc grid = loc_sum(sgrid, loc(x, y));
 			int dist = distance(sgrid, grid);
 			if (!square_in_bounds(c, grid)) continue;
+			if (!grid_in_box(grid, min, max)) continue;
 			if (dist > radius) continue;
 			/* Don't propagate the light through walls. */
 			if (!los(c, sgrid, grid)) continue;
@@ -697,17 +710,38 @@ static void add_light(struct chunk *c, struct player *p, struct loc sgrid,
 
 /**
  * Calculate light level for every grid in view - stolen from Sil
+ *
+ * Only the squares the player could see from where they stand, and a ring of
+ * one round them, where bright terrain can light a square inside.  Nothing
+ * asks how lit a square is anywhere else: update_view() asks of the squares in
+ * sight, map_info() of the squares in view, and the rest of the game of the
+ * player's own square.  It was worked out for every square of the level every
+ * step, twenty thousand of them on the surface, and the light is the same on
+ * every square the game looks at.  A square further off keeps what it had
+ * last, and is worked out again before anything can see it.
  */
 static void calc_lighting(struct chunk *c, struct player *p)
 {
 	int dir, k, x, y;
 	int light = p->state.cur_light, radius = ABS(light) - 1;
 	int old_light = square_light(c, p->grid);
+	int reach = z_info->max_sight + 1;
+	struct loc min = loc(MAX(0, p->grid.x - reach),
+		MAX(0, p->grid.y - reach));
+	struct loc max = loc(MIN(c->width - 1, p->grid.x + reach),
+		MIN(c->height - 1, p->grid.y + reach));
+	/*
+	 * The light the player's square had is only worth comparing with if
+	 * the square was in sight the last time, when it was worked out; on a
+	 * new level, or after a teleport, the indicator is simply redrawn.
+	 */
+	bool was_in_view = c == view_chunk
+		&& grid_in_box(p->grid, view_min, view_max);
 	bool bright = false;
 
 	/* Starting values based on permanent light */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
+	for (y = min.y; y <= max.y; y++) {
+		for (x = min.x; x <= max.x; x++) {
 			struct loc grid = loc(x, y);
 
 			if (square_isglow(c, grid) &&
@@ -731,8 +765,8 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	 * terrain at all, and they are spared the second pass.
 	 */
 	if (bright) {
-		for (y = 0; y < c->height; y++) {
-			for (x = 0; x < c->width; x++) {
+		for (y = min.y; y <= max.y; y++) {
+			for (x = min.x; x <= max.x; x++) {
 				struct loc grid = loc(x, y);
 
 				if (!square_isbright(c, grid)) continue;
@@ -743,6 +777,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 					struct loc adj_grid =
 						loc_sum(grid, ddgrid_ddd[dir]);
 					if (!square_in_bounds(c, adj_grid)) continue;
+					if (!grid_in_box(adj_grid, min, max)) continue;
 					/*
 					 * Only brighten a wall if the player
 					 * is in position to view the face
@@ -759,7 +794,7 @@ static void calc_lighting(struct chunk *c, struct player *p)
 	}
 
 	/* Light around the player */
-	add_light(c, p, p->grid, radius, light);
+	add_light(c, p, p->grid, radius, light, min, max);
 
 	/* Scan monster list and add monster light or darkness */
 	for (k = 1; k < cave_monster_max(c); k++) {
@@ -783,11 +818,11 @@ static void calc_lighting(struct chunk *c, struct player *p)
 		if (distance(p->grid, mon->grid) - radius > z_info->max_sight)
 			continue;
 
-		add_light(c, p, mon->grid, radius, light);
+		add_light(c, p, mon->grid, radius, light, min, max);
 	}
 
 	/* Update light level indicator */
-	if (square_light(c, p->grid) != old_light) {
+	if (!was_in_view || square_light(c, p->grid) != old_light) {
 		p->upkeep->redraw |= PR_LIGHT;
 	}
 }

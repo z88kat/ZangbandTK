@@ -365,6 +365,18 @@ same platform as the Apple Silicon the macOS jobs build on: Apple's ABI keeps
 job that compiles the game with the signedness a Raspberry Pi gives it.
 64-bit only, deliberately; 32-bit Raspberry Pi OS is out of scope.
 
+The Nintendo DS has a script of its own for testing, which needs only Docker:
+
+```sh
+scripts/build-nds                       # build/nds/Zangband.nds and the card data
+scripts/build-nds --card /Volumes/SD    # ...and copy both to the card
+```
+
+It builds the ROM in the same BlocksDS container as `nintendo.yaml`, from a
+copy of `src` under `build/nds`, so nothing lands in the tree, and lays out the
+`zangbandtk` folder the card needs as the release does. `--card` leaves the
+save on the card alone. `--debug` adds the memory readout.
+
 ### The tests
 
 ```sh

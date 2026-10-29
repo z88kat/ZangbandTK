@@ -1,0 +1,147 @@
+#!/bin/bash
+#
+# Build the Nintendo DS ROM, and the card data it reads, for testing.
+#
+# Use from anywhere in the tree, like so:
+#    scripts/build-nds [--debug] [--clean] [--card <dir>]
+#
+#    --debug        compile in the memory readout (DEBUG_MEMORY_USAGE): free
+#                   memory on the bottom screen, and a log the game appends
+#                   to /zangbandtk/memlog.txt on the card
+#    --clean        throw away the objects and build everything again
+#    --card <dir>   then copy the ROM and the data to a mounted SD card, or a
+#                   folder standing in for one, leaving its saves alone
+#
+# The result is in build/nds: Zangband.nds, and card/zangbandtk, the folder
+# that goes at the root of the card.  The data is what a release carries,
+# with the DS's constant overrides applied by scripts/nds_constants.
+#
+# It needs Docker and nothing else.  The build runs in the BlocksDS container
+# CI uses (nintendo.yaml), with the release's -Werror.
+#
+set -o errexit
+
+usage() {
+	sed -n -e '3,20p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit "${1:-1}"
+}
+
+DEBUG=
+CLEAN=
+CARD=
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--debug) DEBUG=1 ;;
+		--clean) CLEAN=1 ;;
+		--card)
+			[ $# -ge 2 ] || usage
+			CARD=$2
+			shift ;;
+		-h|--help) usage 0 ;;
+		*) usage ;;
+	esac
+	shift
+done
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$ROOT"
+
+IMAGE=skylyrac/blocksds:slim-latest
+OUT=build/nds
+TREE=$OUT/tree
+# The four lib directories the game reads, as the release's Nintendo job
+# copies them.  The rest of lib is tilesets and audio a text build cannot use.
+DATA="gamedata help screens customize"
+
+if [ -n "$CARD" ] && [ ! -d "$CARD" ]; then
+	echo "No such folder: $CARD.  Is the card mounted?" >&2
+	exit 1
+fi
+if ! docker info >/dev/null 2>&1; then
+	echo "Docker is not running, or not installed.  Start it and try again." >&2
+	exit 1
+fi
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+	docker pull "$IMAGE"
+fi
+
+# Make cannot see a change of flags or of toolchain, and a ROM linked from
+# objects built both ways is neither build.  So the object tree remembers
+# what built it, and is thrown away when that changes.
+CFLAGS=-Werror
+if [ -n "$DEBUG" ]; then
+	CFLAGS="$CFLAGS -DDEBUG_MEMORY_USAGE"
+fi
+STAMP="$(docker image inspect -f '{{.Id}}' "$IMAGE") $CFLAGS"
+if [ -n "$CLEAN" ] || [ "$(cat "$TREE/stamp" 2>/dev/null)" != "$STAMP" ]; then
+	rm -rf "$TREE"
+fi
+mkdir -p "$TREE/src"
+echo "$STAMP" > "$TREE/stamp"
+
+# Makefile.blocksds writes its objects and the ROM into src, where none of it
+# is ignored, and anything left untracked there gets committed.  So it builds
+# a copy: of what git sees in src, tracked or not but never ignored, so that
+# uncommitted work is in the ROM and other builds' objects are not.  The copy
+# is made afresh each time, all but the objects, so a file deleted here goes
+# there too; tar keeps the times, so make rebuilds only what changed.
+echo "==> Copying src to $TREE"
+find "$TREE/src" -mindepth 1 -maxdepth 1 ! -name blocksds-build -exec rm -rf {} +
+git ls-files -z --cached --others --exclude-standard -- src |
+	while IFS= read -r -d '' f; do
+		if [ -e "$f" ]; then
+			printf '%s\0' "$f"
+		fi
+	done |
+	tar -cf - --null -T - | tar -xf - -C "$TREE"
+
+echo "==> Building with $IMAGE (CFLAGS=$CFLAGS)"
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/$TREE":/work -w /work/src \
+	-e CFLAGS="$CFLAGS" "$IMAGE" \
+	sh -c 'make -f Makefile.blocksds -j"$(nproc)"'
+ROM=$TREE/src/Zangband.nds
+test -e "$ROM"
+cp "$ROM" "$OUT/Zangband.nds"
+
+echo "==> Card data in $OUT/card"
+rm -rf "$OUT/card"
+mkdir -p "$OUT/card/zangbandtk/lib/user/save"
+for d in $DATA; do
+	cp -R "lib/$d" "$OUT/card/zangbandtk/lib/"
+done
+scripts/nds_constants "$OUT/card/zangbandtk/lib/gamedata/constants.txt"
+
+if [ -n "$CARD" ]; then
+	# melonDS writes its own DLDI driver into the ROM it opens, and a ROM so
+	# patched cannot reach a real card.  The one in the object tree has never
+	# been near an emulator, but make sure: a fresh ROM carries the default stub.
+	if ! LC_ALL=C grep -a -q 'Default (No interface)' "$ROM"; then
+		echo "$ROM does not carry the default DLDI stub; not copying it." >&2
+		exit 1
+	fi
+	echo "==> Copying to $CARD"
+	# Only the directories the build owns are replaced.  save holds the
+	# character, and memlog.txt, sitting beside lib, a debug build's log.
+	for d in $DATA; do
+		rm -rf "$CARD/zangbandtk/lib/$d"
+	done
+	# Through tar, with COPYFILE_DISABLE, so that macOS writes no ._ files
+	# onto the card's FAT for the extended attributes.
+	(cd "$OUT/card" && COPYFILE_DISABLE=1 tar -cf - zangbandtk) |
+		tar -xf - -C "$CARD"
+	cat "$ROM" > "$CARD/Zangband.nds"
+	sync
+fi
+
+echo
+echo "ROM:  $OUT/Zangband.nds ($(($(wc -c < "$OUT/Zangband.nds") / 1024)) KB)${DEBUG:+, with the memory readout}"
+echo "Data: $OUT/card/zangbandtk"
+if [ -n "$CARD" ]; then
+	echo "Both are on $CARD, the ROM at its root."
+	case "$CARD" in
+		/Volumes/*) echo "Eject it before taking it out: diskutil eject \"$CARD\"" ;;
+	esac
+else
+	echo "Copy both to the root of the card, or run again with --card <dir>."
+fi
+echo "melonDS rewrites the ROM it opens: never put one it has opened on a card."
