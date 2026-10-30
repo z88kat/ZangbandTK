@@ -2541,6 +2541,106 @@ proc display_pass {} {
 		list $with [string match "*colour-blind*" $said] $custom $back $own
 	} "8 1 {{} 8} 7 8"
 
+	iso_pass
+}
+
+# --- the isometric view -------------------------------------------------------
+
+# The map pane drawn isometrically (tcl/iso.c): each style turns on and off,
+# the pointer finds the character's square in it -- one diamond, a square of
+# the view across -- and the ASCII style, which stands the text map up, takes
+# the text tile set and gives the other back.  As the pointing check above
+# does, the character is found by asking, not by arithmetic kept in step
+# with the C.
+
+# The points of the map pane, every few pixels, that the look command says
+# are the character's own square.
+proc iso_here {} {
+	set c .pw.top.map.c
+	set here {}
+	for {set y 2} {$y < [winfo height $c]} {incr y 4} {
+		for {set x 2} {$x < [winfo width $c]} {incr x 4} {
+			if {[string match "You are *" [angband_look $x $y]]} {
+				lappend here [list $x $y]
+			}
+		}
+	}
+	return $here
+}
+
+# Text items showing the given character anywhere on the map pane.
+proc iso_showing {ch} {
+	set c .pw.top.map.c
+	set n 0
+	foreach item [$c find withtag all] {
+		if {[$c type $item] eq "text" && [$c itemcget $item -state] ne "hidden"
+				&& [$c itemcget $item -text] eq $ch} {
+			incr n
+		}
+	}
+	return $n
+}
+
+proc iso_pass {} {
+	check "the isometric view draws in each style, and stops" {
+		set got {}
+		foreach style {ink blue colour} {
+			lappend got [catch {angband_iso $style}] [angband_iso]
+		}
+		angband_iso off
+		lappend got [angband_iso]
+	} "0 ink 0 blue 0 colour off"
+
+	# A diamond is twice as wide as it is high; found every four pixels, the
+	# character's is some 64 by 32 in the drawn styles.
+	check "pointing at the isometric view finds the character's square" {
+		angband_iso colour
+		update
+		set here [iso_here]
+		angband_iso off
+		update
+		set xs [lmap p $here {lindex $p 0}]
+		set ys [lmap p $here {lindex $p 1}]
+		set w [expr {[tcl::mathfunc::max {*}$xs] - [tcl::mathfunc::min {*}$xs]}]
+		set h [expr {[tcl::mathfunc::max {*}$ys] - [tcl::mathfunc::min {*}$ys]}]
+		list [expr {[llength $here] > 20}] [expr {$w > 48 && $w < 72}] \
+			[expr {$h > 20 && $h < 40}] [expr {$w > $h}]
+	} "1 1 1 1"
+
+	check "the ASCII view is refused while the game draws tiles" {
+		set set [angband_tileset]
+		list [expr {$set != 0}] [catch {angband_iso ascii} e] $e [angband_iso]
+	} "1 1 {the ASCII view needs the text tile set (None)} off"
+
+	# Through the Display page, as a player chooses it.
+	check "the ASCII view takes the text tile set, and gives the other back" {
+		set was [angband_tileset]
+		display_iso_chosen ascii
+		update
+		set in [list [angband_tileset] [angband_iso]]
+		display_iso_chosen off
+		list $in [expr {[angband_tileset] == $was}] [angband_iso]
+	} "{0 ascii} 1 off"
+
+	# With text the whole map is text items; the view draws it, so the term's
+	# copies are put away -- the @ is not left at the flat map's place for it
+	# -- and come back when the view goes.
+	check "the view puts the map's text away, and gives it back" {
+		set was [angband_tileset]
+		angband_choose_tileset 0
+		update
+		set flat [iso_showing @]
+		angband_iso colour
+		update
+		set view [iso_showing @]
+		angband_iso off
+		update
+		set back [iso_showing @]
+		angband_choose_tileset $was
+		update
+		list $flat $view $back
+	} "1 0 1"
+
 	sound_pass
 }
 
