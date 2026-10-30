@@ -485,6 +485,17 @@ proc display_page {p} {
             map's with them."
     pack $left.size.note -anchor w -pady {4 0}
 
+    # PROTOTYPE: the isometric view (scripts/tiles/make-iso.py).
+    ttk::labelframe $left.view -text "Map view" -padding 8
+    pack $left.view -fill x -pady {10 0}
+    set display(iso) [angband_iso]
+    foreach {v label} {off "Flat" ink "Isometric, ink" blue "Isometric, blue"
+            colour "Isometric, colour" ascii "Isometric, ASCII"} {
+        ttk::radiobutton $left.view.$v -text $label -variable display(iso) \
+            -value $v -command [list display_iso_chosen $v]
+        pack $left.view.$v -anchor w -pady 1
+    }
+
     ttk::labelframe $right.fonts -text "Fonts" -padding 8
     pack $right.fonts -fill x
     set families [display_mono_families]
@@ -565,6 +576,7 @@ proc display_page_refresh {} {
     }
     set display(size,windows) $display(uisize)
     set angband(tileset) [angband_tileset]
+    set display(iso) [angband_iso]
     display_swatches
 }
 
@@ -611,6 +623,36 @@ proc display_scale_chosen {n} {
         return
     }
     set options(msg) "Tiles drawn [lindex $display(scales) [expr {2 * $n - 1}]]."
+}
+
+proc display_iso_chosen {v} {
+    global display options
+    set was [angband_iso]
+    # The ASCII view stands the text map up, so it takes the text tile set --
+    # and gives back the set it took, once it is left.
+    if {$v eq "ascii" && [angband_tileset] != 0} {
+        settings_set display,textfrom [angband_tileset]
+        if {![angband_choose_tileset 0]} {
+            set display(iso) $was
+            return
+        }
+    }
+    if {[catch {angband_iso $v} err]} {
+        set options(msg) $err
+        set display(iso) [angband_iso]
+        return
+    }
+    if {$was eq "ascii" && $v ne "ascii" && [angband_tileset] == 0} {
+        set from [settings_get display,textfrom 0]
+        if {$from != 0} { angband_choose_tileset $from }
+    }
+    if {$v ni {off ascii}} { settings_set display,drawn $v }
+    settings_set display,iso $v
+}
+
+# The view chosen last time, once there is a map to draw it on.
+bind . <<Angband_ENTER_GAME>> {+
+    catch {angband_iso [settings_get display,iso off]}
 }
 
 proc display_uisize_chosen {} {

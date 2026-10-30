@@ -414,7 +414,10 @@ source [file join [file dirname [info script]] commands.tcl]
 # the player's own choice, which the colour-blind palette then leaves alone
 # (display.tcl); the palette marks its own choice again after calling this.
 proc angband_choose_tileset {id} {
-    global angband
+    global angband display
+    # PROTOTYPE: the isometric ASCII view needs the text set, so choosing a
+    # drawn one leaves it for the drawn view last used.
+    set ascii [expr {![catch {angband_iso} view] && $view eq "ascii"}]
     if {[catch {angband_tileset $id} err]} {
         tk_messageBox -icon error -title "ZangbandTK" \
             -message "Could not use that tile set." -detail $err
@@ -425,6 +428,11 @@ proc angband_choose_tileset {id} {
     set angband(tileset) $id
     settings_set display,tileset $id
     settings_set display,pairedtiles 0
+    if {$ascii && $id != 0} {
+        catch {angband_iso [settings_get display,drawn colour]}
+        set display(iso) [angband_iso]
+        settings_set display,iso $display(iso)
+    }
     # The windows that show a tile of their own -- the Character window's
     # portrait, the tombstone -- draw it again from the new set.
     event generate . <<TilesChanged>> -when tail

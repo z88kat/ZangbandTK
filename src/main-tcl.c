@@ -80,12 +80,14 @@
 #include "ui-prefs.h"
 #include "ui-spell.h"
 #include "ui-term.h"
+#include "ui-map.h"
 #include "wild.h"
 #include "z-textblock.h"
 #ifdef SOUND
 #include "sound.h"
 #endif
 
+#include <math.h>
 #include <tcl.h>
 #include <tk.h>
 
@@ -244,6 +246,8 @@ static bool flags_applied = false;
  */
 /* Defined below, beside the rest of the tile code. */
 static void clear_tiles(term_data *td, int x, int y, int n);
+static void iso_flush(term_data *t);
+static void iso_touched(term_data *t, int x, int y);
 
 /*
  * The tile sheet, as our own RGBA pixels rather than a Tk photo.
@@ -750,11 +754,17 @@ static void tiles_flush(term_data *t)
 {
 	Tk_PhotoImageBlock blk;
 	Tk_PhotoHandle photo;
-	int x = t->dirty_x0, y = t->dirty_y0;
-	int w = t->dirty_x1 - t->dirty_x0, h = t->dirty_y1 - t->dirty_y0;
+	int x, y, w, h;
 	size_t need;
 	int row, col;
 	bool soft = false;
+
+	/* The isometric view draws itself whole, before anything is handed over. */
+	iso_flush(t);
+	x = t->dirty_x0;
+	y = t->dirty_y0;
+	w = t->dirty_x1 - t->dirty_x0;
+	h = t->dirty_y1 - t->dirty_y0;
 
 	if (w <= 0 || h <= 0) return;
 	t->dirty_x0 = t->dirty_y0 = t->dirty_x1 = t->dirty_y1 = 0;
@@ -917,6 +927,7 @@ static void clear_tiles(term_data *td, int x, int y, int n)
 {
 	int ox = x * td->cw, oy = y * td->ch, w, h, row;
 
+	iso_touched(td, x, y);
 	if (!td->pix || n <= 0 || ox < 0 || oy < 0) return;
 	w = MIN(n * td->cw, td->pix_w - ox);
 	h = MIN(td->ch, td->pix_h - oy);
@@ -969,6 +980,785 @@ static bool cell_is_seen(const term_data *t, int x, int y)
 	return square_isseen(cave, grid);
 }
 
+/*
+ * ---- The isometric view (PROTOTYPE) ------------------------------------------
+ *
+ * The map pane drawn as the 2001 front end's isometric mode drew it: each
+ * square a diamond, walls standing up off the floor, the character in the
+ * middle.  The terrain comes from lib/tiles/iso, which
+ * scripts/tiles/make-iso.py draws; what stands on it -- monsters, objects, the
+ * character, a bolt in flight -- is the current tile set's own tile, stood up
+ * on the diamond as the 2001 one stood David Gervais' sprites up.
+ *
+ * It cannot ride on Term_pict as the flat map does.  The term holds an upright
+ * rectangle of the level and the view is a rotated one, and a wall's drawing
+ * depends on its neighbours.  So in this mode the map's cells only say that
+ * something changed, and the view is drawn again whole, back to front, from
+ * the character's memory of the level.  What stands on a square is read from
+ * the term where the game drew it there, which brings bolts, hallucination
+ * and detection along unasked, and asked of map_info() -- as the overhead map
+ * asks it -- where the square is outside the term's rectangle.
+ */
+enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
+
+#define ISO_HW 32		/* half a diamond's width */
+#define ISO_HH 16		/* half its height */
+#define ISO_FADE 120		/* of 256: how far a remembered square fades */
+
+static struct {
+	bool on;
+	bool dirty;
+	char style[16];
+	unsigned char *lit, *dim;	/* the sheet as seen, and as remembered */
+	int w, h;
+	int tw, th, cols;
+	uint8_t kind[FEAT_MAX];
+	int cell[FEAT_MAX];
+	int cut[FEAT_MAX];		/* cut away, in front of the character */
+	int wall[FEAT_MAX], wall_cut[FEAT_MAX];	/* a shop's building */
+	/* On the surface, where permanent walls are buildings and not vaults. */
+	uint8_t skind[FEAT_MAX];
+	int scell[FEAT_MAX], scut[FEAT_MAX];
+	unsigned char paper[3], ink[3];
+	bool bare;			/* figures without their outline */
+	/*
+	 * The ASCII view draws no sheet: it stands the map's own characters on
+	 * the lattice.  hw and hh are half a square across and down, in every
+	 * view; rise is how far each character in a stack stands above the last.
+	 */
+	bool text;
+	int hw, hh, rise;
+	/* The letters for counters: white on clear, side by side. */
+	unsigned char *glyph;
+	int gw, gh, gfirst, gcount, gstride;
+	/* Per cell of the map term: the map's own letter, drawn as a counter. */
+	unsigned char *letter;
+	size_t letter_n;
+} iso;
+
+static void iso_free(void)
+{
+	mem_free(iso.lit);
+	mem_free(iso.dim);
+	mem_free(iso.glyph);
+	iso.lit = iso.dim = iso.glyph = NULL;
+	iso.on = false;
+}
+
+static bool iso_load(const char *style)
+{
+	char dir[1024], path[1024], name[64], line[256];
+	unsigned char *px = NULL;
+	int w, h, i, floor_cell = -1;
+	bool have_style = false;
+	ang_file *fh;
+
+	path_build(dir, sizeof(dir), ANGBAND_DIR_TILES, "iso");
+	path_build(path, sizeof(path), dir, "iso.txt");
+	fh = file_open(path, MODE_READ, FTYPE_TEXT);
+	if (!fh) return false;
+	iso_free();
+	memset(iso.kind, 0, sizeof(iso.kind));
+	memset(iso.skind, 0, sizeof(iso.skind));
+	iso.tw = 64;
+	iso.th = 80;
+	iso.cols = 16;
+	iso.text = false;
+	iso.hw = ISO_HW;
+	iso.hh = ISO_HH;
+	iso.rise = 0;
+	while (file_getl(fh, line, sizeof(line))) {
+		/*
+		 * feat:<terrain>:<kind>:<cell>:<cut away>, or for a shop
+		 * feat:<terrain>:shop:<overlays>:<wall>:<wall cut away>, and
+		 * surface: lines the same, used instead on the surface.
+		 */
+		char *field[6], *p = line, sname[16], gname[64];
+		int nf = 0, kind, pr, pg, pb, ir, ig, ib, gw, gh, gfirst, gcount;
+		bool surface;
+
+		if (sscanf(line, "size:%d:%d:%d", &iso.tw, &iso.th, &iso.cols) == 3)
+			continue;
+		/* text:<style>:<half width>:<half height>:<rise> */
+		if (sscanf(line, "text:%15[^:]:%d:%d:%d", sname, &gw, &gh, &ir) == 4) {
+			if (streq(sname, style)) {
+				iso.text = true;
+				iso.hw = gw;
+				iso.hh = gh;
+				iso.rise = ir;
+				memset(iso.paper, 0, sizeof(iso.paper));
+				memset(iso.ink, 192, sizeof(iso.ink));
+				have_style = true;
+			}
+			continue;
+		}
+		/* glyphs:<file>:<width>:<height>:<first char>:<count> */
+		if (sscanf(line, "glyphs:%63[^:]:%d:%d:%d:%d", gname, &gw, &gh,
+				&gfirst, &gcount) == 5) {
+			char gpath[1024];
+			int sw, sh;
+
+			path_build(gpath, sizeof(gpath), dir, gname);
+			if (png_load(gpath, &iso.glyph, &sw, &sh)
+					&& sw >= gw * gcount && sh >= gh) {
+				iso.gw = gw;
+				iso.gh = gh;
+				iso.gfirst = gfirst;
+				iso.gcount = gcount;
+				iso.gstride = sw;
+			} else {
+				mem_free(iso.glyph);
+				iso.glyph = NULL;
+			}
+			continue;
+		}
+		/* style:<name>:<paper r:g:b>:<ink r:g:b> */
+		if (sscanf(line, "style:%15[^:]:%d:%d:%d:%d:%d:%d", sname, &pr, &pg,
+				&pb, &ir, &ig, &ib) == 7) {
+			if (streq(sname, style)) {
+				iso.paper[0] = (unsigned char)pr;
+				iso.paper[1] = (unsigned char)pg;
+				iso.paper[2] = (unsigned char)pb;
+				iso.ink[0] = (unsigned char)ir;
+				iso.ink[1] = (unsigned char)ig;
+				iso.ink[2] = (unsigned char)ib;
+				have_style = true;
+			}
+			continue;
+		}
+		if (prefix(line, "feat:")) surface = false;
+		else if (prefix(line, "surface:")) surface = true;
+		else continue;
+		while (nf < 6) {
+			field[nf++] = p;
+			p = strchr(p, ':');
+			if (!p) break;
+			*p++ = '\0';
+		}
+		if (nf < 4) continue;
+		kind = streq(field[2], "wall") ? ISO_WALL :
+			streq(field[2], "door") ? ISO_DOOR :
+			streq(field[2], "shop") ? ISO_SHOP : ISO_TILE;
+		/* Two terrains may share a name; each of them gets the drawing. */
+		for (i = 1; i < FEAT_MAX; i++) {
+			int cell = atoi(field[3]);
+			int cut = nf > 4 ? atoi(field[4]) : cell;
+
+			if (!f_info[i].name || !streq(f_info[i].name, field[1]))
+				continue;
+			if (surface) {
+				iso.skind[i] = (uint8_t)kind;
+				iso.scell[i] = cell;
+				iso.scut[i] = cut;
+				continue;
+			}
+			iso.kind[i] = (uint8_t)kind;
+			iso.cell[i] = cell;
+			iso.cut[i] = cut;
+			if (kind == ISO_SHOP) {
+				iso.wall[i] = cut;
+				iso.wall_cut[i] = nf > 5 ? atoi(field[5]) : cut;
+			}
+			if (i == FEAT_FLOOR) floor_cell = cell;
+		}
+	}
+	file_close(fh);
+
+	/* The drawn views have a sheet; the ASCII view needs only the letters. */
+	if (!iso.text) {
+		strnfmt(name, sizeof(name), "iso-%s.png", style);
+		path_build(path, sizeof(path), dir, name);
+		if (!png_load(path, &px, &w, &h)) {
+			iso_free();
+			return false;
+		}
+		iso.lit = px;
+		iso.w = w;
+		iso.h = h;
+
+		/*
+		 * A map that does not say what its paper is gets the middle of a
+		 * bare floor for it, and a dark grey for its ink.
+		 */
+		if (!have_style && floor_cell >= 0) {
+			const unsigned char *pp = px + ((size_t)((floor_cell / iso.cols)
+				* iso.th + iso.th - ISO_HH) * w + (floor_cell % iso.cols)
+				* iso.tw + iso.tw / 2) * 4;
+
+			memcpy(iso.paper, pp, 3);
+			memset(iso.ink, 40, sizeof(iso.ink));
+		}
+
+		/* Remembered rather than seen: the same drawing, in pencil. */
+		iso.dim = mem_alloc((size_t)w * h * 4);
+		for (i = 0; i < w * h; i++) {
+			int k;
+
+			for (k = 0; k < 3; k++)
+				iso.dim[i * 4 + k] = (unsigned char)(px[i * 4 + k]
+					+ ((iso.paper[k] - px[i * 4 + k]) * ISO_FADE >> 8));
+			iso.dim[i * 4 + 3] = px[i * 4 + 3];
+		}
+	} else if (!iso.glyph) {
+		/* Characters with nothing to draw them with: no view. */
+		iso_free();
+		return false;
+	}
+
+	my_strcpy(iso.style, style, sizeof(iso.style));
+	iso.on = true;
+	iso.dirty = true;
+	return true;
+}
+
+/* The map's part of the pane, in pixels, and the middle of it. */
+static void iso_view(const term_data *t, int *l, int *tp, int *r, int *b,
+		int *vx, int *vy)
+{
+	const term *tm = &t->t;
+
+	*l = col_map[tm->sidebar_mode] * t->cw;
+	*tp = row_top_map[tm->sidebar_mode] * t->ch;
+	*r = t->pix_w;
+	*b = t->pix_h - row_bottom_map[tm->sidebar_mode] * t->ch;
+	*vx = (*l + *r) / 2;
+	*vy = (*tp + *b) / 2;
+}
+
+/* Is this cell of the main term part of the map? */
+static bool iso_map_cell(const term_data *t, int x, int y)
+{
+	const term *tm = &t->t;
+
+	if (!iso.on || td_count < 1 || t != &td[0]) return false;
+	return y >= row_top_map[tm->sidebar_mode] && x >= col_map[tm->sidebar_mode]
+		&& y < tm->hgt - row_bottom_map[tm->sidebar_mode];
+}
+
+static int iso_known_feat(struct loc grid)
+{
+	int feat;
+
+	if (!square_in_bounds(cave, grid)) return FEAT_NONE;
+	feat = square(player->cave, grid)->feat;
+	if (f_info[feat].mimic) feat = (int)(f_info[feat].mimic - f_info);
+	return feat;
+}
+
+/* Walls join up with walls, and a shop's door is part of its building's. */
+static bool iso_is_wall(struct loc grid)
+{
+	int kind = iso.kind[iso_known_feat(grid)];
+
+	return kind == ISO_WALL || kind == ISO_SHOP;
+}
+
+static void iso_blit(term_data *t, const unsigned char *src, int cell,
+		int ox, int oy, int l, int tp, int r, int b)
+{
+	int sx = (cell % iso.cols) * iso.tw, sy = (cell / iso.cols) * iso.th;
+	int x, y;
+
+	if (sx + iso.tw > iso.w || sy + iso.th > iso.h) return;
+	for (y = 0; y < iso.th; y++) {
+		const unsigned char *s;
+
+		if (oy + y < tp || oy + y >= b) continue;
+		s = src + ((size_t)(sy + y) * iso.w + sx) * 4;
+		for (x = 0; x < iso.tw; x++, s += 4) {
+			unsigned char *d;
+
+			if (!s[3] || ox + x < l || ox + x >= r) continue;
+			d = t->pix + ((size_t)(oy + y) * t->pix_w + ox + x) * 4;
+			d[0] = s[0];
+			d[1] = s[1];
+			d[2] = s[2];
+			d[3] = 255;
+		}
+	}
+}
+
+/*
+ * A tile of the current set, stood on the diamond whose middle is (cx, cy),
+ * 32 pixels whatever the set's own size.  A set with no transparency -- Neon
+ * draws on black -- has its black taken as the background.
+ *
+ * Every figure is outlined, one pixel all round.  The sets were drawn to be
+ * seen on black, and on paper their palest figures -- all of Neon, and any
+ * set's white monsters -- otherwise all but vanish.  A set drawn on black
+ * keeps a rim of its own black, like a sign cut out of its board; the rest
+ * are outlined in the style's ink.
+ */
+static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
+		int l, int tp, int r, int b)
+{
+	int tw, th, sx, sy, x, y, k, ox = cx - 16, oy = cy + 6 - 32;
+	static const unsigned char *checked = NULL;
+	static bool opaque = false;
+	bool shape[34][34];
+	unsigned char edge[3];
+
+	if (!sheet || !current_graphics_mode) return;
+	tw = current_graphics_mode->cell_width;
+	th = current_graphics_mode->cell_height;
+	sx = (c & 0x7f) * tw;
+	sy = (a & 0x7f) * th;
+	if (sx + tw > sheet_w || sy + th > sheet_h) return;
+
+	if (checked != sheet) {
+		size_t i, n = (size_t)sheet_w * sheet_h;
+
+		opaque = true;
+		for (i = 0; i < n && opaque; i++)
+			if (sheet[i * 4 + 3] != 255) opaque = false;
+		checked = sheet;
+	}
+
+	/* Where the figure is, with a pixel's margin all round for its outline. */
+	memset(shape, 0, sizeof(shape));
+	for (y = 0; y < 32; y++)
+		for (x = 0; x < 32; x++) {
+			const unsigned char *s = sheet + ((size_t)(sy + y * th / 32)
+				* sheet_w + sx + x * tw / 32) * 4;
+
+			shape[y + 1][x + 1] = opaque ? s[0] + s[1] + s[2] >= 48
+				: s[3] >= 128;
+		}
+
+	for (k = 0; k < 3; k++) {
+		edge[k] = opaque ? 0 : iso.ink[k];
+		if (dim)
+			edge[k] = (unsigned char)(edge[k]
+				+ ((iso.paper[k] - edge[k]) * ISO_FADE >> 8));
+	}
+
+	for (y = 0; y < 34; y++) {
+		int py = oy + y - 1;
+
+		if (py < tp || py >= b) continue;
+		for (x = 0; x < 34; x++) {
+			int px = ox + x - 1;
+			unsigned char *d;
+
+			if (px < l || px >= r) continue;
+			d = t->pix + ((size_t)py * t->pix_w + px) * 4;
+			if (shape[y][x]) {
+				const unsigned char *s = sheet + ((size_t)(sy
+					+ (y - 1) * th / 32) * sheet_w + sx
+					+ (x - 1) * tw / 32) * 4;
+
+				for (k = 0; k < 3; k++)
+					d[k] = dim ? (unsigned char)(s[k]
+						+ ((iso.paper[k] - s[k]) * ISO_FADE >> 8)) : s[k];
+				d[3] = 255;
+			} else if (!iso.bare && ((y > 0 && shape[y - 1][x])
+					|| (y < 33 && shape[y + 1][x])
+					|| (x > 0 && shape[y][x - 1])
+					|| (x < 33 && shape[y][x + 1]))) {
+				memcpy(d, edge, 3);
+				d[3] = 255;
+			}
+		}
+	}
+}
+
+enum { ISO_FG_NONE, ISO_FG_TILE, ISO_FG_LETTER };
+
+/* What the map says stands on a square: a, c over ta, tc. */
+static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
+{
+	struct grid_data g;
+	wchar_t ch, tch;
+
+	map_info(grid, &g);
+	grid_data_as_text(&g, a, &ch, ta, &tch);
+	*c = ch;
+	*tc = tch;
+}
+
+/*
+ * What stands on a square, if anything: a tile drawn over its terrain, or a
+ * letter, which is how the game draws what the tile set has no picture for.
+ *
+ * Inside the term's rectangle it is read from the term, where the game drew
+ * it -- which is how a bolt in flight gets here.  A letter there counts only
+ * if it is the one the map would draw: anything else is text the game has
+ * written over the map, which stays where it was written.  *cell is the term
+ * cell it came from, or -1.
+ */
+static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
+		int *cell)
+{
+	const term *tm = &t->t;
+	int left = col_map[tm->sidebar_mode], top = row_top_map[tm->sidebar_mode];
+	int rows = (tm->hgt - top - row_bottom_map[tm->sidebar_mode]) / tile_height;
+	int cols = (tm->wid - left) / tile_width;
+	int gx = grid.x - tm->offset_x, gy = grid.y - tm->offset_y;
+	int ta, tc;
+
+	*cell = -1;
+	if (tm->scr && gx >= 0 && gy >= 0 && gx < cols && gy < rows) {
+		int x = left + gx * tile_width, y = top + gy * tile_height;
+
+		*a = tm->scr->a[y][x];
+		*c = tm->scr->c[y][x];
+		ta = tm->scr->ta[y][x];
+		tc = tm->scr->tc[y][x];
+		if (!(*a & 0x80)) {
+			int ma, mc;
+
+			iso_map_says(grid, &ma, &mc, &ta, &tc);
+			if (ma != *a || mc != *c) return ISO_FG_NONE;
+			*cell = y * t->cols + x;
+		}
+	} else {
+		iso_map_says(grid, a, c, &ta, &tc);
+	}
+	if (*a == ta && *c == tc) return ISO_FG_NONE;
+	return (*a & 0x80) ? ISO_FG_TILE : ISO_FG_LETTER;
+}
+
+/*
+ * Is the text in this cell of the map term the map's own -- what the flat map
+ * would draw for that square, terrain or what stands on it -- rather than
+ * something the game has written over the map?
+ */
+static bool iso_map_text(const term_data *t, int x, int y)
+{
+	const term *tm = &t->t;
+	struct loc grid;
+	int a, c, ta, tc;
+
+	if (!tm->scr || !character_dungeon || !cave || !player || !player->cave)
+		return false;
+	grid.x = (x - col_map[tm->sidebar_mode]) / tile_width + tm->offset_x;
+	grid.y = (y - row_top_map[tm->sidebar_mode]) / tile_height + tm->offset_y;
+	if (!square_in_bounds(cave, grid)) return false;
+	iso_map_says(grid, &a, &c, &ta, &tc);
+	return tm->scr->a[y][x] == a && tm->scr->c[y][x] == c;
+}
+
+/*
+ * A character of the game's, at twice the font's size, its top left at
+ * (x0, y0): in the game's colour attr, at bright/256 of its brightness, and
+ * faded towards the paper when what it stands for is only remembered.
+ */
+static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
+		int bright, bool dim, int l, int tp, int r, int b)
+{
+	unsigned char rgb[3];
+	int colour = attr % MAX_COLORS, x, y, k;
+
+	if (!iso.glyph || ch < iso.gfirst || ch >= iso.gfirst + iso.gcount) return;
+	for (k = 0; k < 3; k++) {
+		rgb[k] = (unsigned char)(angband_color_table[colour][k + 1]
+			* bright >> 8);
+		if (dim)
+			rgb[k] = (unsigned char)(rgb[k]
+				+ ((iso.paper[k] - rgb[k]) * ISO_FADE >> 8));
+	}
+	for (y = 0; y < iso.gh * 2; y++) {
+		if (y0 + y < tp || y0 + y >= b) continue;
+		for (x = 0; x < iso.gw * 2; x++) {
+			const unsigned char *s = iso.glyph + ((size_t)(y / 2)
+				* iso.gstride + (ch - iso.gfirst) * iso.gw + x / 2) * 4;
+			unsigned char *d;
+
+			if (s[3] < 128 || x0 + x < l || x0 + x >= r) continue;
+			d = t->pix + ((size_t)(y0 + y) * t->pix_w + x0 + x) * 4;
+			memcpy(d, rgb, 3);
+			d[3] = 255;
+		}
+	}
+}
+
+/*
+ * A counter: the letter the game prints for something the tile set has no
+ * picture of, in its colour, on a black disc standing on the square -- as
+ * tabletop games marked what they had no figure for, and as the flat map
+ * shows it, on black.
+ */
+static void iso_counter(term_data *t, int a, int c, int cx, int cy, bool dim,
+		int l, int tp, int r, int b)
+{
+	unsigned char disc[3] = { 24, 24, 28 }, rim[3];
+	int x, y, k;
+	int ox = cx - 11, oy = cy - 22;
+
+	for (k = 0; k < 3; k++) {
+		rim[k] = iso.ink[k];
+		if (dim) {
+			disc[k] = (unsigned char)(disc[k]
+				+ ((iso.paper[k] - disc[k]) * ISO_FADE >> 8));
+			rim[k] = (unsigned char)(rim[k]
+				+ ((iso.paper[k] - rim[k]) * ISO_FADE >> 8));
+		}
+	}
+
+	for (y = 0; y < 22; y++) {
+		if (oy + y < tp || oy + y >= b) continue;
+		for (x = 0; x < 22; x++) {
+			double dx = x + .5 - 11, dy = y + .5 - 11, d2 = dx * dx + dy * dy;
+			unsigned char *d;
+
+			if (d2 > 121 || ox + x < l || ox + x >= r) continue;
+			d = t->pix + ((size_t)(oy + y) * t->pix_w + ox + x) * 4;
+			memcpy(d, d2 > 100 ? rim : disc, 3);
+			d[3] = 255;
+		}
+	}
+
+	/* The letter, in the middle of the disc. */
+	iso_glyph(t, c, a, cx - iso.gw, cy - 11 - iso.gh, 256, dim, l, tp, r, b);
+}
+
+/*
+ * The characters the map shows on a square, a and c over the terrain's ta and
+ * tc: from the term where the game drew them, which brings bolts with them,
+ * and from the map beyond its rectangle.
+ */
+static void iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
+		int *ta, int *tc)
+{
+	const term *tm = &t->t;
+	int left = col_map[tm->sidebar_mode], top = row_top_map[tm->sidebar_mode];
+	int rows = (tm->hgt - top - row_bottom_map[tm->sidebar_mode]) / tile_height;
+	int cols = (tm->wid - left) / tile_width;
+	int gx = grid.x - tm->offset_x, gy = grid.y - tm->offset_y;
+
+	if (tm->scr && gx >= 0 && gy >= 0 && gx < cols && gy < rows) {
+		int x = left + gx * tile_width, y = top + gy * tile_height;
+
+		*a = tm->scr->a[y][x];
+		*c = tm->scr->c[y][x];
+		*ta = tm->scr->ta[y][x];
+		*tc = tm->scr->tc[y][x];
+	} else {
+		iso_map_says(grid, a, c, ta, tc);
+	}
+}
+
+/*
+ * A square of the ASCII view: its terrain's character, stood up as high as
+ * the terrain is -- a wall three deep, darkest at the foot, so that a run of
+ * them reads as height -- and on it whatever the map shows there, raised.
+ * Floors sit back, dim, so that what stands on them does not.
+ */
+static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
+		bool seen, bool bright, bool cut, int l, int tp, int r, int b)
+{
+	static const int shade3[] = { 115, 180, 256 }, shade2[] = { 154, 256 };
+	int a, c, ta, tc, feat = iso_known_feat(grid), n = 0, i;
+	int x0 = cx - iso.gw, y0 = cy - iso.gh;
+
+	iso_text_of(t, grid, &a, &c, &ta, &tc);
+
+	if (feat != FEAT_NONE) {
+		const struct feature *f = &f_info[feat];
+
+		if (tf_has(f->flags, TF_WALL) || iso.kind[feat] == ISO_SHOP) n = 3;
+		else if (!tf_has(f->flags, TF_PASSABLE)) n = 2;
+		else n = 1;
+		if (cut) n = 1;
+		for (i = 0; i < n; i++) {
+			int k = (n == 3) ? shade3[i] : (n == 2) ? shade2[i]
+				: tf_has(f->flags, TF_FLOOR) ? 115 : 256;
+
+			iso_glyph(t, tc, ta, x0, y0 - i * iso.rise, k, !bright,
+				l, tp, r, b);
+		}
+	}
+
+	if (a != ta || c != tc)
+		iso_glyph(t, c, a, x0, y0 - (n ? n : 1) * iso.rise, 256, !seen,
+			l, tp, r, b);
+}
+
+static void iso_render(term_data *t)
+{
+	int l, tp, r, b, vx, vy, s, d, x, y, smax, dmax;
+
+	iso_view(t, &l, &tp, &r, &b, &vx, &vy);
+	if (r <= l || b <= tp) return;
+
+	/* Which of the term's cells hold a letter the map drew: none yet. */
+	if (iso.letter_n != (size_t)t->cols * t->rows) {
+		mem_free(iso.letter);
+		iso.letter_n = (size_t)t->cols * t->rows;
+		iso.letter = mem_zalloc(iso.letter_n);
+	}
+	memset(iso.letter, 0, iso.letter_n);
+
+	/* Paper, everywhere: what is not known is not drawn yet. */
+	for (y = tp; y < b; y++) {
+		unsigned char *p = t->pix + ((size_t)y * t->pix_w + l) * 4;
+
+		for (x = l; x < r; x++, p += 4) {
+			memcpy(p, iso.paper, 3);
+			p[3] = 255;
+		}
+	}
+
+	if (character_dungeon && player && cave && player->cave) {
+		/*
+		 * Back to front: by distance down the screen, s = dx + dy.  The
+		 * squares on one such line sit side by side and never overlap.
+		 */
+		smax = (b - tp) / 2 / iso.hh + 6;
+		dmax = (r - l) / 2 / iso.hw + 3;
+		for (s = -smax; s <= smax; s++) {
+			for (d = -dmax; d <= dmax; d++) {
+				struct loc grid;
+				int dx, dy, cx, cy, feat, a, c, fg, cell;
+				bool seen, bright;
+
+				if ((s + d) & 1) continue;
+				dx = (s + d) / 2;
+				dy = (s - d) / 2;
+				grid = loc(player->grid.x + dx, player->grid.y + dy);
+				if (!square_in_bounds(cave, grid)) continue;
+
+				cx = vx + (dx - dy) * iso.hw;
+				cy = vy + (dx + dy) * iso.hh;
+				/*
+				 * A square fades to pencil when it is neither in view
+				 * nor lit, as the flat tiles darken it: by day the whole
+				 * town is lit, and a building half in view is still one
+				 * colour.  What stands on a square fades whenever it is
+				 * out of sight, because that is only a memory of it.
+				 */
+				seen = square_isseen(cave, grid);
+				bright = seen || square_isglow(cave, grid);
+				feat = iso_known_feat(grid);
+
+				if (iso.text) {
+					iso_text_square(t, grid, cx, cy, seen, bright,
+						dx >= 0 && dy >= 0 && dx + dy > 0 && dx < 2 && dy < 2,
+						l, tp, r, b);
+					continue;
+				}
+
+				if (feat != FEAT_NONE && iso.kind[feat]) {
+					/*
+					 * The three squares whose walls would stand in front
+					 * of the character are cut down to their footings.
+					 */
+					bool cut = dx >= 0 && dy >= 0 && dx + dy > 0
+						&& dx < 2 && dy < 2;
+					const unsigned char *src = bright ? iso.lit : iso.dim;
+					int kind = iso.kind[feat];
+					int cell = cut ? iso.cut[feat] : iso.cell[feat];
+					int mask = iso_is_wall(loc(grid.x - 1, grid.y)) * 1
+						| iso_is_wall(loc(grid.x, grid.y - 1)) * 2
+						| iso_is_wall(loc(grid.x + 1, grid.y)) * 4
+						| iso_is_wall(loc(grid.x, grid.y + 1)) * 8;
+					bool we = mask & (1 | 4), ns = mask & (2 | 8);
+					int ox = cx - iso.tw / 2, oy = cy + ISO_HH - iso.th;
+
+					if (!player->depth && iso.skind[feat]) {
+						kind = iso.skind[feat];
+						cell = cut ? iso.scut[feat] : iso.scell[feat];
+					}
+
+					if (kind == ISO_WALL) {
+						iso_blit(t, src, cell + mask, ox, oy, l, tp, r, b);
+					} else if (kind == ISO_DOOR) {
+						iso_blit(t, src, cell + (ns && !we), ox, oy, l, tp,
+							r, b);
+					} else if (kind == ISO_SHOP) {
+						/*
+						 * The building's wall, then the door on whichever
+						 * face of it looks out -- or, in the far side of
+						 * the building, no door but the sign.
+						 */
+						bool south = !(mask & 8), east = !(mask & 4);
+						int side = (ns && !we)
+							? (east ? 1 : south ? 0 : 2)
+							: (south ? 0 : east ? 1 : 2);
+
+						iso_blit(t, src, (cut ? iso.wall_cut[feat]
+							: iso.wall[feat]) + mask, ox, oy, l, tp, r, b);
+						if (!cut)
+							iso_blit(t, src, iso.cell[feat] + side, ox, oy,
+								l, tp, r, b);
+					} else {
+						iso_blit(t, src, cell, ox, oy, l, tp, r, b);
+					}
+				}
+
+				fg = iso_fg(t, grid, &a, &c, &cell);
+				if (fg == ISO_FG_TILE) {
+					iso_sprite(t, a, c, cx, cy, !seen, l, tp, r, b);
+				} else if (fg == ISO_FG_LETTER) {
+					iso_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
+					if (cell >= 0) iso.letter[cell] = 1;
+				}
+			}
+		}
+	}
+
+	/*
+	 * The map's own text is drawn in the view now -- its letters standing on
+	 * it as counters, and with no tile set its terrain too, as the view's own
+	 * drawings -- so the term's copies of it, in the flat map's places, are
+	 * put away.  Any other text the game has put over the map stays where it
+	 * is and stays legible.
+	 */
+	for (y = row_top_map[t->t.sidebar_mode];
+			y < t->rows - row_bottom_map[t->t.sidebar_mode]; y++)
+		for (x = col_map[t->t.sidebar_mode]; x < t->cols; x++) {
+			int row, idx = y * t->cols + x;
+
+			if (!t->shown || !t->shown[idx]) continue;
+			if (iso.letter[idx] || iso_map_text(t, x, y)) {
+				cell_set(t, x, y, " ", COLOUR_WHITE);
+				continue;
+			}
+			for (row = 0; row < t->ch; row++)
+				memset(t->pix + ((size_t)(y * t->ch + row) * t->pix_w
+					+ x * t->cw) * 4, 0, (size_t)t->cw * 4);
+		}
+
+	tiles_dirty(t, l, tp, r - l, b - tp);
+}
+
+/* Which square of the level is under a point of the map pane. */
+static bool iso_point(double px, double py, double *gdx, double *gdy)
+{
+	int l, tp, r, b, vx, vy;
+	double u, v;
+
+	if (td_count < 1 || !player) return false;
+	iso_view(&td[0], &l, &tp, &r, &b, &vx, &vy);
+	if (px < l || px >= r || py < tp || py >= b) return false;
+	u = (px - vx) / iso.hw;
+	v = (py - vy) / iso.hh;
+	*gdx = (u + v) / 2;
+	*gdy = (v - u) / 2;
+	return true;
+}
+
+static void iso_notice(game_event_type type, game_event_data *data, void *user)
+{
+	(void)type;
+	(void)data;
+	(void)user;
+	iso.dirty = true;
+}
+
+static void iso_flush(term_data *t)
+{
+	if (iso.on && iso.dirty && td_count > 0 && t == &td[0]) {
+		iso.dirty = false;
+		iso_render(t);
+	}
+}
+
+static void iso_touched(term_data *t, int x, int y)
+{
+	if (iso_map_cell(t, x, y)) iso.dirty = true;
+}
+
 static errr Term_pict_tcl(int x, int y, int n, const int *ap,
 		const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
@@ -976,6 +1766,17 @@ static errr Term_pict_tcl(int x, int y, int n, const int *ap,
 	int i;
 
 	for (i = 0; i < n; i++) {
+		/* The isometric view draws the map itself: see iso_render(). */
+		if (iso_map_cell(td, x + i, y)) {
+			int dx, dy;
+
+			iso.dirty = true;
+			for (dy = 0; dy < tile_height; dy++)
+				for (dx = 0; dx < tile_width; dx++)
+					cell_set(td, x + i + dx, y + dy, " ", COLOUR_WHITE);
+			continue;
+		}
+
 		/*
 		 * The terrain tile goes down first and the thing standing on it
 		 * second, which is what makes a monster on grass look like a monster
@@ -1743,6 +2544,8 @@ static void events_register(void)
 	for (i = 0; i < (int)N_ELEMENTS(game_event_name); i++)
 		event_add_handler((game_event_type)i, event_to_tcl, NULL);
 	event_add_handler(EVENT_SOUND, sound_seen, NULL);
+	event_add_handler(EVENT_MAP, iso_notice, NULL);
+	event_add_handler(EVENT_PLAYERMOVED, iso_notice, NULL);
 }
 
 /*
@@ -10022,6 +10825,15 @@ static bool map_point_grid(double px, double py, struct loc *grid)
 	if (td_count < 1 || td[0].cw <= 0 || td[0].ch <= 0) return false;
 	if (px < 0 || py < 0) return false;
 
+	if (iso.on) {
+		double gdx, gdy;
+
+		if (!iso_point(px, py, &gdx, &gdy)) return false;
+		grid->x = player->grid.x + (int)floor(gdx + .5);
+		grid->y = player->grid.y + (int)floor(gdy + .5);
+		return true;
+	}
+
 	t = &td[0].t;
 	top = row_top_map[t->sidebar_mode];
 	left = col_map[t->sidebar_mode];
@@ -10080,8 +10892,20 @@ static int map_point_dir(double px, double py)
 		+ col_map[t->sidebar_mode]) * td[0].cw + tw / 2.0);
 	double dy = (((player->grid.y - t->offset_y) * tile_height
 		+ row_top_map[t->sidebar_mode]) * td[0].ch + th / 2.0) - py;
-	double ax = dx < 0 ? -dx : dx, ay = dy < 0 ? -dy : dy;
+	double ax, ay;
 	int ew = 0, ns = 0;
+
+	/* In the isometric view, the way on the level rather than the screen. */
+	if (iso.on) {
+		double gdx, gdy;
+
+		if (iso_point(px, py, &gdx, &gdy)) {
+			dx = gdx;
+			dy = -gdy;
+		}
+	}
+	ax = dx < 0 ? -dx : dx;
+	ay = dy < 0 ? -dy : dy;
 
 	if (ax > ay * 0.41421356) ew = dx > 0 ? 1 : -1;
 	if (ay > ax * 0.41421356) ns = dy > 0 ? 1 : -1;
@@ -10542,6 +11366,10 @@ static bool graphics_load(graphics_mode *mode)
 		sheet_w = sheet_h = 0;
 	}
 
+	/* The ASCII view stands the text map up: tiles, and it has none. */
+	if (iso.on && iso.text && mode && mode->grafID != GRAPHICS_NONE)
+		iso_free();
+
 	if (!mode || mode->grafID == GRAPHICS_NONE) {
 		current_graphics_mode = get_graphics_mode(GRAPHICS_NONE);
 		use_graphics = GRAPHICS_NONE;
@@ -10786,6 +11614,65 @@ static int objcmd_tileset(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 static void build_cells(term_data *td);
+
+/**
+ * angband_iso ?off|ink|blue|colour|ascii? -- PROTOTYPE: read or change the
+ * isometric view.  With no tile set -- text -- everything that stands on the
+ * map is a counter; ascii draws the text map itself, and needs it.
+ */
+static int objcmd_iso(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *style;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(iso.on ? iso.style : "off", -1));
+		return TCL_OK;
+	}
+	/* angband_iso outline 0|1: the figures' outlines, to compare without. */
+	if (objc == 3 && streq(Tcl_GetString(objv[1]), "outline")) {
+		int on;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &on) != TCL_OK)
+			return TCL_ERROR;
+		iso.bare = !on;
+		iso.dirty = true;
+		return command_done(ip);
+	}
+	if (objc != 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?off|ink|blue|colour|ascii?");
+		return TCL_ERROR;
+	}
+	style = Tcl_GetString(objv[1]);
+	if (streq(style, "redraw")) {
+		iso.dirty = true;
+		return command_done(ip);
+	}
+	if (streq(style, "off")) {
+		iso_free();
+	} else {
+		if (!f_info || !iso_load(style)) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"could not load that isometric set", -1));
+			return TCL_ERROR;
+		}
+		if (iso.text && use_graphics != GRAPHICS_NONE) {
+			iso_free();
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the ASCII view needs the text tile set (None)", -1));
+			return TCL_ERROR;
+		}
+	}
+	/* Start from nothing either way: what the other view drew is wrong. */
+	if (td_count > 0 && td[0].pix) {
+		memset(td[0].pix, 0, (size_t)td[0].pix_w * td[0].pix_h * 4);
+		tiles_dirty(&td[0], 0, 0, td[0].pix_w, td[0].pix_h);
+	}
+	if (character_dungeon) do_cmd_redraw();
+	return command_done(ip);
+}
 
 /**
  * angband_tilescale ?n? -- read or change how big a tile is drawn: n times
@@ -12197,6 +13084,7 @@ errr init_tcl(int argc, char **argv)
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_version", objcmd_version, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_iso", objcmd_iso, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tilescale", objcmd_tilescale, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_refont", objcmd_refont, NULL,
