@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Draw the isometric terrain set -- PROTOTYPE.
+Draw the isometric view's terrain set, for src/tcl/iso.c.
 
 Pen and ink on paper, after the 1978 Dungeons & Dragons books: hatching for
 rock and for shadow, masonry ruled in on the faces of walls, and the ten-foot

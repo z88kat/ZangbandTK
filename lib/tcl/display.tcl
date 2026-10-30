@@ -485,7 +485,7 @@ proc display_page {p} {
             map's with them."
     pack $left.size.note -anchor w -pady {4 0}
 
-    # PROTOTYPE: the isometric view (scripts/tiles/make-iso.py).
+    # The map drawn flat, or isometrically in one of four styles (tcl/iso.c).
     ttk::labelframe $left.view -text "Map view" -padding 8
     pack $left.view -fill x -pady {10 0}
     set display(iso) [angband_iso]

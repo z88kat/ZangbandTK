@@ -69,6 +69,9 @@ macro(configure_tcl_frontend _NAME_TARGET)
         "${TK_LIBRARY}"
     )
 
+    # The isometric map view, on every platform.
+    target_sources(${_NAME_TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/src/tcl/iso.c")
+
     # The menus' keys are kept from being translated for the keyboard layout
     # through the Objective-C runtime, from C, in a file of its own: the
     # runtime's headers and the game's cannot be included together.  Tk links

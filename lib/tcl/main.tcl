@@ -415,8 +415,8 @@ source [file join [file dirname [info script]] commands.tcl]
 # (display.tcl); the palette marks its own choice again after calling this.
 proc angband_choose_tileset {id} {
     global angband display
-    # PROTOTYPE: the isometric ASCII view needs the text set, so choosing a
-    # drawn one leaves it for the drawn view last used.
+    # The isometric ASCII view needs the text set, so choosing a drawn one
+    # leaves it for the drawn view last used.
     set ascii [expr {![catch {angband_iso} view] && $view eq "ascii"}]
     if {[catch {angband_tileset $id} err]} {
         tk_messageBox -icon error -title "ZangbandTK" \
