@@ -1347,6 +1347,28 @@ proc choose_pass {n} {
 		list [lindex $row 3] [lindex $row 9] \
 			[.choose.f.list.tv selection] [.choose.f.btns.new cget -default]
 	} "dead Retiring {} active"
+
+	# The character retired with the isometric view on (death_pass).  With no
+	# level in play the view draws nothing, so the text the game puts on the
+	# map pane is on black as it is on the flat map, and not on paper.
+	check "with no level in play the isometric view leaves the map pane black" {
+		update
+		set c .pw.top.map.c
+		set paper 0
+		foreach item [$c find withtag all] {
+			if {[$c type $item] ne "image"} continue
+			set img [$c itemcget $item -image]
+			for {set y 30} {$y < [image height $img] - 30} {incr y 23} {
+				for {set x 150} {$x < [image width $img] - 10} {incr x 31} {
+					lassign [$img get $x $y -withalpha] r g b a
+					if {$a == 255 && $r > 200 && $g > 200 && $b > 200} {
+						incr paper
+					}
+				}
+			}
+		}
+		list [angband_iso] $paper
+	} "colour 0"
 	finish
 }
 
@@ -3126,6 +3148,9 @@ proc death_pass {} {
 		} "retired"
 		finish
 	}]
+	# Retired with the isometric view on, which choose_pass looks at after
+	# New Game.
+	angband_iso colour
 	set row [lsearch -inline -index 3 [angband_commands] "Retire*"]
 	angband_command [lindex $row 0] [lindex $row 2]
 	death_pass_more

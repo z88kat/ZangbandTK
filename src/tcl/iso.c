@@ -748,6 +748,31 @@ static bool iso_text_glyph(term_data *t, int x, int y, struct loc centre,
 	return true;
 }
 
+/*
+ * Whether a cell of the map's term is part of something the game has put
+ * over the map -- text the map would not draw there, or the space cleared
+ * for it -- rather than the map.  A tile is always the map's.  Outside the
+ * map's own part of the term (its last column is never map) and beyond the
+ * edge of the level only a letter counts, since the map's blank there is a
+ * blank too.
+ */
+static bool iso_overlay_cell(const term_data *t, int x, int y)
+{
+	const term *tm = &t->t;
+	int left = col_map[tm->sidebar_mode], top = row_top_map[tm->sidebar_mode];
+	int cols = (tm->wid - left - 1) / tile_width;
+	int rows = (tm->hgt - top - row_bottom_map[tm->sidebar_mode]) / tile_height;
+	struct loc grid;
+
+	if (!tm->scr || (tm->scr->a[y][x] & 0x80)) return false;
+	grid.x = (x - left) / tile_width + tm->offset_x;
+	grid.y = (y - top) / tile_height + tm->offset_y;
+	if ((x - left) / tile_width >= cols || (y - top) / tile_height >= rows
+			|| !square_in_bounds(cave, grid))
+		return tm->scr->c[y][x] != L' ';
+	return !iso_map_text(t, x, y);
+}
+
 /* The cursor: a ring round its square's diamond, in the flat map's yellow. */
 static void iso_mark(term_data *t, struct loc grid, struct loc centre,
 		int l, int tp, int r, int b)
@@ -789,6 +814,20 @@ static void iso_render(term_data *t)
 	}
 	memset(iso.letter, 0, iso.letter_n);
 
+	/*
+	 * With no level in play -- the splash screen after New Game, a game not
+	 * yet loaded -- there is no map to draw, and what the term holds is text:
+	 * shown as the flat map shows it, on black, and not on paper with a black
+	 * box behind each letter.
+	 */
+	if (!character_dungeon || !player || !cave || !player->cave) {
+		for (y = tp; y < b; y++)
+			memset(t->pix + ((size_t)y * t->pix_w + l) * 4, 0,
+				(size_t)(r - l) * 4);
+		tcl_tiles_dirty(t, l, tp, r - l, b - tp);
+		return;
+	}
+
 	/* Paper, everywhere: what is not known is not drawn yet. */
 	for (y = tp; y < b; y++) {
 		unsigned char *p = t->pix + ((size_t)y * t->pix_w + l) * 4;
@@ -799,105 +838,103 @@ static void iso_render(term_data *t)
 		}
 	}
 
-	if (character_dungeon && player && cave && player->cave) {
-		centre = iso_centre();
-		iso.shown = centre;
+	centre = iso_centre();
+	iso.shown = centre;
 
-		/*
-		 * Back to front: by distance down the screen, s = dx + dy.  The
-		 * squares on one such line sit side by side and never overlap.
-		 */
-		smax = (b - tp) / 2 / iso.hh + 6;
-		dmax = (r - l) / 2 / iso.hw + 3;
-		for (s = -smax; s <= smax; s++) {
-			for (d = -dmax; d <= dmax; d++) {
-				struct loc grid;
-				int dx, dy, cx, cy, feat, a, c, fg, cell, pdx, pdy;
-				bool seen, bright, cut;
+	/*
+	 * Back to front: by distance down the screen, s = dx + dy.  The
+	 * squares on one such line sit side by side and never overlap.
+	 */
+	smax = (b - tp) / 2 / iso.hh + 6;
+	dmax = (r - l) / 2 / iso.hw + 3;
+	for (s = -smax; s <= smax; s++) {
+		for (d = -dmax; d <= dmax; d++) {
+			struct loc grid;
+			int dx, dy, cx, cy, feat, a, c, fg, cell, pdx, pdy;
+			bool seen, bright, cut;
 
-				if ((s + d) & 1) continue;
-				dx = (s + d) / 2;
-				dy = (s - d) / 2;
-				grid = loc(centre.x + dx, centre.y + dy);
-				if (!square_in_bounds(cave, grid)) continue;
+			if ((s + d) & 1) continue;
+			dx = (s + d) / 2;
+			dy = (s - d) / 2;
+			grid = loc(centre.x + dx, centre.y + dy);
+			if (!square_in_bounds(cave, grid)) continue;
 
-				/*
-				 * The three squares whose walls would stand in front of
-				 * the character are cut down to their footings.
-				 */
-				pdx = grid.x - player->grid.x;
-				pdy = grid.y - player->grid.y;
-				cut = pdx >= 0 && pdy >= 0 && pdx + pdy > 0 && pdx < 2
-					&& pdy < 2;
+			/*
+			 * The three squares whose walls would stand in front of
+			 * the character are cut down to their footings.
+			 */
+			pdx = grid.x - player->grid.x;
+			pdy = grid.y - player->grid.y;
+			cut = pdx >= 0 && pdy >= 0 && pdx + pdy > 0 && pdx < 2
+				&& pdy < 2;
 
-				cx = vx + (dx - dy) * iso.hw;
-				cy = vy + (dx + dy) * iso.hh;
-				/*
-				 * A square fades to pencil when it is neither in view
-				 * nor lit, as the flat tiles darken it: by day the whole
-				 * town is lit, and a building half in view is still one
-				 * colour.  What stands on a square fades whenever it is
-				 * out of sight, because that is only a memory of it.
-				 */
-				seen = square_isseen(cave, grid);
-				bright = seen || square_isglow(cave, grid);
-				feat = iso_known_feat(grid);
+			cx = vx + (dx - dy) * iso.hw;
+			cy = vy + (dx + dy) * iso.hh;
+			/*
+			 * A square fades to pencil when it is neither in view
+			 * nor lit, as the flat tiles darken it: by day the whole
+			 * town is lit, and a building half in view is still one
+			 * colour.  What stands on a square fades whenever it is
+			 * out of sight, because that is only a memory of it.
+			 */
+			seen = square_isseen(cave, grid);
+			bright = seen || square_isglow(cave, grid);
+			feat = iso_known_feat(grid);
 
-				if (iso.text) {
-					iso_text_square(t, grid, cx, cy, seen, bright, cut,
-						l, tp, r, b);
-					continue;
+			if (iso.text) {
+				iso_text_square(t, grid, cx, cy, seen, bright, cut,
+					l, tp, r, b);
+				continue;
+			}
+
+			if (feat != FEAT_NONE && iso.kind[feat]) {
+				const unsigned char *src = bright ? iso.lit : iso.dim;
+				int kind = iso.kind[feat];
+				int cell = cut ? iso.cut[feat] : iso.cell[feat];
+				int mask = iso_is_wall(loc(grid.x - 1, grid.y)) * 1
+					| iso_is_wall(loc(grid.x, grid.y - 1)) * 2
+					| iso_is_wall(loc(grid.x + 1, grid.y)) * 4
+					| iso_is_wall(loc(grid.x, grid.y + 1)) * 8;
+				bool we = mask & (1 | 4), ns = mask & (2 | 8);
+				int ox = cx - iso.tw / 2, oy = cy + ISO_HH - iso.th;
+
+				if (!player->depth && iso.skind[feat]) {
+					kind = iso.skind[feat];
+					cell = cut ? iso.scut[feat] : iso.scell[feat];
 				}
 
-				if (feat != FEAT_NONE && iso.kind[feat]) {
-					const unsigned char *src = bright ? iso.lit : iso.dim;
-					int kind = iso.kind[feat];
-					int cell = cut ? iso.cut[feat] : iso.cell[feat];
-					int mask = iso_is_wall(loc(grid.x - 1, grid.y)) * 1
-						| iso_is_wall(loc(grid.x, grid.y - 1)) * 2
-						| iso_is_wall(loc(grid.x + 1, grid.y)) * 4
-						| iso_is_wall(loc(grid.x, grid.y + 1)) * 8;
-					bool we = mask & (1 | 4), ns = mask & (2 | 8);
-					int ox = cx - iso.tw / 2, oy = cy + ISO_HH - iso.th;
+				if (kind == ISO_WALL) {
+					iso_blit(t, src, cell + mask, ox, oy, l, tp, r, b);
+				} else if (kind == ISO_DOOR) {
+					iso_blit(t, src, cell + (ns && !we), ox, oy, l, tp,
+						r, b);
+				} else if (kind == ISO_SHOP) {
+					/*
+					 * The building's wall, then the door on whichever
+					 * face of it looks out -- or, in the far side of
+					 * the building, no door but the sign.
+					 */
+					bool south = !(mask & 8), east = !(mask & 4);
+					int side = (ns && !we)
+						? (east ? 1 : south ? 0 : 2)
+						: (south ? 0 : east ? 1 : 2);
 
-					if (!player->depth && iso.skind[feat]) {
-						kind = iso.skind[feat];
-						cell = cut ? iso.scut[feat] : iso.scell[feat];
-					}
-
-					if (kind == ISO_WALL) {
-						iso_blit(t, src, cell + mask, ox, oy, l, tp, r, b);
-					} else if (kind == ISO_DOOR) {
-						iso_blit(t, src, cell + (ns && !we), ox, oy, l, tp,
-							r, b);
-					} else if (kind == ISO_SHOP) {
-						/*
-						 * The building's wall, then the door on whichever
-						 * face of it looks out -- or, in the far side of
-						 * the building, no door but the sign.
-						 */
-						bool south = !(mask & 8), east = !(mask & 4);
-						int side = (ns && !we)
-							? (east ? 1 : south ? 0 : 2)
-							: (south ? 0 : east ? 1 : 2);
-
-						iso_blit(t, src, (cut ? iso.wall_cut[feat]
-							: iso.wall[feat]) + mask, ox, oy, l, tp, r, b);
-						if (!cut)
-							iso_blit(t, src, iso.cell[feat] + side, ox, oy,
-								l, tp, r, b);
-					} else {
-						iso_blit(t, src, cell, ox, oy, l, tp, r, b);
-					}
+					iso_blit(t, src, (cut ? iso.wall_cut[feat]
+						: iso.wall[feat]) + mask, ox, oy, l, tp, r, b);
+					if (!cut)
+						iso_blit(t, src, iso.cell[feat] + side, ox, oy,
+							l, tp, r, b);
+				} else {
+					iso_blit(t, src, cell, ox, oy, l, tp, r, b);
 				}
+			}
 
-				fg = iso_fg(t, grid, &a, &c, &cell);
-				if (fg == ISO_FG_TILE) {
-					iso_sprite(t, a, c, cx, cy, !seen, l, tp, r, b);
-				} else if (fg == ISO_FG_LETTER) {
-					iso_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
-					if (cell >= 0) iso.letter[cell] = 1;
-				}
+			fg = iso_fg(t, grid, &a, &c, &cell);
+			if (fg == ISO_FG_TILE) {
+				iso_sprite(t, a, c, cx, cy, !seen, l, tp, r, b);
+			} else if (fg == ISO_FG_LETTER) {
+				iso_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
+				if (cell >= 0) iso.letter[cell] = 1;
 			}
 		}
 	}
@@ -908,14 +945,23 @@ static void iso_render(term_data *t)
 	 * drawings -- so the term's copies of it, in the flat map's places, are
 	 * put away.  So is anything else the game drew on a square of the map,
 	 * which is drawn on that square.  Only while the game has saved the
-	 * screen to put something over the map is text an overlay, and that
-	 * stays where it is and stays legible.
+	 * screen to put something over the map -- a list of what lies on the
+	 * floor, a menu -- is it an overlay, and an overlay is shown as the flat
+	 * map shows it: every cell of it black, the space cleared for it as well
+	 * as its letters, so it reads as a panel on the map and not as letters
+	 * in boxes on paper.
 	 */
 	for (y = row_top_map[t->t.sidebar_mode];
 			y < t->rows - row_bottom_map[t->t.sidebar_mode]; y++)
 		for (x = col_map[t->t.sidebar_mode]; x < t->cols; x++) {
 			int row, idx = y * t->cols + x;
 
+			if (t->t.saved && iso_overlay_cell(t, x, y)) {
+				for (row = 0; row < t->ch; row++)
+					memset(t->pix + ((size_t)(y * t->ch + row) * t->pix_w
+						+ x * t->cw) * 4, 0, (size_t)t->cw * 4);
+				continue;
+			}
 			if (!t->shown || !t->shown[idx]) continue;
 			if (iso.letter[idx] || iso_map_text(t, x, y)
 					|| (!t->t.saved
