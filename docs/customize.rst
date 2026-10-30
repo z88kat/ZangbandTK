@@ -586,6 +586,22 @@ How the window draws is set on the Display page of the Options window
 * **Tile set** chooses the graphical tiles, or None to draw the map in letters.
 * **Tile size** draws the map's tiles Small, Medium or Large.  The overhead map
   uses the same size, so its tiles grow too.
+* **Map view** draws the map flat, as it always has been, or isometrically:
+  every square a diamond, walls standing up off the floor, and your character
+  in the middle.  There are four styles of it.  Ink is black on cream, the way
+  the old rulebooks were printed.  Blue is the blue of the old printed
+  adventure maps.  Colour is that blue map coloured in, with dark stone for
+  rock and each shop's door in the shop's own colour.  ASCII stands the letter
+  map itself up, so a wall is a stack of its ``#``; it needs the None tile set,
+  and switches to it while it's on and back again when you leave it.
+
+  In the other three, monsters, items and your character are the tile set's
+  own pictures, standing on their squares.  Anything the set has no picture
+  for stands there as its letter on a black disc.  Places you haven't found
+  aren't drawn at all, and places you remember are fainter, as they are on the
+  flat map.  Walls just in front of you are cut down to their footings so they
+  never hide you.  The mouse works as it does on the flat map, and the square
+  you look at or aim at gets a yellow ring.
 * **Fonts** sets the font and size of the map, of the text panes beside and
   below it, and of the overhead map.  A pane's font decides how many rows and
   columns fit in it, so a larger font shows less of the map.  **Window text**

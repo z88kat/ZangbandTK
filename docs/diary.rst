@@ -31,6 +31,57 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+30 October 2026 — an isometric map, drawn from nothing
+=======================================================
+
+Steven sent a screenshot of ZAngbandTk 2.4's Setup window with "Isometric David
+E. Gervais 32x32" selected, and asked whether we could bring it across, on the
+assumption that it was just another tileset. It wasn't. The 2001 front end had a
+whole second map renderer for it, ``widget-iso.c``, 1,650 lines of it, and the
+sheet held terrain only. The monsters standing on the diamonds were the ordinary
+flat Gervais sprites.
+
+The sheet couldn't come either. It arrived with Tim Baker's note that Gervais'
+graphics "are used with his permission", which was a permission to that project,
+and nothing I could find puts the isometric art inside Gervais' CC-BY release.
+That's the position Shockbolt's set was in. So we drew our own, and Steven asked
+for it in the style of the 1978 Dungeons & Dragons books.
+
+My first attempt hatched the wall tops and ruled brick on the faces. At actual
+size it looked like a maze of garden walls drawn on lined paper. The second made
+the tops solid ink, the way the old module maps drew solid rock, and that was the
+one: from above, a lit room reads as its plan on the page. Steven picked the blue
+over black on cream, then asked for colour, so the drawing is now made in named
+inks and washes and coloured only when it's written out. One drawing, three
+sheets, and Steven wanted all three kept for the player to choose, with dark
+stone for the rock in the coloured one.
+
+Most of what went wrong showed up in the running game, not in my test scenes. A
+wall in front of the character hid it, so the three squares in front are cut down
+to their footings. Remembered floors faded until their grid vanished, which made
+explored ground look unexplored. In daylight half of every roof was pale, because
+I faded whatever was out of view; the flat map treats lit-but-unseen as bright,
+and now so does this. A unique the tile set had no picture for turned up as its
+letter at the flat map's place for it, in a black box, nowhere near where it
+stood. Those are counters now, the letter on a disc. And Neon's figures, drawn to
+glow on black, nearly disappeared on white paper until every figure got an
+outline. Then Steven asked what ASCII would look like, and it's a fourth style:
+the text map stood up, walls as stacks of ``#``.
+
+By this morning the prototype was about 2,000 lines, sitting uncommitted in a
+scratch folder under ``/tmp``, one reboot from gone. It's on a branch now, and the
+renderer has a file of its own, ``src/tcl/iso.c``. I also got one thing plainly
+wrong while planning: I told Steven the option would fail in a release until
+``lib/tiles/iso`` had install lists. It wouldn't. CMake and all three Tk packages
+copy ``lib/tiles`` whole.
+
+The look cursor took two goes. I wired the yellow ring to the term's message that
+its cursor is showing, and the ring never appeared. The Tk term's cursor is a soft
+one: the game draws it at every refresh it should be seen in, and never says it is
+showing. The ring now follows the drawing. It also explains something I hadn't
+noticed. The flat Tk map has never shown a look cursor at all.
+
+
 29 October 2026 — a faster game, and a file of Steven's I had no business touching
 ==================================================================================
 

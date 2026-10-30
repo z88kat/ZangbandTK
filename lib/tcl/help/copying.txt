@@ -116,6 +116,14 @@ T	li1 strong	Both are modified here
 T	li1	 by the appended row described above, on the reading that neither is carved out as an exception and both therefore stand on the project licence like the rest of the tree. That is a reading of a silence rather than a permission granted; if terms appear that it does not satisfy, the row is one script run away from being taken out again.
 T	li1	\n
 T	li1	•\t
+T	li1 strong	The isometric view’s art is this project’s own.
+T	li1	 
+T	li1 code	scripts/tiles/make-iso.py
+T	li1	 draws all of it: the terrain in its three styles, and the letters on its counters, which are taken from the DS port’s font in 
+T	li1 code	src/nds
+T	li1	. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais’ that came with no more than a permission given to that project, and nothing of it is used here. What stands on the view (monsters, items, the character) is the chosen tile set’s own tiles, under that set’s terms above.
+T	li1	\n
+T	li1	•\t
 T	li1	The sounds are licenced under the Creative Commons Attribution 4.0 licence. They were created by Dubtrain <
 L	li1 link	4	mailto:angband@dubtrain.com	angband@dubtrain.com
 T	li1	>. You can find them in Wave format at 

@@ -82,6 +82,8 @@ Angband licence and which the licence above does not override:
 
 * **The original (8x8) and Nomad's tiles** carry no licence statement here, and none in Angband's own copying page. That is a known gap, inherited rather than settled, and is written down instead of assumed.  **Both are modified here** by the appended row described above, on the reading that neither is carved out as an exception and both therefore stand on the project licence like the rest of the tree.  That is a reading of a silence rather than a permission granted; if terms appear that it does not satisfy, the row is one script run away from being taken out again.
 
+* **The isometric view's art is this project's own.** ``scripts/tiles/make-iso.py`` draws all of it: the terrain in its three styles, and the letters on its counters, which are taken from the DS port's font in ``src/nds``. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais' that came with no more than a permission given to that project, and nothing of it is used here. What stands on the view (monsters, items, the character) is the chosen tile set's own tiles, under that set's terms above.
+
 * The sounds are licenced under the Creative Commons Attribution 4.0 licence.  They were created by Dubtrain <angband@dubtrain.com>. You can find them in Wave format at http://www.dubtrain.com/angband/.
 
 * The font files are all by Leon Marrick and/or Sheldon Simms III and/or Nick McConnell, all of whom have agreed to their Angband work being released under the GPL.

@@ -113,6 +113,21 @@ Per tileset
   modification of a text file, not of any art.
 
 
+**iso -- ours, and not a tileset.**
+
+  `lib/tiles/iso` is the terrain of the Tk front end's isometric map view
+  (`src/tcl/iso.c`), drawn by `scripts/tiles/make-iso.py`: three sheets of the
+  same drawing in different inks, the letters for its counters, and `iso.txt`,
+  which says which drawing each terrain uses.  Nothing in it was taken from
+  anybody's art.  The letters are the DS port's 5x8 font, read from
+  `src/nds/nds-font-5x8.c`.  ZAngbandTk 2.4's isometric sheet, which was David
+  Gervais', is not used: it came with only a permission given to that project.
+
+  It is not in list.txt, because it is not a set of tiles for the flat map,
+  and it has no Makefile, because only the Tk front end reads it: CMake
+  installs lib/tiles whole, and the Tk packages copy it whole, so it ships
+  without an install list.  `make-iso.py --check` is what keeps it honest.
+
 May we?
 -------
 
