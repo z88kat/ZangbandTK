@@ -67,6 +67,13 @@ jobs:
       - name: Check the imported Zangband uniques
         run: python3 scripts/tiles/import-zangband-tiles.py --check
 
+      # Draws the isometric view's set in memory and compares it with
+      # lib/tiles/iso pixel for pixel -- pixels, not PNG files, for the zlib
+      # reason given below -- and fails if a terrain has no drawing.  Writes
+      # nothing, so it can stand with the read-only checks.
+      - name: Check the isometric view's set
+        run: python3 scripts/tiles/make-iso.py --check
+
       # The audit answers "is anything undrawn", which is not the same question
       # as "is what is drawn still what the generator would produce".  A
       # projection whose colour changed, or a monster renamed, leaves a tile in

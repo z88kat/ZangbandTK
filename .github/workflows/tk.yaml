@@ -48,6 +48,8 @@ on:
       - 'lib/icons/zangbandtk.desktop'
       - 'scripts/portraits/**'
       - 'scripts/palettes/**'
+      # The isometric view's art, which the Tk build alone draws.
+      - 'lib/tiles/iso/**'
       - 'lib/gamedata/p_race.txt'
       - 'lib/gamedata/class.txt'
       - 'CMakeLists.txt'
