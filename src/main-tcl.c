@@ -165,6 +165,12 @@ static bool is_map_term(const term_data *t)
 }
 
 /*
+ * Whether the map's term drew its cursor since its last refresh.  The term's
+ * cursor is soft (Term_fresh), so drawn is the only way it is ever shown.
+ */
+static bool map_cursor_drawn = false;
+
+/*
  * Which of the game's subwindows each pane is, by pane order.
  *
  * textui_init() decides what a subwindow contains from its *index* -- 1 is
@@ -439,6 +445,10 @@ static errr Term_curs_tcl(int x, int y)
 			(x + tile_width) * td->cw - 1,
 			(y + tile_height) * td->ch - 1);
 	Tcl_Eval(interp, cmd);
+	if (is_map_term(td) && tcl_iso_on()) {
+		tcl_iso_cursor(td, x, y);
+		map_cursor_drawn = true;
+	}
 
 	/*
 	 * Moving the cursor does not show it, and nothing here shows it either.
@@ -1317,6 +1327,12 @@ static errr Term_xtra_tcl(int n, int v)
 	if (n == TERM_XTRA_EVENT) {
 		bridge_first_wait();
 		bridge_reinstall_if_due();
+	}
+
+	/* The isometric view marks the cursor's square while it is drawn. */
+	if (n == TERM_XTRA_FRESH && is_map_term(td) && tcl_iso_on()) {
+		tcl_iso_cursor_show(td, map_cursor_drawn);
+		map_cursor_drawn = false;
 	}
 
 	/* Too soon after the last one: see repaint_due(). */
@@ -10033,11 +10049,11 @@ static bool map_point_grid(double px, double py, struct loc *grid)
 	if (px < 0 || py < 0) return false;
 
 	if (tcl_iso_on()) {
-		double gdx, gdy;
+		double fx, fy;
 
-		if (!tcl_iso_point(&td[0], px, py, &gdx, &gdy)) return false;
-		grid->x = player->grid.x + (int)floor(gdx + .5);
-		grid->y = player->grid.y + (int)floor(gdy + .5);
+		if (!tcl_iso_point(&td[0], px, py, &fx, &fy)) return false;
+		grid->x = (int)floor(fx + .5);
+		grid->y = (int)floor(fy + .5);
 		return true;
 	}
 
@@ -10104,11 +10120,11 @@ static int map_point_dir(double px, double py)
 
 	/* In the isometric view, the way on the level rather than the screen. */
 	if (tcl_iso_on()) {
-		double gdx, gdy;
+		double fx, fy;
 
-		if (tcl_iso_point(&td[0], px, py, &gdx, &gdy)) {
-			dx = gdx;
-			dy = -gdy;
+		if (tcl_iso_point(&td[0], px, py, &fx, &fy)) {
+			dx = fx - player->grid.x;
+			dy = player->grid.y - fy;
 		}
 	}
 	ax = dx < 0 ? -dx : dx;
@@ -10848,7 +10864,7 @@ static int objcmd_iso(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		tcl_iso_redraw();
 		return command_done(ip);
 	}
-	if (!tcl_iso_set(style, err, sizeof(err))) {
+	if (!tcl_iso_set(style, td_count > 0 ? &td[0] : NULL, err, sizeof(err))) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(err, -1));
 		return TCL_ERROR;
 	}

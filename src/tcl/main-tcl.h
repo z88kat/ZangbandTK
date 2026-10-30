@@ -78,12 +78,15 @@ const unsigned char *tcl_tile_sheet(int *w, int *h);
 /* tcl/iso.c: the isometric map view.  Each takes the map's term. */
 bool tcl_iso_on(void);
 const char *tcl_iso_style(void);
-bool tcl_iso_set(const char *style, char *err, size_t len);
+bool tcl_iso_set(const char *style, const term_data *map, char *err,
+		size_t len);
 void tcl_iso_redraw(void);
 void tcl_iso_tiles_changed(int graf_id);
 bool tcl_iso_map_cell(const term_data *map, int x, int y);
-bool tcl_iso_point(const term_data *map, double px, double py, double *gdx,
-		double *gdy);
+bool tcl_iso_point(const term_data *map, double px, double py, double *fx,
+		double *fy);
+void tcl_iso_cursor(const term_data *map, int x, int y);
+void tcl_iso_cursor_show(const term_data *map, bool show);
 void tcl_iso_events_init(void);
 void tcl_iso_flush(term_data *map);
 void tcl_iso_touched(const term_data *map, int x, int y);

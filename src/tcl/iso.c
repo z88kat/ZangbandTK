@@ -41,14 +41,18 @@
  * through tcl/main-tcl.h.
  */
 
+#include <math.h>
+
 #include "angband.h"
 #include "cave.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
 #include "player-calcs.h"
 #include "ui-map.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
 #include "tcl/main-tcl.h"
@@ -81,6 +85,20 @@ static struct {
 	 */
 	bool text;
 	int hw, hh, rise;
+	/* The map's term, for the game's questions about what is on screen. */
+	const term_data *map;
+	/*
+	 * The cursor, when the game shows one on the map -- looking, aiming --
+	 * and the square the view is held on while the cursor is somewhere the
+	 * view centred on the character would not show.  shown is the middle of
+	 * the view as last drawn, which is what a point on the pane is measured
+	 * from.
+	 */
+	bool cursor_on, cursor_map, held;
+	struct loc cursor, hold, shown;
+	/* The game's answers to "what is on screen?", given back when the view goes. */
+	void (*old_get_panel)(int *min_y, int *min_x, int *max_y, int *max_x);
+	bool (*old_panel_contains)(unsigned int y, unsigned int x);
 	/* The letters for counters: white on clear, side by side. */
 	unsigned char *glyph;
 	int gw, gh, gfirst, gcount, gstride;
@@ -89,6 +107,9 @@ static struct {
 	size_t letter_n;
 } iso;
 
+static void iso_get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
+static bool iso_panel_contains(unsigned int y, unsigned int x);
+
 static void iso_free(void)
 {
 	mem_free(iso.lit);
@@ -96,6 +117,10 @@ static void iso_free(void)
 	mem_free(iso.glyph);
 	iso.lit = iso.dim = iso.glyph = NULL;
 	iso.on = false;
+	iso.held = false;
+	if (get_panel_hook == iso_get_panel) get_panel_hook = iso.old_get_panel;
+	if (panel_contains_hook == iso_panel_contains)
+		panel_contains_hook = iso.old_panel_contains;
 }
 
 static bool iso_load(const char *style)
@@ -438,8 +463,8 @@ static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
  * Inside the term's rectangle it is read from the term, where the game drew
  * it -- which is how a bolt in flight gets here.  A letter there counts only
  * if it is the one the map would draw: anything else is text the game has
- * written over the map, which stays where it was written.  *cell is the term
- * cell it came from, or -1.
+ * written over the square, and the map's answer is used instead.  *cell is
+ * the term cell a letter of the map's own came from, or -1.
  */
 static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
 		int *cell)
@@ -462,9 +487,19 @@ static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
 		if (!(*a & 0x80)) {
 			int ma, mc;
 
+			/*
+			 * Text the map would not draw is something drawn over the
+			 * square -- the path an aimed bolt would take -- which the
+			 * view draws over it in turn; what stands there is still the
+			 * map's.
+			 */
 			iso_map_says(grid, &ma, &mc, &ta, &tc);
-			if (ma != *a || mc != *c) return ISO_FG_NONE;
-			*cell = y * t->cols + x;
+			if (ma != *a || mc != *c) {
+				*a = ma;
+				*c = mc;
+			} else {
+				*cell = y * t->cols + x;
+			}
 		}
 	} else {
 		iso_map_says(grid, a, c, &ta, &tc);
@@ -629,9 +664,119 @@ static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 			l, tp, r, b);
 }
 
+/* The square in the middle of the view: the character's, unless held. */
+static struct loc iso_centre(void)
+{
+	return iso.held ? iso.hold : player->grid;
+}
+
+/*
+ * Whether a square's middle falls on the map pane, margin pixels in from its
+ * edges, with the view centred on centre.
+ */
+static bool iso_shows(const term_data *t, struct loc centre, struct loc grid,
+		int margin)
+{
+	int l, tp, r, b, vx, vy, cx, cy;
+	int dx = grid.x - centre.x, dy = grid.y - centre.y;
+
+	iso_view(t, &l, &tp, &r, &b, &vx, &vy);
+	cx = vx + (dx - dy) * iso.hw;
+	cy = vy + (dx + dy) * iso.hh;
+	return cx >= l + margin && cx < r - margin
+		&& cy >= tp + margin && cy < b - margin;
+}
+
+/*
+ * The game's question "what is on screen?" -- asked when it offers targets,
+ * draws the path a bolt would take, and decides whether a monster can be
+ * named -- answered for this view rather than for the term's upright
+ * rectangle.  Any other term is answered as it always was.
+ */
+static void iso_get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
+{
+	int l, tp, r, b, vx, vy, reach;
+	struct loc c;
+
+	if (!iso.on || !iso.map || !player) {
+		if (iso.old_get_panel) iso.old_get_panel(min_y, min_x, max_y, max_x);
+		return;
+	}
+	iso_view(iso.map, &l, &tp, &r, &b, &vx, &vy);
+	reach = ((r - l) / 2 / iso.hw + (b - tp) / 2 / iso.hh) / 2 + 1;
+	c = iso_centre();
+	*min_y = c.y - reach;
+	*min_x = c.x - reach;
+	*max_y = c.y + reach + 1;
+	*max_x = c.x + reach + 1;
+}
+
+static bool iso_panel_contains(unsigned int y, unsigned int x)
+{
+	if (!iso.on || !iso.map || !player || Term != term_screen)
+		return iso.old_panel_contains ? iso.old_panel_contains(y, x) : true;
+	return iso_shows(iso.map, iso_centre(), loc((int)x, (int)y), 0);
+}
+
+/*
+ * Text the game drew into a cell of the map that is not the map's own -- the
+ * path an aimed bolt would take, a bolt in flight when there are no tiles --
+ * drawn on its square instead of at the flat map's place for it.  False when
+ * the cell is not a square of the level on the view.
+ */
+static bool iso_text_glyph(term_data *t, int x, int y, struct loc centre,
+		int l, int tp, int r, int b)
+{
+	const term *tm = &t->t;
+	struct loc grid;
+	int vx, vy, cx, cy, dx, dy, ll, ttp, rr, bb;
+
+	if (!tm->scr || !character_dungeon || !cave || !player) return false;
+	grid.x = (x - col_map[tm->sidebar_mode]) / tile_width + tm->offset_x;
+	grid.y = (y - row_top_map[tm->sidebar_mode]) / tile_height + tm->offset_y;
+	if (!square_in_bounds(cave, grid) || !iso_shows(t, centre, grid, 0))
+		return false;
+	/* The ASCII view has already drawn what the term holds there. */
+	if (iso.text) return true;
+	iso_view(t, &ll, &ttp, &rr, &bb, &vx, &vy);
+	dx = grid.x - centre.x;
+	dy = grid.y - centre.y;
+	cx = vx + (dx - dy) * iso.hw;
+	cy = vy + (dx + dy) * iso.hh;
+	iso_glyph(t, tm->scr->c[y][x], tm->scr->a[y][x], cx - iso.gw,
+		cy - iso.gh - 8, 256, false, l, tp, r, b);
+	return true;
+}
+
+/* The cursor: a ring round its square's diamond, in the flat map's yellow. */
+static void iso_mark(term_data *t, struct loc grid, struct loc centre,
+		int l, int tp, int r, int b)
+{
+	static const unsigned char yellow[3] = { 255, 255, 0 };
+	int vx, vy, ll, ttp, rr, bb, cx, cy, x, y;
+	int dx = grid.x - centre.x, dy = grid.y - centre.y;
+
+	iso_view(t, &ll, &ttp, &rr, &bb, &vx, &vy);
+	cx = vx + (dx - dy) * iso.hw;
+	cy = vy + (dx + dy) * iso.hh;
+	for (y = cy - iso.hh - 1; y <= cy + iso.hh + 1; y++) {
+		if (y < tp || y >= b) continue;
+		for (x = cx - iso.hw - 1; x <= cx + iso.hw + 1; x++) {
+			double e = fabs(x + .5 - cx) / iso.hw + fabs(y + .5 - cy) / iso.hh;
+			unsigned char *d;
+
+			if (e < .86 || e > 1.04 || x < l || x >= r) continue;
+			d = t->pix + ((size_t)y * t->pix_w + x) * 4;
+			memcpy(d, yellow, 3);
+			d[3] = 255;
+		}
+	}
+}
+
 static void iso_render(term_data *t)
 {
 	int l, tp, r, b, vx, vy, s, d, x, y, smax, dmax;
+	struct loc centre = loc(0, 0);
 
 	iso_view(t, &l, &tp, &r, &b, &vx, &vy);
 	if (r <= l || b <= tp) return;
@@ -655,6 +800,9 @@ static void iso_render(term_data *t)
 	}
 
 	if (character_dungeon && player && cave && player->cave) {
+		centre = iso_centre();
+		iso.shown = centre;
+
 		/*
 		 * Back to front: by distance down the screen, s = dx + dy.  The
 		 * squares on one such line sit side by side and never overlap.
@@ -664,14 +812,23 @@ static void iso_render(term_data *t)
 		for (s = -smax; s <= smax; s++) {
 			for (d = -dmax; d <= dmax; d++) {
 				struct loc grid;
-				int dx, dy, cx, cy, feat, a, c, fg, cell;
-				bool seen, bright;
+				int dx, dy, cx, cy, feat, a, c, fg, cell, pdx, pdy;
+				bool seen, bright, cut;
 
 				if ((s + d) & 1) continue;
 				dx = (s + d) / 2;
 				dy = (s - d) / 2;
-				grid = loc(player->grid.x + dx, player->grid.y + dy);
+				grid = loc(centre.x + dx, centre.y + dy);
 				if (!square_in_bounds(cave, grid)) continue;
+
+				/*
+				 * The three squares whose walls would stand in front of
+				 * the character are cut down to their footings.
+				 */
+				pdx = grid.x - player->grid.x;
+				pdy = grid.y - player->grid.y;
+				cut = pdx >= 0 && pdy >= 0 && pdx + pdy > 0 && pdx < 2
+					&& pdy < 2;
 
 				cx = vx + (dx - dy) * iso.hw;
 				cy = vy + (dx + dy) * iso.hh;
@@ -687,19 +844,12 @@ static void iso_render(term_data *t)
 				feat = iso_known_feat(grid);
 
 				if (iso.text) {
-					iso_text_square(t, grid, cx, cy, seen, bright,
-						dx >= 0 && dy >= 0 && dx + dy > 0 && dx < 2 && dy < 2,
+					iso_text_square(t, grid, cx, cy, seen, bright, cut,
 						l, tp, r, b);
 					continue;
 				}
 
 				if (feat != FEAT_NONE && iso.kind[feat]) {
-					/*
-					 * The three squares whose walls would stand in front
-					 * of the character are cut down to their footings.
-					 */
-					bool cut = dx >= 0 && dy >= 0 && dx + dy > 0
-						&& dx < 2 && dy < 2;
 					const unsigned char *src = bright ? iso.lit : iso.dim;
 					int kind = iso.kind[feat];
 					int cell = cut ? iso.cut[feat] : iso.cell[feat];
@@ -756,8 +906,10 @@ static void iso_render(term_data *t)
 	 * The map's own text is drawn in the view now -- its letters standing on
 	 * it as counters, and with no tile set its terrain too, as the view's own
 	 * drawings -- so the term's copies of it, in the flat map's places, are
-	 * put away.  Any other text the game has put over the map stays where it
-	 * is and stays legible.
+	 * put away.  So is anything else the game drew on a square of the map,
+	 * which is drawn on that square.  Only while the game has saved the
+	 * screen to put something over the map is text an overlay, and that
+	 * stays where it is and stays legible.
 	 */
 	for (y = row_top_map[t->t.sidebar_mode];
 			y < t->rows - row_bottom_map[t->t.sidebar_mode]; y++)
@@ -765,7 +917,9 @@ static void iso_render(term_data *t)
 			int row, idx = y * t->cols + x;
 
 			if (!t->shown || !t->shown[idx]) continue;
-			if (iso.letter[idx] || iso_map_text(t, x, y)) {
+			if (iso.letter[idx] || iso_map_text(t, x, y)
+					|| (!t->t.saved
+						&& iso_text_glyph(t, x, y, centre, l, tp, r, b))) {
 				tcl_cell_set(t, x, y, " ", COLOUR_WHITE);
 				continue;
 			}
@@ -774,7 +928,29 @@ static void iso_render(term_data *t)
 					+ x * t->cw) * 4, 0, (size_t)t->cw * 4);
 		}
 
+	if (iso.cursor_on && iso.cursor_map && character_dungeon && cave
+			&& square_in_bounds(cave, iso.cursor))
+		iso_mark(t, iso.cursor, centre, l, tp, r, b);
+
 	tcl_tiles_dirty(t, l, tp, r - l, b - tp);
+}
+
+/*
+ * Keep the cursor on the view: hold the view on it when the view centred on
+ * the character would not show it, and let go when that view would.
+ */
+static void iso_follow(const term_data *map)
+{
+	if (!iso.cursor_on || !iso.cursor_map || !player || !cave
+			|| !square_in_bounds(cave, iso.cursor))
+		return;
+	if (iso_shows(map, iso_centre(), iso.cursor, iso.hw)) return;
+	if (iso_shows(map, player->grid, iso.cursor, iso.hw)) {
+		iso.held = false;
+	} else {
+		iso.held = true;
+		iso.hold = iso.cursor;
+	}
 }
 
 /* ---- What the front end asks of the view ---------------------------------- */
@@ -796,7 +972,8 @@ const char *tcl_iso_style(void)
  * installed, or it is the ASCII view and the game is drawing tiles.  Either
  * way of failing leaves the view off.
  */
-bool tcl_iso_set(const char *style, char *err, size_t len)
+bool tcl_iso_set(const char *style, const term_data *map, char *err,
+		size_t len)
 {
 	if (streq(style, "off")) {
 		iso_free();
@@ -811,6 +988,17 @@ bool tcl_iso_set(const char *style, char *err, size_t len)
 		my_strcpy(err, "the ASCII view needs the text tile set (None)", len);
 		return false;
 	}
+	iso.map = map;
+	if (get_panel_hook != iso_get_panel) {
+		iso.old_get_panel = get_panel_hook;
+		get_panel_hook = iso_get_panel;
+	}
+	if (panel_contains_hook != iso_panel_contains) {
+		iso.old_panel_contains = panel_contains_hook;
+		panel_contains_hook = iso_panel_contains;
+	}
+	/* The term's rectangle follows the character, as below. */
+	if (character_dungeon && player) center_panel();
 	return true;
 }
 
@@ -830,11 +1018,11 @@ void tcl_iso_tiles_changed(int graf_id)
 }
 
 /*
- * Which square of the level is under a point of the map pane: how far from
- * the character's, in squares and fractions of one, east and south.
+ * Which square of the level is under a point of the map pane, in squares and
+ * fractions of one: the square is the nearest whole one.
  */
-bool tcl_iso_point(const term_data *map, double px, double py, double *gdx,
-		double *gdy)
+bool tcl_iso_point(const term_data *map, double px, double py, double *fx,
+		double *fy)
 {
 	int l, tp, r, b, vx, vy;
 	double u, v;
@@ -844,17 +1032,54 @@ bool tcl_iso_point(const term_data *map, double px, double py, double *gdx,
 	if (px < l || px >= r || py < tp || py >= b) return false;
 	u = (px - vx) / iso.hw;
 	v = (py - vy) / iso.hh;
-	*gdx = (u + v) / 2;
-	*gdy = (v - u) / 2;
+	*fx = iso.shown.x + (u + v) / 2;
+	*fy = iso.shown.y + (v - u) / 2;
 	return true;
 }
 
+/*
+ * The game put the cursor on this cell of the map's term.  The term's cursor
+ * is a soft one: the game draws it, by calling here, at every refresh it is
+ * to be seen in -- looking, aiming -- and simply does not call when it is
+ * not, so whether it is showing is tcl_iso_cursor_show()'s, at the refresh.
+ */
+void tcl_iso_cursor(const term_data *map, int x, int y)
+{
+	const term *tm = &map->t;
+	struct loc grid;
+	bool on_map = tcl_iso_map_cell(map, x, y);
+
+	grid.x = (x - col_map[tm->sidebar_mode]) / tile_width + tm->offset_x;
+	grid.y = (y - row_top_map[tm->sidebar_mode]) / tile_height + tm->offset_y;
+	if (on_map == iso.cursor_map && loc_eq(grid, iso.cursor)) return;
+	iso.cursor_map = on_map;
+	iso.cursor = grid;
+	iso_follow(map);
+	iso.dirty = true;
+}
+
+/* At a refresh: whether the cursor was drawn in it, so is showing. */
+void tcl_iso_cursor_show(const term_data *map, bool show)
+{
+	if (show == iso.cursor_on) return;
+	iso.cursor_on = show;
+	if (show) iso_follow(map);
+	else iso.held = false;
+	iso.dirty = true;
+}
+
+/*
+ * Something on the level changed, or the character moved.  When it moved,
+ * the term's rectangle is centred on it again, as center_player has the flat
+ * map do: a bolt is drawn only inside that rectangle, and the view, which is
+ * centred on the character, shows what the term holds.
+ */
 static void iso_notice(game_event_type type, game_event_data *data, void *user)
 {
-	(void)type;
 	(void)data;
 	(void)user;
 	iso.dirty = true;
+	if (type == EVENT_PLAYERMOVED && iso.on && !iso.held) center_panel();
 }
 
 /*
