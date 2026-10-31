@@ -551,14 +551,23 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 		/* Extract final and Terminate */
 		if ((f = *s) != '\0') *s++ = '\0';
 
-		/* Variables start with $, otherwise it's a constant */
+		/*
+		 * Variables start with $, otherwise it's a constant.
+		 *
+		 * Before there is a character there is no race or class -- a tile
+		 * set chosen at the Choose Game window rereads the pref files, at
+		 * the start and again after New Game -- and then the default stands,
+		 * which matches nothing.  The files are read again for the
+		 * character once there is one.
+		 */
 		if (*b == '$') {
-			if (streq(b+1, "SYS"))
+			if (streq(b+1, "SYS")) {
 				v = ANGBAND_SYS;
-			else if (streq(b+1, "RACE"))
-				v = player->race->name;
-			else if (streq(b+1, "CLASS"))
-				v = player->class->name;
+			} else if (streq(b+1, "RACE")) {
+				if (player && player->race) v = player->race->name;
+			} else if (streq(b+1, "CLASS")) {
+				if (player && player->class) v = player->class->name;
+			}
 		} else {
 			v = b;
 		}
