@@ -15,6 +15,11 @@
 # opened, and the game makes a new one in its place with the quick start --
 # so the window says so rather than leave it a surprise.
 #
+# Delete is the window's own, and the original had nothing like it: the old
+# savefiles otherwise pile up in the list for ever.  Several can be selected
+# and deleted together, and nothing goes until the player has said yes to a
+# question that names every character in them.
+#
 # Built from Tk's own widgets in the classic theme (decision 18).
 
 set choose(sort) name
@@ -164,12 +169,18 @@ proc choose_selected {} {
     global choose
 
     set tv .choose.f.list.tv
-    set id [lindex [$tv selection] 0]
+    set ids [$tv selection]
+    set id [lindex $ids 0]
     set b .choose.f.btns
-    $b.open state [expr {$id eq "" ? "disabled" : "!disabled"}]
+    $b.open state [expr {[llength $ids] == 1 ? "!disabled" : "disabled"}]
+    $b.delete state [expr {$id eq "" ? "disabled" : "!disabled"}]
     set choose(msg) ""
     if {$id eq ""} {
         set choose(file) ""
+        return
+    }
+    if {[llength $ids] > 1} {
+        set choose(file) "[llength $ids] savefiles selected"
         return
     }
     set row [lsearch -inline -index 0 $choose(rows) [string range $id 1 end]]
@@ -221,9 +232,81 @@ proc choose_answer {n} {
 }
 
 proc choose_open {} {
-    set id [lindex [.choose.f.list.tv selection] 0]
-    if {$id eq ""} { bell; return }
-    choose_answer [string range $id 1 end]
+    set ids [.choose.f.list.tv selection]
+    if {[llength $ids] != 1} { bell; return }
+    choose_answer [string range [lindex $ids 0] 1 end]
+}
+
+# Delete what is selected, once the player has said yes.  A savefile deleted
+# is gone for good, so the question names who is in each, and says so plainly
+# when any of them is still alive.
+proc choose_delete {} {
+    global choose
+
+    set tv .choose.f.list.tv
+    set ids [$tv selection]
+    if {![llength $ids]} { bell; return }
+
+    set who {}
+    set names {}
+    set living 0
+    foreach id $ids {
+        set row [lsearch -inline -index 0 $choose(rows) [string range $id 1 end]]
+        lassign $row n file path state name level race class depth killer
+        if {$name eq ""} { set name $file }
+        lappend names $name
+        if {$state eq "alive"} { incr living }
+        set desc [choose_describe $state $level $race $class $depth $killer]
+        lappend who [expr {$desc eq "" ? $name : "$name: $desc"}]
+    }
+    if {[llength $ids] == 1} {
+        set question "Delete [lindex $names 0]'s savefile?"
+    } else {
+        set question "Delete these [llength $ids] savefiles?"
+    }
+    if {[llength $who] > 12} {
+        set who [concat [lrange $who 0 10] \
+            [list "and [expr {[llength $who] - 11}] more"]]
+    }
+    set detail [join $who \n]
+    if {$living == 1 && [llength $ids] == 1} {
+        append detail "\n\nThis character is still alive."
+    } elseif {$living == 1} {
+        append detail "\n\nOne of them is still alive."
+    } elseif {$living} {
+        append detail "\n\n$living of them are still alive."
+    }
+    append detail "\n\nA deleted savefile can't be brought back."
+    if {[tk_messageBox -parent .choose -icon warning -type yesno \
+            -default no -title "Delete" -message $question \
+            -detail $detail] ne "yes"} return
+
+    # Where the selection was, so that the next one along is selected after
+    # and a run of old savefiles can go one Delete at a time.
+    set kids [$tv children {}]
+    set at [tcl::mathfunc::min {*}[lmap id $ids {lsearch $kids $id}]]
+    set failed {}
+    foreach id $ids {
+        if {[catch {angband_savefile delete [string range $id 1 end]} e]} {
+            lappend failed $e
+        }
+    }
+    set choose(rows) [angband_savefile list]
+    choose_fill
+    set left [$tv children {}]
+    $tv selection set {}
+    if {[llength $left]} {
+        set next [lindex $left [expr {min($at, [llength $left] - 1)}]]
+        $tv selection set $next
+        $tv focus $next
+        $tv see $next
+    }
+    choose_selected
+    if {[llength $failed]} {
+        set choose(msg) "[join $failed {; }]."
+        bell
+    }
+    focus $tv
 }
 
 proc choose_new {} {
@@ -237,8 +320,10 @@ proc choose_quit {} {
     choose_answer -1
 }
 
-# Return opens what is selected, or makes a new character when nothing is.
+# Return opens what is selected, or makes a new character when nothing is --
+# and does neither while several are selected, which is for deleting.
 proc choose_default {} {
+    if {[llength [.choose.f.list.tv selection]] > 1} { bell; return }
     if {[.choose.f.btns.open cget -default] eq "active"
             && ![.choose.f.btns.open instate disabled]} {
         choose_open
@@ -282,10 +367,14 @@ proc choose_window {} {
     ttk::button $b.open -text "Open" -underline 0 -width 9 -command choose_open
     ttk::button $b.new -text "New" -underline 0 -width 9 -command choose_new
     ttk::button $b.quit -text "Quit" -underline 0 -width 9 -command choose_quit
+    ttk::button $b.delete -text "Delete" -underline 0 -width 9 \
+        -command choose_delete
     pack $b.file -side left
     pack $b.quit -side right
     pack $b.new -side right -padx 6
     pack $b.open -side right
+    # Kept apart from the others, as deleting is not like them.
+    pack $b.delete -side right -padx {0 24}
 
     ttk::separator $w.sep -orient horizontal
     pack $w.sep -side bottom -fill x
@@ -294,7 +383,7 @@ proc choose_window {} {
     ttk::frame $f
     pack $f -fill both -expand 1 -padx 10
     set tv $f.tv
-    ttk::treeview $tv -style Choose.Treeview -show headings -selectmode browse \
+    ttk::treeview $tv -style Choose.Treeview -show headings -selectmode extended \
         -height 12 -columns {name desc saved} -yscrollcommand [list $f.sb set]
     ttk::scrollbar $f.sb -orient vertical -command [list $tv yview]
     foreach {col width stretch} {name 140 0  desc 380 1  saved 150 0} {
@@ -313,11 +402,14 @@ proc choose_window {} {
         if {[%W identify region %x %y] eq "cell"} { choose_open }
     }
     bind $tv <KeyPress> { choose_typed %A }
+    bind $tv <Delete> { choose_delete ; break }
+    bind $tv <BackSpace> { choose_delete ; break }
     bind .choose <Return> { choose_default ; break }
     bind .choose <F1> { help_window [help_first start] ; break }
     accel_bind .choose o { choose_open ; break }
     accel_bind .choose n { choose_new ; break }
     accel_bind .choose q { choose_quit ; break }
+    accel_bind .choose d { choose_delete ; break }
 }
 
 bind . <<Angband_CHOOSEGAME>> {+ choose_show }

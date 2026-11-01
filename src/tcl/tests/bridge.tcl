@@ -1369,6 +1369,23 @@ proc choose_pass {n} {
 		}
 		list [angband_iso] $paper
 	} "colour 0"
+
+	# Delete, answered yes: the savefile goes from the folder and from the
+	# list, and the game will not play it.
+	check "Delete takes a savefile out of the save folder and the list" {
+		lassign [lsearch -inline -index 1 [angband_savefile list] Bridge] \
+			n file path
+		.choose.f.list.tv selection set c$n
+		rename tk_messageBox bridge_messageBox
+		proc tk_messageBox {args} { return yes }
+		catch choose_delete
+		rename tk_messageBox {}
+		rename bridge_messageBox tk_messageBox
+		list [file exists $path] \
+			[lsearch -index 1 [angband_savefile list] Bridge] \
+			[.choose.f.list.tv exists c$n] \
+			[catch {angband_savefile answer $n}]
+	} "0 -1 0 1"
 	finish
 }
 

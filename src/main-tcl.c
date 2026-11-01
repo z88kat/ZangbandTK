@@ -8651,6 +8651,8 @@ static int chooser_answer;
 static const char **chooser_names;
 static int chooser_count, chooser_cursor;
 static bool chooser_retry;
+/* The savefiles deleted from the window while it asks, by choice. */
+static bool *chooser_gone;
 
 static int chooser_view_tk(const char **entries, const char **names,
 		int count, int cursor, bool retry)
@@ -8666,6 +8668,7 @@ static int chooser_view_tk(const char **entries, const char **names,
 	chooser_cursor = cursor;
 	chooser_retry = retry;
 	chooser_answer = -1;
+	chooser_gone = mem_zalloc(count * sizeof(*chooser_gone));
 	chooser_asking = true;
 
 	Term_fresh();
@@ -8678,6 +8681,8 @@ static int chooser_view_tk(const char **entries, const char **names,
 		Tcl_DoOneEvent(TCL_ALL_EVENTS);
 
 	chooser_names = NULL;
+	mem_free(chooser_gone);
+	chooser_gone = NULL;
 	return chooser_answer;
 }
 
@@ -8775,6 +8780,13 @@ static void chooser_fields(Tcl_Obj *row, const char *desc)
  *                                  new character and otherwise alive, dead,
  *                                  invalid or unknown
  *    angband_savefile answer <n>   play choice n; -1 quits
+ *    angband_savefile delete <n>   delete choice n's savefile, for good; it
+ *                                  is gone from the list and cannot be
+ *                                  played
+ *
+ * The game gathered the choices before it asked and goes on numbering them as
+ * it did, so a savefile deleted here is only left out of them; the file goes,
+ * and nothing else of the character's does.
  */
 static int objcmd_savefile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
@@ -8810,8 +8822,10 @@ static int objcmd_savefile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 		for (i = 0; i < chooser_count; i++) {
-			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			Tcl_Obj *row;
 
+			if (chooser_gone[i]) continue;
+			row = Tcl_NewListObj(0, NULL);
 			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
 			if (chooser_names[i]) {
 				char path[1024];
@@ -8848,7 +8862,7 @@ static int objcmd_savefile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
-		if (n < -1 || n >= chooser_count) {
+		if (n < -1 || n >= chooser_count || (n >= 0 && chooser_gone[n])) {
 			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no choice %d", n));
 			return TCL_ERROR;
 		}
@@ -8857,8 +8871,32 @@ static int objcmd_savefile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
-	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected list or answer, not: %s",
-			what));
+	if (streq(what, "delete")) {
+		char path[1024];
+		int n;
+
+		if (objc != 3) {
+			Tcl_WrongNumArgs(ip, 2, objv, "n");
+			return TCL_ERROR;
+		}
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		if (n < 0 || n >= chooser_count || !chooser_names[n]
+				|| chooser_gone[n]) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no savefile %d", n));
+			return TCL_ERROR;
+		}
+		path_build(path, sizeof(path), ANGBAND_DIR_SAVE, chooser_names[n]);
+		if (!file_delete(path)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("%s could not be deleted",
+					chooser_names[n]));
+			return TCL_ERROR;
+		}
+		chooser_gone[n] = true;
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected list, answer or delete,"
+			" not: %s", what));
 	return TCL_ERROR;
 }
 
