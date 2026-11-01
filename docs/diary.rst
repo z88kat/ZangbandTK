@@ -31,6 +31,43 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+1 November 2026 — no blue bricks, and a yellow brick road
+==========================================================
+
+Steven played the colour style and sent a screenshot with one line: he had never
+seen a dungeon with blue bricks. Fair. I had made the colour sheet by colouring in
+the blue one, so it kept the blue map's white paper and blue rules, and every wall
+came out blue-grey on white. It's a dungeon on black now. Unknown ground is black,
+which is also what a remembered square fades to, the floors are grey flagstones,
+the mortar is dark, and the stones in a wall vary in shade. Where a stone sits
+decides its shade, not the random generator, because the ink and blue sheets come
+from the same drawing code and have to stay exactly as they were.
+
+Then a bug I'd left on the list when the view went onto master. The game draws a
+bolt only inside the term's rectangle, the upright block of the level the flat
+map shows, and that block isn't the shape of the view. With the tiles at their
+largest, in my test window, it was eleven squares by seven, so a magic missile
+fired down a corridor was gone after four squares. ``print_rel()`` now tells the
+front end about everything it draws, wherever it is, and the view keeps whatever
+falls outside the rectangle until the game draws that square again. Testing it
+took longer than the fix. A script can't catch a frame in the middle of a bolt,
+because while the game pauses for one Tk only handles window and idle events, so
+I built a throwaway copy that saved the pane every time it drew.
+
+Last, Steven asked for the roads in the colour style to be yellow: "The yellow
+brick road"! So they are. Courses of yellow brick, each a half brick on from the
+last, a few a shade lighter or darker, laid along the squares' own sides so the
+courses run on from one square to the next. In ink and blue the road is the dot
+screen it always was.
+
+Then Steven quit a game and found the map still drawn behind the Hall of Fame,
+with the scores' letters scattered over it. The view knew to stop when there was
+no level, but when you quit, the level is still there while the game shows the
+scores. It stops now when the game says it's leaving the world, which it also
+says on walking into a shop. A shop had been showing a strip of the map down the
+right-hand edge of its screen, and that's gone too.
+
+
 30 October 2026 — an isometric map, drawn from nothing
 =======================================================
 
