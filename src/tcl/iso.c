@@ -67,6 +67,15 @@ enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
 #define ISO_EFFECTS 256		/* as many squares as a ball can cover */
 #define ISO_FLAT .8		/* how much of its square a thing on the floor covers */
 
+/*
+ * Where a row of a tile has anything in it, [x0, x1), and whether every pixel
+ * between is drawn, so that the row can be copied whole.
+ */
+struct iso_span {
+	uint16_t x0, x1;
+	bool solid;
+};
+
 static struct {
 	bool on;
 	bool dirty;
@@ -78,6 +87,8 @@ static struct {
 	char style[16];
 	unsigned char *lit, *dim;	/* the sheet as seen, and as remembered */
 	int w, h;
+	struct iso_span *span;		/* per row of every cell of the sheet */
+	int cells;
 	int tw, th, cols;
 	uint8_t kind[FEAT_MAX];
 	int cell[FEAT_MAX];
@@ -149,6 +160,9 @@ static bool iso_panel_contains(unsigned int y, unsigned int x);
 static void iso_free(void)
 {
 	mem_free(iso.lit);
+	mem_free(iso.span);
+	iso.span = NULL;
+	iso.cells = 0;
 	mem_free(iso.dim);
 	mem_free(iso.glyph);
 	iso.lit = iso.dim = iso.glyph = NULL;
@@ -312,6 +326,33 @@ static bool iso_load(const char *style)
 			memset(iso.ink, 40, sizeof(iso.ink));
 		}
 
+		/* Each row of each cell: where it has anything, and if it is whole. */
+		iso.cells = iso.cols * (h / iso.th);
+		iso.span = mem_zalloc((size_t)iso.cells * iso.th
+			* sizeof(*iso.span));
+		for (i = 0; i < iso.cells && (i % iso.cols + 1) * iso.tw <= w; i++) {
+			int y;
+
+			for (y = 0; y < iso.th; y++) {
+				const unsigned char *row = px + ((size_t)((i / iso.cols)
+					* iso.th + y) * w + (i % iso.cols) * iso.tw) * 4;
+				struct iso_span *sp = &iso.span[(size_t)i * iso.th + y];
+				int x, x0 = iso.tw, x1 = 0;
+
+				for (x = 0; x < iso.tw; x++)
+					if (row[x * 4 + 3]) {
+						if (x0 > x) x0 = x;
+						x1 = x + 1;
+					}
+				if (x1 <= x0) continue;
+				sp->x0 = (uint16_t)x0;
+				sp->x1 = (uint16_t)x1;
+				sp->solid = true;
+				for (x = x0; x < x1; x++)
+					if (row[x * 4 + 3] != 255) sp->solid = false;
+			}
+		}
+
 		/* Remembered rather than seen: the same drawing, in pencil. */
 		iso.dim = mem_alloc((size_t)w * h * 4);
 		for (i = 0; i < w * h; i++) {
@@ -402,23 +443,36 @@ static bool iso_is_wall(struct loc grid)
 	return kind == ISO_WALL || kind == ISO_SHOP;
 }
 
+/*
+ * A cell of the sheet, its top left at (ox, oy).  Most of a tile is clear --
+ * a floor is a diamond at the foot of a cell three times its height -- so
+ * each row is drawn only where it has anything, and copied whole where every
+ * pixel of it is drawn.
+ */
 static void iso_blit(term_data *t, const unsigned char *src, int cell,
 		int ox, int oy, int l, int tp, int r, int b)
 {
 	int sx = (cell % iso.cols) * iso.tw, sy = (cell / iso.cols) * iso.th;
 	int x, y;
 
-	if (sx + iso.tw > iso.w || sy + iso.th > iso.h) return;
+	if (cell < 0 || cell >= iso.cells || sx + iso.tw > iso.w
+			|| sy + iso.th > iso.h)
+		return;
 	for (y = 0; y < iso.th; y++) {
+		const struct iso_span *sp = &iso.span[(size_t)cell * iso.th + y];
 		const unsigned char *s;
+		unsigned char *d;
+		int x0 = MAX(sp->x0, l - ox), x1 = MIN(sp->x1, r - ox);
 
-		if (oy + y < tp || oy + y >= b) continue;
-		s = src + ((size_t)(sy + y) * iso.w + sx) * 4;
-		for (x = 0; x < iso.tw; x++, s += 4) {
-			unsigned char *d;
-
-			if (!s[3] || ox + x < l || ox + x >= r) continue;
-			d = t->pix + ((size_t)(oy + y) * t->pix_w + ox + x) * 4;
+		if (x1 <= x0 || oy + y < tp || oy + y >= b) continue;
+		s = src + ((size_t)(sy + y) * iso.w + sx + x0) * 4;
+		d = t->pix + ((size_t)(oy + y) * t->pix_w + ox + x0) * 4;
+		if (sp->solid) {
+			memcpy(d, s, (size_t)(x1 - x0) * 4);
+			continue;
+		}
+		for (x = x0; x < x1; x++, s += 4, d += 4) {
+			if (!s[3]) continue;
 			d[0] = s[0];
 			d[1] = s[1];
 			d[2] = s[2];
