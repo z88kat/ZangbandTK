@@ -10,49 +10,50 @@ text:ascii:20:10:9
 # glyphs:<file>:<width>:<height>:<first char>:<count>
 glyphs:glyphs.png:5:8:32:96
 # feat:<terrain>:<tile|wall|door>:<first cell>:<cut away>
+# feat:<terrain>:wall:<first cell>:<cut away>:<variants>
 # surface: the same, used instead on the surface
-feat:open floor:tile:282:282
-feat:closed door:door:276:274
-feat:open door:door:287:287
-feat:broken door:door:272:272
-feat:up staircase:tile:296:296
-feat:down staircase:tile:279:279
-feat:secret door:wall:0:16
-feat:pile of rubble:tile:291:291
-feat:magma vein:wall:64:80
-feat:quartz vein:wall:96:112
-feat:magma vein with treasure:wall:128:144
-feat:quartz vein with treasure:wall:160:176
-feat:granite wall:wall:0:16
-feat:permanent wall:wall:32:48
-feat:lava:tile:284:284
-feat:pile of passable rubble:tile:289:289
-feat:grass:tile:283:283
-feat:bare earth:tile:281:281
-feat:sand:tile:292:292
-feat:tree:tile:295:295
-feat:mud:tile:286:286
-feat:shallow water:tile:294:294
-feat:deep water:tile:278:278
-feat:open sea:tile:293:293
-feat:mountainside:tile:285:285
-feat:dungeon entrance:tile:280:280
-feat:road:tile:290:290
-surface:permanent wall:wall:192:208
+feat:open floor:tile:618:618
+feat:closed door:door:612:610
+feat:open door:door:623:623
+feat:broken door:door:608:608
+feat:up staircase:tile:632:632
+feat:down staircase:tile:615:615
+feat:secret door:wall:0:64:4
+feat:pile of rubble:tile:627:627
+feat:magma vein:wall:160:224:4
+feat:quartz vein:wall:240:304:4
+feat:magma vein with treasure:wall:320:384:4
+feat:quartz vein with treasure:wall:400:464:4
+feat:granite wall:wall:0:64:4
+feat:permanent wall:wall:80:144:4
+feat:lava:tile:620:620
+feat:pile of passable rubble:tile:625:625
+feat:grass:tile:619:619
+feat:bare earth:tile:617:617
+feat:sand:tile:628:628
+feat:tree:tile:631:631
+feat:mud:tile:622:622
+feat:shallow water:tile:630:630
+feat:deep water:tile:614:614
+feat:open sea:tile:629:629
+feat:mountainside:tile:621:621
+feat:dungeon entrance:tile:616:616
+feat:road:tile:626:626
+surface:permanent wall:wall:480:544:4
 # feat:<shop>:shop:<overlays: south, east, sign>:<wall>:<cut>
-feat:General Store:shop:224:192:208
-feat:Armoury:shop:227:192:208
-feat:Weapon Smiths:shop:230:192:208
-feat:Bookseller:shop:233:192:208
-feat:Alchemy Shop:shop:236:192:208
-feat:Magic Shop:shop:239:192:208
-feat:Black Market:shop:242:192:208
-feat:Home:shop:245:192:208
-feat:Statue Store:shop:248:192:208
-feat:Figurine Store:shop:251:192:208
-feat:magetower:shop:254:192:208
-feat:healer:shop:257:192:208
-feat:inn:shop:260:192:208
-feat:magesmith:shop:263:192:208
-feat:chaos tower:shop:266:192:208
-feat:rechargers:shop:269:192:208
+feat:General Store:shop:560:480:544
+feat:Armoury:shop:563:480:544
+feat:Weapon Smiths:shop:566:480:544
+feat:Bookseller:shop:569:480:544
+feat:Alchemy Shop:shop:572:480:544
+feat:Magic Shop:shop:575:480:544
+feat:Black Market:shop:578:480:544
+feat:Home:shop:581:480:544
+feat:Statue Store:shop:584:480:544
+feat:Figurine Store:shop:587:480:544
+feat:magetower:shop:590:480:544
+feat:healer:shop:593:480:544
+feat:inn:shop:596:480:544
+feat:magesmith:shop:599:480:544
+feat:chaos tower:shop:602:480:544
+feat:rechargers:shop:605:480:544

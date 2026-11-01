@@ -82,10 +82,12 @@ static struct {
 	uint8_t kind[FEAT_MAX];
 	int cell[FEAT_MAX];
 	int cut[FEAT_MAX];		/* cut away, in front of the character */
+	/* How many drawings a wall has, one after another; see iso_variant(). */
+	int var[FEAT_MAX];
 	int wall[FEAT_MAX], wall_cut[FEAT_MAX];	/* a shop's building */
 	/* On the surface, where permanent walls are buildings and not vaults. */
 	uint8_t skind[FEAT_MAX];
-	int scell[FEAT_MAX], scut[FEAT_MAX];
+	int scell[FEAT_MAX], scut[FEAT_MAX], svar[FEAT_MAX];
 	unsigned char paper[3], ink[3];
 	/*
 	 * The ASCII view draws no sheet: it stands the map's own characters on
@@ -176,7 +178,8 @@ static bool iso_load(const char *style)
 	iso.rise = 0;
 	while (file_getl(fh, line, sizeof(line))) {
 		/*
-		 * feat:<terrain>:<kind>:<cell>:<cut away>, or for a shop
+		 * feat:<terrain>:<kind>:<cell>:<cut away>, with
+		 * :<variants> after a wall's, or for a shop
 		 * feat:<terrain>:shop:<overlays>:<wall>:<wall cut away>, and
 		 * surface: lines the same, used instead on the surface.
 		 */
@@ -250,18 +253,22 @@ static bool iso_load(const char *style)
 		for (i = 1; i < FEAT_MAX; i++) {
 			int cell = atoi(field[3]);
 			int cut = nf > 4 ? atoi(field[4]) : cell;
+			int var = (kind == ISO_WALL && nf > 5) ? atoi(field[5]) : 1;
 
 			if (!f_info[i].name || !streq(f_info[i].name, field[1]))
 				continue;
+			if (var < 1) var = 1;
 			if (surface) {
 				iso.skind[i] = (uint8_t)kind;
 				iso.scell[i] = cell;
 				iso.scut[i] = cut;
+				iso.svar[i] = var;
 				continue;
 			}
 			iso.kind[i] = (uint8_t)kind;
 			iso.cell[i] = cell;
 			iso.cut[i] = cut;
+			iso.var[i] = var;
 			if (kind == ISO_SHOP) {
 				iso.wall[i] = cut;
 				iso.wall_cut[i] = nf > 5 ? atoi(field[5]) : cut;
@@ -350,6 +357,21 @@ static int iso_known_feat(struct loc grid)
 	feat = square(player->cave, grid)->feat;
 	if (f_info[feat].mimic) feat = (int)(f_info[feat].mimic - f_info);
 	return feat;
+}
+
+/*
+ * Which of a wall's n drawings a square has: always the same one for the same
+ * square, and with no pattern to which, so that a run of wall is not one
+ * square's stones over and over.
+ */
+static int iso_variant(struct loc grid, int n)
+{
+	uint32_t h = (uint32_t)grid.x * 0x9E3779B1u ^ (uint32_t)grid.y * 0x85EBCA77u;
+
+	h ^= h >> 15;
+	h *= 0x2C1B3C6Du;
+	h ^= h >> 12;
+	return n > 1 ? (int)(h % (uint32_t)n) : 0;
 }
 
 /* Walls join up with walls, and a shop's door is part of its building's. */
@@ -1151,6 +1173,7 @@ static void iso_render(term_data *t)
 				const unsigned char *src = bright ? iso.lit : iso.dim;
 				int kind = iso.kind[feat];
 				int cell = cut ? iso.cut[feat] : iso.cell[feat];
+				int var = iso.var[feat];
 				int mask = iso_is_wall(loc(grid.x - 1, grid.y)) * 1
 					| iso_is_wall(loc(grid.x, grid.y - 1)) * 2
 					| iso_is_wall(loc(grid.x + 1, grid.y)) * 4
@@ -1161,9 +1184,11 @@ static void iso_render(term_data *t)
 				if (!player->depth && iso.skind[feat]) {
 					kind = iso.skind[feat];
 					cell = cut ? iso.scut[feat] : iso.scell[feat];
+					var = iso.svar[feat];
 				}
 
 				if (kind == ISO_WALL) {
+					if (!cut) cell += 16 * iso_variant(grid, var);
 					iso_blit(t, src, cell + mask, ox, oy, l, tp, r, b);
 				} else if (kind == ISO_DOOR) {
 					iso_blit(t, src, cell + (ns && !we), ox, oy, l, tp,

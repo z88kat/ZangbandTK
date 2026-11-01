@@ -12,7 +12,11 @@ with 48 pixels above it for walls, trees and peaks to stand in.  Walls are
 blocks a uniform 24 pixels high.  A wall's outline is left off wherever it
 meets another wall, so a run of wall reads as one mass rather than a row of
 cubes: that is sixteen drawings per material, one for each combination of
-walls to the west, north, east and south.
+walls to the west, north, east and south.  And each material is drawn four
+times over, its stones jointed, chipped and shaded differently each time, so
+that a run of wall is not one square's stones over and over: the renderer
+picks one of the four for each square by where it stands.  Walls cut away in
+front of the character show only their footings, and have one.
 
 === Inks and washes ===
 
@@ -296,8 +300,10 @@ def box(t, mat, x0=0., x1=1., y0=0., y1=1., zb=0, zt=WALL_H, hide=0, join=0,
     """
     Draw a box.  hide says which faces have a wall in front of them and are not
     drawn (8: the south face, 4: the east); join, which of the top's edges meet
-    another wall's top and are left off (1 west, 2 north, 4 east, 8 south).
-    A wall uses its neighbours for both, so a run of wall is one mass.
+    another wall's top and are left off (1 west, 2 north, 4 east, 8 south), and
+    so too the ends of the faces that run on into the next wall's.  A wall uses
+    its neighbours for both, so a run of wall is one mass, its faces ruled only
+    by their stones and not square by square.
     mat gives each face's ink from the pixel and the face's own coordinates.
     """
     lab = [[0] * TW for _ in range(TH)]
@@ -346,12 +352,14 @@ def box(t, mat, x0=0., x1=1., y0=0., y1=1., zb=0, zt=WALL_H, hide=0, join=0,
             a, z = where[x, y]
             if z - zb < 1.5:
                 return ground_line
-            return not (join & 1 and a - x0 < near)
+            return not ((join & 1 and a - x0 < near)
+                        or (join & 4 and x1 - a < near))
         if own == 3:
             b, z = where[x, y]
             if z - zb < 1.5:
                 return ground_line
-            return not (join & 2 and b - y0 < near)
+            return not ((join & 2 and b - y0 < near)
+                        or (join & 8 and y1 - b < near))
         return True
 
     outline(t, lab, keep)
@@ -430,9 +438,18 @@ def stars(rng, n):
     return out
 
 
-def materials():
-    r = mt.Rand(1978)
-    flecks = specks(mt.Rand(1981), 220)
+# How many times each wall material is drawn: see the top of this file.
+VARIANTS = 4
+
+
+def materials(variant=0):
+    """
+    The walls' faces and tops.  Each variant is drawn from generators of its
+    own; the first from the ones the set has always used.
+    """
+    seed = 7919 * variant
+    r = mt.Rand(1978 + seed)
+    flecks = specks(mt.Rand(1981 + seed), 220)
     granite = {'top': solid(ROCK, marks=flecks, mark=FLECK), 'south': stones(r),
                'east': stones(r, shade=True)}
     permanent = {
@@ -452,14 +469,14 @@ def materials():
         'south': lambda x, y, u, v, d=specks(r, 60): I if (x, y) in d else QUARTZ,
         'east': lambda x, y, u, v: I if (x + y) % 4 == 0 else QUARTZ,
     }
-    rt = mt.Rand(1979)
+    rt = mt.Rand(1979 + seed)
 
     def rich(mat, gold):
         s = stars(rt, 3)
         return {k: (lambda x, y, *w, f=f: (gold if (x, y) in s else f(x, y, *w)))
                 for k, f in mat.items()}
 
-    rb = mt.Rand(1980)
+    rb = mt.Rand(1980 + seed)
     building = {
         'top': solid(ROOF, marks=ribs(), mark=RIB),
         'south': stones(rb, course=12, fill=PLASTER),
@@ -886,7 +903,8 @@ def shop_overlays(name, mark):
 
 
 # Which drawing each of the game's terrain features uses.  'wall' takes the
-# sixteen-tile row for its material; 'door' takes a pair, west-east first.
+# sixteen-tile rows for its material, VARIANTS of them one after another;
+# 'door' takes a pair, west-east first.
 FEATURES = (
     ('open floor', 'tile', 'floor'),
     ('closed door', 'door', 'closed door'),
@@ -931,15 +949,20 @@ SURFACE = (
 def build():
     """Every tile, in sheet order, and the index of each drawing."""
     tiles, index = [], {}
-    mats = materials()
+    mats = [materials(v) for v in range(VARIANTS)]
     for name in ('granite', 'permanent', 'magma', 'quartz', 'magma treasure',
                  'quartz treasure', 'building'):
-        for cut, h in (('', WALL_H), (' cut', CUT_H)):
-            index[name + cut] = len(tiles)
+        index[name] = len(tiles)
+        for mat in mats:
             for mask in range(16):
                 t = Tile()
-                wall(t, mats[name], mask, h)
+                wall(t, mat[name], mask)
                 tiles.append(t)
+        index[name + ' cut'] = len(tiles)
+        for mask in range(16):
+            t = Tile()
+            wall(t, mats[0][name], mask, CUT_H)
+            tiles.append(t)
 
     for name, mark in SHOPS:
         index['shop ' + name] = len(tiles)
@@ -1059,12 +1082,15 @@ def map_text(index):
     out.append('glyphs:glyphs.png:%d:%d:%d:%d' % (GLYPH_W, GLYPH_H,
                                                   GLYPH_FIRST, GLYPH_COUNT))
     out.append('# feat:<terrain>:<tile|wall|door>:<first cell>:<cut away>')
+    out.append('# feat:<terrain>:wall:<first cell>:<cut away>:<variants>')
     out.append('# surface: the same, used instead on the surface')
     for prefix, rows in (('feat', FEATURES), ('surface', SURFACE)):
         for feat, kind, drawing in rows:
             cut = index.get(drawing + ' cut', index[drawing])
-            out.append('%s:%s:%s:%d:%d' % (prefix, feat, kind,
-                                           index[drawing], cut))
+            line = '%s:%s:%s:%d:%d' % (prefix, feat, kind, index[drawing], cut)
+            if kind == 'wall':
+                line += ':%d' % VARIANTS
+            out.append(line)
     out.append('# feat:<shop>:shop:<overlays: south, east, sign>:<wall>:<cut>')
     for feat in SHOP_FEATURES:
         out.append('feat:%s:shop:%d:%d:%d' % (feat, index['shop ' + feat],
