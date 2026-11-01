@@ -125,7 +125,15 @@ GLOW = wash('lava glow', P, (255, 146, 36), .9)
 SAND = wash('sand', P, (196, 172, 112), .8)
 EARTH = wash('earth', P, (140, 110, 78), .8)
 MUD = wash('mud', P, (98, 82, 58), .85)
-ROAD = wash('road', P, (142, 136, 124), .85)
+# The road, which in colour is the yellow brick road: brick in courses, a few
+# a shade off, and the mortar between.  Without colour it is the dot screen it
+# always was, so each has a twin that prints as ink where a dot falls.
+BRICK, BRICK_LO, BRICK_HI, MORTAR = (
+    (wash(name, P, colour, .95), wash(name + ', dotted', I, colour, .95))
+    for name, colour in (('yellow brick', (236, 194, 58)),
+                         ('yellow brick, darker', (212, 166, 44)),
+                         ('yellow brick, lighter', (246, 214, 104)),
+                         ('mortar', (142, 106, 36))))
 PEAK = wash('peak', P, (128, 116, 102), .85)
 BOULDER = wash('boulder', P, (136, 129, 119), .88)
 STEP = wash('step', P, (150, 143, 132), .92)
@@ -654,10 +662,27 @@ def floors():
             line(t, x - 3, y, x + 3, y)
     out['mud'] = t
 
-    # The road: a mechanical dot screen, the tint 1978 printers laid on.
+    # The road: a mechanical dot screen, the tint 1978 printers laid on, and
+    # in colour yellow brick.  The courses run west to east, four to a square,
+    # and the bricks are half a square long, each course a half brick on from
+    # the last.  They are measured along the squares' own sides, a = 2y - x
+    # and b = 2y + x, which move by 0 or 64 from one square to the next, so
+    # the courses and joints run on across the squares, and so does which
+    # brick is a shade off.
+    tones = ((BRICK, BRICK_LO), (BRICK_HI, BRICK), (BRICK_LO, BRICK),
+             (BRICK, BRICK_HI))
+
+    def road(x, y):
+        a, b = 2 * y - x, 2 * y + x
+        course = a // 16
+        b += 16 * (course % 2)
+        if a % 16 < 2 or b % 32 < 2:
+            brick = MORTAR
+        else:
+            brick = tones[course % 4][b // 32 % 2]
+        return brick[y % 4 == 0 and (x + (y // 4 % 2) * 2) % 4 == 0]
     t = Tile()
-    ground(t, lambda x, y: I if y % 4 == 0 and (x + (y // 4 % 2) * 2) % 4 == 0
-           else ROAD)
+    ground(t, road)
     out['road'] = t
 
     t = Tile()
