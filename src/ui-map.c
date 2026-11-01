@@ -699,6 +699,13 @@ static void print_rel_map(wchar_t c, uint8_t a, int y, int x)
 
 
 /**
+ * A front end's own drawing of the map, which may show squares the main
+ * term's rectangle does not, is told of everything print_rel() draws; it is
+ * gone again when the square is redrawn (EVENT_MAP).
+ */
+void (*print_rel_hook)(wchar_t c, uint8_t a, int y, int x);
+
+/**
  * Display an attr/char pair at the given map location
  *
  * Note the inline use of "panel_contains()" for efficiency.
@@ -711,6 +718,8 @@ void print_rel(wchar_t c, uint8_t a, int y, int x)
 {
 	int ky, kx;
 	int vy, vx;
+
+	if (print_rel_hook) print_rel_hook(c, a, y, x);
 
 	/* Print on map sub-windows */
 	print_rel_map(c, a, y, x);

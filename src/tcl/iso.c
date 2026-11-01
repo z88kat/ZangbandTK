@@ -34,7 +34,8 @@
  * is read from the term where the game drew it there, which brings bolts,
  * hallucination and detection along unasked, and asked of map_info() -- as
  * the overhead map asks it -- where the square is outside the term's
- * rectangle.
+ * rectangle.  A bolt or a blast there, which the term never holds, is told
+ * to this file by print_rel_hook and kept until the square is drawn again.
  *
  * main-tcl.c owns the term and its pixels; it calls in here through the
  * tcl_iso_ functions at the end, and lends this file what it needs back
@@ -62,6 +63,7 @@ enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
 #define ISO_HW 32		/* half a diamond's width */
 #define ISO_HH 16		/* half its height */
 #define ISO_FADE 120		/* of 256: how far a remembered square fades */
+#define ISO_EFFECTS 256		/* as many squares as a ball can cover */
 
 static struct {
 	bool on;
@@ -105,6 +107,15 @@ static struct {
 	/* Per cell of the map term: the map's own letter, drawn as a counter. */
 	unsigned char *letter;
 	size_t letter_n;
+	/*
+	 * What the game has drawn on squares outside the term's rectangle -- a
+	 * bolt in flight, an arrow, a ball's blast -- until it draws them again.
+	 */
+	struct {
+		struct loc grid;
+		int a, c;
+	} effect[ISO_EFFECTS];
+	int effect_n;
 } iso;
 
 static void iso_get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
@@ -118,6 +129,7 @@ static void iso_free(void)
 	iso.lit = iso.dim = iso.glyph = NULL;
 	iso.on = false;
 	iso.held = false;
+	iso.effect_n = 0;
 	if (get_panel_hook == iso_get_panel) get_panel_hook = iso.old_get_panel;
 	if (panel_contains_hook == iso_panel_contains)
 		panel_contains_hook = iso.old_panel_contains;
@@ -444,6 +456,16 @@ static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
 
 enum { ISO_FG_NONE, ISO_FG_TILE, ISO_FG_LETTER };
 
+/* Which of the kept effects is on a square, or -1. */
+static int iso_effect_at(struct loc grid)
+{
+	int i;
+
+	for (i = 0; i < iso.effect_n; i++)
+		if (loc_eq(iso.effect[i].grid, grid)) return i;
+	return -1;
+}
+
 /* What the map says stands on a square: a, c over ta, tc. */
 static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
 {
@@ -463,8 +485,10 @@ static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
  * Inside the term's rectangle it is read from the term, where the game drew
  * it -- which is how a bolt in flight gets here.  A letter there counts only
  * if it is the one the map would draw: anything else is text the game has
- * written over the square, and the map's answer is used instead.  *cell is
- * the term cell a letter of the map's own came from, or -1.
+ * written over the square, and the map's answer is used instead.  Outside
+ * it, a bolt's tile is one of the kept effects, and a bolt's letter is drawn
+ * over the square as the term's are.  *cell is the term cell a letter of the
+ * map's own came from, or -1.
  */
 static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
 		int *cell)
@@ -502,7 +526,13 @@ static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
 			}
 		}
 	} else {
+		int e = iso_effect_at(grid);
+
 		iso_map_says(grid, a, c, &ta, &tc);
+		if (e >= 0 && (iso.effect[e].a & 0x80)) {
+			*a = iso.effect[e].a;
+			*c = iso.effect[e].c;
+		}
 	}
 	if (*a == ta && *c == tc) return ISO_FG_NONE;
 	return (*a & 0x80) ? ISO_FG_TILE : ISO_FG_LETTER;
@@ -605,7 +635,7 @@ static void iso_counter(term_data *t, int a, int c, int cx, int cy, bool dim,
 /*
  * The characters the map shows on a square, a and c over the terrain's ta and
  * tc: from the term where the game drew them, which brings bolts with them,
- * and from the map beyond its rectangle.
+ * and from the map and the kept effects beyond its rectangle.
  */
 static void iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 		int *ta, int *tc)
@@ -624,7 +654,13 @@ static void iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 		*ta = tm->scr->ta[y][x];
 		*tc = tm->scr->tc[y][x];
 	} else {
+		int e = iso_effect_at(grid);
+
 		iso_map_says(grid, a, c, ta, tc);
+		if (e >= 0) {
+			*a = iso.effect[e].a;
+			*c = iso.effect[e].c;
+		}
 	}
 }
 
@@ -718,6 +754,19 @@ static bool iso_panel_contains(unsigned int y, unsigned int x)
 	return iso_shows(iso.map, iso_centre(), loc((int)x, (int)y), 0);
 }
 
+/* A letter the game drew over a square, standing above the square. */
+static void iso_over(term_data *t, struct loc grid, struct loc centre, int c,
+		int a, int l, int tp, int r, int b)
+{
+	int vx, vy, ll, ttp, rr, bb, cx, cy;
+	int dx = grid.x - centre.x, dy = grid.y - centre.y;
+
+	iso_view(t, &ll, &ttp, &rr, &bb, &vx, &vy);
+	cx = vx + (dx - dy) * iso.hw;
+	cy = vy + (dx + dy) * iso.hh;
+	iso_glyph(t, c, a, cx - iso.gw, cy - iso.gh - 8, 256, false, l, tp, r, b);
+}
+
 /*
  * Text the game drew into a cell of the map that is not the map's own -- the
  * path an aimed bolt would take, a bolt in flight when there are no tiles --
@@ -729,7 +778,6 @@ static bool iso_text_glyph(term_data *t, int x, int y, struct loc centre,
 {
 	const term *tm = &t->t;
 	struct loc grid;
-	int vx, vy, cx, cy, dx, dy, ll, ttp, rr, bb;
 
 	if (!tm->scr || !character_dungeon || !cave || !player) return false;
 	grid.x = (x - col_map[tm->sidebar_mode]) / tile_width + tm->offset_x;
@@ -738,13 +786,8 @@ static bool iso_text_glyph(term_data *t, int x, int y, struct loc centre,
 		return false;
 	/* The ASCII view has already drawn what the term holds there. */
 	if (iso.text) return true;
-	iso_view(t, &ll, &ttp, &rr, &bb, &vx, &vy);
-	dx = grid.x - centre.x;
-	dy = grid.y - centre.y;
-	cx = vx + (dx - dy) * iso.hw;
-	cy = vy + (dx + dy) * iso.hh;
-	iso_glyph(t, tm->scr->c[y][x], tm->scr->a[y][x], cx - iso.gw,
-		cy - iso.gh - 8, 256, false, l, tp, r, b);
+	iso_over(t, grid, centre, tm->scr->c[y][x], tm->scr->a[y][x],
+		l, tp, r, b);
 	return true;
 }
 
@@ -800,7 +843,7 @@ static void iso_mark(term_data *t, struct loc grid, struct loc centre,
 
 static void iso_render(term_data *t)
 {
-	int l, tp, r, b, vx, vy, s, d, x, y, smax, dmax;
+	int l, tp, r, b, vx, vy, s, d, x, y, smax, dmax, i;
 	struct loc centre = loc(0, 0);
 
 	iso_view(t, &l, &tp, &r, &b, &vx, &vy);
@@ -850,7 +893,7 @@ static void iso_render(term_data *t)
 	for (s = -smax; s <= smax; s++) {
 		for (d = -dmax; d <= dmax; d++) {
 			struct loc grid;
-			int dx, dy, cx, cy, feat, a, c, fg, cell, pdx, pdy;
+			int dx, dy, cx, cy, feat, a, c, fg, tcell, pdx, pdy;
 			bool seen, bright, cut;
 
 			if ((s + d) & 1) continue;
@@ -929,15 +972,21 @@ static void iso_render(term_data *t)
 				}
 			}
 
-			fg = iso_fg(t, grid, &a, &c, &cell);
+			fg = iso_fg(t, grid, &a, &c, &tcell);
 			if (fg == ISO_FG_TILE) {
 				iso_sprite(t, a, c, cx, cy, !seen, l, tp, r, b);
 			} else if (fg == ISO_FG_LETTER) {
 				iso_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
-				if (cell >= 0) iso.letter[cell] = 1;
+				if (tcell >= 0) iso.letter[tcell] = 1;
 			}
 		}
 	}
+
+	/* The letters of bolts beyond the term's rectangle, over their squares. */
+	for (i = 0; i < iso.effect_n && !iso.text; i++)
+		if (!(iso.effect[i].a & 0x80))
+			iso_over(t, iso.effect[i].grid, centre, iso.effect[i].c,
+				iso.effect[i].a, l, tp, r, b);
 
 	/*
 	 * The map's own text is drawn in the view now -- its letters standing on
@@ -1115,17 +1164,47 @@ void tcl_iso_cursor_show(const term_data *map, bool show)
 }
 
 /*
- * Something on the level changed, or the character moved.  When it moved,
- * the term's rectangle is centred on it again, as center_player has the flat
- * map do: a bolt is drawn only inside that rectangle, and the view, which is
- * centred on the character, shows what the term holds.
+ * Something on the level changed, or the character moved.  A square drawn
+ * again is drawn without whatever effect was kept for it.  When the character
+ * moved, the term's rectangle is centred on it again, as center_player has
+ * the flat map do: the view, which is centred on the character, shows what
+ * the term holds, and the path an aimed bolt would take is drawn only there.
  */
 static void iso_notice(game_event_type type, game_event_data *data, void *user)
 {
-	(void)data;
 	(void)user;
 	iso.dirty = true;
+	if (type == EVENT_MAP) {
+		int e = iso_effect_at(data->point);
+
+		if (data->point.x < 0) iso.effect_n = 0;
+		else if (e >= 0) iso.effect[e] = iso.effect[--iso.effect_n];
+	}
 	if (type == EVENT_PLAYERMOVED && iso.on && !iso.held) center_panel();
+}
+
+/*
+ * The game drew a bolt, an arrow or a ball's blast on a square.  The term
+ * holds it if the square is inside its rectangle, as print_rel() reckons
+ * that; otherwise it is kept here, while there is room.
+ */
+static void iso_effect(wchar_t c, uint8_t a, int y, int x)
+{
+	int ky = y - Term->offset_y, kx = x - Term->offset_x, e;
+
+	if (!iso.on) return;
+	if (Term == term_screen && ky >= 0 && ky < SCREEN_HGT && kx >= 0
+			&& kx < SCREEN_WID)
+		return;
+	e = iso_effect_at(loc(x, y));
+	if (e < 0) {
+		if (iso.effect_n == ISO_EFFECTS) return;
+		e = iso.effect_n++;
+	}
+	iso.effect[e].grid = loc(x, y);
+	iso.effect[e].a = a;
+	iso.effect[e].c = c;
+	iso.dirty = true;
 }
 
 /*
@@ -1136,6 +1215,7 @@ void tcl_iso_events_init(void)
 {
 	event_add_handler(EVENT_MAP, iso_notice, NULL);
 	event_add_handler(EVENT_PLAYERMOVED, iso_notice, NULL);
+	print_rel_hook = iso_effect;
 }
 
 /* The map term is about to be handed to Tk: draw the view, if it changed. */
