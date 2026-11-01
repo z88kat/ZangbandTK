@@ -67,6 +67,26 @@ scores. It stops now when the game says it's leaving the world, which it also
 says on walking into a shop. A shop had been showing a strip of the map down the
 right-hand edge of its screen, and that's gone too.
 
+He asked for a way to clear old savefiles out of the Choose Game window, which
+the original never had. Delete asks first, names every character it's about to
+remove, and says plainly when one of them is still alive.
+
+Then he asked why the map got slower with monsters on screen. I had written down
+49 ms for a full redraw and assumed the drawing was the cost. It wasn't. In the
+dungeon the view draws a frame in a millisecond or two. Most of the time was Tk
+painting the whole pane to a Retina screen, about 22 ms, every time anything
+moved, and with six pets wandering about that was four times a turn. Now each
+frame is compared with what Tk was last given, and only the box around what
+changed goes over. Thirty turns standing among the pets went from 2.3 seconds of
+painting to under half a second. Walking still repaints everything, because the
+whole view moves with you.
+
+The traps were next on his list. They stood up like monsters, and a pit standing
+on end is an odd thing to look at. They lie on the floor now, the picture laid
+onto the diamond. Testing it took more goes than writing it: the wizard's pits
+and fire traps are hidden until found, and my first row of runes sat just behind
+a wall that hid them.
+
 
 30 October 2026 — an isometric map, drawn from nothing
 =======================================================
