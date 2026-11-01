@@ -100,6 +100,17 @@ street behind one showed a black slot beside you: the square next to the cut-dow
 one still hid the face it used to share with it. Open doorways, though, had never
 been cut down at all, and their lintel could cover you. Both are fixed.
 
+Last, walking. A view centred on you moves every pixel with every step, and Tk
+has to paint the whole pane again, which on a Retina screen is mostly Tk
+resampling it. There's no cheap way to paint a whole pane. So the view now does
+what the flat map always did: it follows the *Center map continuously* option,
+and it doesn't centre at every step while you're running. Over the same 32 steps
+in town, Tk's resampling went from about 460 ms to about 21 ms once the view
+stopped moving with every step. That made my own drawing the biggest cost left,
+and most of that was the tile copy testing every pixel of a mostly empty cell.
+It now copies each row where the row has anything, and in town that went from
+about 6 ms a step to under one.
+
 
 30 October 2026 — an isometric map, drawn from nothing
 =======================================================
