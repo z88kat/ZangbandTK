@@ -374,6 +374,17 @@ static int iso_variant(struct loc grid, int n)
 	return n > 1 ? (int)(h % (uint32_t)n) : 0;
 }
 
+/*
+ * Whether a square is one of the three whose walls would stand in front of
+ * the character, and so is cut down to its footings.
+ */
+static bool iso_cut(struct loc grid)
+{
+	int pdx = grid.x - player->grid.x, pdy = grid.y - player->grid.y;
+
+	return pdx >= 0 && pdy >= 0 && pdx + pdy > 0 && pdx < 2 && pdy < 2;
+}
+
 /* Walls join up with walls, and a shop's door is part of its building's. */
 static bool iso_is_wall(struct loc grid)
 {
@@ -1132,7 +1143,7 @@ static void iso_render(term_data *t)
 	for (s = -smax; s <= smax; s++) {
 		for (d = -dmax; d <= dmax; d++) {
 			struct loc grid;
-			int dx, dy, cx, cy, feat, a, c, fg, tcell, pdx, pdy;
+			int dx, dy, cx, cy, feat, a, c, fg, tcell;
 			bool seen, bright, cut, flat;
 
 			if ((s + d) & 1) continue;
@@ -1141,14 +1152,7 @@ static void iso_render(term_data *t)
 			grid = loc(centre.x + dx, centre.y + dy);
 			if (!square_in_bounds(cave, grid)) continue;
 
-			/*
-			 * The three squares whose walls would stand in front of
-			 * the character are cut down to their footings.
-			 */
-			pdx = grid.x - player->grid.x;
-			pdy = grid.y - player->grid.y;
-			cut = pdx >= 0 && pdy >= 0 && pdx + pdy > 0 && pdx < 2
-				&& pdy < 2;
+			cut = iso_cut(grid);
 
 			cx = vx + (dx - dy) * iso.hw;
 			cy = vy + (dx + dy) * iso.hh;
@@ -1179,6 +1183,18 @@ static void iso_render(term_data *t)
 					| iso_is_wall(loc(grid.x + 1, grid.y)) * 4
 					| iso_is_wall(loc(grid.x, grid.y + 1)) * 8;
 				bool we = mask & (1 | 4), ns = mask & (2 | 8);
+				/*
+				 * A wall beside one that is cut down is no longer
+				 * joined to it: it shows the face, and the edge of
+				 * its top, that the cut-down one no longer covers.
+				 * Which way a door or a shop's door faces is still
+				 * the walls' to say.
+				 */
+				int high = cut ? mask : mask
+					& ~(iso_cut(loc(grid.x - 1, grid.y)) * 1
+						| iso_cut(loc(grid.x, grid.y - 1)) * 2
+						| iso_cut(loc(grid.x + 1, grid.y)) * 4
+						| iso_cut(loc(grid.x, grid.y + 1)) * 8);
 				int ox = cx - iso.tw / 2, oy = cy + ISO_HH - iso.th;
 
 				if (!player->depth && iso.skind[feat]) {
@@ -1189,7 +1205,7 @@ static void iso_render(term_data *t)
 
 				if (kind == ISO_WALL) {
 					if (!cut) cell += 16 * iso_variant(grid, var);
-					iso_blit(t, src, cell + mask, ox, oy, l, tp, r, b);
+					iso_blit(t, src, cell + high, ox, oy, l, tp, r, b);
 				} else if (kind == ISO_DOOR) {
 					iso_blit(t, src, cell + (ns && !we), ox, oy, l, tp,
 						r, b);
@@ -1205,7 +1221,7 @@ static void iso_render(term_data *t)
 						: (south ? 0 : east ? 1 : 2);
 
 					iso_blit(t, src, (cut ? iso.wall_cut[feat]
-						: iso.wall[feat]) + mask, ox, oy, l, tp, r, b);
+						: iso.wall[feat]) + high, ox, oy, l, tp, r, b);
 					if (!cut)
 						iso_blit(t, src, iso.cell[feat] + side, ox, oy,
 							l, tp, r, b);

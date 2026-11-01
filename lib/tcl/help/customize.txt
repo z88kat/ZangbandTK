@@ -612,7 +612,7 @@ T	li1	 draws the map flat, as it always has been, or isometrically: every square
 T	li1 code	#
 T	li1	; it needs the None tile set, and switches to it while it’s on and back again when you leave it.
 T	li1	\n
-T	p1	In the other three, monsters, items and your character are the tile set’s own pictures, standing on their squares. Anything the set has no picture for stands there as its letter on a black disc. Traps and runes lie flat on the floor instead, and in ASCII they take the place of the floor’s dot. Places you haven’t found aren’t drawn at all, and places you remember are fainter, as they are on the flat map. Walls just in front of you are cut down to their footings so they never hide you. The mouse works as it does on the flat map, and the square you look at or aim at gets a yellow ring.
+T	p1	In the other three, monsters, items and your character are the tile set’s own pictures, standing on their squares. Anything the set has no picture for stands there as its letter on a black disc. Traps and runes lie flat on the floor instead, and in ASCII they take the place of the floor’s dot. Places you haven’t found aren’t drawn at all, and places you remember are fainter, as they are on the flat map. Walls, doors and shops just in front of you are cut down to their footings so they never hide you. The mouse works as it does on the flat map, and the square you look at or aim at gets a yellow ring.
 T	p1	\n
 T	li1	•\t
 T	li1 strong	Fonts

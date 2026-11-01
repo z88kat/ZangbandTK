@@ -12,33 +12,33 @@ glyphs:glyphs.png:5:8:32:96
 # feat:<terrain>:<tile|wall|door>:<first cell>:<cut away>
 # feat:<terrain>:wall:<first cell>:<cut away>:<variants>
 # surface: the same, used instead on the surface
-feat:open floor:tile:618:618
-feat:closed door:door:612:610
-feat:open door:door:623:623
-feat:broken door:door:608:608
-feat:up staircase:tile:632:632
-feat:down staircase:tile:615:615
+feat:open floor:tile:620:620
+feat:closed door:door:614:612
+feat:open door:door:627:625
+feat:broken door:door:610:608
+feat:up staircase:tile:636:636
+feat:down staircase:tile:617:617
 feat:secret door:wall:0:64:4
-feat:pile of rubble:tile:627:627
+feat:pile of rubble:tile:631:631
 feat:magma vein:wall:160:224:4
 feat:quartz vein:wall:240:304:4
 feat:magma vein with treasure:wall:320:384:4
 feat:quartz vein with treasure:wall:400:464:4
 feat:granite wall:wall:0:64:4
 feat:permanent wall:wall:80:144:4
-feat:lava:tile:620:620
-feat:pile of passable rubble:tile:625:625
-feat:grass:tile:619:619
-feat:bare earth:tile:617:617
-feat:sand:tile:628:628
-feat:tree:tile:631:631
-feat:mud:tile:622:622
-feat:shallow water:tile:630:630
-feat:deep water:tile:614:614
-feat:open sea:tile:629:629
-feat:mountainside:tile:621:621
-feat:dungeon entrance:tile:616:616
-feat:road:tile:626:626
+feat:lava:tile:622:622
+feat:pile of passable rubble:tile:629:629
+feat:grass:tile:621:621
+feat:bare earth:tile:619:619
+feat:sand:tile:632:632
+feat:tree:tile:635:635
+feat:mud:tile:624:624
+feat:shallow water:tile:634:634
+feat:deep water:tile:616:616
+feat:open sea:tile:633:633
+feat:mountainside:tile:623:623
+feat:dungeon entrance:tile:618:618
+feat:road:tile:630:630
 surface:permanent wall:wall:480:544:4
 # feat:<shop>:shop:<overlays: south, east, sign>:<wall>:<cut>
 feat:General Store:shop:560:480:544

@@ -582,12 +582,18 @@ def door_cut(t, ns):
     box(t, sill, hide=8 if ns else 4, zt=CUT_H)
 
 
-def archway(t, ns, rng, broken=False):
-    """An open doorway: the wall carried over the gap on a lintel."""
+def archway(t, ns, rng, broken=False, cut=False):
+    """
+    An open doorway: the wall carried over the gap on a lintel.  In front of
+    the character, where the walls either side are cut down to their
+    footings, it is only the gap between them, and a broken door's rubble.
+    """
     stone = stones(rng)
     mat = {'top': solid(ROCK), 'south': stone, 'east': stones(rng, shade=True)}
     reach = .45 if broken else 1.
-    if ns:
+    if cut:
+        pass
+    elif ns:
         box(t, mat, .3, .7, 0, reach, WALL_H - 6, WALL_H, join=2 | 8)
     else:
         box(t, mat, 0, reach, .3, .7, WALL_H - 6, WALL_H, join=1 | 4)
@@ -826,6 +832,14 @@ def features():
         ground(t)
         archway(t, ns, rng, broken=True)
         out['broken door' + tag] = t
+
+        # With a generator of their own, so that the drawings above, which
+        # share one, come out as they always have.
+        for name, broken in (('open door', False), ('broken door', True)):
+            t = Tile()
+            ground(t)
+            archway(t, ns, mt.Rand(0), broken, cut=True)
+            out[name + ' cut' + tag] = t
 
     return out
 
