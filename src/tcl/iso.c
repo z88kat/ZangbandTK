@@ -18,8 +18,8 @@
 
 /*
  * The map pane drawn as ZAngbandTk 2.4's isometric mode drew it in 2001: each
- * square a diamond, walls standing up off the floor, the character in the
- * middle.  None of that version's code or art is used.  The terrain comes
+ * square a diamond, walls standing up off the floor, the character in or near
+ * the middle.  None of that version's code or art is used.  The terrain comes
  * from lib/tiles/iso, which scripts/tiles/make-iso.py draws in three styles;
  * what stands on it -- monsters, objects, the character, a bolt in flight -- is
  * the current tile set's own tile, stood up on the diamond, or a counter where
@@ -101,12 +101,20 @@ static struct {
 	/*
 	 * The cursor, when the game shows one on the map -- looking, aiming --
 	 * and the square the view is held on while the cursor is somewhere the
-	 * view centred on the character would not show.  shown is the middle of
+	 * view would not otherwise show.  shown is the middle of
 	 * the view as last drawn, which is what a point on the pane is measured
 	 * from.
 	 */
 	bool cursor_on, cursor_map, held;
 	struct loc cursor, hold, shown;
+	/*
+	 * The square the view is centred on when the cursor does not hold it:
+	 * the character's, or where the character stood when the view last
+	 * scrolled, on the level it stood on.  See iso_scroll().
+	 */
+	bool anchored;
+	struct loc anchor;
+	const struct chunk *anchor_cave;
 	/* The game's answers to "what is on screen?", given back when the view goes. */
 	void (*old_get_panel)(int *min_y, int *min_x, int *max_y, int *max_x);
 	bool (*old_panel_contains)(unsigned int y, unsigned int x);
@@ -146,6 +154,7 @@ static void iso_free(void)
 	iso.lit = iso.dim = iso.glyph = NULL;
 	iso.on = false;
 	iso.held = false;
+	iso.anchored = false;
 	iso.effect_n = 0;
 	mem_free(iso.shown_pix);
 	iso.shown_pix = NULL;
@@ -908,10 +917,17 @@ static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 			l, tp, r, b);
 }
 
-/* The square in the middle of the view: the character's, unless held. */
+/* The square in the middle of the view when the cursor does not hold it. */
+static struct loc iso_home(void)
+{
+	return (iso.anchored && iso.anchor_cave == cave) ? iso.anchor
+		: player->grid;
+}
+
+/* The square in the middle of the view. */
 static struct loc iso_centre(void)
 {
-	return iso.held ? iso.hold : player->grid;
+	return iso.held ? iso.hold : iso_home();
 }
 
 /*
@@ -1294,8 +1310,8 @@ static void iso_render(term_data *t)
 }
 
 /*
- * Keep the cursor on the view: hold the view on it when the view centred on
- * the character would not show it, and let go when that view would.
+ * Keep the cursor on the view: hold the view on it when the view would not
+ * otherwise show it, and let go when it would.
  */
 static void iso_follow(const term_data *map)
 {
@@ -1303,7 +1319,7 @@ static void iso_follow(const term_data *map)
 			|| !square_in_bounds(cave, iso.cursor))
 		return;
 	if (iso_shows(map, iso_centre(), iso.cursor, iso.hw)) return;
-	if (iso_shows(map, player->grid, iso.cursor, iso.hw)) {
+	if (iso_shows(map, iso_home(), iso.cursor, iso.hw)) {
 		iso.held = false;
 	} else {
 		iso.held = true;
@@ -1427,12 +1443,40 @@ void tcl_iso_cursor_show(const term_data *map, bool show)
 }
 
 /*
+ * The character has moved: does the view go with it?  As the flat map does
+ * (verify_panel), it does at every step while "Center map continuously" is
+ * on, except while running; otherwise it stays put until the character
+ * leaves the middle half of the pane, and then centres on it again.  A view
+ * that moves changes every pixel of the pane, and Tk must paint all of it; a
+ * view that stays put changes only the squares round the character.
+ */
+static void iso_scroll(void)
+{
+	int l, tp, r, b, vx, vy, dx, dy;
+	struct loc home;
+
+	if (!iso.map || !player || !cave) return;
+	home = iso_home();
+	dx = player->grid.x - home.x;
+	dy = player->grid.y - home.y;
+	iso_view(iso.map, &l, &tp, &r, &b, &vx, &vy);
+	if (!iso.anchored || iso.anchor_cave != cave
+			|| (OPT(player, center_player) && !player->upkeep->running)
+			|| abs(dx - dy) * iso.hw > (r - l) / 4
+			|| abs(dx + dy) * iso.hh > (b - tp) / 4) {
+		iso.anchor = player->grid;
+		iso.anchor_cave = cave;
+		iso.anchored = true;
+	}
+}
+
+/*
  * Something on the level changed, the character moved, or the game left the
  * world or came back to it.  A square drawn again is drawn without whatever
- * effect was kept for it.  When the character
- * moved, the term's rectangle is centred on it again, as center_player has
- * the flat map do: the view, which is centred on the character, shows what
- * the term holds, and the path an aimed bolt would take is drawn only there.
+ * effect was kept for it.  When the character moved, the view may follow it,
+ * and the term's rectangle is centred on it again, as center_player has the
+ * flat map do: the view shows what the term holds round the character, and
+ * the path an aimed bolt would take is drawn only there.
  */
 static void iso_notice(game_event_type type, game_event_data *data, void *user)
 {
@@ -1446,7 +1490,10 @@ static void iso_notice(game_event_type type, game_event_data *data, void *user)
 		if (data->point.x < 0) iso.effect_n = 0;
 		else if (e >= 0) iso.effect[e] = iso.effect[--iso.effect_n];
 	}
-	if (type == EVENT_PLAYERMOVED && iso.on && !iso.held) center_panel();
+	if (type == EVENT_PLAYERMOVED && iso.on) {
+		iso_scroll();
+		if (!iso.held) center_panel();
+	}
 }
 
 /*

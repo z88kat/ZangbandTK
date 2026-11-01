@@ -195,6 +195,8 @@ T	dt0 strong code	center_player
 T	dt0	\n
 T	p1	The map always centres on the player with this option on. With it off, it is divided into 25 sections, with coordinates (0,0) to (4,4), and will show one section at a time - the display will “flip” to the next section when the player nears the edge.
 T	p1	\n
+T	p1	The isometric view in ZangbandTK follows it too. With the option off, the view stays where it is until you leave the middle half of it, then centres on you again. That’s quicker to draw: a view that moves with every step has to be drawn again whole. Neither view centres at every step while you’re running.
+T	p1	\n
 T	dt0 strong	Color: Show unique monsters in purple 
 T	dt0 strong code	purple_uniques
 T	dt0	\n

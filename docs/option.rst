@@ -206,6 +206,12 @@ Center map continuously ``center_player``
   show one section at a time - the display will "flip" to the next section
   when the player nears the edge.
 
+  The isometric view in ZangbandTK follows it too.  With the option off, the
+  view stays where it is until you leave the middle half of it, then centres
+  on you again.  That's quicker to draw: a view that moves with every step has
+  to be drawn again whole.  Neither view centres at every step while you're
+  running.
+
 Color: Show unique monsters in purple ``purple_uniques``
   All "unique" monsters will be shown in a light purple colour, which is
   not used for any "normal" monsters - so you can tell at a glance that

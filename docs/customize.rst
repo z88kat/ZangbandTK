@@ -588,7 +588,8 @@ How the window draws is set on the Display page of the Options window
   uses the same size, so its tiles grow too.
 * **Map view** draws the map flat, as it always has been, or isometrically:
   every square a diamond, walls standing up off the floor, and your character
-  in the middle.  There are four styles of it.  Ink is black on cream, the way
+  in the middle, or near it, by the *Center map continuously* option.  There
+  are four styles of it.  Ink is black on cream, the way
   the old rulebooks were printed.  Blue is the blue of the old printed
   adventure maps.  Colour is a dungeon in colour: stone walls and flagstone
   floors on black, roads of yellow brick, and each shop's door in the shop's
