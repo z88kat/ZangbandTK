@@ -90,5 +90,6 @@ void tcl_iso_cursor_show(const term_data *map, bool show);
 void tcl_iso_events_init(void);
 void tcl_iso_flush(term_data *map);
 void tcl_iso_touched(const term_data *map, int x, int y);
+void tcl_iso_shown(const term_data *map, int x, int y, int w, int h);
 
 #endif /* INCLUDED_TCL_MAIN_TCL_H */

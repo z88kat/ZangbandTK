@@ -113,6 +113,14 @@ static struct {
 	unsigned char *letter;
 	size_t letter_n;
 	/*
+	 * The map's part of the term's pixels as Tk was last given them, and
+	 * where that part is, so that only what a frame changes is handed over.
+	 * Kept by tcl_iso_shown() as each block goes, whoever drew it; NULL when
+	 * the view has not been drawn since it came on.
+	 */
+	unsigned char *shown_pix;
+	int shown_l, shown_tp, shown_r, shown_b;
+	/*
 	 * What the game has drawn on squares outside the term's rectangle -- a
 	 * bolt in flight, an arrow, a ball's blast -- until it draws them again.
 	 */
@@ -135,6 +143,8 @@ static void iso_free(void)
 	iso.on = false;
 	iso.held = false;
 	iso.effect_n = 0;
+	mem_free(iso.shown_pix);
+	iso.shown_pix = NULL;
 	if (get_panel_hook == iso_get_panel) get_panel_hook = iso.old_get_panel;
 	if (panel_contains_hook == iso_panel_contains)
 		panel_contains_hook = iso.old_panel_contains;
@@ -846,6 +856,47 @@ static void iso_mark(term_data *t, struct loc grid, struct loc centre,
 	}
 }
 
+/*
+ * A frame is drawn: hand Tk only the box round what it changed.  Every frame
+ * is drawn whole, but a monster taking a step changes a few hundred pixels of
+ * it, and Tk's work -- taking the block, and above all painting it, which on a
+ * Retina screen means resampling it -- goes with the size of the box: the
+ * whole pane cost some 25 ms a frame.  A frame that changes nothing is not
+ * handed over at all.
+ */
+static void iso_hand_over(term_data *t, int l, int tp, int r, int b)
+{
+	size_t row = (size_t)(r - l) * 4;
+	int y, y0 = -1, y1 = -1, x0 = r, x1 = l;
+
+	if (!iso.shown_pix || iso.shown_l != l || iso.shown_tp != tp
+			|| iso.shown_r != r || iso.shown_b != b) {
+		mem_free(iso.shown_pix);
+		iso.shown_pix = mem_zalloc(row * (b - tp));
+		iso.shown_l = l;
+		iso.shown_tp = tp;
+		iso.shown_r = r;
+		iso.shown_b = b;
+		tcl_tiles_dirty(t, l, tp, r - l, b - tp);
+		return;
+	}
+
+	for (y = tp; y < b; y++) {
+		const unsigned char *p = t->pix + ((size_t)y * t->pix_w + l) * 4;
+		const unsigned char *q = iso.shown_pix + (size_t)(y - tp) * row;
+		int a = 0, z = r - l - 1;
+
+		if (!memcmp(p, q, row)) continue;
+		while (!memcmp(p + a * 4, q + a * 4, 4)) a++;
+		while (!memcmp(p + z * 4, q + z * 4, 4)) z--;
+		if (y0 < 0) y0 = y;
+		y1 = y;
+		x0 = MIN(x0, l + a);
+		x1 = MAX(x1, l + z + 1);
+	}
+	if (y0 >= 0) tcl_tiles_dirty(t, x0, y0, x1 - x0, y1 + 1 - y0);
+}
+
 static void iso_render(term_data *t)
 {
 	int l, tp, r, b, vx, vy, s, d, x, y, smax, dmax, i;
@@ -873,7 +924,7 @@ static void iso_render(term_data *t)
 		for (y = tp; y < b; y++)
 			memset(t->pix + ((size_t)y * t->pix_w + l) * 4, 0,
 				(size_t)(r - l) * 4);
-		tcl_tiles_dirty(t, l, tp, r - l, b - tp);
+		iso_hand_over(t, l, tp, r, b);
 		return;
 	}
 
@@ -1033,7 +1084,7 @@ static void iso_render(term_data *t)
 			&& square_in_bounds(cave, iso.cursor))
 		iso_mark(t, iso.cursor, centre, l, tp, r, b);
 
-	tcl_tiles_dirty(t, l, tp, r - l, b - tp);
+	iso_hand_over(t, l, tp, r, b);
 }
 
 /*
@@ -1238,6 +1289,28 @@ void tcl_iso_flush(term_data *map)
 		iso.dirty = false;
 		iso_render(map);
 	}
+}
+
+/*
+ * Tk has just been given this block of the map term's pixels.  Whatever drew
+ * them -- the view, or the term clearing a cell -- it is what the pane now
+ * shows, and what the next frame is measured against.
+ */
+void tcl_iso_shown(const term_data *map, int x, int y, int w, int h)
+{
+	int x0, x1, y0, y1, row;
+
+	if (!iso.on || !iso.shown_pix) return;
+	x0 = MAX(x, iso.shown_l);
+	x1 = MIN(x + w, iso.shown_r);
+	y0 = MAX(y, iso.shown_tp);
+	y1 = MIN(y + h, iso.shown_b);
+	if (x1 <= x0) return;
+	for (row = y0; row < y1; row++)
+		memcpy(iso.shown_pix + ((size_t)(row - iso.shown_tp)
+				* (iso.shown_r - iso.shown_l) + (x0 - iso.shown_l)) * 4,
+			map->pix + ((size_t)row * map->pix_w + x0) * 4,
+			(size_t)(x1 - x0) * 4);
 }
 
 /* Something was drawn on, or cleared from, this cell of the map term. */

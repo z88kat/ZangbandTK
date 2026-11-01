@@ -790,6 +790,7 @@ static void tiles_flush(term_data *t)
 	}
 
 	Tk_PhotoPutBlock(interp, photo, &blk, x, y, w, h, TK_PHOTO_COMPOSITE_SET);
+	if (is_map_term(t)) tcl_iso_shown(t, x, y, w, h);
 }
 
 static void tiles_flush_all(void)
