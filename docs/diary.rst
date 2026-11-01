@@ -87,6 +87,13 @@ onto the diamond. Testing it took more goes than writing it: the wizard's pits
 and fire traps are hidden until found, and my first row of runes sat just behind
 a wall that hid them.
 
+Then the walls, which repeated one square's stones all along every corridor. Each
+material is drawn four times now, jointed differently, and each square picks one
+by where it stands. That alone didn't do it. Every square's face also had a line
+ruled down its end, so a run of wall still read as a row of blocks, and that line
+is left off now wherever the wall carries on. The town's plaster buildings lost
+their seams the same way.
+
 
 30 October 2026 — an isometric map, drawn from nothing
 =======================================================
