@@ -4,7 +4,7 @@ size:64:80:16
 # style:<name>:<paper r:g:b>:<ink r:g:b>
 style:ink:236:226:199:38:30:24
 style:blue:247:247:242:44:104:176
-style:colour:247:247:242:44:104:176
+style:colour:0:0:0:34:30:27
 # text:<style>:<half width>:<half height>:<rise>
 text:ascii:20:10:9
 # glyphs:<file>:<width>:<height>:<first char>:<count>

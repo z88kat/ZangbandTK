@@ -24,7 +24,7 @@ it is in one with.  So one drawing gives three sheets:
 
     iso-ink.png      black on cream, as the rulebooks were printed
     iso-blue.png     TSR's blue on white, as the module maps were
-    iso-colour.png   the blue map coloured in by hand, its rock dark stone
+    iso-colour.png   a dungeon in colour: stone walls and floors, on black
 
 All three are offered, and the player chooses.
 
@@ -88,11 +88,20 @@ def wash(name, plain, colour, strength):
     return 3 + len(WASHES)
 
 
-# The top of solid rock: the ink of the map, and in colour dark stone.
+# The top of solid rock: the ink of the map, and in colour dark stone, with
+# flecks of a lighter one.
 ROCK = wash('rock', I, (82, 80, 78), 1)
-# The faces of walls.
-STONE = wash('stone', P, (178, 160, 132), .8)
-DRESSED = wash('dressed stone', P, (146, 152, 174), .8)
+FLECK = wash('rock fleck', I, (104, 100, 95), 1)
+# The faces of walls: in colour, grey stone, each block a shade lighter or
+# darker than its neighbours, as a wall of real stones is.
+STONE = wash('stone', P, (150, 143, 132), .92)
+STONE_LO = wash('stone, darker', P, (126, 119, 109), .92)
+STONE_HI = wash('stone, lighter', P, (172, 165, 153), .92)
+DRESSED = wash('dressed stone', P, (132, 134, 142), .92)
+DRESSED_LO = wash('dressed stone, darker', P, (112, 114, 123), .92)
+DRESSED_HI = wash('dressed stone, lighter', P, (152, 154, 161), .92)
+# Specks on a stone floor.
+GRIT = wash('grit', P, (92, 87, 80), 1)
 RUST = wash('magma', P, (172, 90, 58), .8)
 QUARTZ = wash('quartz', P, (206, 192, 234), .85)
 GOLD_P = wash('gold on paper', P, (232, 176, 32), .95)
@@ -104,31 +113,38 @@ ROOF = wash('roof', I, (172, 68, 48), .9)
 RIB = wash('roof rib', P, (216, 132, 98), .85)
 PLASTER = wash('plaster', P, (236, 210, 156), .8)
 # Ground.
-GRASS = wash('grass', P, (146, 196, 104), .35)
-LEAF = wash('leaf', P, (88, 156, 66), .7)
-BARK = wash('bark', P, (126, 86, 52), .8)
-WATER = wash('water', P, (118, 170, 226), .45)
-DEEP = wash('deep water', P, (70, 122, 204), .6)
+GRASS = wash('grass', P, (104, 150, 72), .8)
+LEAF = wash('leaf', P, (66, 122, 50), .9)
+BARK = wash('bark', P, (98, 68, 42), .9)
+WATER = wash('water', P, (72, 122, 186), .75)
+DEEP = wash('deep water', P, (44, 82, 156), .85)
 SEA = wash('sea', I, (36, 76, 156), .9)
 FOAM = wash('foam', P, (112, 154, 218), .6)
 CRUST = wash('lava crust', I, (92, 28, 18), .95)
 GLOW = wash('lava glow', P, (255, 146, 36), .9)
-SAND = wash('sand', P, (236, 212, 138), .5)
-EARTH = wash('earth', P, (194, 160, 116), .4)
-MUD = wash('mud', P, (138, 116, 82), .5)
-ROAD = wash('road', P, (198, 192, 180), .5)
-PEAK = wash('peak', P, (164, 146, 124), .55)
-BOULDER = wash('boulder', P, (168, 158, 148), .6)
-STEP = wash('step', P, (196, 190, 180), .5)
-MOUND = wash('mound', P, (146, 168, 96), .5)
+SAND = wash('sand', P, (196, 172, 112), .8)
+EARTH = wash('earth', P, (140, 110, 78), .8)
+MUD = wash('mud', P, (98, 82, 58), .85)
+ROAD = wash('road', P, (142, 136, 124), .85)
+PEAK = wash('peak', P, (128, 116, 102), .85)
+BOULDER = wash('boulder', P, (136, 129, 119), .88)
+STEP = wash('step', P, (150, 143, 132), .92)
+MOUND = wash('mound', P, (96, 120, 66), .85)
 
+# paper is the drawing's own paper -- in a printed style the ground, the
+# floors and what the washes lie on, all one.  The coloured style is not
+# printed: what is unknown is black (void, which is also what a remembered
+# square fades towards), the floors are flagstones (paper), the lines are
+# the dark of mortar rather than ink, and the washes keep the colours they
+# have laid over white (base).
 PALETTES = {
     # Rulebook: brown-black ink on aged paper.
     'ink': {'paper': (236, 226, 199), 'ink': (38, 30, 24), 'grid': 0.42},
     # Module map: TSR's blue on white.
     'blue': {'paper': (247, 247, 242), 'ink': (44, 104, 176), 'grid': 0.42},
-    # The module map coloured in.
-    'colour': {'paper': (247, 247, 242), 'ink': (44, 104, 176), 'grid': 0.42,
+    # A dungeon in colour: stone on black.
+    'colour': {'paper': (122, 116, 106), 'base': (247, 247, 242),
+               'void': (0, 0, 0), 'ink': (34, 30, 27), 'grid': 0.35,
                'washes': True},
 }
 
@@ -209,12 +225,27 @@ def outline(t, lab, keep=None, code=I):
 
 # --- ground -----------------------------------------------------------------
 
+GRIT_AT = None
+
+
 def ground(t, pattern=None, base=P):
-    """The floor diamond, in a wash or a pattern, and the grid."""
+    """
+    The floor diamond, in a wash or a pattern, and the grid.  Bare floor has
+    grit on it, which only the coloured sheet shows.
+    """
+    global GRIT_AT
+    if GRIT_AT is None:
+        r = mt.Rand(1982)
+        GRIT_AT = {(r.below(TW), CY - HH + r.below(2 * HH)) for _ in range(40)}
     for y in range(TH):
         for x in range(TW):
             if in_diamond(x, y, CX, CY):
-                t.set(x, y, pattern(x, y) if pattern else base)
+                if pattern:
+                    t.set(x, y, pattern(x, y))
+                elif base == P and (x, y) in GRIT_AT:
+                    t.set(x, y, GRIT)
+                else:
+                    t.set(x, y, base)
     grid(t)
 
 
@@ -335,11 +366,17 @@ def ribs():
     return {(x, y) for x in range(TW) for y in range(TH) if ((x >> 1) + y) % 8 == 0}
 
 
+# The darker and lighter stones a face of each kind is laid with.
+TONES = {STONE: (STONE_LO, STONE_HI), DRESSED: (DRESSED_LO, DRESSED_HI)}
+
+
 def stones(rng, course=8, shade=False, fill=STONE):
     """
     Dressed stone: courses ruled across the face and joints at uneven
     intervals, a few chips, and on the side in shadow the engraver's hatching.
-    u runs along the face and v down it from the top.
+    u runs along the face and v down it from the top.  Some stones are a shade
+    darker or lighter than the rest, chosen by where they lie and not by the
+    random generator, so the rest of the drawing is not moved by it.
     """
     joints = []
     for _ in range(8):
@@ -359,6 +396,13 @@ def stones(rng, course=8, shade=False, fill=STONE):
             return I
         if shade and (x + y) % 4 == 0:
             return I
+        if fill in TONES:
+            n = sum(1 for j in joints[c % 8] if j <= iu)
+            tone = (c * 5 + n * 3 + course + shade) % 7
+            if tone < 2:
+                return TONES[fill][0]
+            if tone == 2:
+                return TONES[fill][1]
         return fill
     return f
 
@@ -380,7 +424,8 @@ def stars(rng, n):
 
 def materials():
     r = mt.Rand(1978)
-    granite = {'top': solid(ROCK), 'south': stones(r),
+    flecks = specks(mt.Rand(1981), 220)
+    granite = {'top': solid(ROCK, marks=flecks, mark=FLECK), 'south': stones(r),
                'east': stones(r, shade=True)}
     permanent = {
         'top': solid(ROCK, marks=ribs()),
@@ -900,17 +945,18 @@ def mix(a, b, k):
 def colours(pal, faded=False):
     """Every ink's colour in this palette; faded is remembered, in pencil."""
     paper, ink = pal['paper'], pal['ink']
+    base, void = pal.get('base', paper), pal.get('void', paper)
     grid = mix(ink, paper, 1 - pal['grid'])
     out = {T: (0, 0, 0, 0), P: paper, I: ink, G: grid}
     for n, (name, plain, colour, k) in enumerate(WASHES):
         if pal.get('washes') and colour:
-            out[4 + n] = mix(paper, colour, k)
+            out[4 + n] = mix(base, colour, k)
         else:
             out[4 + n] = out[plain]
     for code, c in out.items():
         if code != T:
             if faded:
-                c = mix(c, paper, .55)
+                c = mix(c, void, .55)
             out[code] = c + (255,)
     return out
 
@@ -979,7 +1025,7 @@ def map_text(index):
            # style's ink, and fades what is remembered towards its paper.
            '# style:<name>:<paper r:g:b>:<ink r:g:b>']
     for name, pal in PALETTES.items():
-        out.append('style:%s:%d:%d:%d:%d:%d:%d' % ((name,) + pal['paper']
+        out.append('style:%s:%d:%d:%d:%d:%d:%d' % ((name,) + pal.get('void', pal['paper'])
                                                    + pal['ink']))
     out.append('# text:<style>:<half width>:<half height>:<rise>')
     for name, (hw, hh, rise) in TEXT_STYLES.items():

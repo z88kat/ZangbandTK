@@ -590,10 +590,11 @@ How the window draws is set on the Display page of the Options window
   every square a diamond, walls standing up off the floor, and your character
   in the middle.  There are four styles of it.  Ink is black on cream, the way
   the old rulebooks were printed.  Blue is the blue of the old printed
-  adventure maps.  Colour is that blue map coloured in, with dark stone for
-  rock and each shop's door in the shop's own colour.  ASCII stands the letter
-  map itself up, so a wall is a stack of its ``#``; it needs the None tile set,
-  and switches to it while it's on and back again when you leave it.
+  adventure maps.  Colour is a dungeon in colour: stone walls and flagstone
+  floors on black, with each shop's door in the shop's own colour.  ASCII
+  stands the letter map itself up, so a wall is a stack of its ``#``; it needs
+  the None tile set, and switches to it while it's on and back again when you
+  leave it.
 
   In the other three, monsters, items and your character are the tile set's
   own pictures, standing on their squares.  Anything the set has no picture
