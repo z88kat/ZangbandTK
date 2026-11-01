@@ -68,6 +68,11 @@ enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
 static struct {
 	bool on;
 	bool dirty;
+	/*
+	 * Out of the world: in a shop, or the game over, where the map term
+	 * shows the shop or the scores and not the map.
+	 */
+	bool away;
 	char style[16];
 	unsigned char *lit, *dim;	/* the sheet as seen, and as remembered */
 	int w, h;
@@ -320,7 +325,7 @@ bool tcl_iso_map_cell(const term_data *t, int x, int y)
 {
 	const term *tm = &t->t;
 
-	if (!iso.on) return false;
+	if (!iso.on || iso.away) return false;
 	return y >= row_top_map[tm->sidebar_mode] && x >= col_map[tm->sidebar_mode]
 		&& y < tm->hgt - row_bottom_map[tm->sidebar_mode];
 }
@@ -859,11 +864,12 @@ static void iso_render(term_data *t)
 
 	/*
 	 * With no level in play -- the splash screen after New Game, a game not
-	 * yet loaded -- there is no map to draw, and what the term holds is text:
+	 * yet loaded -- or out of the world, in a shop or at the scores when the
+	 * game ends, there is no map to draw, and what the term holds is text:
 	 * shown as the flat map shows it, on black, and not on paper with a black
 	 * box behind each letter.
 	 */
-	if (!character_dungeon || !player || !cave || !player->cave) {
+	if (iso.away || !character_dungeon || !player || !cave || !player->cave) {
 		for (y = tp; y < b; y++)
 			memset(t->pix + ((size_t)y * t->pix_w + l) * 4, 0,
 				(size_t)(r - l) * 4);
@@ -1164,8 +1170,9 @@ void tcl_iso_cursor_show(const term_data *map, bool show)
 }
 
 /*
- * Something on the level changed, or the character moved.  A square drawn
- * again is drawn without whatever effect was kept for it.  When the character
+ * Something on the level changed, the character moved, or the game left the
+ * world or came back to it.  A square drawn again is drawn without whatever
+ * effect was kept for it.  When the character
  * moved, the term's rectangle is centred on it again, as center_player has
  * the flat map do: the view, which is centred on the character, shows what
  * the term holds, and the path an aimed bolt would take is drawn only there.
@@ -1174,6 +1181,8 @@ static void iso_notice(game_event_type type, game_event_data *data, void *user)
 {
 	(void)user;
 	iso.dirty = true;
+	if (type == EVENT_LEAVE_WORLD || type == EVENT_ENTER_WORLD)
+		iso.away = (type == EVENT_LEAVE_WORLD);
 	if (type == EVENT_MAP) {
 		int e = iso_effect_at(data->point);
 
@@ -1210,11 +1219,15 @@ static void iso_effect(wchar_t c, uint8_t a, int y, int x)
 /*
  * The game says when a square changes, or the character moves, wherever it
  * is -- not only inside the term's rectangle, which is all the term hears of.
+ * It says too when it leaves the world for a shop or the end of the game, and
+ * those are never removed, as main-tcl.c's store_notice explains.
  */
 void tcl_iso_events_init(void)
 {
 	event_add_handler(EVENT_MAP, iso_notice, NULL);
 	event_add_handler(EVENT_PLAYERMOVED, iso_notice, NULL);
+	event_add_handler(EVENT_LEAVE_WORLD, iso_notice, NULL);
+	event_add_handler(EVENT_ENTER_WORLD, iso_notice, NULL);
 	print_rel_hook = iso_effect;
 }
 
