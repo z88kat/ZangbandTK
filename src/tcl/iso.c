@@ -52,6 +52,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "player-calcs.h"
+#include "trap.h"
 #include "ui-map.h"
 #include "ui-output.h"
 #include "ui-prefs.h"
@@ -64,6 +65,7 @@ enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
 #define ISO_HH 16		/* half its height */
 #define ISO_FADE 120		/* of 256: how far a remembered square fades */
 #define ISO_EFFECTS 256		/* as many squares as a ball can cover */
+#define ISO_FLAT .8		/* how much of its square a thing on the floor covers */
 
 static struct {
 	bool on;
@@ -384,9 +386,10 @@ static void iso_blit(term_data *t, const unsigned char *src, int cell,
 }
 
 /*
- * A tile of the current set, stood on the diamond whose middle is (cx, cy),
- * 32 pixels whatever the set's own size.  A set with no transparency -- Neon
- * draws on black -- has its black taken as the background.
+ * Where tile a, c of the current set is on its sheet, and the colour of the
+ * outline every figure gets, faded when dim; the sheet, or NULL.  A set with
+ * no transparency -- Neon draws on black -- has its black taken as the
+ * background, and *opaque says so.
  *
  * Every figure is outlined, one pixel all round.  The sets were drawn to be
  * seen on black, and on paper their palest figures -- all of Neon, and any
@@ -394,50 +397,80 @@ static void iso_blit(term_data *t, const unsigned char *src, int cell,
  * keeps a rim of its own black, like a sign cut out of its board; the rest
  * are outlined in the style's ink.
  */
-static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
-		int l, int tp, int r, int b)
+static const unsigned char *iso_tile(int a, int c, int *sx, int *sy,
+		int *tw, int *th, int *sheet_w, bool *opaque, unsigned char *edge,
+		bool dim)
 {
-	int tw, th, sx, sy, x, y, k, ox = cx - 16, oy = cy + 6 - 32;
 	static const unsigned char *checked = NULL;
-	static bool opaque = false;
-	bool shape[34][34];
-	unsigned char edge[3];
-	int sheet_w, sheet_h;
-	const unsigned char *sheet = tcl_tile_sheet(&sheet_w, &sheet_h);
+	static bool all_opaque = false;
+	int sheet_h, k;
+	const unsigned char *sheet = tcl_tile_sheet(sheet_w, &sheet_h);
 
-	if (!sheet || !current_graphics_mode) return;
-	tw = current_graphics_mode->cell_width;
-	th = current_graphics_mode->cell_height;
-	sx = (c & 0x7f) * tw;
-	sy = (a & 0x7f) * th;
-	if (sx + tw > sheet_w || sy + th > sheet_h) return;
+	if (!sheet || !current_graphics_mode) return NULL;
+	*tw = current_graphics_mode->cell_width;
+	*th = current_graphics_mode->cell_height;
+	*sx = (c & 0x7f) * *tw;
+	*sy = (a & 0x7f) * *th;
+	if (*sx + *tw > *sheet_w || *sy + *th > sheet_h) return NULL;
 
 	if (checked != sheet) {
-		size_t i, n = (size_t)sheet_w * sheet_h;
+		size_t i, n = (size_t)*sheet_w * sheet_h;
 
-		opaque = true;
-		for (i = 0; i < n && opaque; i++)
-			if (sheet[i * 4 + 3] != 255) opaque = false;
+		all_opaque = true;
+		for (i = 0; i < n && all_opaque; i++)
+			if (sheet[i * 4 + 3] != 255) all_opaque = false;
 		checked = sheet;
 	}
-
-	/* Where the figure is, with a pixel's margin all round for its outline. */
-	memset(shape, 0, sizeof(shape));
-	for (y = 0; y < 32; y++)
-		for (x = 0; x < 32; x++) {
-			const unsigned char *s = sheet + ((size_t)(sy + y * th / 32)
-				* sheet_w + sx + x * tw / 32) * 4;
-
-			shape[y + 1][x + 1] = opaque ? s[0] + s[1] + s[2] >= 48
-				: s[3] >= 128;
-		}
+	*opaque = all_opaque;
 
 	for (k = 0; k < 3; k++) {
-		edge[k] = opaque ? 0 : iso.ink[k];
+		edge[k] = all_opaque ? 0 : iso.ink[k];
 		if (dim)
 			edge[k] = (unsigned char)(edge[k]
 				+ ((iso.paper[k] - edge[k]) * ISO_FADE >> 8));
 	}
+	return sheet;
+}
+
+/* Whether a pixel of the sheet is part of the figure, not its background. */
+static bool iso_figure(const unsigned char *s, bool opaque)
+{
+	return opaque ? s[0] + s[1] + s[2] >= 48 : s[3] >= 128;
+}
+
+/* A pixel of a figure, faded to the paper when it is only remembered. */
+static void iso_figure_pixel(unsigned char *d, const unsigned char *s,
+		bool dim)
+{
+	int k;
+
+	for (k = 0; k < 3; k++)
+		d[k] = dim ? (unsigned char)(s[k]
+			+ ((iso.paper[k] - s[k]) * ISO_FADE >> 8)) : s[k];
+	d[3] = 255;
+}
+
+/*
+ * A tile of the current set, stood on the diamond whose middle is (cx, cy),
+ * 32 pixels whatever the set's own size.
+ */
+static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
+		int l, int tp, int r, int b)
+{
+	int tw, th, sx, sy, x, y, ox = cx - 16, oy = cy + 6 - 32, sheet_w;
+	bool shape[34][34], opaque;
+	unsigned char edge[3];
+	const unsigned char *sheet = iso_tile(a, c, &sx, &sy, &tw, &th,
+		&sheet_w, &opaque, edge, dim);
+
+	if (!sheet) return;
+
+	/* Where the figure is, with a pixel's margin all round for its outline. */
+	memset(shape, 0, sizeof(shape));
+	for (y = 0; y < 32; y++)
+		for (x = 0; x < 32; x++)
+			shape[y + 1][x + 1] = iso_figure(sheet + ((size_t)(sy
+				+ y * th / 32) * sheet_w + sx + x * tw / 32) * 4, opaque);
 
 	for (y = 0; y < 34; y++) {
 		int py = oy + y - 1;
@@ -450,14 +483,9 @@ static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
 			if (px < l || px >= r) continue;
 			d = t->pix + ((size_t)py * t->pix_w + px) * 4;
 			if (shape[y][x]) {
-				const unsigned char *s = sheet + ((size_t)(sy
+				iso_figure_pixel(d, sheet + ((size_t)(sy
 					+ (y - 1) * th / 32) * sheet_w + sx
-					+ (x - 1) * tw / 32) * 4;
-
-				for (k = 0; k < 3; k++)
-					d[k] = dim ? (unsigned char)(s[k]
-						+ ((iso.paper[k] - s[k]) * ISO_FADE >> 8)) : s[k];
-				d[3] = 255;
+					+ (x - 1) * tw / 32) * 4, dim);
 			} else if (((y > 0 && shape[y - 1][x])
 					|| (y < 33 && shape[y + 1][x])
 					|| (x > 0 && shape[y][x - 1])
@@ -481,8 +509,13 @@ static int iso_effect_at(struct loc grid)
 	return -1;
 }
 
-/* What the map says stands on a square: a, c over ta, tc. */
-static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
+/*
+ * What the map says stands on a square: a, c over ta, tc.  True when that is
+ * a trap or a rune the character knows of, with nothing on it, which lies on
+ * the floor rather than standing on it.  A web stands: it hangs across the
+ * square.
+ */
+static bool iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
 {
 	struct grid_data g;
 	wchar_t ch, tch;
@@ -491,6 +524,11 @@ static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
 	grid_data_as_text(&g, a, &ch, ta, &tch);
 	*c = ch;
 	*tc = tch;
+	return g.trap && !g.hallucinate && !g.m_idx && !g.is_player
+		&& !g.first_kind && !g.unseen_object && !g.unseen_money
+		&& !trf_has(g.trap->flags, TRF_WEB)
+		&& (trf_has(g.trap->flags, TRF_VISIBLE)
+			|| trf_has(g.trap->flags, TRF_GLYPH));
 }
 
 /*
@@ -503,10 +541,11 @@ static void iso_map_says(struct loc grid, int *a, int *c, int *ta, int *tc)
  * written over the square, and the map's answer is used instead.  Outside
  * it, a bolt's tile is one of the kept effects, and a bolt's letter is drawn
  * over the square as the term's are.  *cell is the term cell a letter of the
- * map's own came from, or -1.
+ * map's own came from, or -1, and *flat says it is a trap or a rune, lying on
+ * the floor.
  */
 static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
-		int *cell)
+		int *cell, bool *flat)
 {
 	const term *tm = &t->t;
 	int left = col_map[tm->sidebar_mode], top = row_top_map[tm->sidebar_mode];
@@ -518,21 +557,24 @@ static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
 	*cell = -1;
 	if (tm->scr && gx >= 0 && gy >= 0 && gx < cols && gy < rows) {
 		int x = left + gx * tile_width, y = top + gy * tile_height;
+		int ma, mc, mta, mtc;
+		bool lies = iso_map_says(grid, &ma, &mc, &mta, &mtc);
 
 		*a = tm->scr->a[y][x];
 		*c = tm->scr->c[y][x];
 		ta = tm->scr->ta[y][x];
 		tc = tm->scr->tc[y][x];
+		*flat = lies && *a == ma && *c == mc;
 		if (!(*a & 0x80)) {
-			int ma, mc;
-
 			/*
 			 * Text the map would not draw is something drawn over the
 			 * square -- the path an aimed bolt would take -- which the
 			 * view draws over it in turn; what stands there is still the
 			 * map's.
 			 */
-			iso_map_says(grid, &ma, &mc, &ta, &tc);
+			ta = mta;
+			tc = mtc;
+			*flat = lies;
 			if (ma != *a || mc != *c) {
 				*a = ma;
 				*c = mc;
@@ -543,10 +585,11 @@ static int iso_fg(const term_data *t, struct loc grid, int *a, int *c,
 	} else {
 		int e = iso_effect_at(grid);
 
-		iso_map_says(grid, a, c, &ta, &tc);
+		*flat = iso_map_says(grid, a, c, &ta, &tc);
 		if (e >= 0 && (iso.effect[e].a & 0x80)) {
 			*a = iso.effect[e].a;
 			*c = iso.effect[e].c;
+			*flat = false;
 		}
 	}
 	if (*a == ta && *c == tc) return ISO_FG_NONE;
@@ -574,12 +617,73 @@ static bool iso_map_text(const term_data *t, int x, int y)
 }
 
 /*
- * A character of the game's, at twice the font's size, its top left at
- * (x0, y0): in the game's colour attr, at bright/256 of its brightness, and
- * faded towards the paper when what it stands for is only remembered.
+ * A trap or a rune: a tile laid on the floor rather than stood on it.  Its
+ * picture is drawn onto the square's diamond, a little in from the grid, as
+ * something painted on the floor is seen from here -- its top towards the
+ * square's north side -- and outlined as the standing figures are.
  */
-static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
-		int bright, bool dim, int l, int tp, int r, int b)
+static void iso_flat(term_data *t, int a, int c, int cx, int cy, bool dim,
+		int l, int tp, int r, int b)
+{
+	enum { W = 2 * ISO_HW + 2, H = 2 * ISO_HH + 2 };
+	const unsigned char *at[H][W];
+	bool shape[H][W], opaque;
+	int tw, th, sx, sy, x, y, sheet_w;
+	unsigned char edge[3];
+	const unsigned char *sheet = iso_tile(a, c, &sx, &sy, &tw, &th,
+		&sheet_w, &opaque, edge, dim);
+
+	if (!sheet) return;
+
+	/*
+	 * Each pixel's place on the diamond, and so in the picture: the
+	 * diamond's top corner is the picture's top left, its right corner the
+	 * top right.
+	 */
+	for (y = 0; y < H; y++)
+		for (x = 0; x < W; x++) {
+			double da = (x - W / 2 + .5) / (ISO_HW * ISO_FLAT);
+			double db = (y - H / 2 + .5) / (ISO_HH * ISO_FLAT);
+			double u = (da + db + 1) / 2, v = (db - da + 1) / 2;
+
+			shape[y][x] = false;
+			if (u < 0 || u >= 1 || v < 0 || v >= 1) continue;
+			at[y][x] = sheet + ((size_t)(sy + (int)(v * th)) * sheet_w
+				+ sx + (int)(u * tw)) * 4;
+			shape[y][x] = iso_figure(at[y][x], opaque);
+		}
+
+	for (y = 0; y < H; y++) {
+		int py = cy - H / 2 + y;
+
+		if (py < tp || py >= b) continue;
+		for (x = 0; x < W; x++) {
+			int px = cx - W / 2 + x;
+			unsigned char *d;
+
+			if (px < l || px >= r) continue;
+			d = t->pix + ((size_t)py * t->pix_w + px) * 4;
+			if (shape[y][x]) {
+				iso_figure_pixel(d, at[y][x], dim);
+			} else if ((y > 0 && shape[y - 1][x])
+					|| (y < H - 1 && shape[y + 1][x])
+					|| (x > 0 && shape[y][x - 1])
+					|| (x < W - 1 && shape[y][x + 1])) {
+				memcpy(d, edge, 3);
+				d[3] = 255;
+			}
+		}
+	}
+}
+
+/*
+ * A character of the game's, twice the font's width and high pixels high, its
+ * top left at (x0, y0): in the game's colour attr, at bright/256 of its
+ * brightness, and faded towards the paper when what it stands for is only
+ * remembered.
+ */
+static void iso_glyph_high(term_data *t, int ch, int attr, int x0, int y0,
+		int high, int bright, bool dim, int l, int tp, int r, int b)
 {
 	unsigned char rgb[3];
 	int colour = attr % MAX_COLORS, x, y, k;
@@ -592,10 +696,10 @@ static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
 			rgb[k] = (unsigned char)(rgb[k]
 				+ ((iso.paper[k] - rgb[k]) * ISO_FADE >> 8));
 	}
-	for (y = 0; y < iso.gh * 2; y++) {
+	for (y = 0; y < high; y++) {
 		if (y0 + y < tp || y0 + y >= b) continue;
 		for (x = 0; x < iso.gw * 2; x++) {
-			const unsigned char *s = iso.glyph + ((size_t)(y / 2)
+			const unsigned char *s = iso.glyph + ((size_t)(y * iso.gh / high)
 				* iso.gstride + (ch - iso.gfirst) * iso.gw + x / 2) * 4;
 			unsigned char *d;
 
@@ -605,6 +709,13 @@ static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
 			d[3] = 255;
 		}
 	}
+}
+
+/* The same at twice the font's size. */
+static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
+		int bright, bool dim, int l, int tp, int r, int b)
+{
+	iso_glyph_high(t, ch, attr, x0, y0, iso.gh * 2, bright, dim, l, tp, r, b);
 }
 
 /*
@@ -648,11 +759,51 @@ static void iso_counter(term_data *t, int a, int c, int cx, int cy, bool dim,
 }
 
 /*
+ * A counter lying on the floor, for a trap or a rune the set has no picture
+ * of: the disc seen from here, half as deep as it is wide, and the letter on
+ * it at three quarters of its height -- at half it can't be read.
+ */
+static void iso_flat_counter(term_data *t, int a, int c, int cx, int cy,
+		bool dim, int l, int tp, int r, int b)
+{
+	unsigned char disc[3] = { 24, 24, 28 }, rim[3];
+	int x, y, k;
+
+	for (k = 0; k < 3; k++) {
+		rim[k] = iso.ink[k];
+		if (dim) {
+			disc[k] = (unsigned char)(disc[k]
+				+ ((iso.paper[k] - disc[k]) * ISO_FADE >> 8));
+			rim[k] = (unsigned char)(rim[k]
+				+ ((iso.paper[k] - rim[k]) * ISO_FADE >> 8));
+		}
+	}
+
+	for (y = -8; y < 8; y++) {
+		if (cy + y < tp || cy + y >= b) continue;
+		for (x = -15; x < 15; x++) {
+			double dx = (x + .5) / 15, dy = (y + .5) / 8;
+			double e = dx * dx + dy * dy;
+			unsigned char *d;
+
+			if (e > 1 || cx + x < l || cx + x >= r) continue;
+			d = t->pix + ((size_t)(cy + y) * t->pix_w + cx + x) * 4;
+			memcpy(d, e > .7 ? rim : disc, 3);
+			d[3] = 255;
+		}
+	}
+
+	iso_glyph_high(t, c, a, cx - iso.gw, cy - iso.gh * 3 / 4, iso.gh * 3 / 2,
+		256, dim, l, tp, r, b);
+}
+
+/*
  * The characters the map shows on a square, a and c over the terrain's ta and
  * tc: from the term where the game drew them, which brings bolts with them,
- * and from the map and the kept effects beyond its rectangle.
+ * and from the map and the kept effects beyond its rectangle.  True when what
+ * is shown is a trap or a rune, lying on the floor.
  */
-static void iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
+static bool iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 		int *ta, int *tc)
 {
 	const term *tm = &t->t;
@@ -664,18 +815,24 @@ static void iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 	if (tm->scr && gx >= 0 && gy >= 0 && gx < cols && gy < rows) {
 		int x = left + gx * tile_width, y = top + gy * tile_height;
 
+		int ma, mc, mta, mtc;
+		bool lies = iso_map_says(grid, &ma, &mc, &mta, &mtc);
+
 		*a = tm->scr->a[y][x];
 		*c = tm->scr->c[y][x];
 		*ta = tm->scr->ta[y][x];
 		*tc = tm->scr->tc[y][x];
+		return lies && *a == ma && *c == mc;
 	} else {
 		int e = iso_effect_at(grid);
+		bool lies = iso_map_says(grid, a, c, ta, tc);
 
-		iso_map_says(grid, a, c, ta, tc);
 		if (e >= 0) {
 			*a = iso.effect[e].a;
 			*c = iso.effect[e].c;
+			return false;
 		}
+		return lies;
 	}
 }
 
@@ -683,7 +840,8 @@ static void iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
  * A square of the ASCII view: its terrain's character, stood up as high as
  * the terrain is -- a wall three deep, darkest at the foot, so that a run of
  * them reads as height -- and on it whatever the map shows there, raised.
- * Floors sit back, dim, so that what stands on them does not.
+ * Floors sit back, dim, so that what stands on them does not.  A trap or a
+ * rune is not raised: it takes the floor's place.
  */
 static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 		bool seen, bool bright, bool cut, int l, int tp, int r, int b)
@@ -691,8 +849,7 @@ static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 	static const int shade3[] = { 115, 180, 256 }, shade2[] = { 154, 256 };
 	int a, c, ta, tc, feat = iso_known_feat(grid), n = 0, i;
 	int x0 = cx - iso.gw, y0 = cy - iso.gh;
-
-	iso_text_of(t, grid, &a, &c, &ta, &tc);
+	bool flat = iso_text_of(t, grid, &a, &c, &ta, &tc);
 
 	if (feat != FEAT_NONE) {
 		const struct feature *f = &f_info[feat];
@@ -701,7 +858,7 @@ static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 		else if (!tf_has(f->flags, TF_PASSABLE)) n = 2;
 		else n = 1;
 		if (cut) n = 1;
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < n - flat; i++) {
 			int k = (n == 3) ? shade3[i] : (n == 2) ? shade2[i]
 				: tf_has(f->flags, TF_FLOOR) ? 115 : 256;
 
@@ -710,7 +867,10 @@ static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 		}
 	}
 
-	if (a != ta || c != tc)
+	if (flat)
+		iso_glyph(t, c, a, x0, y0 - (n ? n - 1 : 0) * iso.rise, 256, !seen,
+			l, tp, r, b);
+	else if (a != ta || c != tc)
 		iso_glyph(t, c, a, x0, y0 - (n ? n : 1) * iso.rise, 256, !seen,
 			l, tp, r, b);
 }
@@ -951,7 +1111,7 @@ static void iso_render(term_data *t)
 		for (d = -dmax; d <= dmax; d++) {
 			struct loc grid;
 			int dx, dy, cx, cy, feat, a, c, fg, tcell, pdx, pdy;
-			bool seen, bright, cut;
+			bool seen, bright, cut, flat;
 
 			if ((s + d) & 1) continue;
 			dx = (s + d) / 2;
@@ -1029,11 +1189,16 @@ static void iso_render(term_data *t)
 				}
 			}
 
-			fg = iso_fg(t, grid, &a, &c, &tcell);
-			if (fg == ISO_FG_TILE) {
+			fg = iso_fg(t, grid, &a, &c, &tcell, &flat);
+			if (fg == ISO_FG_TILE && flat) {
+				iso_flat(t, a, c, cx, cy, !seen, l, tp, r, b);
+			} else if (fg == ISO_FG_TILE) {
 				iso_sprite(t, a, c, cx, cy, !seen, l, tp, r, b);
 			} else if (fg == ISO_FG_LETTER) {
-				iso_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
+				if (flat)
+					iso_flat_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
+				else
+					iso_counter(t, a, c, cx, cy, !seen, l, tp, r, b);
 				if (tcell >= 0) iso.letter[tcell] = 1;
 			}
 		}

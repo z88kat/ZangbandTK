@@ -599,7 +599,9 @@ How the window draws is set on the Display page of the Options window
 
   In the other three, monsters, items and your character are the tile set's
   own pictures, standing on their squares.  Anything the set has no picture
-  for stands there as its letter on a black disc.  Places you haven't found
+  for stands there as its letter on a black disc.  Traps and runes lie flat on
+  the floor instead, and in ASCII they take the place of the floor's dot.
+  Places you haven't found
   aren't drawn at all, and places you remember are fainter, as they are on the
   flat map.  Walls just in front of you are cut down to their footings so they
   never hide you.  The mouse works as it does on the flat map, and the square
