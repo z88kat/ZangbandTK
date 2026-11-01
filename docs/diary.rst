@@ -94,6 +94,12 @@ ruled down its end, so a run of wall still read as a row of blocks, and that lin
 is left off now wherever the wall carries on. The town's plaster buildings lost
 their seams the same way.
 
+"Shop doors aren't cut down" was a note from the prototype, when a shop was one
+drawing, and by now it was half true. Shops were cut down, but standing in the
+street behind one showed a black slot beside you: the square next to the cut-down
+one still hid the face it used to share with it. Open doorways, though, had never
+been cut down at all, and their lintel could cover you. Both are fixed.
+
 
 30 October 2026 — an isometric map, drawn from nothing
 =======================================================
