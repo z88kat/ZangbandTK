@@ -972,6 +972,14 @@ bool tcl_png_load(const char *path, unsigned char **out, int *w, int *h)
 	return png_load(path, out, w, h);
 }
 
+static int tile_scale;
+
+/* The Display page's tile size, 1 to 4, which the isometric view zooms by. */
+int tcl_tile_scale(void)
+{
+	return tile_scale;
+}
+
 const unsigned char *tcl_tile_sheet(int *w, int *h)
 {
 	*w = sheet_w;
@@ -11059,6 +11067,8 @@ static int objcmd_tilescale(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			tile_height = tile_scale;
 			if (character_dungeon) do_cmd_redraw();
 		}
+		/* The isometric view zooms by it whatever the tile set. */
+		tcl_iso_redraw();
 	} else if (objc != 1) {
 		Tcl_WrongNumArgs(ip, 1, objv, "?scale?");
 		return TCL_ERROR;

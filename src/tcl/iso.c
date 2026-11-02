@@ -121,6 +121,13 @@ static struct {
 	 */
 	bool text;
 	int hw, hh, rise;
+	/*
+	 * How many pixels of the pane each pixel of the drawing takes, across and
+	 * down: the Display page's tile size, as the flat map's tiles have it.
+	 * The drawing is the same at every size, its pixels only larger, and hw
+	 * and hh are the zoomed ones.  The ASCII view is the font's size instead.
+	 */
+	int zoom;
 	int text_hw, text_hh, text_rise;
 	/*
 	 * The ASCII view's characters are canvas text items in the map's own
@@ -490,6 +497,43 @@ static bool iso_is_wall(struct loc grid)
 }
 
 /*
+ * The zoom, from the Display page's tile size, and the lattice with it.
+ * The ASCII view is spaced by its font, and has no other.
+ */
+static void iso_zoom_set(void)
+{
+	if (iso.text) {
+		iso.zoom = 1;
+		return;
+	}
+	iso.zoom = MAX(1, MIN(4, tcl_tile_scale()));
+	iso.hw = ISO_HW * iso.zoom;
+	iso.hh = ISO_HH * iso.zoom;
+}
+
+/*
+ * A pixel of the drawing, its top left at (x, y) on the pane: a block of
+ * zoom by zoom pixels there, in rgb.
+ */
+static void iso_plot(term_data *t, int x, int y, const unsigned char *rgb,
+		int l, int tp, int r, int b)
+{
+	int i, j;
+
+	for (j = 0; j < iso.zoom; j++) {
+		unsigned char *d;
+
+		if (y + j < tp || y + j >= b) continue;
+		d = t->pix + ((size_t)(y + j) * t->pix_w + x) * 4;
+		for (i = 0; i < iso.zoom; i++, d += 4) {
+			if (x + i < l || x + i >= r) continue;
+			memcpy(d, rgb, 3);
+			d[3] = 255;
+		}
+	}
+}
+
+/*
  * A cell of the sheet, its top left at (ox, oy).  Most of a tile is clear --
  * a floor is a diamond at the foot of a cell three times its height -- so
  * each row is drawn only where it has anything, and copied whole where every
@@ -504,6 +548,21 @@ static void iso_blit(term_data *t, const unsigned char *src, int cell,
 	if (cell < 0 || cell >= iso.cells || sx + iso.tw > iso.w
 			|| sy + iso.th > iso.h)
 		return;
+	if (iso.zoom > 1) {
+		for (y = 0; y < iso.th; y++) {
+			const struct iso_span *sp = &iso.span[(size_t)cell * iso.th + y];
+			const unsigned char *s = src + ((size_t)(sy + y) * iso.w + sx
+				+ sp->x0) * 4;
+
+			if (oy + (y + 1) * iso.zoom <= tp || oy + y * iso.zoom >= b)
+				continue;
+			for (x = sp->x0; x < sp->x1; x++, s += 4)
+				if (s[3])
+					iso_plot(t, ox + x * iso.zoom, oy + y * iso.zoom, s,
+						l, tp, r, b);
+		}
+		return;
+	}
 	for (y = 0; y < iso.th; y++) {
 		const struct iso_span *sp = &iso.span[(size_t)cell * iso.th + y];
 		const unsigned char *s;
@@ -599,7 +658,8 @@ static void iso_figure_pixel(unsigned char *d, const unsigned char *s,
 static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
 		int l, int tp, int r, int b)
 {
-	int tw, th, sx, sy, x, y, ox = cx - 16, oy = cy + 6 - 32, sheet_w;
+	int k = iso.zoom, tw, th, sx, sy, x, y, sheet_w;
+	int ox = cx - 16 * k, oy = cy + (6 - 32) * k;
 	bool shape[34][34], opaque;
 	unsigned char edge[3];
 	const unsigned char *sheet = iso_tile(a, c, &sx, &sy, &tw, &th,
@@ -615,25 +675,23 @@ static void iso_sprite(term_data *t, int a, int c, int cx, int cy, bool dim,
 				+ y * th / 32) * sheet_w + sx + x * tw / 32) * 4, opaque);
 
 	for (y = 0; y < 34; y++) {
-		int py = oy + y - 1;
+		int py = oy + (y - 1) * k;
 
-		if (py < tp || py >= b) continue;
+		if (py + k <= tp || py >= b) continue;
 		for (x = 0; x < 34; x++) {
-			int px = ox + x - 1;
-			unsigned char *d;
+			int px = ox + (x - 1) * k;
+			unsigned char d[4];
 
-			if (px < l || px >= r) continue;
-			d = t->pix + ((size_t)py * t->pix_w + px) * 4;
 			if (shape[y][x]) {
 				iso_figure_pixel(d, sheet + ((size_t)(sy
 					+ (y - 1) * th / 32) * sheet_w + sx
 					+ (x - 1) * tw / 32) * 4, dim);
+				iso_plot(t, px, py, d, l, tp, r, b);
 			} else if (((y > 0 && shape[y - 1][x])
 					|| (y < 33 && shape[y + 1][x])
 					|| (x > 0 && shape[y][x - 1])
 					|| (x < 33 && shape[y][x + 1]))) {
-				memcpy(d, edge, 3);
-				d[3] = 255;
+				iso_plot(t, px, py, edge, l, tp, r, b);
 			}
 		}
 	}
@@ -796,23 +854,21 @@ static void iso_flat(term_data *t, int a, int c, int cx, int cy, bool dim,
 		}
 
 	for (y = 0; y < H; y++) {
-		int py = cy - H / 2 + y;
+		int py = cy + (y - H / 2) * iso.zoom;
 
-		if (py < tp || py >= b) continue;
+		if (py + iso.zoom <= tp || py >= b) continue;
 		for (x = 0; x < W; x++) {
-			int px = cx - W / 2 + x;
-			unsigned char *d;
+			int px = cx + (x - W / 2) * iso.zoom;
+			unsigned char d[4];
 
-			if (px < l || px >= r) continue;
-			d = t->pix + ((size_t)py * t->pix_w + px) * 4;
 			if (shape[y][x]) {
 				iso_figure_pixel(d, at[y][x], dim);
+				iso_plot(t, px, py, d, l, tp, r, b);
 			} else if ((y > 0 && shape[y - 1][x])
 					|| (y < H - 1 && shape[y + 1][x])
 					|| (x > 0 && shape[y][x - 1])
 					|| (x < W - 1 && shape[y][x + 1])) {
-				memcpy(d, edge, 3);
-				d[3] = 255;
+				iso_plot(t, px, py, edge, l, tp, r, b);
 			}
 		}
 	}
@@ -839,16 +895,14 @@ static void iso_glyph_high(term_data *t, int ch, int attr, int x0, int y0,
 				+ ((iso.paper[k] - rgb[k]) * ISO_FADE >> 8));
 	}
 	for (y = 0; y < high; y++) {
-		if (y0 + y < tp || y0 + y >= b) continue;
+		if (y0 + (y + 1) * iso.zoom <= tp || y0 + y * iso.zoom >= b) continue;
 		for (x = 0; x < iso.gw * 2; x++) {
 			const unsigned char *s = iso.glyph + ((size_t)(y * iso.gh / high)
 				* iso.gstride + (ch - iso.gfirst) * iso.gw + x / 2) * 4;
-			unsigned char *d;
 
-			if (s[3] < 128 || x0 + x < l || x0 + x >= r) continue;
-			d = t->pix + ((size_t)(y0 + y) * t->pix_w + x0 + x) * 4;
-			memcpy(d, rgb, 3);
-			d[3] = 255;
+			if (s[3] >= 128)
+				iso_plot(t, x0 + x * iso.zoom, y0 + y * iso.zoom, rgb,
+					l, tp, r, b);
 		}
 	}
 }
@@ -899,25 +953,23 @@ static void iso_counter(term_data *t, int a, int c, int cx, int cy, bool dim,
 		int l, int tp, int r, int b)
 {
 	unsigned char disc[3], ring[3], rim[3];
-	int x, y;
-	int ox = cx - 12, oy = cy - 24;
+	int k = iso.zoom, x, y;
+	int ox = cx - 12 * k, oy = cy - 24 * k;
 
 	iso_counter_colours(dim, disc, ring, rim);
 	for (y = 0; y < 24; y++) {
-		if (oy + y < tp || oy + y >= b) continue;
 		for (x = 0; x < 24; x++) {
 			double dx = x + .5 - 12, dy = y + .5 - 12, d2 = dx * dx + dy * dy;
-			unsigned char *d;
 
-			if (d2 > 144 || ox + x < l || ox + x >= r) continue;
-			d = t->pix + ((size_t)(oy + y) * t->pix_w + ox + x) * 4;
-			memcpy(d, d2 > 110 ? rim : d2 > 81 ? ring : disc, 3);
-			d[3] = 255;
+			if (d2 > 144) continue;
+			iso_plot(t, ox + x * k, oy + y * k,
+				d2 > 110 ? rim : d2 > 81 ? ring : disc, l, tp, r, b);
 		}
 	}
 
 	/* The letter, in the middle of the disc. */
-	iso_glyph(t, c, a, cx - iso.gw, cy - 12 - iso.gh, 256, dim, l, tp, r, b);
+	iso_glyph(t, c, a, cx - iso.gw * k, cy - (12 + iso.gh) * k, 256, dim,
+		l, tp, r, b);
 }
 
 /*
@@ -934,21 +986,19 @@ static void iso_flat_counter(term_data *t, int a, int c, int cx, int cy,
 	iso_counter_colours(dim, disc, ring, rim);
 
 	for (y = -8; y < 8; y++) {
-		if (cy + y < tp || cy + y >= b) continue;
 		for (x = -15; x < 15; x++) {
 			double dx = (x + .5) / 15, dy = (y + .5) / 8;
 			double e = dx * dx + dy * dy;
-			unsigned char *d;
 
-			if (e > 1 || cx + x < l || cx + x >= r) continue;
-			d = t->pix + ((size_t)(cy + y) * t->pix_w + cx + x) * 4;
-			memcpy(d, e > .78 ? rim : e > .55 ? ring : disc, 3);
-			d[3] = 255;
+			if (e > 1) continue;
+			iso_plot(t, cx + x * iso.zoom, cy + y * iso.zoom,
+				e > .78 ? rim : e > .55 ? ring : disc, l, tp, r, b);
 		}
 	}
 
-	iso_glyph_high(t, c, a, cx - iso.gw, cy - iso.gh * 3 / 4, iso.gh * 3 / 2,
-		256, dim, l, tp, r, b);
+	iso_glyph_high(t, c, a, cx - iso.gw * iso.zoom,
+		cy - iso.gh * 3 / 4 * iso.zoom, iso.gh * 3 / 2, 256, dim,
+		l, tp, r, b);
 }
 
 /*
@@ -1235,7 +1285,8 @@ static void iso_over(term_data *t, struct loc grid, struct loc centre, int c,
 	iso_view(t, &ll, &ttp, &rr, &bb, &vx, &vy);
 	cx = vx + (dx - dy) * iso.hw;
 	cy = vy + (dx + dy) * iso.hh;
-	iso_glyph(t, c, a, cx - iso.gw, cy - iso.gh - 8, 256, false, l, tp, r, b);
+	iso_glyph(t, c, a, cx - iso.gw * iso.zoom, cy - (iso.gh + 8) * iso.zoom,
+		256, false, l, tp, r, b);
 }
 
 /*
@@ -1403,6 +1454,7 @@ static void iso_render(term_data *t)
 	 * Back to front: by distance down the screen, s = dx + dy.  The
 	 * squares on one such line sit side by side and never overlap.
 	 */
+	iso_zoom_set();
 	iso_text_lattice(t);
 	smax = (b - tp) / 2 / iso.hh + 6;
 	dmax = (r - l) / 2 / iso.hw + 3;
@@ -1464,7 +1516,8 @@ static void iso_render(term_data *t)
 						| iso_cut(loc(grid.x, grid.y - 1)) * 2
 						| iso_cut(loc(grid.x + 1, grid.y)) * 4
 						| iso_cut(loc(grid.x, grid.y + 1)) * 8);
-				int ox = cx - iso.tw / 2, oy = cy + ISO_HH - iso.th;
+				int ox = cx - iso.tw * iso.zoom / 2;
+				int oy = cy + (ISO_HH - iso.th) * iso.zoom;
 
 				if (!player->depth && iso.skind[feat]) {
 					kind = iso.skind[feat];
@@ -1660,6 +1713,7 @@ bool tcl_iso_set(const char *style, const term_data *map, char *err,
 		return false;
 	}
 	iso.map = map;
+	iso_zoom_set();
 	if (map) iso_text_lattice(map);
 	if (get_panel_hook != iso_get_panel) {
 		iso.old_get_panel = get_panel_hook;

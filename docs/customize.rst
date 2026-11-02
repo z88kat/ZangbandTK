@@ -585,7 +585,9 @@ How the window draws is set on the Display page of the Options window
 
 * **Tile set** chooses the graphical tiles, or None to draw the map in letters.
 * **Tile size** draws the map's tiles Small, Medium or Large.  The overhead map
-  uses the same size, so its tiles grow too.
+  uses the same size, so its tiles grow too, and so does the isometric view:
+  Medium draws it twice as large and Large three times, every pixel of it.
+  The ASCII view is the exception, since its size is its font's.
 * **Map view** draws the map flat, as it always has been, or isometrically:
   every square a diamond, walls standing up off the floor, and your character
   in the middle, or near it, by the *Center map continuously* option.  There
