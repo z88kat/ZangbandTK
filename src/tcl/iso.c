@@ -815,6 +815,35 @@ static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
 }
 
 /*
+ * A counter's colours: the black of its disc, the light ring round the disc,
+ * and the style's ink round that -- the ring so that a counter in front of a
+ * wall's black top is not lost in it, the ink so that it is not lost on pale
+ * paper either.  Faded towards the paper when what it stands for is only
+ * remembered.
+ */
+static void iso_counter_colours(bool dim, unsigned char *disc,
+		unsigned char *ring, unsigned char *rim)
+{
+	static const unsigned char black[3] = { 24, 24, 28 };
+	static const unsigned char light[3] = { 226, 220, 206 };
+	int k;
+
+	for (k = 0; k < 3; k++) {
+		disc[k] = black[k];
+		ring[k] = light[k];
+		rim[k] = iso.ink[k];
+		if (dim) {
+			disc[k] = (unsigned char)(disc[k]
+				+ ((iso.paper[k] - disc[k]) * ISO_FADE >> 8));
+			ring[k] = (unsigned char)(ring[k]
+				+ ((iso.paper[k] - ring[k]) * ISO_FADE >> 8));
+			rim[k] = (unsigned char)(rim[k]
+				+ ((iso.paper[k] - rim[k]) * ISO_FADE >> 8));
+		}
+	}
+}
+
+/*
  * A counter: the letter the game prints for something the tile set has no
  * picture of, in its colour, on a black disc standing on the square -- as
  * tabletop games marked what they had no figure for, and as the flat map
@@ -823,35 +852,26 @@ static void iso_glyph(term_data *t, int ch, int attr, int x0, int y0,
 static void iso_counter(term_data *t, int a, int c, int cx, int cy, bool dim,
 		int l, int tp, int r, int b)
 {
-	unsigned char disc[3] = { 24, 24, 28 }, rim[3];
-	int x, y, k;
-	int ox = cx - 11, oy = cy - 22;
+	unsigned char disc[3], ring[3], rim[3];
+	int x, y;
+	int ox = cx - 12, oy = cy - 24;
 
-	for (k = 0; k < 3; k++) {
-		rim[k] = iso.ink[k];
-		if (dim) {
-			disc[k] = (unsigned char)(disc[k]
-				+ ((iso.paper[k] - disc[k]) * ISO_FADE >> 8));
-			rim[k] = (unsigned char)(rim[k]
-				+ ((iso.paper[k] - rim[k]) * ISO_FADE >> 8));
-		}
-	}
-
-	for (y = 0; y < 22; y++) {
+	iso_counter_colours(dim, disc, ring, rim);
+	for (y = 0; y < 24; y++) {
 		if (oy + y < tp || oy + y >= b) continue;
-		for (x = 0; x < 22; x++) {
-			double dx = x + .5 - 11, dy = y + .5 - 11, d2 = dx * dx + dy * dy;
+		for (x = 0; x < 24; x++) {
+			double dx = x + .5 - 12, dy = y + .5 - 12, d2 = dx * dx + dy * dy;
 			unsigned char *d;
 
-			if (d2 > 121 || ox + x < l || ox + x >= r) continue;
+			if (d2 > 144 || ox + x < l || ox + x >= r) continue;
 			d = t->pix + ((size_t)(oy + y) * t->pix_w + ox + x) * 4;
-			memcpy(d, d2 > 100 ? rim : disc, 3);
+			memcpy(d, d2 > 110 ? rim : d2 > 81 ? ring : disc, 3);
 			d[3] = 255;
 		}
 	}
 
 	/* The letter, in the middle of the disc. */
-	iso_glyph(t, c, a, cx - iso.gw, cy - 11 - iso.gh, 256, dim, l, tp, r, b);
+	iso_glyph(t, c, a, cx - iso.gw, cy - 12 - iso.gh, 256, dim, l, tp, r, b);
 }
 
 /*
@@ -862,18 +882,10 @@ static void iso_counter(term_data *t, int a, int c, int cx, int cy, bool dim,
 static void iso_flat_counter(term_data *t, int a, int c, int cx, int cy,
 		bool dim, int l, int tp, int r, int b)
 {
-	unsigned char disc[3] = { 24, 24, 28 }, rim[3];
-	int x, y, k;
+	unsigned char disc[3], ring[3], rim[3];
+	int x, y;
 
-	for (k = 0; k < 3; k++) {
-		rim[k] = iso.ink[k];
-		if (dim) {
-			disc[k] = (unsigned char)(disc[k]
-				+ ((iso.paper[k] - disc[k]) * ISO_FADE >> 8));
-			rim[k] = (unsigned char)(rim[k]
-				+ ((iso.paper[k] - rim[k]) * ISO_FADE >> 8));
-		}
-	}
+	iso_counter_colours(dim, disc, ring, rim);
 
 	for (y = -8; y < 8; y++) {
 		if (cy + y < tp || cy + y >= b) continue;
@@ -884,7 +896,7 @@ static void iso_flat_counter(term_data *t, int a, int c, int cx, int cy,
 
 			if (e > 1 || cx + x < l || cx + x >= r) continue;
 			d = t->pix + ((size_t)(cy + y) * t->pix_w + cx + x) * 4;
-			memcpy(d, e > .7 ? rim : disc, 3);
+			memcpy(d, e > .78 ? rim : e > .55 ? ring : disc, 3);
 			d[3] = 255;
 		}
 	}
