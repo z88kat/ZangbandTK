@@ -53,3 +53,8 @@ fatfs	FatFs	http://elm-chan.org/fsw/ff/	-
 picolibc	picolibc	https://github.com/picolibc/picolibc	-
 libctru	libctru (devkitPro)	https://github.com/devkitPro/libctru	-
 newlib	newlib	https://sourceware.org/newlib/	-
+jetbrains-mono	JetBrains Mono (font)	https://github.com/JetBrains/JetBrainsMono	-
+ibm-plex-mono	IBM Plex Mono (font)	https://github.com/IBM/plex	-
+source-code-pro	Source Code Pro (font)	https://github.com/adobe-fonts/source-code-pro	-
+space-mono	Space Mono (font)	https://github.com/googlefonts/spacemono	-
+red-hat-mono	Red Hat Mono (font)	https://github.com/RedHatOfficial/RedHatFont	-

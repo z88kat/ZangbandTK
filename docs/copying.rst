@@ -88,6 +88,8 @@ Angband licence and which the licence above does not override:
 
 * The font files are all by Leon Marrick and/or Sheldon Simms III and/or Nick McConnell, all of whom have agreed to their Angband work being released under the GPL.
 
+* **ZangbandTK's own fonts**, in ``lib/tcl/fonts``, are other people's work, unmodified, under the `SIL Open Font License 1.1 <https://openfontlicense.org/>`_: JetBrains Mono (the JetBrains Mono Project Authors), IBM Plex Mono (IBM), Source Code Pro (Adobe), Space Mono (the Space Mono Project Authors) and Red Hat Mono (the Red Hat Project Authors). Each font's licence and copyright are beside it in that folder and in ``THIRD-PARTY-LICENSES.txt``. The licence lets them be bundled with software and passed on with it, but not sold on their own.
+
 A note for anyone deriving from this
 ====================================
 

@@ -137,7 +137,8 @@ done
 # SDL2_mixer, where no scan can see them.
 scripts/third-party-notices -n ZangbandTK -s "$APPDIR/usr/lib" \
 	"$APPDIR/usr/share/doc/ZangbandTK/THIRD-PARTY-LICENSES.txt" \
-	ogg opus opusfile minimp3 dr_flac stb_vorbis
+	ogg opus opusfile minimp3 dr_flac stb_vorbis \
+	jetbrains-mono ibm-plex-mono source-code-pro space-mono red-hat-mono
 
 # A second pass to pack it, as scripts/pkg_appimage does, naming the custom
 # AppRun again so the default does not replace it; and the output found by

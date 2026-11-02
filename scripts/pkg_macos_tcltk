@@ -202,7 +202,8 @@ sed -e 's|\$EXECUTABLE\$|'"$NAME"'|g' \
 #    seals Resources along with everything else.
 cp "$ROOT/LICENSE.md" "$APP/Contents/Resources/LICENSE.md"
 "$ROOT/scripts/third-party-notices" -n "$NAME" -s "$APP/Contents/Frameworks" \
-	"$APP/Contents/Resources/THIRD-PARTY-LICENSES.txt"
+	"$APP/Contents/Resources/THIRD-PARTY-LICENSES.txt" \
+	jetbrains-mono ibm-plex-mono source-code-pro space-mono red-hat-mono
 
 # An ad-hoc signature, the same as the release gives Zangband.app: no
 # Developer ID, but a bundle whose every piece is sealed, which is what

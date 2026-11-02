@@ -108,6 +108,7 @@ extern const char *tcl_music_state(double *position, double *length);
 #ifdef __APPLE__
 /* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
 extern void tcl_menu_keys_literal(void);
+extern bool tcl_font_add(const char *path);
 #endif
 
 /*
@@ -12188,6 +12189,28 @@ static void hook_plog(const char *str)
 	inside = false;
 }
 
+/*
+ * The fonts the front end brings with it, in lib/tcl/fonts, made this
+ * process's own before Tk starts (tcl/fonts.c), so that the Display page
+ * offers them beside the system's.
+ */
+static void fonts_register(void)
+{
+	char dir[1024], name[1024], path[1024];
+	ang_dir *d;
+
+	path_build(dir, sizeof(dir), ANGBAND_DIR_TCL, "fonts");
+	d = my_dopen(dir);
+	if (!d) return;
+	while (my_dread(d, name, sizeof(name))) {
+		if (!suffix_i(name, ".ttf") && !suffix_i(name, ".otf")) continue;
+		path_build(path, sizeof(path), dir, name);
+		if (!tcl_font_add(path))
+			plog_fmt("Tcl/Tk: the font %s could not be added.", path);
+	}
+	my_dclose(d);
+}
+
 /**
  * Bring up the interpreter and the window.
  */
@@ -12259,6 +12282,8 @@ errr init_tcl(int argc, char **argv)
 		Tcl_SetStartupScript(startup, NULL);
 		Tcl_DecrRefCount(startup);
 	}
+
+	fonts_register();
 
 #ifdef __APPLE__
 	/*

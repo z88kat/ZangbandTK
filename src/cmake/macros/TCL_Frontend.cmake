@@ -96,6 +96,29 @@ macro(configure_tcl_frontend _NAME_TARGET)
         endif()
     endif()
 
+    # The fonts the front end brings with it (lib/tcl/fonts), registered for
+    # this process before Tk starts: CoreText on the Mac, GDI on Windows and
+    # fontconfig -- which Tk's Xft draws with -- under X11.  Without
+    # fontconfig's headers the game still builds; it just offers no fonts of
+    # its own.
+    target_sources(${_NAME_TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/src/tcl/fonts.c")
+    if(APPLE)
+        target_link_libraries(${_NAME_TARGET} PRIVATE "-framework CoreText"
+            "-framework CoreFoundation")
+    elseif(WIN32)
+        target_link_libraries(${_NAME_TARGET} PRIVATE gdi32)
+    else()
+        find_path(FONTCONFIG_INCLUDE_DIR fontconfig/fontconfig.h)
+        find_library(FONTCONFIG_LIBRARY fontconfig)
+        if(FONTCONFIG_INCLUDE_DIR AND FONTCONFIG_LIBRARY)
+            target_include_directories(${_NAME_TARGET} PRIVATE ${FONTCONFIG_INCLUDE_DIR})
+            target_link_libraries(${_NAME_TARGET} PRIVATE ${FONTCONFIG_LIBRARY})
+            target_compile_definitions(${_NAME_TARGET} PRIVATE HAVE_FONTCONFIG)
+        else()
+            message(STATUS "Tcl/Tk front end: no fontconfig, so no fonts of its own")
+        endif()
+    endif()
+
     # Windows.  A window and no console: linked for the GUI subsystem, so the
     # game starts from Explorer without a console window behind it, and
     # MinGW's runtime still calls main().  And Tcl's and Tk's DLLs beside the

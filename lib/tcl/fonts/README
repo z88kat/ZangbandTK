@@ -1,0 +1,25 @@
+Fonts that ZangbandTK brings with it
+====================================
+
+Five monospaced fonts, offered on the Display page beside the fonts the
+system has: for the map, the text panes, and the isometric view's ASCII
+style, which is drawn in the map's font.  ZangbandTK makes them its own
+while it runs (src/tcl/fonts.c); nothing is installed on the system.
+
+  JetBrains Mono    JetBrainsMono-Regular.ttf, -Bold.ttf   JetBrainsMono-OFL.txt
+  IBM Plex Mono     IBMPlexMono-Regular.ttf, -Bold.ttf     IBMPlexMono-OFL.txt
+  Source Code Pro   SourceCodePro-Regular.ttf, -Bold.ttf   SourceCodePro-OFL.md
+  Space Mono        SpaceMono-Regular.ttf, -Bold.ttf       SpaceMono-OFL.txt
+  Red Hat Mono      RedHatMono-Regular.ttf, -Bold.ttf      RedHatMono-OFL.txt
+
+Each is under the SIL Open Font License, version 1.1, whose text and the
+font's copyright are in the file beside it.  They are the fonts as their
+authors publish them, unmodified:
+
+  JetBrains Mono    github.com/JetBrains/JetBrainsMono, fonts/ttf
+  IBM Plex Mono     github.com/google/fonts, ofl/ibmplexmono
+  Source Code Pro   github.com/adobe-fonts/source-code-pro, release/TTF
+  Space Mono        github.com/google/fonts, ofl/spacemono
+  Red Hat Mono      github.com/RedHatOfficial/RedHatFont, fonts/Mono/RedHatMono/ttf
+
+Any .ttf or .otf put here is offered the same way.

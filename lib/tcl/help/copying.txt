@@ -133,6 +133,17 @@ T	li1	\n
 T	li1	•\t
 T	li1	The font files are all by Leon Marrick and/or Sheldon Simms III and/or Nick McConnell, all of whom have agreed to their Angband work being released under the GPL.
 T	li1	\n
+T	li1	•\t
+T	li1 strong	ZangbandTK’s own fonts
+T	li1	, in 
+T	li1 code	lib/tcl/fonts
+T	li1	, are other people’s work, unmodified, under the 
+L	li1 link	6	https://openfontlicense.org/	SIL Open Font License 1.1
+M	sil-open-font-license-1-1
+T	li1	: JetBrains Mono (the JetBrains Mono Project Authors), IBM Plex Mono (IBM), Source Code Pro (Adobe), Space Mono (the Space Mono Project Authors) and Red Hat Mono (the Red Hat Project Authors). Each font’s licence and copyright are beside it in that folder and in 
+T	li1 code	THIRD-PARTY-LICENSES.txt
+T	li1	. The licence lets them be bundled with software and passed on with it, but not sold on their own.
+T	li1	\n
 M	a-note-for-anyone-deriving-from-this
 T	h2	A note for anyone deriving from this
 T	h2	\n

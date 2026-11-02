@@ -609,7 +609,9 @@ How the window draws is set on the Display page of the Options window
   a yellow ring.
 * **Fonts** sets the font and size of the map, of the text panes beside and
   below it, and of the overhead map.  A pane's font decides how many rows and
-  columns fit in it, so a larger font shows less of the map.  **Window text**
+  columns fit in it, so a larger font shows less of the map.  As well as the
+  monospaced fonts your system has, ZangbandTK brings five of its own:
+  JetBrains Mono, IBM Plex Mono, Source Code Pro, Space Mono and Red Hat Mono.  **Window text**
   sets the size of the text in every other window (the Character, Items and
   Knowledge windows, the shops, the Options window itself and the manual in the
   Help window), with headings and the rest scaled to match.
