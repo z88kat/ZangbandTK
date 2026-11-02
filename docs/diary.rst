@@ -64,6 +64,15 @@ Testing with the inventory open turned up two faults that were there before I
 started: the list's own letters were scattered over the view as if they stood on
 the squares beneath, and the menu's cursor got the look cursor's yellow ring.
 
+Last of the day, the view's size. It was drawn at one size whatever the Display
+page said, which on the Mac is fine and on a Linux desktop scaled to 200% would
+have made it half the size of its own text. It follows Tile size now, every pixel
+of it drawn as a block of two or three. I had also suggested drawing the
+counters' letters as real text, like the ASCII view's, and changed my mind once
+I started: a counter's disc is part of the picture, so the wall in front of it
+covers its foot, but a text item sits over the whole picture, and the letter
+would have floated over the wall.
+
 
 1 November 2026 — no blue bricks, and a yellow brick road
 ==========================================================
