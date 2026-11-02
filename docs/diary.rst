@@ -31,6 +31,18 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+2 November 2026 — counters with an edge
+=======================================
+
+The last small item on the isometric list was mine: in the ink style a counter
+standing just behind a wall lost its bottom half, because the wall's top in front
+of it is solid ink and the counter was a black disc with an ink rim. Black on
+black. The colour style did the same on its dark rock, and a remembered counter
+there faded towards black until it was barely there. Each counter has a light
+ring inside the rim now, the way a cardboard token has a pale edge. The ring
+shows on black and the ink shows on paper, so it reads on either.
+
+
 1 November 2026 — no blue bricks, and a yellow brick road
 ==========================================================
 
