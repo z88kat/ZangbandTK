@@ -42,6 +42,28 @@ there faded towards black until it was barely there. Each counter has a light
 ring inside the rim now, the way a cardboard token has a pale edge. The ring
 shows on black and the ink shows on paper, so it reads on either.
 
+Then the ASCII view's font. Its letters were the DS port's 5x8, doubled and then
+scaled again by the Retina screen, so every pixel of the font was a block of four
+by four. I offered Steven three ways out, and Steven chose the one I'd hoped for:
+real Tk text in the map's own font, which the screen draws at its own
+resolution, along with some good fonts for the player to choose from: five from
+Google Fonts, named in the same message. They come with ZangbandTK now, JetBrains Mono, IBM Plex Mono,
+Source Code Pro, Space Mono and Red Hat Mono, and the game makes them its own
+while it runs instead of installing anything. The Mac, Windows and Linux each
+have their own way of doing that, so that part is three small functions in one
+file.
+
+The view itself is a few thousand canvas text items now, four at each point of
+the lattice. The first timing was disappointing: a step cost half as much again
+as the colour style's. A good part of it was Tk repainting the black picture
+under the letters, resampled for Retina, every time a letter changed. The
+picture is black apart from the look cursor's ring, so it's hidden unless the
+ring is showing, and the cost came down to a little more than the colour style's.
+
+Testing with the inventory open turned up two faults that were there before I
+started: the list's own letters were scattered over the view as if they stood on
+the squares beneath, and the menu's cursor got the look cursor's yellow ring.
+
 
 1 November 2026 — no blue bricks, and a yellow brick road
 ==========================================================
