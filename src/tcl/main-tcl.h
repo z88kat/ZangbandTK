@@ -74,6 +74,11 @@ void tcl_cell_set(term_data *t, int x, int y, const char *ch, int attr);
 void tcl_tiles_dirty(term_data *t, int x, int y, int w, int h);
 bool tcl_png_load(const char *path, unsigned char **out, int *w, int *h);
 const unsigned char *tcl_tile_sheet(int *w, int *h);
+bool tcl_text_items_new(const term_data *t, int n, const double *xy, int *ids);
+void tcl_text_item_set(const term_data *t, int id, const char *ch,
+		const unsigned char *rgb);
+void tcl_text_items_delete(const term_data *t);
+void tcl_picture_show(const term_data *t, bool show);
 
 /* tcl/iso.c: the isometric map view.  Each takes the map's term. */
 bool tcl_iso_on(void);

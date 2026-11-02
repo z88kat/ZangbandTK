@@ -66,6 +66,18 @@ enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
 #define ISO_FADE 120		/* of 256: how far a remembered square fades */
 #define ISO_EFFECTS 256		/* as many squares as a ball can cover */
 #define ISO_FLAT .8		/* how much of its square a thing on the floor covers */
+#define ISO_LAYERS 4		/* an ASCII square's characters: a wall's three, and one on it */
+
+/*
+ * A text item of the ASCII view, where it stands, and what it shows: a
+ * character and its colour, or 0 for nothing -- what it has been given, and
+ * what this frame wants of it.
+ */
+struct iso_tslot {
+	int id;
+	double x, y;
+	uint64_t have, want;
+};
 
 /*
  * Where a row of a tile has anything in it, [x0, x1), and whether every pixel
@@ -104,9 +116,30 @@ static struct {
 	 * The ASCII view draws no sheet: it stands the map's own characters on
 	 * the lattice.  hw and hh are half a square across and down, in every
 	 * view; rise is how far each character in a stack stands above the last.
+	 * The ASCII view's are its text: line's, for a character 10 by 16, made
+	 * to the size of the map's font.
 	 */
 	bool text;
 	int hw, hh, rise;
+	int text_hw, text_hh, text_rise;
+	/*
+	 * The ASCII view's characters are canvas text items in the map's own
+	 * font, which the screen draws at its own resolution, rather than pixels
+	 * of the view.  ISO_LAYERS of them stand at each point of the lattice on
+	 * the pane, made back to front; tpos gives a point's first, or -1.  What
+	 * they were made for -- the pane, the lattice, the term's picture, whose
+	 * replacement takes every item on the canvas with it -- says when they
+	 * have to be made again.
+	 */
+	struct iso_tslot *tslot;
+	int tslot_n, *tpos, tsmax, tdmax;
+	int tmade[8];
+	/*
+	 * The term's picture, hidden while the ASCII view has nothing to show
+	 * in it, so that Tk does not paint a pane of black under the letters
+	 * every frame: the id of the one hidden, or 0.
+	 */
+	int picture_hidden;
 	/* The map's term, for the game's questions about what is on screen. */
 	const term_data *map;
 	/*
@@ -156,6 +189,22 @@ static struct {
 
 static void iso_get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
 static bool iso_panel_contains(unsigned int y, unsigned int x);
+static bool iso_overlay_cell(const term_data *t, int x, int y);
+
+/* The ASCII view's text items, gone from the canvas. */
+static void iso_text_drop(void)
+{
+	if (iso.tslot && iso.map) tcl_text_items_delete(iso.map);
+	if (iso.picture_hidden && iso.map
+			&& iso.picture_hidden == iso.map->image_item)
+		tcl_picture_show(iso.map, true);
+	iso.picture_hidden = 0;
+	mem_free(iso.tslot);
+	mem_free(iso.tpos);
+	iso.tslot = NULL;
+	iso.tpos = NULL;
+	iso.tslot_n = 0;
+}
 
 static void iso_free(void)
 {
@@ -172,6 +221,7 @@ static void iso_free(void)
 	iso.effect_n = 0;
 	mem_free(iso.shown_pix);
 	iso.shown_pix = NULL;
+	iso_text_drop();
 	if (get_panel_hook == iso_get_panel) get_panel_hook = iso.old_get_panel;
 	if (panel_contains_hook == iso_panel_contains)
 		panel_contains_hook = iso.old_panel_contains;
@@ -216,9 +266,9 @@ static bool iso_load(const char *style)
 		if (sscanf(line, "text:%15[^:]:%d:%d:%d", sname, &gw, &gh, &ir) == 4) {
 			if (streq(sname, style)) {
 				iso.text = true;
-				iso.hw = gw;
-				iso.hh = gh;
-				iso.rise = ir;
+				iso.hw = iso.text_hw = gw;
+				iso.hh = iso.text_hh = gh;
+				iso.rise = iso.text_rise = ir;
 				memset(iso.paper, 0, sizeof(iso.paper));
 				memset(iso.ink, 192, sizeof(iso.ink));
 				have_style = true;
@@ -363,10 +413,6 @@ static bool iso_load(const char *style)
 					+ ((iso.paper[k] - px[i * 4 + k]) * ISO_FADE >> 8));
 			iso.dim[i * 4 + 3] = px[i * 4 + 3];
 		}
-	} else if (!iso.glyph) {
-		/* Characters with nothing to draw them with: no view. */
-		iso_free();
-		return false;
 	}
 
 	my_strcpy(iso.style, style, sizeof(iso.style));
@@ -908,8 +954,10 @@ static void iso_flat_counter(term_data *t, int a, int c, int cx, int cy,
 /*
  * The characters the map shows on a square, a and c over the terrain's ta and
  * tc: from the term where the game drew them, which brings bolts with them,
- * and from the map and the kept effects beyond its rectangle.  True when what
- * is shown is a trap or a rune, lying on the floor.
+ * and from the map and the kept effects beyond its rectangle -- and from the
+ * map where the game has put something over it, a list or a menu, whose
+ * letters are not the square's.  True when what is shown is a trap or a
+ * rune, lying on the floor.
  */
 static bool iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 		int *ta, int *tc)
@@ -926,6 +974,13 @@ static bool iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 		int ma, mc, mta, mtc;
 		bool lies = iso_map_says(grid, &ma, &mc, &mta, &mtc);
 
+		if (tm->saved && iso_overlay_cell(t, x, y)) {
+			*a = ma;
+			*c = mc;
+			*ta = mta;
+			*tc = mtc;
+			return lies;
+		}
 		*a = tm->scr->a[y][x];
 		*c = tm->scr->c[y][x];
 		*ta = tm->scr->ta[y][x];
@@ -945,20 +1000,148 @@ static bool iso_text_of(const term_data *t, struct loc grid, int *a, int *c,
 }
 
 /*
- * A square of the ASCII view: its terrain's character, stood up as high as
- * the terrain is -- a wall three deep, darkest at the foot, so that a run of
- * them reads as height -- and on it whatever the map shows there, raised.
- * Floors sit back, dim, so that what stands on them does not.  A trap or a
- * rune is not raised: it takes the floor's place.
+ * The ASCII view's lattice, for the map's font: its text: line was set for a
+ * character 10 pixels by 16, and a larger font spreads it out to match.
  */
-static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
-		bool seen, bool bright, bool cut, int l, int tp, int r, int b)
+static void iso_text_lattice(const term_data *t)
+{
+	if (!iso.text || t->cw <= 0 || t->ch <= 0) return;
+	iso.hw = MAX(2, iso.text_hw * t->cw / 10);
+	iso.hh = MAX(2, iso.text_hh * t->ch / 16);
+	iso.rise = MAX(1, iso.text_rise * t->ch / 16);
+}
+
+/*
+ * The ASCII view's text items, made for this pane and lattice if they were
+ * not: ISO_LAYERS at each point of the lattice whose characters could fall on
+ * the pane, back to front as the view is drawn.  False if there are none.
+ */
+static bool iso_text_pool(term_data *t, int l, int tp, int r, int b,
+		int vx, int vy, int smax, int dmax)
+{
+	int made[8] = { l, tp, r, b, iso.hw, iso.hh, iso.rise, t->image_item };
+	int s, d, k, n = 0, *ids;
+	double *xy;
+
+	if (iso.tslot && iso.tsmax == smax && iso.tdmax == dmax
+			&& !memcmp(made, iso.tmade, sizeof(made)))
+		return true;
+
+	/* A new picture means a new canvas: the old items went with it. */
+	if (iso.tslot && iso.tmade[7] == t->image_item)
+		tcl_text_items_delete(t);
+	mem_free(iso.tslot);
+	mem_free(iso.tpos);
+	iso.tslot = NULL;
+	iso.tslot_n = 0;
+
+	iso.tpos = mem_alloc((size_t)(2 * smax + 1) * (2 * dmax + 1)
+		* sizeof(*iso.tpos));
+	xy = mem_alloc((size_t)(2 * smax + 1) * (2 * dmax + 1) * ISO_LAYERS * 2
+		* sizeof(*xy));
+	for (s = -smax; s <= smax; s++) {
+		for (d = -dmax; d <= dmax; d++) {
+			int cx = vx + d * iso.hw, cy = vy + s * iso.hh;
+			int *at = &iso.tpos[(s + smax) * (2 * dmax + 1) + d + dmax];
+
+			*at = -1;
+			if ((s + d) & 1 || cx + t->cw < l || cx - t->cw >= r
+					|| cy + t->ch < tp
+					|| cy - (ISO_LAYERS - 1) * iso.rise - t->ch >= b)
+				continue;
+			*at = n;
+			for (k = 0; k < ISO_LAYERS; k++, n++) {
+				xy[2 * n] = cx;
+				xy[2 * n + 1] = cy - k * iso.rise;
+			}
+		}
+	}
+
+	ids = mem_alloc((size_t)MAX(n, 1) * sizeof(*ids));
+	if (n && tcl_text_items_new(t, n, xy, ids)) {
+		iso.tslot = mem_zalloc((size_t)n * sizeof(*iso.tslot));
+		for (k = 0; k < n; k++) {
+			iso.tslot[k].id = ids[k];
+			iso.tslot[k].x = xy[2 * k];
+			iso.tslot[k].y = xy[2 * k + 1];
+		}
+		iso.tslot_n = n;
+		iso.tsmax = smax;
+		iso.tdmax = dmax;
+		memcpy(iso.tmade, made, sizeof(made));
+	}
+	mem_free(ids);
+	mem_free(xy);
+	return iso.tslot != NULL;
+}
+
+/*
+ * What a text item of the ASCII view is to show: ch in the game's colour
+ * attr, at bright/256 of its brightness, and faded when what it stands for is
+ * only remembered.
+ */
+static void iso_text_want(int slot, int ch, int attr, int bright, bool dim)
+{
+	unsigned char rgb[3];
+	int colour = attr % MAX_COLORS, k;
+
+	if (slot < 0 || slot >= iso.tslot_n || ch <= ' ') return;
+	for (k = 0; k < 3; k++) {
+		rgb[k] = (unsigned char)(angband_color_table[colour][k + 1]
+			* bright >> 8);
+		if (dim)
+			rgb[k] = (unsigned char)(rgb[k]
+				+ ((iso.paper[k] - rgb[k]) * ISO_FADE >> 8));
+	}
+	iso.tslot[slot].want = ((uint64_t)ch << 24) | ((uint64_t)rgb[0] << 16)
+		| ((uint64_t)rgb[1] << 8) | rgb[2];
+}
+
+/* Give each text item of the ASCII view what this frame wants of it. */
+static void iso_text_apply(const term_data *t)
+{
+	int i;
+
+	for (i = 0; i < iso.tslot_n; i++) {
+		struct iso_tslot *sl = &iso.tslot[i];
+		char buf[MB_LEN_MAX + 1];
+		unsigned char rgb[3];
+		int len;
+
+		if (sl->want == sl->have) continue;
+		sl->have = sl->want;
+		if (!sl->want) {
+			tcl_text_item_set(t, sl->id, NULL, NULL);
+			continue;
+		}
+		len = wctomb(buf, (wchar_t)(sl->want >> 24));
+		if (len <= 0) {
+			buf[0] = '?';
+			len = 1;
+		}
+		buf[len] = '\0';
+		rgb[0] = (unsigned char)(sl->want >> 16);
+		rgb[1] = (unsigned char)(sl->want >> 8);
+		rgb[2] = (unsigned char)sl->want;
+		tcl_text_item_set(t, sl->id, buf, rgb);
+	}
+}
+
+/*
+ * A square of the ASCII view, whose text items begin at first: its terrain's
+ * character, stood up as high as the terrain is -- a wall three deep, darkest
+ * at the foot, so that a run of them reads as height -- and on it whatever
+ * the map shows there, raised.  Floors sit back, dim, so that what stands on
+ * them does not.  A trap or a rune is not raised: it takes the floor's place.
+ */
+static void iso_text_square(term_data *t, struct loc grid, int first,
+		bool seen, bool bright, bool cut)
 {
 	static const int shade3[] = { 115, 180, 256 }, shade2[] = { 154, 256 };
 	int a, c, ta, tc, feat = iso_known_feat(grid), n = 0, i;
-	int x0 = cx - iso.gw, y0 = cy - iso.gh;
 	bool flat = iso_text_of(t, grid, &a, &c, &ta, &tc);
 
+	if (first < 0) return;
 	if (feat != FEAT_NONE) {
 		const struct feature *f = &f_info[feat];
 
@@ -970,17 +1153,15 @@ static void iso_text_square(term_data *t, struct loc grid, int cx, int cy,
 			int k = (n == 3) ? shade3[i] : (n == 2) ? shade2[i]
 				: tf_has(f->flags, TF_FLOOR) ? 115 : 256;
 
-			iso_glyph(t, tc, ta, x0, y0 - i * iso.rise, k, !bright,
-				l, tp, r, b);
+			iso_text_want(first + i, tc, ta, k, !bright);
 		}
 	}
 
 	if (flat)
-		iso_glyph(t, c, a, x0, y0 - (n ? n - 1 : 0) * iso.rise, 256, !seen,
-			l, tp, r, b);
+		iso_text_want(first + (n ? n - 1 : 0), c, a, 256, !seen);
 	else if (a != ta || c != tc)
-		iso_glyph(t, c, a, x0, y0 - (n ? n : 1) * iso.rise, 256, !seen,
-			l, tp, r, b);
+		iso_text_want(first + MIN(n ? n : 1, ISO_LAYERS - 1), c, a, 256,
+			!seen);
 }
 
 /* The square in the middle of the view when the cursor does not hold it. */
@@ -1200,6 +1381,8 @@ static void iso_render(term_data *t)
 			memset(t->pix + ((size_t)y * t->pix_w + l) * 4, 0,
 				(size_t)(r - l) * 4);
 		iso_hand_over(t, l, tp, r, b);
+		for (i = 0; i < iso.tslot_n; i++) iso.tslot[i].want = 0;
+		iso_text_apply(t);
 		return;
 	}
 
@@ -1220,8 +1403,11 @@ static void iso_render(term_data *t)
 	 * Back to front: by distance down the screen, s = dx + dy.  The
 	 * squares on one such line sit side by side and never overlap.
 	 */
+	iso_text_lattice(t);
 	smax = (b - tp) / 2 / iso.hh + 6;
 	dmax = (r - l) / 2 / iso.hw + 3;
+	if (iso.text && iso_text_pool(t, l, tp, r, b, vx, vy, smax, dmax))
+		for (i = 0; i < iso.tslot_n; i++) iso.tslot[i].want = 0;
 	for (s = -smax; s <= smax; s++) {
 		for (d = -dmax; d <= dmax; d++) {
 			struct loc grid;
@@ -1250,8 +1436,9 @@ static void iso_render(term_data *t)
 			feat = iso_known_feat(grid);
 
 			if (iso.text) {
-				iso_text_square(t, grid, cx, cy, seen, bright, cut,
-					l, tp, r, b);
+				iso_text_square(t, grid, iso.tpos
+					? iso.tpos[(s + smax) * (2 * dmax + 1) + d + dmax]
+					: -1, seen, bright, cut);
 				continue;
 			}
 
@@ -1327,6 +1514,31 @@ static void iso_render(term_data *t)
 		}
 	}
 
+	/*
+	 * The ASCII view's characters, given to their text items -- except where
+	 * the game has put something over the map, which they would show
+	 * through, since a letter of the term's is only its strokes.
+	 */
+	if (iso.text) {
+		for (i = 0; i < iso.tslot_n && t->t.saved; i++) {
+			struct iso_tslot *sl = &iso.tslot[i];
+			int k;
+
+			for (k = 0; k < 5 && sl->want; k++) {
+				int px = (int)sl->x + (k == 1 ? -t->cw / 2
+					: k == 2 ? t->cw / 2 : 0);
+				int py = (int)sl->y + (k == 3 ? -t->ch / 2
+					: k == 4 ? t->ch / 2 : 0);
+				int cxl = px / t->cw, cyl = py / t->ch;
+
+				if (cxl >= 0 && cyl >= 0 && cxl < t->cols && cyl < t->rows
+						&& iso_overlay_cell(t, cxl, cyl))
+					sl->want = 0;
+			}
+		}
+		iso_text_apply(t);
+	}
+
 	/* The letters of bolts beyond the term's rectangle, over their squares. */
 	for (i = 0; i < iso.effect_n && !iso.text; i++)
 		if (!(iso.effect[i].a & 0x80))
@@ -1371,6 +1583,25 @@ static void iso_render(term_data *t)
 	if (iso.cursor_on && iso.cursor_map && character_dungeon && cave
 			&& square_in_bounds(cave, iso.cursor))
 		iso_mark(t, iso.cursor, centre, l, tp, r, b);
+
+	/*
+	 * The ASCII view's picture is black but for the cursor's ring, and the
+	 * canvas is black under it: so it is shown only while there is a ring,
+	 * and Tk does not paint the whole pane again under the letters each time
+	 * they change, which on a Retina screen costs as much as the letters.
+	 */
+	if (iso.text) {
+		bool ring = iso.cursor_on && iso.cursor_map;
+		bool hidden = iso.picture_hidden == t->image_item;
+
+		if (ring && hidden) {
+			tcl_picture_show(t, true);
+			iso.picture_hidden = 0;
+		} else if (!ring && !hidden) {
+			tcl_picture_show(t, false);
+			iso.picture_hidden = t->image_item;
+		}
+	}
 
 	iso_hand_over(t, l, tp, r, b);
 }
@@ -1429,6 +1660,7 @@ bool tcl_iso_set(const char *style, const term_data *map, char *err,
 		return false;
 	}
 	iso.map = map;
+	if (map) iso_text_lattice(map);
 	if (get_panel_hook != iso_get_panel) {
 		iso.old_get_panel = get_panel_hook;
 		get_panel_hook = iso_get_panel;
@@ -1487,7 +1719,9 @@ void tcl_iso_cursor(const term_data *map, int x, int y)
 {
 	const term *tm = &map->t;
 	struct loc grid;
-	bool on_map = tcl_iso_map_cell(map, x, y);
+	/* Not the cursor of a list or a menu the game has put over the map. */
+	bool on_map = tcl_iso_map_cell(map, x, y)
+		&& !(tm->saved && iso_overlay_cell(map, x, y));
 
 	grid.x = (x - col_map[tm->sidebar_mode]) / tile_width + tm->offset_x;
 	grid.y = (y - row_top_map[tm->sidebar_mode]) / tile_height + tm->offset_y;

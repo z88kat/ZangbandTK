@@ -979,6 +979,117 @@ const unsigned char *tcl_tile_sheet(int *w, int *h)
 	return sheet;
 }
 
+/*
+ * Text items for the isometric view's ASCII style: n of them, hidden, in the
+ * term's own font, centred on the points xy holds as x, y pairs, and made in
+ * that order, so that each lies over those before it.  They go between the
+ * term's picture and its cells' letters, so that whatever the game writes
+ * over the map stays over the view.  Their ids in ids; false, with none
+ * made, if the canvas would not make them.
+ */
+bool tcl_text_items_new(const term_data *t, int n, const double *xy, int *ids)
+{
+	Tcl_Obj *objv[14];
+	int i, k;
+
+	objv[0] = Tcl_NewStringObj(t->path, -1);
+	objv[1] = Tcl_NewStringObj("create", -1);
+	objv[2] = Tcl_NewStringObj("text", -1);
+	objv[5] = Tcl_NewStringObj("-anchor", -1);
+	objv[6] = Tcl_NewStringObj("center", -1);
+	objv[7] = Tcl_NewStringObj("-font", -1);
+	objv[8] = Tcl_NewStringObj(t->font, -1);
+	objv[9] = Tcl_NewStringObj("-state", -1);
+	objv[10] = cfg_hidden;
+	objv[11] = Tcl_NewStringObj("-tags", -1);
+	objv[12] = Tcl_NewStringObj("isotext", -1);
+	for (k = 0; k < 13; k++)
+		if (k != 3 && k != 4) Tcl_IncrRefCount(objv[k]);
+
+	for (i = 0; i < n; i++) {
+		objv[3] = Tcl_NewDoubleObj(xy[2 * i]);
+		objv[4] = Tcl_NewDoubleObj(xy[2 * i + 1]);
+		Tcl_IncrRefCount(objv[3]);
+		Tcl_IncrRefCount(objv[4]);
+		if (Tcl_EvalObjv(interp, 13, objv, TCL_EVAL_GLOBAL) != TCL_OK
+				|| Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp),
+					&ids[i]) != TCL_OK)
+			i = n + 1;
+		Tcl_DecrRefCount(objv[3]);
+		Tcl_DecrRefCount(objv[4]);
+	}
+	for (k = 0; k < 13; k++)
+		if (k != 3 && k != 4) Tcl_DecrRefCount(objv[k]);
+	if (i > n) {
+		tcl_text_items_delete(t);
+		return false;
+	}
+
+	/* Above the picture, which was made first, and below every letter. */
+	if (n > 0 && t->item && t->cols > 0) {
+		Tcl_Obj *lower = Tcl_ObjPrintf("%s lower isotext %d", t->path,
+				t->item[0]);
+
+		Tcl_IncrRefCount(lower);
+		(void)Tcl_EvalObjEx(interp, lower, TCL_EVAL_GLOBAL);
+		Tcl_DecrRefCount(lower);
+	}
+	return true;
+}
+
+/* Show text item id as ch in colour rgb, or hide it if ch is NULL. */
+void tcl_text_item_set(const term_data *t, int id, const char *ch,
+		const unsigned char *rgb)
+{
+	Tcl_Obj *objv[9];
+	int objc, i;
+
+	objv[0] = Tcl_NewStringObj(t->path, -1);
+	objv[1] = cfg_itemconfigure;
+	objv[2] = Tcl_NewIntObj(id);
+	if (ch) {
+		objv[3] = cfg_dash_text;
+		objv[4] = Tcl_NewStringObj(ch, -1);
+		objv[5] = cfg_dash_fill;
+		objv[6] = Tcl_ObjPrintf("#%02x%02x%02x", rgb[0], rgb[1], rgb[2]);
+		objv[7] = cfg_dash_state;
+		objv[8] = cfg_normal;
+		objc = 9;
+	} else {
+		objv[3] = cfg_dash_state;
+		objv[4] = cfg_hidden;
+		objc = 5;
+	}
+	for (i = 0; i < objc; i++) Tcl_IncrRefCount(objv[i]);
+	(void)Tcl_EvalObjv(interp, objc, objv, TCL_EVAL_GLOBAL);
+	for (i = 0; i < objc; i++) Tcl_DecrRefCount(objv[i]);
+}
+
+/* Show or hide the term's picture, its tiles' layer, on its canvas. */
+void tcl_picture_show(const term_data *t, bool show)
+{
+	Tcl_Obj *cmd;
+
+	if (!interp || Tcl_InterpDeleted(interp) || !t->image_item) return;
+	cmd = Tcl_ObjPrintf("%s itemconfigure %d -state %s", t->path,
+			t->image_item, show ? "normal" : "hidden");
+	Tcl_IncrRefCount(cmd);
+	(void)Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL);
+	Tcl_DecrRefCount(cmd);
+}
+
+/* Every text item the isometric view made, gone. */
+void tcl_text_items_delete(const term_data *t)
+{
+	Tcl_Obj *del;
+
+	if (!interp || Tcl_InterpDeleted(interp)) return;
+	del = Tcl_ObjPrintf("%s delete isotext", t->path);
+	Tcl_IncrRefCount(del);
+	(void)Tcl_EvalObjEx(interp, del, TCL_EVAL_GLOBAL);
+	Tcl_DecrRefCount(del);
+}
+
 static errr Term_pict_tcl(int x, int y, int n, const int *ap,
 		const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {

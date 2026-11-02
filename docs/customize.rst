@@ -593,10 +593,10 @@ How the window draws is set on the Display page of the Options window
   the old rulebooks were printed.  Blue is the blue of the old printed
   adventure maps.  Colour is a dungeon in colour: stone walls and flagstone
   floors on black, roads of yellow brick, and each shop's door in the shop's
-  own colour.  ASCII
-  stands the letter map itself up, so a wall is a stack of its ``#``; it needs
-  the None tile set, and switches to it while it's on and back again when you
-  leave it.
+  own colour.  ASCII stands the letter map itself up, so a wall is a stack of
+  its ``#``, in the map's font from **Fonts** below and spaced to its size.  It
+  needs the None tile set, and switches to it while it's on and back again
+  when you leave it.
 
   In the other three, monsters, items and your character are the tile set's
   own pictures, standing on their squares.  Anything the set has no picture

@@ -1048,9 +1048,11 @@ GLYPH_W, GLYPH_H, GLYPH_FIRST, GLYPH_COUNT = 5, 8, 0x20, 96
 
 # The ASCII view uses no sheet: it sets the map's own characters out on the
 # isometric lattice, on black, a wall a stack of three.  Its spacing -- half a
-# square across and down -- and how far each character in a stack rises.
-# Wider than the drawings' lattice would be too sparse to read as a map, and
-# closer runs the characters together; this was chosen by eye against both.
+# square across and down -- and how far each character in a stack rises, for
+# a character 10 pixels by 16: iso.c draws the characters in the map's own
+# font, and spaces them to its size.  Wider than the drawings' lattice would
+# be too sparse to read as a map, and closer runs the characters together;
+# this was chosen by eye against both.
 TEXT_STYLES = {'ascii': (20, 10, 9)}
 
 

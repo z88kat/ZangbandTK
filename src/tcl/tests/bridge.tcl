@@ -2661,6 +2661,29 @@ proc iso_pass {} {
 		list $in [expr {[angband_tileset] == $was}] [angband_iso]
 	} "{0 ascii} 1 off"
 
+	# The ASCII view's characters are text items in the map's own font, which
+	# the screen draws at its own resolution, with the term's picture hidden
+	# under them; when the view goes, so do they, and the picture is back.
+	check "the ASCII view stands the map up in the map's font" {
+		set c .pw.top.map.c
+		set img [lindex [lmap it [$c find withtag all] \
+			{if {[$c type $it] eq "image"} {set it} else continue}] 0]
+		display_iso_chosen ascii
+		update
+		set at {}
+		foreach it [$c find withtag isotext] {
+			if {[$c itemcget $it -state] ne "hidden"
+					&& [$c itemcget $it -text] eq "@"} {
+				lappend at [$c itemcget $it -font]
+			}
+		}
+		set hidden [$c itemcget $img -state]
+		display_iso_chosen off
+		update
+		list $at $hidden [llength [$c find withtag isotext]] \
+			[$c itemcget $img -state]
+	} "termfont hidden 0 normal"
+
 	# With text the whole map is text items; the view draws it, so the term's
 	# copies are put away -- the @ is not left at the flat map's place for it
 	# -- and come back when the view goes.
