@@ -605,10 +605,12 @@ How the window draws is set on the Display page of the Options window
   for stands there as its letter on a black disc.  Traps and runes lie flat on
   the floor instead, and in ASCII they take the place of the floor's dot.
   Places you haven't found aren't drawn at all, and places you remember are
-  fainter, as they are on the flat map.  Walls, doors and shops just in front
-  of you are cut down to their footings so they never hide you.  The mouse
-  works as it does on the flat map, and the square you look at or aim at gets
-  a yellow ring.
+  fainter, as they are on the flat map.  With **Color: Illuminate torchlight in
+  yellow** on, among the game's interface options, the squares your own light
+  reaches are warmed, as they are on the flat map.  Walls, doors and shops
+  just in front of you are cut down to their footings so they never hide you.
+  The mouse works as it does on the flat map, and the square you look at or
+  aim at gets a yellow ring.
 * **Fonts** sets the font and size of the map, of the text panes beside and
   below it, and of the overhead map.  A pane's font decides how many rows and
   columns fit in it, so a larger font shows less of the map.  As well as the

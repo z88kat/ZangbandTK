@@ -99,6 +99,7 @@ static struct {
 	bool away;
 	char style[16];
 	unsigned char *lit, *dim;	/* the sheet as seen, and as remembered */
+	unsigned char *torch;		/* and as seen by the character's own light */
 	int w, h;
 	struct iso_span *span;		/* per row of every cell of the sheet */
 	int cells;
@@ -225,8 +226,9 @@ static void iso_free(void)
 	iso.span = NULL;
 	iso.cells = 0;
 	mem_free(iso.dim);
+	mem_free(iso.torch);
 	mem_free(iso.glyph);
-	iso.lit = iso.dim = iso.glyph = NULL;
+	iso.lit = iso.dim = iso.torch = iso.glyph = NULL;
 	iso.on = false;
 	iso.held = false;
 	iso.anchored = false;
@@ -424,6 +426,25 @@ static bool iso_load(const char *style)
 				iso.dim[i * 4 + k] = (unsigned char)(px[i * 4 + k]
 					+ ((iso.paper[k] - px[i * 4 + k]) * ISO_FADE >> 8));
 			iso.dim[i * 4 + 3] = px[i * 4 + 3];
+		}
+
+		/*
+		 * Seen by the character's own light: the same drawing, warmed,
+		 * as the flat tiles warm the squares round the character when
+		 * "Illuminate torchlight in yellow" is on.  A warm light added
+		 * and scaled rather than one colour mixed in, so that it reads on
+		 * all three: cream paper yellows, white paper takes a candle
+		 * glow, and stone on black warms without its black turning grey.
+		 */
+		iso.torch = mem_alloc((size_t)w * h * 4);
+		for (i = 0; i < w * h; i++) {
+			static const int mul[3] = { 282, 256, 205 }, add[3] = { 24, 14, 0 };
+			int k;
+
+			for (k = 0; k < 3; k++)
+				iso.torch[i * 4 + k] = (unsigned char)MIN(255,
+					(px[i * 4 + k] * mul[k] >> 8) + add[k]);
+			iso.torch[i * 4 + 3] = px[i * 4 + 3];
 		}
 	}
 
@@ -1219,6 +1240,21 @@ static void iso_text_square(term_data *t, struct loc grid, int first,
 			!seen);
 }
 
+/*
+ * Whether the flat map would draw a square torchlit: seen and lit, within the
+ * character's own light, and with "Illuminate torchlight in yellow" on.  The
+ * test is map_info()'s in cave-map.c, which is not called for it here because
+ * it also remembers the square and works out everything else about it.
+ */
+static bool iso_torchlit(struct loc grid)
+{
+	return OPT(player, view_yellow_light)
+		&& square_isseen(cave, grid) && square_islit(cave, grid)
+		&& sqinfo_has(square(cave, grid)->info, SQUARE_CLOSE_PLAYER)
+		&& !(player_has(player, PF_UNLIGHT)
+			&& player->state.cur_light <= 1);
+}
+
 /* The square in the middle of the view when the cursor does not hold it. */
 static struct loc iso_home(void)
 {
@@ -1500,7 +1536,8 @@ static void iso_render(term_data *t)
 			}
 
 			if (feat != FEAT_NONE && iso.kind[feat]) {
-				const unsigned char *src = bright ? iso.lit : iso.dim;
+				const unsigned char *src = !bright ? iso.dim
+					: iso_torchlit(grid) ? iso.torch : iso.lit;
 				int kind = iso.kind[feat];
 				int cell = cut ? iso.cut[feat] : iso.cell[feat];
 				int var = iso.var[feat];
