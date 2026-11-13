@@ -567,6 +567,17 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				if (player && player->race) v = player->race->name;
 			} else if (streq(b+1, "CLASS")) {
 				if (player && player->class) v = player->class->name;
+			} else if (streq(b+1, "SEX")) {
+				/*
+				 * 4.2 has no sex; the Tk portraits take it from the
+				 * parity of what birth rolled (portrait_sex in
+				 * lib/tcl/portrait.tcl), and this is the same rule,
+				 * so a set with a hero and a heroine draws the one
+				 * the portrait shows.
+				 */
+				if (player && player->race)
+					v = (player->age + player->ht + player->wt) % 2 ?
+						"Female" : "Male";
 			}
 		} else {
 			v = b;

@@ -146,7 +146,13 @@ T	p0 note	 switches it back on again. The variables are
 T	p0 note code	$CLASS
 T	p0 note	, 
 T	p0 note code	$RACE
-T	p0 note	 and 
+T	p0 note	, 
+T	p0 note code	$SEX
+T	p0 note	 (
+T	p0 note code	Male
+T	p0 note	 or 
+T	p0 note code	Female
+T	p0 note	, the same as the character’s portrait) and 
 T	p0 note code	$SYS
 T	p0 note	 (the front end in use: 
 T	p0 note code	x11

@@ -87,7 +87,8 @@ After these are complete, the game will try to load (in order):
 
    ``?:`` takes an expression in brackets and switches the rest of the file on
    or off; ``?:1`` switches it back on again.  The variables are ``$CLASS``,
-   ``$RACE`` and ``$SYS`` (the front end in use: ``x11``, ``sdl2``, ``win``
+   ``$RACE``, ``$SEX`` (``Male`` or ``Female``, the same as the character's
+   portrait) and ``$SYS`` (the front end in use: ``x11``, ``sdl2``, ``win``
    and so on), and the operators are ``EQU``, ``IOR``, ``AND`` and ``NOT``, so
    ``?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]`` is how the shipped ``font.prf``
    picks an X11 font.  The game's own files in ``lib/customize/`` are the
