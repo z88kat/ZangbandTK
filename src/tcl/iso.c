@@ -57,6 +57,7 @@
 #include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+#include "wild.h"
 #include "tcl/main-tcl.h"
 
 enum { ISO_NONE, ISO_TILE, ISO_WALL, ISO_DOOR, ISO_SHOP };
@@ -161,11 +162,15 @@ static struct {
 	/*
 	 * The square the view is centred on when the cursor does not hold it:
 	 * the character's, or where the character stood when the view last
-	 * scrolled, on the level it stood on.  See iso_scroll().
+	 * scrolled.  See iso_scroll().  Dropped when a new level is shown, and
+	 * moved with the country when the overworld scrolls.  It used to be kept
+	 * with a pointer to the level it was on, and that was wrong: the level
+	 * after a freed one is nearly always given the same memory, so the view
+	 * stayed centred on the old level's square -- unexplored, and on the
+	 * colour style black, on the new one -- until the character moved.
 	 */
 	bool anchored;
 	struct loc anchor;
-	const struct chunk *anchor_cave;
 	/* The game's answers to "what is on screen?", given back when the view goes. */
 	void (*old_get_panel)(int *min_y, int *min_x, int *max_y, int *max_x);
 	bool (*old_panel_contains)(unsigned int y, unsigned int x);
@@ -1217,7 +1222,7 @@ static void iso_text_square(term_data *t, struct loc grid, int first,
 /* The square in the middle of the view when the cursor does not hold it. */
 static struct loc iso_home(void)
 {
-	return (iso.anchored && iso.anchor_cave == cave) ? iso.anchor
+	return iso.anchored ? iso.anchor
 		: player->grid;
 }
 
@@ -1814,23 +1819,22 @@ static void iso_scroll(void)
 	dx = player->grid.x - home.x;
 	dy = player->grid.y - home.y;
 	iso_view(iso.map, &l, &tp, &r, &b, &vx, &vy);
-	if (!iso.anchored || iso.anchor_cave != cave
+	if (!iso.anchored
 			|| (OPT(player, center_player) && !player->upkeep->running)
 			|| abs(dx - dy) * iso.hw > (r - l) / 4
 			|| abs(dx + dy) * iso.hh > (b - tp) / 4) {
 		iso.anchor = player->grid;
-		iso.anchor_cave = cave;
 		iso.anchored = true;
 	}
 }
 
 /*
- * Something on the level changed, the character moved, or the game left the
- * world or came back to it.  A square drawn again is drawn without whatever
- * effect was kept for it.  When the character moved, the view may follow it,
- * and the term's rectangle is centred on it again, as center_player has the
- * flat map do: the view shows what the term holds round the character, and
- * the path an aimed bolt would take is drawn only there.
+ * Something on the level changed, the character moved, a new level was shown,
+ * or the game left the world or came back to it.  A square drawn again is
+ * drawn without whatever effect was kept for it.  When the character moved,
+ * the view may follow it, and the term's rectangle is centred on it again, as
+ * center_player has the flat map do: the view shows what the term holds round
+ * the character, and the path an aimed bolt would take is drawn only there.
  */
 static void iso_notice(game_event_type type, game_event_data *data, void *user)
 {
@@ -1838,6 +1842,24 @@ static void iso_notice(game_event_type type, game_event_data *data, void *user)
 	iso.dirty = true;
 	if (type == EVENT_LEAVE_WORLD || type == EVENT_ENTER_WORLD)
 		iso.away = (type == EVENT_LEAVE_WORLD);
+	if (type == EVENT_NEW_LEVEL_DISPLAY) {
+		/*
+		 * The overworld rebuilt under the character: the same country,
+		 * at coordinates moved by as far as the window travelled, so the
+		 * anchor moves with it, as the flat map's panel does
+		 * (new_level_display_update).  Otherwise a new level: centre on the
+		 * character.  Either way what was kept drawn was somewhere else.
+		 */
+		if (player && player->upkeep->scroll_world) {
+			struct loc scroll = wild_scroll_delta();
+
+			iso.anchor = loc(iso.anchor.x + scroll.x,
+				iso.anchor.y + scroll.y);
+		} else {
+			iso.anchored = false;
+		}
+		iso.effect_n = 0;
+	}
 	if (type == EVENT_MAP) {
 		int e = iso_effect_at(data->point);
 
@@ -1886,6 +1908,7 @@ void tcl_iso_events_init(void)
 	event_add_handler(EVENT_PLAYERMOVED, iso_notice, NULL);
 	event_add_handler(EVENT_LEAVE_WORLD, iso_notice, NULL);
 	event_add_handler(EVENT_ENTER_WORLD, iso_notice, NULL);
+	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, iso_notice, NULL);
 	print_rel_hook = iso_effect;
 }
 
