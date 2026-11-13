@@ -4,7 +4,8 @@ The 1982 tileset's source
 Early-1980s fantasy pixel art at 32x32, in the DB16 palette.  An AI image
 generator drew the pictures, sixteen to a sheet, to a brief written for this
 game; the brief, every sheet it returned and the reasons each picture was
-accepted or sent back are in .claude/plans/design_brief_tileset_1982/.
+accepted or sent back are in archive/design_brief_tileset_1982/, which is
+not in the repository.
 
     source.png      every accepted picture, cut to 32x32 and snapped to the
                     palette, on transparency.  This is the art.

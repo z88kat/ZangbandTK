@@ -1,11 +1,11 @@
 # recipe.txt -- how every 1982 tile is cut from the generator's sheets.
 #
-# A copy of accepted.txt from the design brief (.claude/plans/
-# design_brief_tileset_1982/), where the sheets it names live; they are 93 MB
-# of JPEG and PNG and are not in the repository.  build-1982.py --cut reads
-# this and those sheets once and writes source.png, which is what the build
-# reads from then on.  Change the brief's accepted.txt, copy it here, and cut
-# again.
+# A copy of accepted.txt from the design brief, archive/
+# design_brief_tileset_1982/, where the sheets it names live: 93 MB of JPEG
+# and PNG which, like the rest of archive/, are not in the repository.
+# build-1982.py --cut reads this and those sheets once and writes source.png,
+# which is what the build reads from then on.  Change the brief's accepted.txt,
+# copy it here, and cut again.
 #
 
 # accepted.txt -- every tile of the 1982 set that has been accepted, and where

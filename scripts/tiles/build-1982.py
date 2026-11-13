@@ -48,7 +48,7 @@ ROOT = os.path.normpath(os.path.join(HERE, '..', '..'))
 DATA = os.path.join(ROOT, 'lib', 'gamedata')
 SRC = os.path.join(HERE, '1982')
 OUT = os.path.join(ROOT, 'lib', 'tiles', '1982')
-BRIEF = os.path.join(ROOT, '.claude', 'plans', 'design_brief_tileset_1982')
+BRIEF = os.path.join(ROOT, 'archive', 'design_brief_tileset_1982')
 
 TILE = 32
 COLUMNS = 32
