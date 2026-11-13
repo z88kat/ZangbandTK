@@ -31,6 +31,60 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 November 2026 — the 1982 tiles
+=================================
+
+Steven called Neon "so-so", which was fair, and asked whether a dedicated AI
+image generator could do better: early-1980s fantasy art, the look of the old
+rulebooks. I wrote the brief and he carried it back and forth. Thirty-six sheets
+of sixteen pictures later there is a new tile set, mode 9, and every monster,
+object, trap, spell and piece of terrain in the game has a tile in it.
+
+The generator can't hold a pixel grid, and said so. That turned out not to
+matter: averaging each picture down to 32 by 32 and snapping it to the palette
+gave clean tiles every time, so I stopped asking for exact pixels and did that
+part myself. Most of the work was in what it did instead of what it was asked.
+Deep reds came back as crimson, which the palette turns brown. A figure drawn a
+fifth of a cell too high carried its neighbour's boots into the tile below. A
+reference sheet attached to show the style was copied into the same cells of the
+next sheet, so references went. One request was refused outright "due to
+interests of third-party content providers", because it named Gandalf, Loki and
+Mephistopheles; since then the requests describe what to draw and never say who
+it is. And when I asked for a Trump-lord whose "body" shimmered, it drew him with
+nothing on. That one was my wording.
+
+Steven made the rulings that shaped it. A plain slab floor with an ink outline
+round every figure, after the drawn floors hid them. Numbers on the shops and
+letters on the services, because the signs can't be read at actual size. A
+heroine for every class. A stone outline instead of ink round the figures that
+are nearly black, which is a third of the great villains. And, halfway through
+the monsters, the one that made the job finishable: a picture of its own only
+for the uniques and the monsters that look nothing like their family. The other
+652 are their family's drawing in their own colour, which is Neon's idea reached
+from the other side. A recolourable picture draws its changing part in four
+greys, and the build tints it with the colour monster.txt gives, keeping the
+shading.
+
+The game has no sex, so the heroine needed one. The Tk portraits already take
+it from whether age, height and weight add up odd, and the pref files now have
+``$SEX`` working it out the same way, so the map and the portrait always show
+the same person. The 93 megabytes of sheets stay out of the repository: what's
+committed is one small atlas of the cut tiles and the recipe for cutting them,
+and ``build-1982.py`` makes the sheet and the pref file from those.
+
+Steven's first game in the set turned up two bugs that weren't the tiles'. The
+torch never showed. The game only marks squares torchlit with an interface
+option on, and the isometric view had no torchlit state at all, so it has one
+now. Then, going down to level 2 in the isometric view, the pane went black. The
+view remembered where it was centred along with a pointer to the level, and a
+new level is nearly always given the old one's memory, so it took itself to be
+on the same level and stayed centred on a square from the last one,
+unexplored and black, until he took a step. He was bumping into walls. Logging
+the centre on every frame across a run of jumps showed the old code off by 26
+to 135 squares on 15 arrivals out of 17. The view now drops its centre when a
+new level is shown.
+
+
 2 November 2026 — counters with an edge
 =======================================
 
