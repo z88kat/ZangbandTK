@@ -193,6 +193,8 @@ squashfs-root/
 scripts/tiles/neon/preview.png
 scripts/tiles/neon/preview-actual-size.png
 scripts/tiles/neon/cycle.png
+scripts/tiles/1982/preview.png
+scripts/tiles/1982/preview-actual-size.png
 # Where files go when they cannot be deleted.
 #
 # Unlink fails on this mount and rename does not, so the way to get rid of

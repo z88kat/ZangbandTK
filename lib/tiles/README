@@ -113,6 +113,20 @@ Per tileset
   modification of a text file, not of any art.
 
 
+**1982 (32x32) -- ours.**
+
+  `lib/tiles/1982` was made for ZangbandTK and is not one of Angband's sets.
+  The pictures were drawn by an AI image generator, sixteen at a time, to a
+  brief written for this game (early-1980s fantasy pixel art in the DB16
+  palette), and `scripts/tiles/build-1982.py` turns them into the sheet: it
+  cuts each picture down to 32x32, tints the recolourable ones with each
+  monster's and object's own colour, outlines the figures, draws the floor,
+  and writes `graf-82.prf`.  The art it works from is
+  `scripts/tiles/1982/source.png`; nothing in it was taken from another
+  tileset.  The sheet and the prf are build output -- edit the source, the
+  manifest or the recipe there and run the script again.
+
+
 **iso -- ours, and not a tileset.**
 
   `lib/tiles/iso` is the terrain of the Tk front end's isometric map view

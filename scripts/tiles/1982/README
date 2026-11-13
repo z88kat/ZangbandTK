@@ -1,0 +1,56 @@
+The 1982 tileset's source
+=========================
+
+Early-1980s fantasy pixel art at 32x32, in the DB16 palette.  An AI image
+generator drew the pictures, sixteen to a sheet, to a brief written for this
+game; the brief, every sheet it returned and the reasons each picture was
+accepted or sent back are in .claude/plans/design_brief_tileset_1982/.
+
+    source.png      every accepted picture, cut to 32x32 and snapped to the
+                    palette, on transparency.  This is the art.
+    source.txt      which picture is where in source.png, and whether it is
+                    fixed or recolourable
+    recipe.txt      how each picture was cut from its sheet: the brief's
+                    accepted.txt, copied here
+    manifest.txt    which picture each terrain feature, object, trap, spell
+                    effect and the player is drawn with
+    monsters.txt    which picture each monster is drawn with
+
+`build-1982.py` reads these and writes lib/tiles/1982/32x32.png and
+graf-82.prf.  `build-1982.py --cut` rewrites source.png, source.txt and
+monsters.txt from the brief's sheets, and needs the brief and ImageMagick.
+
+Recolourable pictures
+---------------------
+
+A recolourable picture draws the part that changes colour in four greys
+(#333333, #666666, #999999, #CCCCCC).  The build tints them with the thing's
+own colour from lib/gamedata, keeping the shading, so one young dragon is
+every young dragon and one potion bottle every potion, each the colour the
+game says it is.
+
+What the build adds
+-------------------
+
+  * The floor, drawn from the recipe: one plain iron slab per square with a
+    bevelled joint.  `--cut` checks it against the brief's floor.png.
+  * A one-pixel outline round every figure, object, trap and spell effect:
+    ink, or stone round one nine-tenths darker than the floor, which ink does
+    nothing for.
+  * Rubble and the stairs laid on the floor, the buildings drawn on magenta
+    laid on the town's grass, and each building's number or letter on its
+    gable.
+  * Each terrain feature in the game's four lights: as drawn when seen;
+    warmed within the character's own light, which the game uses only when
+    "Color: Illuminate torchlight in yellow" is on; dimmed and a little greyed
+    when remembered, which the game calls `lit`; and dimmer still for the
+    UNLIGHT case it calls `dark`.  A figure, object or trap has one tile; the
+    front end lays it on the terrain and dims it when the square is
+    remembered.
+  * The heroine for a character whose $SEX is Female, which ui-prefs.c works
+    out the way the Tk portraits do.
+
+To change a picture, cut a new one into the brief's accepted.txt, copy that
+here as recipe.txt, and run `build-1982.py --cut`.  To change which picture
+something uses, edit manifest.txt or monsters.txt and run `build-1982.py`.
+Check with `build-1982.py --check` and `audit-tiles.py`.

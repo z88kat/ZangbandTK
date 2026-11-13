@@ -1,0 +1,846 @@
+# recipe.txt -- how every 1982 tile is cut from the generator's sheets.
+#
+# A copy of accepted.txt from the design brief (.claude/plans/
+# design_brief_tileset_1982/), where the sheets it names live; they are 93 MB
+# of JPEG and PNG and are not in the repository.  build-1982.py --cut reads
+# this and those sheets once and writes source.png, which is what the build
+# reads from then on.  Change the brief's accepted.txt, copy it here, and cut
+# again.
+#
+
+# accepted.txt -- every tile of the 1982 set that has been accepted, and where
+# its art is.  The importer reads this; nothing else says which take won.
+#
+#   <id> <sheet> <cell> [<from>><to> ...]
+#
+# The sheets are 1024x1024 or 2048x2048, a 4x4 grid of square cells numbered
+# 1 to 16 left to right, then top to bottom.  A tile is cut by averaging each
+# block of a thirty-second of its cell (8x8 or 16x16) into one pixel and
+# snapping it to DB16 (palette.hex).
+# Recolourable tiles (sprites.csv says which) snap to DB16 without plum,
+# iron, stone, steel and bone, plus the four recolour greys.  Outside
+# terrain, a block that is mostly magenta is transparent.
+#
+# The swaps after the cell are colour changes made after snapping, all at
+# once (plum>brown brown>orange turns plum brown and brown orange; nothing
+# becomes orange twice).  The names are palette.png's; a recolour grey is
+# named by its hex (333333, 666666, 999999, cccccc).
+#
+# A step written clear:<x0>-<x1>,<y0>-<y1> makes that rectangle of the cut
+# tile transparent, counting from 0 at the top left, before any outline.
+# It removes a neighbour's art that spilled over the cell's edge.
+#
+# A step written at:<x>,<y>,<size> cuts the tile from that square of the
+# sheet instead of from the cell, in sheet pixels from the top left, each
+# art pixel a block of size/32; anything beyond the sheet's edge counts as
+# magenta.  The step largest keeps only the largest shape in the tile
+# (pixels touching on a side or a corner), dropping whatever else the
+# square caught.  The step own keeps only the shapes whose middle falls
+# inside the line's cell, the shapes being found on the whole sheet at a
+# quarter of its size (a pixel is part of one when at least two of its
+# four samples aren't magenta; shapes join on a side or a corner); every
+# other pixel in the square counts as magenta.  Batch 16's and batch 21's
+# figures needed these: they were drawn a fifth of a cell above their rows,
+# some taller than a cell.
+#
+# The step thin:<f> keeps a block when at least f of its pixels aren't
+# magenta, instead of more than half, for art drawn as faint lines that
+# would otherwise average away into the background (batch 30's It).
+#
+# clear and largest apply first, in the order written, then the colour
+# swaps together, then the outline.
+#
+# A swap to none (red>none) makes that colour transparent, for a glow
+# drawn round something that should stand clear of the floor.
+#
+# A swap written +<rrggbb>><to> works before snapping instead: it adds the
+# colour rrggbb to the palette for that tile alone, and every block that
+# snaps to it becomes <to>.  It catches a colour the generator used that is
+# nearer the wrong palette entry (the high mages' crimson, #901830, is nearer
+# brown than DB16's red).
+#
+# The id is sprites.csv's for the first set.  An individual tile (one
+# monster's own, after the first set) uses monsters.csv's id, except
+# mon-corwin, which is mon-corwin-lord-of-avalon; a shared drawing uses
+# second-set.csv's.  Which tile each monster shows is monsters.csv's own_tile.  A # starts a comment, whether at the start of a
+# line or after a tile.  A later line for the same id replaces an earlier one.
+#
+# The heroine tiles (player-<class>-f) need the game to say which the
+# player is, and it doesn't: 4.2 has no sex.  The Tk portraits use the parity
+# of age + height + weight rolled at birth.  The pref files will need a $SEX
+# variable in ui-prefs.c computing the same thing, so the map and the
+# portrait always agree.
+
+# feat-floor is not cut from a sheet.  The importer draws it: one plain iron
+# slab per square with bevelled joints, chosen on 2 November 2026 over the
+# generator's bricks, which hid the figures.  The owner picked the bevelled
+# slab, top right in floor-slab-options-2x.png.  floor.png is that slab at
+# 32x32, and the importer must draw exactly it.  Counting x and y from 0 at
+# the top left:
+#
+#   everything iron, then
+#   column 31 and row 31 ink                    the joint
+#   row 0 and column 0, from 0 to 30, stone     the lit edges
+#   row 30 and column 30, from 1 to 29, plum    the shaded edges
+#   (0,0) (30,0) (0,30) (30,30) ink             rounded corners
+#   (1,0) (0,1) iron
+#
+# Every figure, item, trap and effect also gets a one-pixel ink outline
+# (4-way, outside the shape, inside the tile).  The exception, ruled by the
+# owner on 7 November 2026: a tile of which nine-tenths or more of the
+# pixels are darker than the floor's iron (relative luminance, sRGB, below
+# iron's 0.071) is outlined in stone instead, so its silhouette shows on the
+# dark floor.  Measure the tile as the game will show it: after the colour
+# swaps and, for a recolourable tile, after tinting it to the monster's
+# colour, so a recolourable spider tinted near-black gets the stone outline
+# too.  Of the fixed figures accepted by then, 13 qualify, from Draebor the
+# Imp at 99% to the hero rogue at 90% (batch-25/darkest-1x.png, the 30
+# darkest with ink above and stone below; batch-25/rim-1x.png).  Traps are drawn on magenta
+# and laid on feat-floor, like the rubble, and outlined like the items: at
+# actual size the outline is what makes a trap show (batch-12/rune-1x.png).
+#
+# Steps for particular tiles:
+#   - feat-rubble and feat-pass-rubble are drawn on magenta: key it out and
+#     lay what is left on feat-floor.
+#   - Buildings drawn with magenta round them (the batch 6 services, the
+#     batch 7 Figurine Store and both towers): key it out and lay what is
+#     left on feat-grass.
+#   - feat-chaostower is lifted a step after snapping, which turns its drawn
+#     outline plum, so it then gets the ink outline as the figures do.
+#   - Every shop front gets its number stamped on the gable: 3x5 digits in
+#     bone on an ink box, top left at (14,6), the box one pixel larger all
+#     round.  The numbers are terrain.txt's glyphs: General 1, Armoury 2,
+#     Weaponsmith 3, Bookseller 4, Alchemist 5, Magic 6, Black Market 7,
+#     Home 8, Statue Store 0, Figurine Store 0, and the Magetower 9.  The
+#     owner approved it on 2 November 2026 (batch-02/town-fixes-2x.png,
+#     bottom half): the signs alone can't be told apart at actual size.
+#   - The five services, whose glyph is +, get a letter the same way:
+#     Healer H, Inn I, Magesmith M, Recharger R, and the Chaos Tower C.  The
+#     owner ruled for letters over a + on 3 November 2026, since a + would
+#     tell the services from the shops but not from each other
+#     (batch-07/street-3x.png shows the whole street marked).
+#
+#     The digits and letters, one row per line, 1 = bone:
+#       1  010 110 010 010 111     6  111 100 111 101 111
+#       2  111 001 111 100 111     7  111 001 010 010 010
+#       3  111 001 111 001 111     8  111 101 111 101 111
+#       4  101 101 111 001 001     9  111 101 111 001 111
+#       5  111 100 111 001 111     0  111 101 101 101 111
+#       H  101 101 111 101 101     R  110 101 110 101 101
+#       I  111 010 010 010 111     C  111 100 100 100 111
+#       M  101 111 111 101 101
+
+# --- pilot (accepted 2 November 2026) ---
+feat-more             pilot-3/sheet2.png   4
+feat-less             pilot-3/sheet2.png   5
+mon-orc               pilot-3/sheet2.png   9
+mon-kobold            pilot-3/sheet2.png  10
+mon-skeleton          pilot-3/sheet2.png  11
+mon-dragon            pilot-3/sheet2.png  12
+mon-corwin            pilot-3/sheet2.png  13
+item-potion           pilot-3/sheet2.png  14
+item-sword            pilot-3/sheet2.png  15
+fx-bolt-horizontal    pilot-3/sheet2.png  16
+feat-granite          pilot-4/sheet.png   1
+feat-closed           pilot-4/sheet.png   2
+feat-grass            pilot-4/sheet.png   3
+player-warrior        pilot-4/sheet.png   5   # stand-in: redrawn in batch 5 to match batch 4's heroes
+# pilot-4 cell 4, the Weaponsmith, was dropped for batch 2's shop style; redone in batch 3.
+
+# --- batch 1 (2 November 2026); magma, magma-k and both rubbles redone in batch 2 ---
+feat-perm             batch-01/sheet.png  1   ink>iron plum>stone iron>steel
+feat-quartz           batch-01/sheet.png  3
+feat-quartz-k         batch-01/sheet.png  5
+feat-open             batch-01/sheet.png  6
+feat-broken           batch-01/sheet.png  7
+feat-lava             batch-01/sheet.png 10
+feat-dirt             batch-01/sheet.png 11   plum>brown brown>orange
+feat-sand             batch-01/sheet.png 12   flesh>stone orange>yellow
+feat-mud              batch-01/sheet.png 13   plum>brown
+feat-road             batch-01/sheet.png 14
+feat-tree             batch-01/sheet.png 15
+feat-water            batch-01/sheet.png 16
+
+# --- batch 2 (2 November 2026; 2048 sheet, JPEG); magma-k and rock redone in batch 3 ---
+feat-magma            batch-02/sheet.jpg  1   iron>stone plum>iron
+feat-rubble           batch-02/sheet.jpg  3
+feat-pass-rubble      batch-02/sheet.jpg  4
+feat-deep-water       batch-02/sheet.jpg  5
+feat-world-edge       batch-02/sheet.jpg  6
+feat-dungeon          batch-02/sheet.jpg  8   moss>green
+feat-store-general    batch-02/sheet.jpg  9   moss>green
+feat-store-armor      batch-02/sheet.jpg 10   moss>green
+feat-store-book       batch-02/sheet.jpg 11   moss>green
+feat-store-alchemy    batch-02/sheet.jpg 12   moss>green
+feat-store-magic      batch-02/sheet.jpg 13   moss>green
+feat-store-black      batch-02/sheet.jpg 14   moss>green
+feat-home             batch-02/sheet.jpg 15   moss>green
+feat-store-statue     batch-02/sheet.jpg 16   moss>green
+
+# --- batch 3 (2 November 2026); only cells 1-3 were drawn, and the rock is redone in batch 4 ---
+feat-magma-k          batch-03/sheet.png  1   iron>stone plum>iron
+feat-store-weapon     batch-03/sheet.png  3   moss>green
+
+# --- batch 4 (2 November 2026; 2048 sheet, JPEG); the services and towers are redone ---
+feat-rock             batch-04/sheet.jpg  1
+player-mage           batch-04/sheet.jpg  9
+player-druid          batch-04/sheet.jpg 10
+player-priest         batch-04/sheet.jpg 11
+player-necromancer    batch-04/sheet.jpg 12
+player-paladin        batch-04/sheet.jpg 13
+player-rogue          batch-04/sheet.jpg 14
+player-ranger         batch-04/sheet.jpg 15
+player-blackguard     batch-04/sheet.jpg 16
+
+# --- batch 5 (2 November 2026; 2048 sheet, JPEG); chaos warrior, high mage and
+#     four heroines (mage, druid, paladin, blackguard) are redone in batch 6 ---
+player-warrior        batch-05/sheet.jpg  1   # replaces the pilot's stand-in
+player-monk           batch-05/sheet.jpg  2
+player-mindcrafter    batch-05/sheet.jpg  3
+player-warrior-mage   batch-05/sheet.jpg  5
+player-warrior-f      batch-05/sheet.jpg  7
+player-priest-f       batch-05/sheet.jpg 10
+player-necromancer-f  batch-05/sheet.jpg 11
+player-rogue-f        batch-05/sheet.jpg 13
+player-ranger-f       batch-05/sheet.jpg 14
+player-monk-f         batch-05/sheet.jpg 16
+
+# --- batch 6 (3 November 2026; 2048 sheet, JPEG); the Figurine Store (white,
+#     where the shops are brown) and the Magetower (on a forest square, and too
+#     slender to read once the forest is cut away) are redone in batch 7 ---
+player-chaos-warrior    batch-06/sheet.jpg  1
+player-high-mage        batch-06/sheet.jpg  2   +901830>red
+player-mage-f           batch-06/sheet.jpg  3
+player-druid-f          batch-06/sheet.jpg  4
+player-paladin-f        batch-06/sheet.jpg  5
+player-blackguard-f     batch-06/sheet.jpg  6
+player-mindcrafter-f    batch-06/sheet.jpg  7   brown>stone plum>iron   # the hero's grey robe
+player-chaos-warrior-f  batch-06/sheet.jpg  8
+player-warrior-mage-f   batch-06/sheet.jpg  9
+player-high-mage-f      batch-06/sheet.jpg 10   +901830>red
+feat-healer             batch-06/sheet.jpg 12   # white services, brown shops
+feat-inn                batch-06/sheet.jpg 13
+feat-magesmith          batch-06/sheet.jpg 14
+feat-recharger          batch-06/sheet.jpg 15
+
+# --- batch 7 (3 November 2026; 2048 sheet, JPEG); all sixteen accepted.  The
+#     towers follow tower-target-8x.png.  The thirteen monsters are the first
+#     recolourable families after the pilot (batch-07/recolour-3x.png) ---
+feat-store-figurine     batch-07/sheet1.jpg  1   moss>green
+feat-magetower          batch-07/sheet1.jpg  2
+feat-chaostower         batch-07/sheet1.jpg  3   ink>plum plum>iron iron>stone   # then the ink outline
+mon-person-fighter      batch-07/sheet1.jpg  4
+mon-major-demon         batch-07/sheet1.jpg  5
+mon-ancient-dragon      batch-07/sheet1.jpg  6
+mon-canine              batch-07/sheet1.jpg  7
+mon-wraith              batch-07/sheet1.jpg  8
+mon-fish                batch-07/sheet1.jpg  9
+mon-jelly               batch-07/sheet1.jpg 10
+mon-zephyr-hound        batch-07/sheet1.jpg 11
+mon-giant               batch-07/sheet1.jpg 12
+mon-hybrid              batch-07/sheet1.jpg 13
+mon-spider              batch-07/sheet1.jpg 14
+mon-ghost               batch-07/sheet1.jpg 15
+mon-minor-demon         batch-07/sheet1.jpg 16
+
+# --- batch 8 (3 November 2026; 2048 sheet, JPEG); the burst is redone in
+#     batch 9: nine in a block read as nine squares, not one blast
+#     (batch-08/burst-3x.png).  The rising and falling bolts were drawn as one
+#     ^ across cells 9 and 10, but each runs corner to corner in its own cell
+#     and they join (batch-08/effects-3x.png) ---
+item-ring               batch-08/sheet.jpg  1
+item-amulet             batch-08/sheet.jpg  2   brown>orange orange>yellow   # the chain averaged to brown
+item-scroll             batch-08/sheet.jpg  3
+item-book               batch-08/sheet.jpg  4
+item-wand               batch-08/sheet.jpg  5
+item-rod                batch-08/sheet.jpg  6
+item-magic-staff        batch-08/sheet.jpg  7
+fx-bolt-vertical        batch-08/sheet.jpg  8
+fx-bolt-rising          batch-08/sheet.jpg  9
+fx-bolt-falling         batch-08/sheet.jpg 10
+mon-ainu                batch-08/sheet.jpg 12
+mon-troll               batch-08/sheet.jpg 13
+mon-bird                batch-08/sheet.jpg 14
+mon-golem               batch-08/sheet.jpg 15
+mon-vortex              batch-08/sheet.jpg 16
+
+# --- batch 9 (3 November 2026; 2048 sheet, JPEG); all sixteen accepted.  The
+#     burst is now a seamless tile, and nine make one blaze
+#     (batch-09/burst-3x.png) ---
+fx-burst                batch-09/sheet.jpg  1   flesh>cccccc   # specks that would stay pink in every colour
+mon-worm                batch-09/sheet.jpg  2
+mon-zombie              batch-09/sheet.jpg  3
+item-hard-armour        batch-09/sheet.jpg  4
+mon-eye                 batch-09/sheet.jpg  5
+mon-humanoid-dwarf      batch-09/sheet.jpg  6
+mon-insect              batch-09/sheet.jpg  7
+mon-reptile             batch-09/sheet.jpg  8
+mon-snake               batch-09/sheet.jpg  9
+mon-mushroom            batch-09/sheet.jpg 10
+mon-lich                batch-09/sheet.jpg 11
+item-soft-armour        batch-09/sheet.jpg 12
+item-mushroom           batch-09/sheet.jpg 13
+mon-person-caster       batch-09/sheet.jpg 14
+mon-feline              batch-09/sheet.jpg 15
+mon-rodent              batch-09/sheet.jpg 16
+
+# --- batch 10 (3 November 2026; 2048 sheet, JPEG); the vampire is redone in
+#     batch 11: his pale blue-white face snaps to the greys and takes his
+#     colour, and a pre-snap entry catches only four pixels of it
+#     (batch-10/fixes-3x.png, top two rows).  The bat, ant and centipede
+#     are shaded in a bluish grey that snaps to navy, which is never tinted;
+#     navy>333333 makes it the darkest grey (the rows under them) ---
+mon-townsfolk           batch-10/sheet.jpg  1
+mon-wall-monster        batch-10/sheet.jpg  2
+item-dragon-armour      batch-10/sheet.jpg  3
+mon-lurker              batch-10/sheet.jpg  4
+mon-mimic               batch-10/sheet.jpg  5
+mon-quylthulg           batch-10/sheet.jpg  6
+mon-ant                 batch-10/sheet.jpg  7   navy>333333
+mon-bat                 batch-10/sheet.jpg  8   navy>333333
+mon-quadruped           batch-10/sheet.jpg  9
+item-halberd            batch-10/sheet.jpg 11   plum>brown   # the haft
+item-statue             batch-10/sheet.jpg 12
+mon-person-rogue        batch-10/sheet.jpg 13
+mon-humanoid-elf        batch-10/sheet.jpg 14
+mon-centipede           batch-10/sheet.jpg 15   navy>333333
+mon-elemental-water     batch-10/sheet.jpg 16
+
+# --- batch 11 (3 November 2026; 2048 sheet, JPEG); all sixteen accepted.  The
+#     wooden hafts snap to plum, as the halberd's did, and plum>brown puts them
+#     right (batch-11/weapons-4x.png, bottom row).  The naga has a snake's
+#     head on a human torso, not the human head asked for; at actual size
+#     it reads as a serpent-man, which will do ---
+mon-vampire             batch-11/sheet.jpg  1
+mon-hydra               batch-11/sheet.jpg  2
+mon-killer-beetle       batch-11/sheet.jpg  3
+mon-mold                batch-11/sheet.jpg  4
+item-greatsword         batch-11/sheet.jpg  5   plum>brown
+mon-naga                batch-11/sheet.jpg  6
+mon-ogre                batch-11/sheet.jpg  7
+item-spear              batch-11/sheet.jpg  8   plum>brown
+mon-person-archer       batch-11/sheet.jpg  9
+mon-elemental-fire      batch-11/sheet.jpg 10
+mon-elemental-air       batch-11/sheet.jpg 11
+mon-icky-thing          batch-11/sheet.jpg 12
+mon-tree                batch-11/sheet.jpg 13
+item-flail              batch-11/sheet.jpg 14   plum>brown
+item-axe                batch-11/sheet.jpg 15   plum>brown
+item-shield             batch-11/sheet.jpg 16
+
+# --- batch 12 (3 November 2026; 2048 sheet, JPEG); all sixteen accepted.  The
+#     rune was drawn in ink, which never recolours and hardly shows on the
+#     floor; ink>cccccc makes its marks the lightest grey ---
+item-helm               batch-12/sheet.jpg  1
+mon-person-priest       batch-12/sheet.jpg  2
+mon-person-monk         batch-12/sheet.jpg  3
+mon-humanoid-fey        batch-12/sheet.jpg  4
+mon-humanoid            batch-12/sheet.jpg  5
+mon-quadruped-bear      batch-12/sheet.jpg  6
+mon-reptile-dinosaur    batch-12/sheet.jpg  7
+mon-yeek                batch-12/sheet.jpg  8
+item-mace               batch-12/sheet.jpg  9
+item-hammer             batch-12/sheet.jpg 10
+item-boots              batch-12/sheet.jpg 11
+item-gems               batch-12/sheet.jpg 12
+trap-strange-rune       batch-12/sheet.jpg 13   ink>cccccc
+mon-humanoid-halfling   batch-12/sheet.jpg 14
+mon-creeping-coins      batch-12/sheet.jpg 15
+mon-dragon-fly          batch-12/sheet.jpg 16
+
+# --- batch 13 (3 November 2026; 2048 sheet, JPEG); three redone in batch 14
+#     (batch-13/items-4x.png): the drink came as a round flask beside which
+#     the brown potion looks the same; the pressure plate fills its square
+#     and reads as a coloured floor tile; the dart trap brought its own
+#     stone floor.  plum>brown again where wood and leather snapped to plum ---
+mon-elemental           batch-13/sheet.jpg  1
+item-dagger             batch-13/sheet.jpg  2   plum>brown
+item-gloves             batch-13/sheet.jpg  3   plum>brown
+item-arrow              batch-13/sheet.jpg  5   plum>brown
+mon-quadruped-horse     batch-13/sheet.jpg  6
+item-coins              batch-13/sheet.jpg  7
+item-crown              batch-13/sheet.jpg  8
+item-cloak              batch-13/sheet.jpg  9
+item-bread              batch-13/sheet.jpg 10
+item-deck               batch-13/sheet.jpg 11
+item-chest-metal        batch-13/sheet.jpg 12
+mon-elemental-earth     batch-13/sheet.jpg 14
+mon-yeti                batch-13/sheet.jpg 15
+
+# --- batch 14 (3 November 2026; 2048 sheet, JPEG); all sixteen accepted,
+#     the three redone from batch 13 among them.  The minotaur's horns and
+#     axe run over its cell into cells 2 and 7, so those tiles have the
+#     spill cleared.  plum>brown again for the wood ---
+item-drink              batch-14/sheet.jpg  1
+trap-generic            batch-14/sheet.jpg  2   clear:0-31,29-31   # the minotaur's horns
+trap-dart-trap          batch-14/sheet.jpg  3   plum>brown
+trap-gas-trap           batch-14/sheet.jpg  4
+trap-ancient-mechanism  batch-14/sheet.jpg  5
+mon-hybrid-minotaur     batch-14/sheet.jpg  6
+mon-xorn                batch-14/sheet.jpg  7   clear:0-2,7-13   # the minotaur's axe
+mon-animated-weapon     batch-14/sheet.jpg  8
+item-staff-weapon       batch-14/sheet.jpg  9   plum>brown
+item-shot               batch-14/sheet.jpg 10
+item-bolt               batch-14/sheet.jpg 11   plum>brown
+item-meat               batch-14/sheet.jpg 12
+item-fruit              batch-14/sheet.jpg 13
+trap-pit                batch-14/sheet.jpg 14
+mon-humanoid-lizardfolk batch-14/sheet.jpg 15
+item-bow                batch-14/sheet.jpg 16   plum>brown
+
+# --- batch 15 (3 November 2026; 2048 sheet, JPEG); all sixteen accepted.
+#     plum>brown on the wood where it snapped dark; the chest and the
+#     figurine keep their plum, which is their shading ---
+item-crossbow           batch-15/sheet.jpg  1   plum>brown
+item-pick               batch-15/sheet.jpg  2   plum>brown
+item-chest-wood         batch-15/sheet.jpg  3
+item-unknown            batch-15/sheet.jpg  4
+trap-discolored-spot    batch-15/sheet.jpg  5
+trap-alarm              batch-15/sheet.jpg  6
+trap-mind-blast-trap    batch-15/sheet.jpg  7
+trap-explosion          batch-15/sheet.jpg  8
+mon-morgoth             batch-15/sheet.jpg  9
+item-sling              batch-15/sheet.jpg 10   plum>brown
+item-shovel             batch-15/sheet.jpg 11   plum>brown
+item-torch              batch-15/sheet.jpg 12
+item-lantern            batch-15/sheet.jpg 13
+item-flask              batch-15/sheet.jpg 14
+item-figurine           batch-15/sheet.jpg 15
+item-pile               batch-15/sheet.jpg 16
+
+# --- batch 16 (3 November 2026; 2048 sheet, JPEG).  The last six tiles of
+#     the first set are in their cells, with the heads and crowns of the
+#     figures below them cleared from their bottom rows.  The Amber cast were
+#     drawn taller than their cells and stood on each other's heads
+#     (batch-16/cast-windows-6x.png); five came out clean from a square cut
+#     round each, and Benedict, Caine, Gerard, Julian and Fiona, who touch
+#     the figure above or below, are redone in batch 17.  With these the
+#     first set of sprites.csv is complete ---
+item-curse              batch-16/sheet.jpg  1   clear:0-31,26-31   # the web's top
+trap-glyph-of-warding   batch-16/sheet.jpg  2
+trap-decoy              batch-16/sheet.jpg  3   clear:0-31,27-31   # Oberon's crown
+trap-explosive-rune     batch-16/sheet.jpg  4   clear:0-31,26-31   # Eric's head
+trap-web                batch-16/sheet.jpg  5   clear:0-31,25-31   # Benedict's head
+trap-trap-door          batch-16/sheet.jpg  6   clear:0-31,25-31   # Bleys's crown
+mon-oberon-king-of-amber         batch-16/sheet.jpg  7  at:966,396,640   largest
+mon-eric-the-usurper             batch-16/sheet.jpg  8  at:1429,387,640  largest clear:0-31,31-31   # Caine's hat
+mon-bleys-master-of-manipulation batch-16/sheet.jpg 10  at:472,884,608   largest
+mon-brand-mad-visionary-of-amber batch-16/sheet.jpg 11  at:1000,979,576  largest
+mon-dworkin-barimen              batch-16/sheet.jpg 16  at:1536,1552,512 largest
+
+# --- batch 17 (4 November 2026; 2048 sheet, JPEG); every figure inside its
+#     cell this time.  Jurt is redone in batch 18: "his body shimmering like a
+#     painted Trump card" came back as a naked glowing man in a card frame,
+#     which also reads as a card lying on the floor.  Benedict again has both
+#     arms; an empty sleeve can't be seen at 32 pixels, so he is accepted.
+#     The serpent's dark red belly snaps to brown, and a pre-snap entry
+#     makes it red (batch-17/serpent-6x.png) ---
+mon-benedict-the-ideal-warrior     batch-17/sheet.jpg  1
+mon-caine-the-conspirator          batch-17/sheet.jpg  2
+mon-gerard-strongman-of-amber      batch-17/sheet.jpg  3
+mon-julian-master-of-arden-forest  batch-17/sheet.jpg  4
+mon-fiona-the-sorceress            batch-17/sheet.jpg  5
+mon-unicorn-of-amber               batch-17/sheet.jpg  6
+mon-morgenstern-julians-steed      batch-17/sheet.jpg  7
+mon-lord-borel-of-hendrake         batch-17/sheet.jpg  9
+mon-strygalldwir                   batch-17/sheet.jpg 10
+mon-moire-queen-of-rebma           batch-17/sheet.jpg 11
+mon-mandor-master-of-the-logrus    batch-17/sheet.jpg 12
+mon-rinaldo-son-of-brand           batch-17/sheet.jpg 13
+mon-jasra-brands-mistress          batch-17/sheet.jpg 14
+mon-the-serpent-of-chaos           batch-17/sheet.jpg 15   +883848>red
+mon-logrus-master                  batch-17/sheet.jpg 16
+
+# --- batch 18 (4 November 2026; 2048 sheet, JPEG).  The generator painted
+#     batch 17's figures, which we had attached as the reference, into the
+#     same cells of this sheet: Caine's plume, Julian's spear, the Unicorn's
+#     hindquarters, Strygalldwir's antler, Mandor's spheres, Jasra's hand, the
+#     whole Serpent and the whole Logrus master (batch-18/cast-4x.png, top
+#     row).  The small strays are cleared; the Lord of Chaos (the Unicorn
+#     behind him), the boil-covered wretch (inside the Serpent's coils) and
+#     the chaffinch (in front of the Logrus master) are redone in batch 19,
+#     which attaches no sheet laid out in the same grid ---
+mon-jurt-the-living-trump        batch-18/sheet.jpg  1
+mon-logrus-ghost                 batch-18/sheet.jpg  2   clear:6-12,0-5     # Caine's plume
+mon-pattern-ghost                batch-18/sheet.jpg  3
+mon-fire-angel                   batch-18/sheet.jpg  4   clear:0-9,23-31    # Julian's spear
+mon-pattern-vortex               batch-18/sheet.jpg  5
+mon-unmaker                      batch-18/sheet.jpg  7
+mon-farmer-maggot                batch-18/sheet.jpg  8
+mon-father-christmas             batch-18/sheet.jpg  9
+mon-martti-ihrasaari             batch-18/sheet.jpg 10   clear:21-25,0-4    # Strygalldwir's antler
+mon-agent-of-black-market        batch-18/sheet.jpg 11
+mon-aimless-looking-merchant     batch-18/sheet.jpg 12   largest            # Mandor's spheres
+mon-battle-scarred-veteran       batch-18/sheet.jpg 13
+mon-blubbering-idiot             batch-18/sheet.jpg 14   clear:22-26,4-9    # Jasra's hand
+
+# --- batch 19 (4 November 2026; 2048 sheet, JPEG); the reference was our
+#     own strip of figures, not a sheet, and nothing leaked.  The singing
+#     drunk is redone in batch 20: "red-nosed" came back as a round red
+#     clown's nose, and he waves two bottles against his cell's edges
+#     (batch-19/drunk-full-size.png) ---
+mon-lord-of-chaos            batch-19/sheet.jpg  1
+mon-boil-covered-wretch      batch-19/sheet.jpg  2
+mon-chaffinch                batch-19/sheet.jpg  3
+mon-filthy-street-urchin     batch-19/sheet.jpg  4
+mon-mangy-looking-leper      batch-19/sheet.jpg  5
+mon-mean-looking-mercenary   batch-19/sheet.jpg  6
+mon-pitiful-looking-beggar   batch-19/sheet.jpg  7
+mon-red-hatted-elf           batch-19/sheet.jpg  8
+mon-scrawny-cat              batch-19/sheet.jpg  9
+mon-scruffy-little-dog       batch-19/sheet.jpg 10
+mon-sheep                    batch-19/sheet.jpg 11
+mon-sparrow                  batch-19/sheet.jpg 13
+mon-squint-eyed-rogue        batch-19/sheet.jpg 14
+mon-village-idiot            batch-19/sheet.jpg 15
+mon-wild-rabbit              batch-19/sheet.jpg 16
+
+# --- batch 20 (4 November 2026; 2048 sheet, JPEG); all sixteen accepted as
+#     drawn.  The grid bug's sparks float free of its body; they are part of
+#     it, so it is not trimmed to its largest shape ---
+mon-singing-happy-drunk      batch-20/sheet.jpg  1
+mon-woodsman                 batch-20/sheet.jpg  2
+mon-clear-icky-thing         batch-20/sheet.jpg  3
+mon-floating-eye             batch-20/sheet.jpg  4
+mon-fruit-bat                batch-20/sheet.jpg  5
+mon-giant-white-centipede    batch-20/sheet.jpg  6
+mon-giant-white-mouse        batch-20/sheet.jpg  7
+mon-giant-yellow-centipede   batch-20/sheet.jpg  8
+mon-grey-mold                batch-20/sheet.jpg  9
+mon-grey-mushroom-patch      batch-20/sheet.jpg 10
+mon-grid-bug                 batch-20/sheet.jpg 11
+mon-large-white-snake        batch-20/sheet.jpg 12
+mon-newt                     batch-20/sheet.jpg 13
+mon-rock-lizard              batch-20/sheet.jpg 14
+mon-small-kobold             batch-20/sheet.jpg 15
+mon-soldier-ant              batch-20/sheet.jpg 16
+
+# --- batch 21 (7 November 2026; 2048 sheet, JPEG); all sixteen accepted.
+#     This is the request as first written, before the second-set ruling;
+#     the five Zangband uniques in it (Freesia, Wolf, Bloodfang, the wounded
+#     bear, Robin Hood) are kept, since they were drawn.  Rows 2 to 4 sit up
+#     to 70 pixels above their cells, so a grid cut takes heads off and
+#     neighbours' feet in (batch-21/grid-cut-4x.png); each tile is found by
+#     its outline instead ---
+mon-fang-farmer-maggots-dog        batch-21/sheet.jpg  1  at:-4,-76,512    own
+mon-grip-farmer-maggots-dog        batch-21/sheet.jpg  2  at:502,-36,512   own
+mon-sm-agol                        batch-21/sheet.jpg  3  at:1040,-36,512  own
+mon-bullroarer-the-hobbit          batch-21/sheet.jpg  4  at:1556,-36,512  own
+mon-freesia                        batch-21/sheet.jpg  5  at:-20,376,512   own
+mon-wolf-farmer-maggots-dog        batch-21/sheet.jpg  6  at:460,374,576   own
+mon-mughash-the-kobold-lord        batch-21/sheet.jpg  7  at:1002,406,576  own
+mon-lagduf-the-snaga               batch-21/sheet.jpg  8  at:1526,437,544  own
+mon-wormtongue-agent-of-saruman    batch-21/sheet.jpg  9  at:-62,958,576   own
+mon-brodda-the-easterling          batch-21/sheet.jpg 10  at:464,927,608   own
+mon-bloodfang-the-wolf             batch-21/sheet.jpg 11  at:1024,906,576  own
+mon-grishn-kh-the-hill-orc         batch-21/sheet.jpg 12  at:1572,1020,512 own
+mon-orfax-son-of-boldor            batch-21/sheet.jpg 13  at:-36,1552,512  own
+mon-the-wounded-bear               batch-21/sheet.jpg 14  at:430,1459,608  own
+mon-golfimbul-the-hill-orc-chief   batch-21/sheet.jpg 15  at:1014,1490,576 own
+mon-robin-hood-the-outlaw          batch-21/sheet.jpg 16  at:1596,1521,544 own
+
+# --- batch 22 (7 November 2026; 2048 sheet, JPEG); all sixteen accepted, and
+#     every figure inside its cell.  Boldor's mauve robe snaps to iron grey,
+#     so its mid tone goes to plum and its light tone, his face, to flesh
+#     (batch-22/boldor-6x.png, right) ---
+mon-frog                           batch-22/sheet.jpg  1
+mon-boldor-king-of-the-yeeks       batch-22/sheet.jpg  2   +763456>plum +904080>flesh
+mon-ufthak-of-cirith-ungol         batch-22/sheet.jpg  3
+mon-ratman                         batch-22/sheet.jpg  4
+mon-ulfast-son-of-ulfang           batch-22/sheet.jpg  5
+mon-n-r-the-dwarf                  batch-22/sheet.jpg  6
+mon-scorpion                       batch-22/sheet.jpg  7
+mon-gorbag-the-orc-captain         batch-22/sheet.jpg  8
+mon-old-man-willow                 batch-22/sheet.jpg  9   largest
+mon-shagrat-the-orc-captain        batch-22/sheet.jpg 10
+mon-bolg-son-of-azog               batch-22/sheet.jpg 11
+mon-lugdush-the-uruk               batch-22/sheet.jpg 12
+mon-mummy                          batch-22/sheet.jpg 13
+mon-ugl-k-the-uruk                 batch-22/sheet.jpg 14
+mon-azog-enemy-of-the-dwarves      batch-22/sheet.jpg 15
+mon-angamait-of-umbar              batch-22/sheet.jpg 16
+
+# --- batch 23 (7 November 2026; 2048 sheet, JPEG); all sixteen accepted, and
+#     every figure inside its cell.  The red cloth was drawn in crimson,
+#     which snaps to brown and plum; two pre-snap entries make it red
+#     (batch-23/reds-6x.png, each figure as drawn and then fixed) ---
+mon-ibun-son-of-m-m                batch-23/sheet.jpg  1
+mon-kh-m-son-of-m-m                batch-23/sheet.jpg  2   +b01018>red +901020>red
+mon-sangahyando-of-umbar           batch-23/sheet.jpg  3   +b01018>red +901020>red
+mon-ulwarth-son-of-ulfang          batch-23/sheet.jpg  4
+mon-m-m-betrayer-of-turin          batch-23/sheet.jpg  5
+mon-beholder                       batch-23/sheet.jpg  6
+mon-beorn-the-mountain-bear        batch-23/sheet.jpg  7
+mon-beorn-the-shape-changer        batch-23/sheet.jpg  8
+mon-draebor-the-imp                batch-23/sheet.jpg  9
+mon-uldor-the-accursed             batch-23/sheet.jpg 10   +b01018>red +901020>red
+mon-bert-the-stone-troll           batch-23/sheet.jpg 11
+mon-bill-the-stone-troll           batch-23/sheet.jpg 12
+mon-tom-the-stone-troll            batch-23/sheet.jpg 13
+mon-ulfang-the-black               batch-23/sheet.jpg 14
+mon-lokkak-the-ogre-chieftain      batch-23/sheet.jpg 15
+mon-m-mak                          batch-23/sheet.jpg 16
+
+# --- batch 24 (7 November 2026; 2048 sheet, JPEG); fifteen of sixteen
+#     accepted, every figure inside its cell.  The sphere (cell 3) was drawn
+#     on a flat dark grey square, not magenta; keyed out, the ball loses the
+#     dithered glow that was drawn into that grey and reads as a flat disc
+#     (batch-24/sphere-compare-4x.png, as drawn above, keyed below), so it is
+#     redone in batch 25 ---
+mon-lorgan-chief-of-the-easterlings  batch-24/sheet.jpg  1
+mon-castamir-the-usurper             batch-24/sheet.jpg  2
+mon-gorlim-betrayer-of-barahir       batch-24/sheet.jpg  4
+mon-kavlax-the-many-headed           batch-24/sheet.jpg  5
+mon-rogrog-the-black-troll           batch-24/sheet.jpg  6
+mon-the-queen-ant                    batch-24/sheet.jpg  7
+mon-ariel-queen-of-air               batch-24/sheet.jpg  8
+mon-quaker-master-of-earth           batch-24/sheet.jpg  9
+mon-vargo-tyrant-of-fire             batch-24/sheet.jpg 10
+mon-waldern-king-of-water            batch-24/sheet.jpg 11
+mon-marilith                         batch-24/sheet.jpg 12
+mon-e-l-the-dark-elf                 batch-24/sheet.jpg 13
+mon-the-balrog-of-moria              batch-24/sheet.jpg 14
+mon-harowen-the-black-hand           batch-24/sheet.jpg 15
+mon-itangast-the-fire-drake          batch-24/sheet.jpg 16
+
+# --- batch 25 (7 November 2026; 2048 sheet, JPEG); all sixteen accepted, the
+#     sphere redrawn on magenta with its glow in the greys.  Five figures are
+#     almost all ink and show only as black shapes on the floor; a stone rim
+#     in place of the ink outline is put to the owner (batch-25/rim-1x.png,
+#     ink outline above, stone rim below) ---
+mon-sphere                               batch-25/sheet.jpg  1
+mon-scatha-the-worm                      batch-25/sheet.jpg  2
+mon-the-phoenix                          batch-25/sheet.jpg  3
+mon-ar-pharaz-n-the-golden               batch-25/sheet.jpg  4
+mon-dracolich                            batch-25/sheet.jpg  5
+mon-shelob-spider-of-darkness            batch-25/sheet.jpg  6
+mon-hand                                 batch-25/sheet.jpg  7
+mon-baphomet-the-minotaur-lord           batch-25/sheet.jpg  8
+mon-fundin-bluecloak                     batch-25/sheet.jpg  9
+mon-gilim-the-giant-of-eruman            batch-25/sheet.jpg 10
+mon-saruman-of-many-colours              batch-25/sheet.jpg 11
+mon-smaug-the-golden                     batch-25/sheet.jpg 12
+mon-the-mouth-of-sauron                  batch-25/sheet.jpg 13
+mon-tevildo-prince-of-cats               batch-25/sheet.jpg 14
+mon-thuringwethil-the-vampire-messenger  batch-25/sheet.jpg 15
+mon-tselakus-the-dreadlord               batch-25/sheet.jpg 16
+
+# --- batch 26 (9 November 2026; 2048 sheet, JPEG); fourteen of sixteen
+#     accepted.  Redone in batch 27: Glaurung came with wings, which the
+#     request said he hasn't, cut off at the cell's edge, and reads as a
+#     second Itangast; Wiruin filled the whole cell edge to edge and reads as
+#     a square of water, not a monster on the floor (batch-26/cast-4x.png,
+#     with the stone outline applied where the rule calls for it) ---
+mon-nan-the-giant                       batch-26/sheet.jpg  1
+mon-oss-herald-of-ulmo                  batch-26/sheet.jpg  2
+mon-omarax-the-eye-tyrant               batch-26/sheet.jpg  3
+mon-skull                               batch-26/sheet.jpg  4
+mon-ungoliant-the-unlight               batch-26/sheet.jpg  6
+mon-makar-the-warrior                   batch-26/sheet.jpg  7
+mon-feagwath-the-undead-sorcerer        batch-26/sheet.jpg  8
+mon-uvatha-the-horseman                 batch-26/sheet.jpg  9
+mon-adunaphel-the-quiet                 batch-26/sheet.jpg 10
+mon-akhorahil-the-blind                 batch-26/sheet.jpg 11
+mon-qlzqqlzuup-the-emperor-quylthulg    batch-26/sheet.jpg 12
+mon-ren-the-unclean                     batch-26/sheet.jpg 13
+mon-ji-indur-dawndeath                  batch-26/sheet.jpg 15
+mon-maeglin-the-traitor-of-gondolin     batch-26/sheet.jpg 16
+
+# --- batch 27 (9 November 2026; 2048 sheet, JPEG); all sixteen accepted,
+#     Glaurung wingless and Wiruin a disc this time.  Carcharoth's maw was a
+#     dark red that snaps to plum; two pre-snap entries make it red.
+#     Pazuzu's teal snaps to blue and navy, which keeps his shading, so he
+#     stays as drawn (batch-27/fixes-6x.png: Pazuzu as drawn and with cyan,
+#     Carcharoth as drawn and fixed) ---
+mon-glaurung-father-of-the-dragons        batch-27/sheet.jpg  1
+mon-wiruin-the-maelstrom                  batch-27/sheet.jpg  2
+mon-dwar-dog-lord-of-waw                  batch-27/sheet.jpg  3
+mon-pazuzu-lord-of-air                    batch-27/sheet.jpg  4
+mon-draugluin-sire-of-all-werewolves      batch-27/sheet.jpg  5
+mon-hoarmurath-of-dir                     batch-27/sheet.jpg  6
+mon-cantoras-the-skeletal-lord            batch-27/sheet.jpg  7
+mon-kham-l-the-black-easterling           batch-27/sheet.jpg  8
+mon-ancalagon-the-black                   batch-27/sheet.jpg  9
+mon-the-witch-king-of-angmar              batch-27/sheet.jpg 10
+mon-the-tarrasque                         batch-27/sheet.jpg 11
+mon-me-ss-the-bloody                      batch-27/sheet.jpg 12
+mon-lungorthin-the-balrog-of-white-fire   batch-27/sheet.jpg 13
+mon-carcharoth-the-jaws-of-thirst         batch-27/sheet.jpg 14   +782838>red +882030>red
+mon-huan-wolfhound-of-the-valar           batch-27/sheet.jpg 15
+mon-vecna-the-emperor-lich                batch-27/sheet.jpg 16
+
+# --- batch 28 (9 November 2026; 2048 sheet, JPEG); all five accepted.
+#     Sauron the Sorcerer was drawn taller than his cell, down into the empty
+#     cell below, so each figure is found by its outline ---
+mon-gothmog-the-high-captain-of-balrogs  batch-28/sheet.jpg  1  at:-12,-15,544  own
+mon-sauron-the-sorcerer                  batch-28/sheet.jpg  2  at:416,-45,736   own
+mon-serpent-sauron                       batch-28/sheet.jpg  3  at:1024,16,512   own
+mon-vampire-sauron                       batch-28/sheet.jpg  4  at:1520,-15,544  own
+mon-wolf-sauron                          batch-28/sheet.jpg  5  at:-24,435,608   own
+
+# --- batch 29 (10 November 2026; 2048 sheet, JPEG); fifteen of sixteen
+#     accepted.  The whale runs out of its cell into Mime's, the auto-roller's
+#     dust into Mime's from the other side, and Hagen's spear up into the
+#     octopus's, so every tile is found by its outline (batch-29/grid-cut-4x.png
+#     shows the plain cut).  It is redone in batch 30: drawn in a pink so close
+#     to the magenta key that only a pale scribble and no eyes survived ---
+mon-portuguese-man-o-war        batch-29/sheet.jpg  1  at:-18,-19,544   own
+mon-meneldor-the-swift          batch-29/sheet.jpg  2  at:496,-23,544   own
+mon-thorondor                   batch-29/sheet.jpg  3  at:1008,-23,544  own
+mon-the-borshin                 batch-29/sheet.jpg  4  at:1520,-19,544  own
+mon-hobbes-the-tiger            batch-29/sheet.jpg  5  at:-18,441,544   own
+mon-ray                         batch-29/sheet.jpg  6  at:504,493,544   own
+mon-mi-go                       batch-29/sheet.jpg  7  at:1008,493,544  own
+mon-gwaihir-the-windlord        batch-29/sheet.jpg  8  at:1522,465,544  own
+mon-octopus                     batch-29/sheet.jpg  9  at:-16,1005,544  own
+mon-whale                       batch-29/sheet.jpg 10  at:482,794,704   own
+mon-mime-the-nibelung           batch-29/sheet.jpg 11  at:1082,968,512  own
+mon-auto-roller                 batch-29/sheet.jpg 12  at:1450,891,608  own
+mon-hagen-son-of-alberich       batch-29/sheet.jpg 13  at:-70,1428,640  own
+mon-headless                    batch-29/sheet.jpg 14  at:484,1490,576  own
+mon-alberich-the-nibelung-king  batch-29/sheet.jpg 15  at:1016,1490,576 own
+
+# --- batch 30 (10 November 2026; 2048 sheet, JPEG); all sixteen accepted.
+#     It came out in pale lilac lines again; kept with thin:0.2, its lines
+#     made steel and its eyes yellow.  Grendel's grey-green snaps to stone
+#     and iron; three pre-snap entries make it green (batch-30/fixes-6x.png,
+#     each as cut and fixed) ---
+mon-it                                              batch-30/sheet.jpg  1   thin:0.2 flesh>steel bone>yellow
+mon-kharis-the-powerslave                           batch-30/sheet.jpg  2
+mon-grendel                                         batch-30/sheet.jpg  3   +789858>green +486050>moss +506850>moss
+mon-jaws                                            batch-30/sheet.jpg  4
+mon-the-ultimate-dungeon-cleaner                    batch-30/sheet.jpg  5
+mon-bokrug                                          batch-30/sheet.jpg  6
+mon-barney-the-dinosaur                             batch-30/sheet.jpg  7
+mon-bull-gates                                      batch-30/sheet.jpg  8
+mon-elder-thing                                     batch-30/sheet.jpg  9
+mon-fasolt-the-giant                                batch-30/sheet.jpg 10
+mon-giganto-the-gargantuan                          batch-30/sheet.jpg 11
+mon-groo-the-wanderer                               batch-30/sheet.jpg 12
+mon-loge-spirit-of-fire                             batch-30/sheet.jpg 13
+mon-the-greater-hell-magic-mushroom-were-quylthulg  batch-30/sheet.jpg 14
+mon-little-boy                                      batch-30/sheet.jpg 15
+mon-charybdis                                       batch-30/sheet.jpg 16
+
+# --- batch 31 (10 November 2026; 2048 sheet, JPEG); all sixteen accepted.
+#     The first attempt came back broken, a smear over flat grey
+#     (batch-31/failed-first-attempt.jpg), and was sent again unchanged.
+#     The Stormbringer's red runes average into its dark blade and come out
+#     brown; three pre-snap entries make them red (batch-31/storm-6x.png).
+#     Ubbo-Sathla's vapour was drawn in lilac and keys out with the
+#     magenta, leaving the grey mound, which is enough ---
+mon-malekith-the-accursed                 batch-31/sheet.jpg  1
+mon-jack-of-shadows                       batch-31/sheet.jpg  2
+mon-scylla                                batch-31/sheet.jpg  3
+mon-father-dagon                          batch-31/sheet.jpg  4
+mon-mother-hydra                          batch-31/sheet.jpg  5
+mon-quachil-uttaus-treader-of-the-dust    batch-31/sheet.jpg  6
+mon-ubbo-sathla-the-unbegotten-source     batch-31/sheet.jpg  7
+mon-fat-man                               batch-31/sheet.jpg  8
+mon-judge-death                           batch-31/sheet.jpg  9
+mon-judge-fear                            batch-31/sheet.jpg 10
+mon-fastitocalon                          batch-31/sheet.jpg 11
+mon-garm-guardian-of-hel                  batch-31/sheet.jpg 12
+mon-judge-mortis                          batch-31/sheet.jpg 13
+mon-chaugnar-faugn-horror-from-the-hills  batch-31/sheet.jpg 14
+mon-the-stormbringer                      batch-31/sheet.jpg 15   +681828>red +701018>red +801010>red
+mon-zoth-ommog                            batch-31/sheet.jpg 16
+
+# --- batch 32 (10 November 2026; 2048 sheet, JPEG); fourteen of sixteen
+#     accepted.  The generator drew black lines between the cells, which leave
+#     a pixel in each tile's corners, and wrote each monster's name across the
+#     bottom of ten cells, which leaves specks in rows 29 to 31
+#     (batch-32/uncleaned-4x.png); those rows are cleared and every tile keeps
+#     only its largest shape.  Redone in batch 33: Utgard-Loke, drawn as a bust
+#     cut off by the cell's edge, and Nyogtha, a wave filling the cell to its
+#     edges that reads as water ---
+mon-fafner-the-dragon                     batch-32/sheet.jpg  1   largest
+mon-judge-fire                            batch-32/sheet.jpg  2   largest
+mon-zhar-the-twin-obscenity               batch-32/sheet.jpg  4   largest
+mon-the-king-in-yellow                    batch-32/sheet.jpg  5   largest
+mon-shudde-mell                           batch-32/sheet.jpg  6   clear:0-31,29-31 largest   # its name
+mon-ahtu-avatar-of-nyarlathotep           batch-32/sheet.jpg  7   clear:0-31,29-31 largest
+mon-yibb-tstll-the-patient-one            batch-32/sheet.jpg  8   clear:0-31,29-31 largest
+mon-fangorn                               batch-32/sheet.jpg  9   clear:0-31,29-31 largest
+mon-ghatanothoa                           batch-32/sheet.jpg 10   clear:0-31,29-31 largest
+mon-santa-claus                           batch-32/sheet.jpg 11   largest
+mon-eihort-the-thing-in-the-labyrinth     batch-32/sheet.jpg 12   clear:0-31,29-31 largest
+mon-daoloth-the-render-of-the-veils       batch-32/sheet.jpg 14   clear:0-31,29-31 largest
+mon-hastur-the-unspeakable                batch-32/sheet.jpg 15   clear:0-31,29-31 largest
+mon-nidhogg-the-hel-drake                 batch-32/sheet.jpg 16   clear:0-31,29-31 largest
+
+# --- batch 32 drawn again (13 November 2026; 2048 sheet, JPEG).  Sent the
+#     batch 33 request with batch-32/cast-4x.png attached, the generator drew
+#     that strip's sixteen monsters over again instead of the new table
+#     (batch-32/redrawn-4x.png).  Only Utgard-Loke, now whole, is taken from
+#     it; Nyogtha is a wave again, and the rest repeat accepted tiles ---
+mon-utgard-loke                           batch-32/redrawn.jpg  3
+
+# --- batch 33 (13 November 2026; 2048 sheet, JPEG); all sixteen accepted.
+#     The request named no monster (batch-33/cells.txt says which cell is
+#     which): the generator had refused it while it carried names like
+#     Gandalf and Loki.  Nyogtha is a heap of jelly at last.
+#     Mephistopheles' deep red skin snaps to brown and plum; three pre-snap
+#     entries make it red (batch-33/meph-6x.png) ---
+mon-rhan-tegoth                           batch-33/sheet.jpg  1
+mon-nyogtha-the-thing-that-should-not-be  batch-33/sheet.jpg  2
+mon-artsi-the-champion-of-chaos           batch-33/sheet.jpg  3
+mon-gandalf-the-grey                      batch-33/sheet.jpg  4
+mon-ulik-the-troll                        batch-33/sheet.jpg  5
+mon-raphael-the-messenger                 batch-33/sheet.jpg  6
+mon-the-norsa                             batch-33/sheet.jpg  7
+mon-glaaki                                batch-33/sheet.jpg  8
+mon-hypnos-lord-of-sleep                  batch-33/sheet.jpg  9
+mon-vlad-dracula-prince-of-darkness       batch-33/sheet.jpg 10
+mon-ygolonac                              batch-33/sheet.jpg 11
+mon-bast-goddess-of-cats                  batch-33/sheet.jpg 12
+mon-null-the-living-void                  batch-33/sheet.jpg 13
+mon-ithaqua-the-windwalker                batch-33/sheet.jpg 14
+mon-loki-the-trickster                    batch-33/sheet.jpg 15
+mon-mephistopheles-lord-of-hell           batch-33/sheet.jpg 16   +801828>red +901828>red +782028>red
+
+# --- batch 34 (13 November 2026; 2048 sheet, JPEG; cells in
+#     batch-34/cells.txt); all sixteen accepted.  Two crimsons snap to brown
+#     and plum, and pre-snap entries make them red: the writhing mass's
+#     mouths and tentacles, and the sorcerer-king's robe
+#     (batch-34/fixes-6x.png) ---
+mon-shuma-gorath                              batch-34/sheet.jpg  1
+mon-atlach-nacha-the-spider-god               batch-34/sheet.jpg  2
+mon-hela-queen-of-the-dead                    batch-34/sheet.jpg  3
+mon-kaschei-the-immortal                      batch-34/sheet.jpg  4   +a83028>red +b03830>red
+mon-the-destroyer                             batch-34/sheet.jpg  5
+mon-yig-father-of-serpents                    batch-34/sheet.jpg  6
+mon-surtur-the-giant-fire-demon               batch-34/sheet.jpg  7
+mon-abhoth-source-of-uncleanness              batch-34/sheet.jpg  8
+mon-klingsor-evil-master-of-magic             batch-34/sheet.jpg  9
+mon-tsathoggua-the-sleeper-of-nkai            batch-34/sheet.jpg 10
+mon-cthugha-the-living-flame                  batch-34/sheet.jpg 11
+mon-nyarlathotep-the-crawling-chaos           batch-34/sheet.jpg 12
+mon-cyaegha                                   batch-34/sheet.jpg 13
+mon-godzilla                                  batch-34/sheet.jpg 14
+mon-shub-niggurath-black-goat-of-the-woods    batch-34/sheet.jpg 15   +801828>red +901828>red +782028>red +a02030>red
+mon-ymir-the-ice-giant                        batch-34/sheet.jpg 16
+
+# --- batch 35 (13 November 2026; 2048 sheet, JPEG; cells in
+#     batch-35/cells.txt); nine of ten accepted.  The wolf was drawn across
+#     cells 9 and 10, twice a cell wide, which pushed the ring into cell 11;
+#     shrunk into one tile the wolf is a small flat shape, smaller than the
+#     lesser wolves (batch-35/cast-4x.png), so it is redone in batch 36.
+#     The ring's glow came out as a solid red disc round it, so the glow is
+#     made transparent (batch-35/ring-6x.png, as cut and without it) ---
+mon-nodens-lord-of-the-great-abyss     batch-35/sheet.jpg  1
+mon-oremorj-the-cyberdemon-lord        batch-35/sheet.jpg  2
+mon-yog-sothoth-the-all-in-one         batch-35/sheet.jpg  3
+mon-azathoth-seething-nuclear-chaos    batch-35/sheet.jpg  4
+mon-tulzscha-the-green-flame           batch-35/sheet.jpg  5
+mon-great-cthulhu                      batch-35/sheet.jpg  6
+mon-jormungand-the-midgard-serpent     batch-35/sheet.jpg  7
+mon-the-unicorn-of-order               batch-35/sheet.jpg  8
+mon-a-plain-gold-ring                  batch-35/sheet.jpg 11  at:1024,920,512 own red>none flesh>none
+
+# --- batch 36 (13 November 2026; 2048 sheet, JPEG); the last tile.  The wolf
+#     came back twice a cell wide again; fitted whole into a tile it is tiny
+#     (batch-36/fenris-4x.png, second from the left), so the tile is a crop
+#     of its head and forequarters, which fills the square like the other
+#     great wolves (third from the left) ---
+mon-fenris-wolf                        batch-36/sheet.jpg  1  at:408,-85,608

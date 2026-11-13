@@ -1,0 +1,235 @@
+# manifest.txt -- which 1982 tile each thing in the game is drawn with.
+#
+# Read by scripts/tiles/build-1982.py.  A tile is named by its id in the
+# source atlas (source.txt), which is the id it had in the brief.  Monsters
+# are not here: monsters.txt lists every one, because which of them has a
+# picture of its own was decided one by one.
+#
+# A recolourable tile (source.txt says `recolour`) is drawn in four greys and
+# tinted with the thing's own colour from lib/gamedata, so one potion bottle
+# is every potion and one young dragon every young dragon.
+#
+# Anything not listed here and not covered by a `tval:` default has no tile
+# and renders as its ASCII letter; audit-tiles.py reports it.
+
+# --- terrain: feat:<CODE>:<tile>[:<ground>][:<stamp>][:outline] ---
+#
+# <ground> is what shows through a tile drawn with transparency: the floor for
+# rubble, the town's grass for the buildings drawn on magenta.  <stamp> is the
+# number or letter stamped on a building's gable -- the shop's glyph from
+# terrain.txt, or for the services, whose glyph is +, a letter the owner chose
+# on 3 November 2026.  `outline` gives the tile the figures' ink outline before
+# it goes onto its ground: the Chaos Tower, lightened a step, lost its own.
+
+feat:NONE:black
+feat:FLOOR:feat-floor
+feat:CLOSED:feat-closed
+feat:OPEN:feat-open
+feat:BROKEN:feat-broken
+feat:LESS:feat-less:floor
+feat:MORE:feat-more:floor
+feat:SECRET:feat-granite
+feat:RUBBLE:feat-rubble:floor
+feat:PASS_RUBBLE:feat-pass-rubble:floor
+feat:MAGMA:feat-magma
+feat:QUARTZ:feat-quartz
+feat:MAGMA_K:feat-magma-k
+feat:QUARTZ_K:feat-quartz-k
+feat:GRANITE:feat-granite
+feat:PERM:feat-perm
+feat:LAVA:feat-lava
+feat:GRASS:feat-grass
+feat:DIRT:feat-dirt
+feat:SAND:feat-sand
+feat:TREE:feat-tree:grass
+feat:MUD:feat-mud
+feat:WATER:feat-water
+feat:DEEP_WATER:feat-deep-water
+feat:WORLD_EDGE:feat-world-edge
+feat:ROCK:feat-rock
+feat:ROAD:feat-road
+feat:DUNGEON:feat-dungeon:grass
+feat:STORE_GENERAL:feat-store-general:grass:1
+feat:STORE_ARMOR:feat-store-armor:grass:2
+feat:STORE_WEAPON:feat-store-weapon:grass:3
+feat:STORE_BOOK:feat-store-book:grass:4
+feat:STORE_ALCHEMY:feat-store-alchemy:grass:5
+feat:STORE_MAGIC:feat-store-magic:grass:6
+feat:STORE_BLACK:feat-store-black:grass:7
+feat:HOME:feat-home:grass:8
+feat:STORE_STATUE:feat-store-statue:grass:0
+feat:STORE_FIGURINE:feat-store-figurine:grass:0
+feat:HEALER:feat-healer:grass:H
+feat:INN:feat-inn:grass:I
+feat:MAGESMITH:feat-magesmith:grass:M
+feat:RECHARGER:feat-recharger:grass:R
+feat:MAGETOWER:feat-magetower:grass:9
+feat:CHAOSTOWER:feat-chaostower:grass:C:outline
+
+# --- the player: one hero and one heroine per class ---
+#
+# player-<class> and player-<class>-f, the class as class.txt spells it in
+# lower case.  The heroine is chosen by $SEX, which ui-prefs.c works out the
+# way the Tk portraits do.  Before there is a character the warrior stands in.
+
+player:default:player-warrior
+
+# --- objects: tval:<type>:<tile> is the default for a type, and
+#     object:<type>:<name>:<tile> overrides it for one kind ---
+
+tval:none:-
+object:none:<pile>:item-pile
+object:none:<unknown item>:item-unknown
+object:none:<unknown treasure>:item-unknown
+object:none:<curse object>:item-curse
+
+tval:light:item-torch
+object:light:Lantern:item-lantern
+tval:flask:item-flask
+
+tval:food:item-bread
+object:food:Apple:item-fruit
+object:food:Handful of Dried Fruits:item-fruit
+object:food:Slime Mold:item-fruit
+object:food:Scrap of Flesh:item-meat
+object:food:Slice of Meat:item-meat
+object:food:Strip of Venison:item-meat
+object:food:Flask of Whisky:item-drink
+object:food:Pint of Fine Wine:item-drink
+object:food:Sip of Miruvor:item-drink
+object:food:Swig of Orcish Liquor:item-drink
+object:food:Draught of the Ents:item-drink
+
+tval:sword:item-sword
+object:sword:Dagger:item-dagger
+object:sword:Main Gauche:item-dagger
+object:sword:Tanto:item-dagger
+object:sword:Wakizashi:item-dagger
+object:sword:Basillard:item-dagger
+object:sword:Bastard Sword:item-greatsword
+object:sword:Zweihander:item-greatsword
+object:sword:Executioner's Sword:item-greatsword
+object:sword:Blade of Chaos:item-greatsword
+object:sword:No-dachi:item-greatsword
+object:sword:Flamberge:item-greatsword
+object:sword:Claymore:item-greatsword
+object:sword:Espadon:item-greatsword
+object:sword:Great Scimitar:item-greatsword
+
+tval:hafted:item-mace
+object:hafted:Whip:item-flail
+object:hafted:Ball-and-Chain:item-flail
+object:hafted:Flail:item-flail
+object:hafted:Two-Handed Great Flail:item-flail
+object:hafted:Three Piece Rod:item-flail
+object:hafted:Nunchaku:item-flail
+object:hafted:Whip of Entanglement:item-flail
+object:hafted:Throwing Hammer:item-hammer
+object:hafted:War Hammer:item-hammer
+object:hafted:Maul:item-hammer
+object:hafted:Great Hammer:item-hammer
+object:hafted:Mighty Hammer:item-hammer
+object:hafted:Hammer of Returning:item-hammer
+object:hafted:Quarterstaff:item-staff-weapon
+object:hafted:Bo Staff:item-staff-weapon
+object:hafted:Jo Staff:item-staff-weapon
+
+tval:polearm:item-halberd
+object:polearm:Spear:item-spear
+object:polearm:Awl-Pike:item-spear
+object:polearm:Trident:item-spear
+object:polearm:Pike:item-spear
+object:polearm:Lance:item-spear
+object:polearm:Trifurcate Spear:item-spear
+object:polearm:Broad Spear:item-spear
+object:polearm:Heavy Lance:item-spear
+object:polearm:Throwing Axe:item-axe
+object:polearm:Beaked Axe:item-axe
+object:polearm:Broad Axe:item-axe
+object:polearm:Battle Axe:item-axe
+object:polearm:Lochaber Axe:item-axe
+object:polearm:Great Axe:item-axe
+object:polearm:Hatchet:item-axe
+
+tval:bow:item-bow
+object:bow:Sling:item-sling
+object:bow:Light Crossbow:item-crossbow
+object:bow:Heavy Crossbow:item-crossbow
+tval:shot:item-shot
+tval:arrow:item-arrow
+tval:bolt:item-bolt
+tval:digger:item-pick
+object:digger:Shovel:item-shovel
+
+tval:soft armor:item-soft-armour
+tval:hard armor:item-hard-armour
+tval:dragon armor:item-dragon-armour
+tval:shield:item-shield
+tval:helm:item-helm
+tval:crown:item-crown
+tval:cloak:item-cloak
+tval:gloves:item-gloves
+tval:boots:item-boots
+
+# Flavoured: before it is identified a potion is its flavour, so these are
+# drawn through flavor: lines, each flavour in its own colour.
+tval:potion:item-potion
+tval:scroll:item-scroll
+tval:ring:item-ring
+tval:amulet:item-amulet
+tval:wand:item-wand
+tval:staff:item-magic-staff
+tval:rod:item-rod
+tval:mushroom:item-mushroom
+
+# The books are class.txt's, one tile tinted with each realm's colour from
+# object_base.txt; the Trumps are a deck of cards, drawn as one.
+tval:magic book:item-book
+tval:prayer book:item-book
+tval:nature book:item-book
+tval:shadow book:item-book
+tval:sorcery book:item-book
+tval:chaos book:item-book
+tval:deck:item-deck
+
+tval:chest:item-chest-metal
+object:chest:Small wooden chest:item-chest-wood
+object:chest:Large wooden chest:item-chest-wood
+tval:gold:item-coins
+object:gold:garnets:item-gems
+object:gold:opals:item-gems
+object:gold:sapphires:item-gems
+object:gold:rubies:item-gems
+object:gold:diamonds:item-gems
+object:gold:emeralds:item-gems
+tval:statue:item-statue
+tval:figurine:item-figurine
+
+# --- traps: trap:<code>:<tile>, the code being the part of trap.txt's name
+#     before the colon, so the four dart traps are one drawing ---
+
+trap:glyph of warding:trap-glyph-of-warding
+trap:decoy:trap-decoy
+trap:explosive rune:trap-explosive-rune
+trap:web:trap-web
+trap:trap door:trap-trap-door
+trap:pit:trap-pit
+trap:strange rune:trap-strange-rune
+trap:discolored spot:trap-discolored-spot
+trap:dart trap:trap-dart-trap
+trap:gas trap:trap-gas-trap
+trap:alarm:trap-alarm
+trap:explosion:trap-explosion
+trap:mind blast trap:trap-mind-blast-trap
+trap:ancient mechanism:trap-ancient-mechanism
+trap:trap:trap-generic
+
+# --- spell effects: gf:<direction>:<tile>, tinted with each projection's
+#     colour.  0 is a bolt moving along a column, 90 along a row; 45 is the
+#     rising diagonal and 135 the falling one (bolt_pict, ui-display.c) ---
+
+gf:0:fx-bolt-vertical
+gf:90:fx-bolt-horizontal
+gf:45:fx-bolt-rising
+gf:135:fx-bolt-falling
+gf:static:fx-burst

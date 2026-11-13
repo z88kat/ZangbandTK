@@ -7,6 +7,8 @@ Tiles for the things Angband does not have
     make-services.py            draw the six service buildings, and the
                                 Statue and Figurine Stores' doors
     build-neon.py               build the Neon set, generated whole
+    build-1982.py               build the 1982 set from its source atlas,
+                                and cut that atlas from the brief's sheets
     import-zangband-tiles.py    bring Adam Bolt's Zangband uniques into his
                                 Angband sheet, and Zangband's figurine and
                                 statues into his and the 8x8 one

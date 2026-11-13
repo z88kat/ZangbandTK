@@ -116,6 +116,12 @@ T	li1 strong	Both are modified here
 T	li1	 by the appended row described above, on the reading that neither is carved out as an exception and both therefore stand on the project licence like the rest of the tree. That is a reading of a silence rather than a permission granted; if terms appear that it does not satisfy, the row is one script run away from being taken out again.
 T	li1	\n
 T	li1	•\t
+T	li1 strong	The 1982 tiles (32x32) were made for this game.
+T	li1	 An AI image generator drew them to a brief written for ZangbandTK, and 
+T	li1 code	scripts/tiles/build-1982.py
+T	li1	 cut them down, recoloured them and finished them. Nothing in them was taken from another tile set, so they stand on the project licence like the rest of the tree.
+T	li1	\n
+T	li1	•\t
 T	li1 strong	The isometric view’s art is this project’s own.
 T	li1	 
 T	li1 code	scripts/tiles/make-iso.py

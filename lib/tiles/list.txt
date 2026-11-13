@@ -86,3 +86,16 @@ size:16:16:16x16-cb.png
 pref:graf-neo.prf
 extra:0:0:0
 cycle:10:4:9
+
+# Early-1980s fantasy pixel art at 32x32, drawn by an AI image generator to a
+# brief and finished by scripts/tiles/build-1982.py, which also writes the
+# prf.  A figure, an object or a trap is drawn alone, on nothing, and the front
+# end lays it on the terrain beneath it, so a monster stands on the room's own
+# floor or the town's own grass.  That is why this is the one set asking for
+# alpha blending: the Cocoa front end draws the terrain under a figure only for
+# a set that does (main-cocoa.m), and Tk always does.
+name:9:1982 tiles
+directory:1982
+size:32:32:32x32.png
+pref:graf-82.prf
+extra:1:0:0

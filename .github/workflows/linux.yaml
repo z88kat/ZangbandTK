@@ -95,6 +95,13 @@ jobs:
           python3 scripts/tiles/build-neon.py --check >/dev/null
           git diff --exit-code -- lib/tiles/neon/graf-neo.prf
 
+      # The same for the 1982 set, built from its source atlas.  --check also
+      # fails if a picture in the atlas is no longer used by anything.
+      - name: The 1982 set is still what its generator produces
+        run: |
+          python3 scripts/tiles/build-1982.py --check >/dev/null
+          git diff --exit-code -- lib/tiles/1982/graf-82.prf
+
   tests:
     name: Tests
     runs-on: ubuntu-latest
