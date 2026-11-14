@@ -1,10 +1,10 @@
 name: Tk
 
-# The Tcl/Tk front end.  macOS only for now, per decision 13 in
-# .claude/plans/phase3-tcl-tk-frontend.md: all three platforms are the
-# deliverable, macOS is the one being developed and tested by hand, and the
-# Linux and Windows jobs land when there is a front end worth keeping green on
-# them rather than a toolchain.
+# The Tcl/Tk front end, on all three platforms.  Decision 13 in
+# .claude/plans/phase3-tcl-tk-frontend.md made all three the deliverable and
+# had macOS go first, with Linux and Windows to land once there was a front
+# end worth keeping green on them rather than a toolchain.  They landed on
+# 15 October 2026, and the jobs below are the three of them.
 #
 # It builds the toolchain, then the front end, then the application bundle, and
 # runs both test suites -- the ones that need no window, and the scripted
@@ -12,53 +12,29 @@ name: Tk
 # an open question until the step below answered it.  See section 9 of the
 # Phase 3 plan.
 
+# There is no paths filter, and that is deliberate.  There was one, listing
+# the front end's own files and the handful of game files it was thought to
+# depend on.  It could not work, because the front end is not a separate
+# program: `configure_tcl_frontend` adds six files in src/tcl and main-tcl.c
+# to OurExecutable, and OurExecutable is OurCoreLib -- the whole game, 215
+# source files -- with a front end switched on.  The filter named two of those
+# 215.  The other 213 compile into the binary this workflow builds and are run
+# by the scripted session, and none of them started it.
+#
+# What that cost, on 2 November: `tcl_font_add()` was declared inside the
+# Mac-only block in main-tcl.c, GCC stopped at the implicit declaration, and
+# Linux and Windows were red for twelve days.  That one did reach the filter,
+# through main-tcl.c, and still went unnoticed because the job runs so seldom
+# that nobody watches it.  The eleven commits in late October that changed
+# player-util.c, ui-prefs.c and cave-view.c never ran it at all.
+#
+# The minutes are free: this repository is public.  linux.yaml has no filter
+# either and has run 436 times to this workflow's 74, which is the ratio being
+# corrected -- Tk saw about one push in six.
 on:
   push:
     branches: [ master ]
-    paths: &tk_paths
-      - 'tcltk/**'
-      - 'lib/tcl/**'
-      - 'src/main-tcl.c'
-      - 'src/tcl/**'
-      - 'src/cmake/macros/TCL_Frontend.cmake'
-      # The sound the Tk build compiles in on macOS, which no other job builds.
-      - 'src/sound-core.c'
-      - 'src/sound.h'
-      - 'src/cocoa/snd-cocoa.m'
-      # And the sound the Windows and Linux builds compile in, SDL2's.
-      - 'src/snd-sdl.c'
-      # The keymap list the Keymaps window reads.
-      - 'src/ui-keymap.c'
-      - 'src/ui-keymap.h'
-      - 'scripts/build-tcltk'
-      - 'scripts/pkg_macos_tcltk'
-      - 'scripts/dmg_macos_tcltk'
-      - 'src/tcl/dmg-readme.txt'
-      - 'scripts/run-tcl-tests'
-      - 'scripts/run-tcl-bridge-test'
-      - 'scripts/run-tcl-package-test'
-      - 'scripts/pkg_linux_tcltk'
-      - 'scripts/pkg_win_tcltk'
-      - 'scripts/msys2-sdl2'
-      # What the Linux job builds in and with.
-      - 'scripts/oldest-linux/**'
-      - 'scripts/in-oldest-linux'
-      - 'scripts/build-sdl2'
-      - 'scripts/check-glibc-floor'
-      - 'src/main.c'
-      - 'lib/icons/zangbandtk.desktop'
-      - 'scripts/portraits/**'
-      - 'scripts/palettes/**'
-      # The isometric view's art, which the Tk build alone draws.
-      - 'lib/tiles/iso/**'
-      - 'lib/gamedata/p_race.txt'
-      - 'lib/gamedata/class.txt'
-      - 'CMakeLists.txt'
-      - '.github/workflows/tk.yaml'
   pull_request:
-    paths: *tk_paths
-  # The paths filters above mean a change to the game alone never runs this,
-  # so allow it to be started by hand when something needs checking anyway.
   workflow_dispatch:
 
 permissions:
