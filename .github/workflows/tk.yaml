@@ -39,6 +39,7 @@ on:
       - 'scripts/run-tcl-package-test'
       - 'scripts/pkg_linux_tcltk'
       - 'scripts/pkg_win_tcltk'
+      - 'scripts/msys2-sdl2'
       # What the Linux job builds in and with.
       - 'scripts/oldest-linux/**'
       - 'scripts/in-oldest-linux'
@@ -388,13 +389,16 @@ jobs:
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-pkgconf
-            mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-SDL2_mixer
             make
             zip
 
       - name: Clone Project
         uses: actions/checkout@v6
+
+      # Pinned to the builds before MSYS2 moved SDL2 onto SDL3; the script
+      # says why.  The release's windows-tk job installs them the same way.
+      - name: Install SDL2 and SDL2_mixer
+        run: scripts/msys2-sdl2
 
       - name: Cache the toolchain
         id: cache

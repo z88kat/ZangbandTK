@@ -1730,8 +1730,6 @@ jobs:
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-pkgconf
-            mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-SDL2_mixer
             make
             zip
 
@@ -1761,6 +1759,11 @@ jobs:
       - name: Extract Converted Documents
         run: |
           tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # Pinned to the builds before MSYS2 moved SDL2 onto SDL3, as in the Tk
+      # workflow; the script says why.
+      - name: Install SDL2 and SDL2_mixer
+        run: scripts/msys2-sdl2
 
       - name: Restore the Tcl/Tk toolchain
         id: cache
