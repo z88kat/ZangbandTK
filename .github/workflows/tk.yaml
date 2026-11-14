@@ -371,11 +371,6 @@ jobs:
       - name: Clone Project
         uses: actions/checkout@v6
 
-      # Pinned to the builds before MSYS2 moved SDL2 onto SDL3; the script
-      # says why.  The release's windows-tk job installs them the same way.
-      - name: Install SDL2 and SDL2_mixer
-        run: scripts/msys2-sdl2
-
       - name: Cache the toolchain
         id: cache
         uses: actions/cache@v4
@@ -383,9 +378,25 @@ jobs:
           path: tcltk/local
           key: tcltk-9.0.4-${{ runner.os }}-mingw64-${{ hashFiles('scripts/build-tcltk') }}
 
+      - name: Cache SDL2
+        id: cache-sdl2
+        uses: actions/cache@v4
+        with:
+          path: sdl2/local
+          key: sdl2-${{ runner.os }}-mingw64-${{ hashFiles('scripts/build-sdl2') }}
+
       - name: Build Tcl and Tk
         if: steps.cache.outputs.cache-hit != 'true'
         run: scripts/build-tcltk
+
+      # Built here rather than installed from MSYS2, which in November 2026
+      # replaced SDL2 with sdl2-compat and rebuilt SDL2_mixer against
+      # FluidSynth, and so against GNU readline, which is GPL 3.  The same
+      # script the Linux job uses, so both platforms decode the same formats
+      # with the same decoders, and it checks that MP3 is one of them.
+      - name: Build SDL2
+        if: steps.cache-sdl2.outputs.cache-hit != 'true'
+        run: scripts/build-sdl2
 
       # The same headers as the other two, and Windows' own names for the
       # interpreters.
@@ -406,6 +417,7 @@ jobs:
       # compiled into the game and read by the game, not by MSYS2.
       - name: Configure and build
         run: |
+          PKG_CONFIG_PATH="$PWD/sdl2/local/lib/pkgconfig" \
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \

@@ -87,20 +87,44 @@ cp_unix2dos LICENSE.md "$NAME/LICENSE.md"
 # Windows' own.  One that MinGW has and Windows does not -- the runtime's,
 # zlib's -- is fetched from MinGW's bin, and what it asks for in turn, until
 # nothing is missing; then a DLL found in neither is an error, not a guess.
+#
+# sdl2/local/bin is searched first: SDL2 and SDL2_mixer are built from source
+# there (scripts/build-sdl2), and MSYS2's own SDL2 is sdl2-compat, which loads
+# SDL3 at run time.  Taking MinGW's would put the wrong one in the zip.
 MINGW_BIN=${MINGW_PREFIX:-/mingw64}/bin
+# Run from the root of the game, as the header says, so this is relative.
+SDL2_BIN=sdl2/local/bin
 for pass in 1 2 3 4 5; do
 	added=0
 	for f in "$NAME"/*.exe "$NAME"/*.dll; do
 		for dll in $(objdump -p "$f" | sed -n 's/^[[:space:]]*DLL Name: //p'); do
 			if ls "$NAME" | grep -qixF "$dll"; then continue; fi
-			if [ -f "$MINGW_BIN/$dll" ]; then
-				cp "$MINGW_BIN/$dll" "$NAME/"
-				echo "    bundled $dll, which $(basename "$f") needs"
-				added=1
-			fi
+			for src in "$SDL2_BIN" "$MINGW_BIN"; do
+				if [ -f "$src/$dll" ]; then
+					cp "$src/$dll" "$NAME/"
+					echo "    bundled $dll from $src, which $(basename "$f") needs"
+					added=1
+					break
+				fi
+			done
 		done
 	done
 	[ $added -eq 0 ] && break
+done
+
+# Nothing may load a library by name at run time instead of importing it, and
+# the loop above cannot see that: it reads import tables.  sdl2-compat's
+# SDL2.dll is the case that matters -- it dlopens SDL3.dll, so the packager
+# would never bundle it, and the package test would pass by finding SDL3.dll
+# on MSYS2's PATH.  So the DLLs are asked directly whether they name SDL3, and
+# the SDL2 in the folder has to be the real one.
+for f in "$NAME"/SDL2*.dll; do
+	[ -e "$f" ] || continue
+	if strings -a "$f" | grep -qiE '^SDL3[.]dll$'; then
+		echo "$(basename "$f") loads SDL3 at run time: this is sdl2-compat," >&2
+		echo "not SDL2.  Build it with scripts/build-sdl2." >&2
+		exit 1
+	fi
 done
 for f in "$NAME"/*.exe "$NAME"/*.dll; do
 	echo "$(basename "$f"): $(objdump -p "$f" | sed -n 's/^[[:space:]]*DLL Name: //p' | tr '\n' ' ')"
@@ -108,9 +132,17 @@ done
 
 # The licences of everything the loop above put in the folder, found from the
 # DLLs themselves, so one bundled without its licence in licenses/ stops the
-# package here.  Timidity is named because it is inside SDL2_mixer.dll rather
-# than a DLL of its own: MSYS2 builds SDL_mixer with MIDI on.
-scripts/third-party-notices -n ZangbandTK -s "$NAME" "$NAME/notices.tmp" timidity \
+# package here.  The six named are compiled into SDL2_mixer.dll rather than
+# being DLLs of their own, so no scan can find them: minimp3 decodes the MP3s,
+# stb_vorbis the Ogg, dr_flac the FLAC, and libogg, libopus and opusfile are
+# linked in as static archives.  The same six the Linux AppImage names.
+#
+# Timidity is no longer among them.  It was there because MSYS2 built
+# SDL_mixer with MIDI on; scripts/build-sdl2 passes --disable-music-midi, so
+# there is no Timidity in the library and naming it would put a licence in the
+# download for something it does not carry.
+scripts/third-party-notices -n ZangbandTK -s "$NAME" "$NAME/notices.tmp" \
+	ogg opus opusfile minimp3 dr_flac stb_vorbis \
 	jetbrains-mono ibm-plex-mono source-code-pro space-mono red-hat-mono
 cp_unix2dos "$NAME/notices.tmp" "$NAME/THIRD-PARTY-LICENSES.txt"
 rm "$NAME/notices.tmp"

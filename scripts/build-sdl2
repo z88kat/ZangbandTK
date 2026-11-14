@@ -1,11 +1,29 @@
 #!/bin/sh
 #
-# Build SDL2 and the three libraries beside it that the game uses -- SDL2_image,
+# Build SDL2 and the libraries beside it that the game uses -- SDL2_image,
 # SDL2_ttf and SDL2_mixer -- from their release tarballs, into a project-local
-# prefix that the Linux AppImages link against and carry.
+# prefix that the Linux AppImages and the Windows downloads link against and
+# carry.
 #
 # Use in the root directory of the game, like so:
 #    scripts/build-sdl2 [prefix]
+#
+# It runs on Linux and under MSYS2's MINGW64 shell.  On Windows it builds SDL2
+# and SDL2_mixer and leaves SDL2_image and SDL2_ttf out, because only the SDL2
+# front end uses those and the Windows download the Tk workflow makes does not
+# build it.  Everything else -- the codec choices, the checks at the end -- is
+# the same on both, which is the point: one place decides what the game can
+# decode, so the two platforms cannot drift apart.
+#
+# Why Windows builds its own rather than installing MSYS2's: in November 2026
+# MSYS2 replaced SDL2 with sdl2-compat, an SDL2 that runs on SDL3, and rebuilt
+# SDL2_mixer against five codec libraries.  The new SDL2_mixer links
+# FluidSynth, FluidSynth links GNU readline, and readline is GPL 3, which a
+# GPL 2 game cannot carry; pkg_win_tcltk's licence check would have stopped
+# the zip.  The stop-gap was a script that pinned the last two packages from
+# before that change, straight from MSYS2's mirror, and a pin lasts only as
+# long as the mirror keeps them.  This is the answer that does not expire, and
+# the pin is gone with it.
 #
 # The prefix defaults to sdl2/local; the tarballs and the object trees go in
 # sdl2/ beside it, and all of it is gitignored.  Point cmake at the result with
@@ -66,6 +84,39 @@ PREFIX=${1:-$ROOT/sdl2/local}
 WORK=$ROOT/sdl2
 JOBS=$(nproc 2>/dev/null || echo 4)
 
+# Which platform, asked once.  MSYS2's MINGW64 shell says MINGW64_NT-10.0 and
+# builds PE DLLs; everything else here is ELF.  The two differ in three places
+# and nowhere else: what a shared library is called, how its dependencies are
+# read out of it, and which video driver SDL2 must have found.
+case $(uname -s) in
+MINGW*|MSYS*)
+	WINDOWS=yes
+	SHLIB_GLOB=$PREFIX/bin/SDL2*.dll
+	WANT_VIDEO='windows'
+	;;
+*)
+	WINDOWS=no
+	SHLIB_GLOB=$PREFIX/lib/libSDL2*.so
+	WANT_VIDEO='x11'
+	;;
+esac
+
+# The libraries a shared object must not reach for.  On Linux they would have
+# to go in the AppImage; on Windows beside the executable, and the first four
+# are the ones MSYS2's rebuilt SDL2_mixer brought with it.  fluidsynth is named
+# because it is the one that drags in GNU readline, and gme and modplug because
+# they are the other two routes into a codec library SDL_mixer can do without.
+FORBIDDEN='png|jpeg|webp|tiff|vorbis|ogg|opus|FLAC|mpg123|xmp|wavpack|fluidsynth|gme|modplug|freetype|harfbuzz|stdc\+\+'
+
+# dependencies_of <shared library>: what it asks the loader for, one a line.
+dependencies_of() {
+	if [ "$WINDOWS" = yes ]; then
+		objdump -p "$1" | sed -n 's/^[[:space:]]*DLL Name: //p'
+	else
+		objdump -p "$1" | awk '$1 == "NEEDED" { print $2 }'
+	fi
+}
+
 # Each library finds the ones before it through pkg-config, and the satellites
 # find SDL2 through sdl2-config as well; both have to answer with what was
 # built here, not anything the system has.
@@ -103,10 +154,20 @@ build() {
 	make install >install.log
 }
 
-for pair in "$OGG_URL $OGG_SHA256" "$OPUS_URL $OPUS_SHA256" \
+# SDL2_image and SDL2_ttf only where the SDL2 front end is built; see the
+# header.  The loop stays in this shell, so a checksum failure in fetch() ends
+# the script rather than a subshell.
+if [ "$WINDOWS" = yes ]; then
+	set -- "$OGG_URL $OGG_SHA256" "$OPUS_URL $OPUS_SHA256" \
+		"$OPUSFILE_URL $OPUSFILE_SHA256" "$SDL2_URL $SDL2_SHA256" \
+		"$SDL2_MIXER_URL $SDL2_MIXER_SHA256"
+else
+	set -- "$OGG_URL $OGG_SHA256" "$OPUS_URL $OPUS_SHA256" \
 		"$OPUSFILE_URL $OPUSFILE_SHA256" "$SDL2_URL $SDL2_SHA256" \
 		"$SDL2_IMAGE_URL $SDL2_IMAGE_SHA256" "$SDL2_TTF_URL $SDL2_TTF_SHA256" \
-		"$SDL2_MIXER_URL $SDL2_MIXER_SHA256"; do
+		"$SDL2_MIXER_URL $SDL2_MIXER_SHA256"
+fi
+for pair in "$@"; do
 	# shellcheck disable=SC2086
 	fetch $pair
 done
@@ -122,12 +183,19 @@ build "$OPUS_URL" $STATIC --disable-doc --disable-extra-programs
 # shellcheck disable=SC2086
 build "$OPUSFILE_URL" $STATIC --disable-http --disable-examples --disable-doc
 
-build "$SDL2_URL" --disable-static --disable-video-wayland
+# Wayland is a Linux question; MSYS2's SDL2 configure has no such option and
+# would stop at an unrecognised one.
+if [ "$WINDOWS" = yes ]; then
+	build "$SDL2_URL" --disable-static
+else
+	build "$SDL2_URL" --disable-static --disable-video-wayland
 
-build "$SDL2_IMAGE_URL" --disable-static --enable-stb-image \
-	--disable-avif --disable-jxl --disable-tif --disable-webp
+	build "$SDL2_IMAGE_URL" --disable-static --enable-stb-image \
+		--disable-avif --disable-jxl --disable-tif --disable-webp
 
-build "$SDL2_TTF_URL" --disable-static --enable-freetype-builtin --disable-harfbuzz
+	build "$SDL2_TTF_URL" --disable-static --enable-freetype-builtin \
+		--disable-harfbuzz
+fi
 
 # pkg-config --static, so that opusfile brings libopus and libogg with it:
 # their .pc files list them as private, which an ordinary query leaves out,
@@ -143,33 +211,103 @@ PKG_CONFIG='pkg-config --static' build "$SDL2_MIXER_URL" --disable-static \
 
 # Prove the result is what this script says it is, rather than trusting that a
 # green build means it: the right versions are what pkg-config finds; SDL2 can
-# open a window on X11; none of the libraries reaches for a codec library the
-# AppImage would have to carry; and Opus is inside SDL2_mixer, not merely
+# open a window; none of the libraries reaches for a codec library the download
+# would have to carry; and Opus and MP3 are inside SDL2_mixer, not merely
 # promised by it.
 echo "==> Checking the result"
-for m in sdl2 SDL2_image SDL2_ttf SDL2_mixer; do
+MODULES='sdl2 SDL2_mixer'
+[ "$WINDOWS" = no ] && MODULES='sdl2 SDL2_image SDL2_ttf SDL2_mixer'
+for m in $MODULES; do
 	printf '%-11s %s\n' "$m" "$(pkg-config --modversion $m)"
 done
-if ! grep -q '^Video drivers.*x11' \
+if ! grep -q "^Video drivers.*$WANT_VIDEO" \
 		"$WORK/build/$(basename "$SDL2_URL" .tar.gz)/configure.log"; then
-	echo "SDL2 was configured without X11, so it could open no window." >&2
+	echo "SDL2 was configured without $WANT_VIDEO, so it could open no window." >&2
 	exit 1
 fi
-for lib in "$PREFIX"/lib/libSDL2*.so; do
-	if objdump -p "$lib" | awk '$1 == "NEEDED" { print $2 }' |
-			grep -E 'png|jpeg|webp|tiff|vorbis|ogg|opus|FLAC|mpg123|freetype|harfbuzz|stdc\+\+'; then
-		echo "$lib links a library the AppImage would have to carry." >&2
+for lib in $SHLIB_GLOB; do
+	if dependencies_of "$lib" | grep -E "$FORBIDDEN"; then
+		echo "$lib links a library the download would have to carry." >&2
 		exit 1
 	fi
 done
-if ! grep -q -- '-DMUSIC_OPUS' \
-		"$WORK/build/$(basename "$SDL2_MIXER_URL" .tar.gz)/Makefile"; then
+
+MIXER_BUILD=$WORK/build/$(basename "$SDL2_MIXER_URL" .tar.gz)
+if ! grep -q -- '-DMUSIC_OPUS' "$MIXER_BUILD/Makefile"; then
 	echo "SDL2_mixer was configured without Opus." >&2
 	exit 1
 fi
-if nm -D --undefined-only "$PREFIX/lib/libSDL2_mixer.so" | grep -E ' (op|opus|ogg)_'; then
-	echo "SDL2_mixer leaves Opus symbols for something else to provide." >&2
+# MP3 is the one format the game cannot do without: every sound in lib/sounds
+# is an MP3, and the Tk front end's music player offers it first.  minimp3 is
+# the decoder, chosen because it is inside SDL_mixer's own tarball
+# (src/codecs/minimp3) and is public domain, so it adds neither a DLL to carry
+# nor a licence to honour.  mpg123 would be a second file in the download and
+# SMPEG is long dead.
+#
+# Checked twice, because `--enable-music-mp3-minimp3` on a configure that did
+# not know the option would be accepted silently and decode nothing.  First
+# that it was compiled in at all:
+if ! grep -q -- '-DMUSIC_MP3_MINIMP3' "$MIXER_BUILD/Makefile"; then
+	echo "SDL2_mixer was configured without minimp3, so it decodes no MP3." >&2
 	exit 1
+fi
+# And then that the built library registers the decoder.  SDL_mixer names each
+# interface it has compiled in (src/codecs/music_minimp3.c calls this one
+# "MINIMP3"), and Mix_GetMusicDecoder reports them, so this asks the library
+# itself rather than the build.  The dummy audio driver means it needs no
+# sound card, which no CI runner has.
+#
+# What it proves: the decoder is compiled in and registered under the name
+# SDL_mixer gives it.  What it does not prove: that an MP3 plays.  Nothing
+# here decodes a file or listens to the result.
+cat >"$WORK/decoders.c" <<'PROBE'
+#include <stdio.h>
+#include <string.h>
+#include "SDL.h"
+#include "SDL_mixer.h"
+
+int main(void)
+{
+	int i, n, found = 0;
+
+	SDL_setenv("SDL_AUDIODRIVER", "dummy", 1);
+	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+		return 2;
+	}
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+		fprintf(stderr, "Mix_OpenAudio: %s\n", Mix_GetError());
+		return 2;
+	}
+	n = Mix_GetNumMusicDecoders();
+	for (i = 0; i < n; i++) {
+		const char *d = Mix_GetMusicDecoder(i);
+
+		printf("%s%s", i ? " " : "", d);
+		if (!strcmp(d, "MINIMP3")) found = 1;
+	}
+	printf("\n");
+	Mix_CloseAudio();
+	SDL_Quit();
+	return found ? 0 : 1;
+}
+PROBE
+# shellcheck disable=SC2046
+cc "$WORK/decoders.c" -o "$WORK/decoders" $(pkg-config --cflags --libs SDL2_mixer sdl2)
+printf 'music decoders '
+if ! PATH=$PREFIX/bin:$PATH LD_LIBRARY_PATH=$PREFIX/lib "$WORK/decoders"; then
+	echo "SDL2_mixer registers no MINIMP3 decoder, so it decodes no MP3." >&2
+	exit 1
+fi
+# Opus is linked in from static archives, so nothing should be left undefined
+# for a loader to find.  ELF only: on Windows the same question is answered by
+# the import scan above, which fails on an opus or ogg DLL by name.
+if [ "$WINDOWS" = no ]; then
+	if nm -D --undefined-only "$PREFIX/lib/libSDL2_mixer.so" |
+			grep -E ' (op|opus|ogg)_'; then
+		echo "SDL2_mixer leaves Opus symbols for something else to provide." >&2
+		exit 1
+	fi
 fi
 
 echo "==> Done.  Configure the game with PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig"
