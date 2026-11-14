@@ -31,6 +31,46 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 November 2026 — three red builds, one of them mine
+=====================================================
+
+Steven said the builds on GitHub were failing after our latest changes. Two
+workflows were red, msys2 and Tk, for three separate reasons, and only one of
+them was ours.
+
+That one was mine, and it was twelve days old. When the bundled fonts went in on
+2 November I declared ``tcl_font_add()`` in main-tcl.c inside the Mac-only block,
+next to the AppKit menu keys, though tcl/fonts.c defines it for every platform.
+The Mac built. GCC on Linux and Windows stopped at an implicit declaration, which
+``-Werror`` turns into an error. The Tk workflow only runs when Tk's own files
+change, so it failed once that morning, didn't run again until today, and I
+never looked at the result. The fix was one line moved out of the block.
+
+The other two were MSYS2 changing under us between that run and this one. Its
+32-bit repository is now just the compilers, the build tools and what they need,
+so there's no 32-bit libpng; that job builds against the PNG in src/win instead,
+which the 32-bit download has always used. And MSYS2 has replaced SDL2 with
+sdl2-compat, an SDL2 that runs on top of SDL3, and rebuilt SDL2_image and
+SDL2_mixer. I unpacked the new packages to see why the static link failed: their
+archives are compiled against the DLL builds of five codec libraries, so a static
+link is left with 62 references that only an import library can fill. Nothing we
+ship links SDL2 statically on Windows, so that job links dynamically now.
+
+The Tk job had a second failure waiting behind the first. With the compile error
+fixed, it would have built its Windows zip from the new packages. The new
+SDL2_mixer links FluidSynth, FluidSynth links GNU readline, and readline is
+GPL 3, which a GPL 2 game can't carry. The licence check in pkg_win_tcltk would
+have stopped that. It would not have caught the other problem: sdl2-compat's
+SDL2.dll loads SDL3.dll by name rather than importing it, and the packager only
+follows import tables. The package test runs with MSYS2's bin on the path, so it
+would most likely have found SDL3.dll there and passed. So the Windows Tk build
+now installs the last SDL2 and SDL2_mixer from before the change, straight from
+MSYS2's mirror, and the release does the same. Today's zip has the same twelve
+DLLs as the one from 2 November. That lasts only as long as the mirror keeps
+those two packages. When it drops them, the answer is to build SDL2 from source
+for Windows too, as the Linux build already does.
+
+
 13 November 2026 — the 1982 tiles
 =================================
 
