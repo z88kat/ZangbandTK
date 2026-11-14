@@ -108,8 +108,10 @@ extern const char *tcl_music_state(double *position, double *length);
 #ifdef __APPLE__
 /* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
 extern void tcl_menu_keys_literal(void);
-extern bool tcl_font_add(const char *path);
 #endif
+
+/* In tcl/fonts.c: make a font file this process's own, on every platform. */
+extern bool tcl_font_add(const char *path);
 
 /*
  * What the keyboard types: tcl/keyboard.c asks Carbon on the Mac, and
