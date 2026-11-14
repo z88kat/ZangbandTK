@@ -58,19 +58,27 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-SDL2_ttf
-            mingw-w64-x86_64-SDL2_image
-            mingw-w64-x86_64-SDL2_mixer
+            mingw-w64-x86_64-sdl2-compat
+            mingw-w64-x86_64-sdl2-ttf
+            mingw-w64-x86_64-sdl2-image
+            mingw-w64-x86_64-sdl2-mixer
 
       - name: Clone Project
         uses: actions/checkout@v6
 
-      - name: Build with CMake/Ninja including sound and static linking
+      # Linked dynamically, no longer statically.  Since MSYS2's rebuild of
+      # SDL2_image and SDL2_mixer in November 2026, their static archives are
+      # compiled against the DLL builds of libavif, libjxl, FLAC, FluidSynth
+      # and libxmp, so they ask for those libraries' __imp_ pointers, which
+      # only an import library provides: a -static link of them fails
+      # whatever the game does.  No download is built this way (the Windows
+      # ones use the Windows front end), so the job keeps its purpose, the
+      # SDL2 front end and its sound building against MSYS2's current SDL.
+      - name: Build with CMake/Ninja including sound
         run: |
           mkdir build-sound
           cd build-sound
-          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          cmake -G Ninja -DSUPPORT_SDL2_FRONTEND=ON -DSUPPORT_SDL2_SOUND=ON ..
           ninja -j$(nproc)
 
   configure-win:
@@ -121,22 +129,25 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           update: true
-          # The libraries in src/win/lib and src/win/dll are 32-bit.
+          # The libraries in src/win/lib and src/win/dll are 32-bit, and they
+          # are the only PNG this job has: in November 2026 MSYS2 cut its
+          # 32-bit repository down to the compilers, the build tools and what
+          # they need, and mingw-w64-i686-libpng went with the rest.  The
+          # 32-bit download is built against the same bundled pair.
           msystem: MINGW32
           install: >-
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
             mingw-w64-i686-gcc
-            mingw-w64-i686-libpng
 
       - name: Clone Project
         uses: actions/checkout@v6
 
-      - name: Configure with CMake/Ninja and static linking
+      - name: Configure with CMake/Ninja and the bundled PNG
         run: |
           mkdir build
           cd build
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_STATIC_LINKING=ON ..
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
 
       - name: Build with Ninja
         run: |
@@ -148,11 +159,11 @@ jobs:
           cd build
           ninja -j$(nproc) alltests
 
-      - name: Configure and build with bundled PNG
+      - name: Configure and build with static linking
         run: |
-          mkdir build-bundled-png
-          cd build-bundled-png
-          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON ..
+          mkdir build-static
+          cd build-static
+          cmake -G Ninja -DSUPPORT_WINDOWS_FRONTEND=ON -DSUPPORT_BUNDLED_PNG=ON -DSUPPORT_STATIC_LINKING=ON ..
           ninja -j$(nproc)
 
   cmake-win64:
