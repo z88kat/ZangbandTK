@@ -1796,8 +1796,10 @@ jobs:
             -DTCLTK_PREFIX="$(cygpath -m "$PWD/tcltk/local")"
           cmake --build build --parallel
 
+      # SDL2's DLLs are only in sdl2/local/bin, which the game must find on
+      # the PATH; CMake copies only Tcl's and Tk's beside it.  As in tk.yaml.
       - name: Scripted session
-        run: scripts/run-tcl-bridge-test build
+        run: PATH="$PWD/sdl2/local/bin:$PATH" scripts/run-tcl-bridge-test build
 
       - name: Create Tk Windows Archive
         id: create_win_tk_archive

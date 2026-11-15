@@ -443,8 +443,12 @@ jobs:
       - name: Tcl tests
         run: scripts/run-tcl-tests
 
+      # The game finds SDL2.dll and SDL2_mixer.dll on the PATH.  CMake copies
+      # Tcl's and Tk's DLLs beside it but not these, and since build-sdl2
+      # replaced MSYS2's SDL2 they are only in sdl2/local/bin.  The zip
+      # carries its own copies, which the step after packaging proves.
       - name: Scripted session
-        run: scripts/run-tcl-bridge-test build
+        run: PATH="$PWD/sdl2/local/bin:$PATH" scripts/run-tcl-bridge-test build
 
       - name: Package the zip
         run: |
