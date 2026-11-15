@@ -77,6 +77,16 @@ The Linux half of yesterday's change could have been run in that container
 before it was pushed, and it builds in a few minutes. It wasn't. A check is
 code like any other, and these two had never run.
 
+Later the same day: that push was the probe's first run on Windows, and it
+passed there too, listing the windows driver and MINIMP3. The job then failed
+one step on, in the scripted session, where the game itself starts. The game
+imports SDL2.dll and SDL2_mixer.dll. CMake copies Tcl's and Tk's DLLs beside it
+but not those, and the SDL2 that MSYS2 used to put on the PATH went with the
+pin. So the game could not start, and nothing in the log said why. The zip was
+never at risk, because the packager already takes SDL2 from sdl2/local/bin.
+That step now has the folder on its PATH, in tk.yaml and in the release's copy
+of the same job, which would have failed the same way at the next release.
+
 
 14 November 2026 — three red builds, one of them mine
 =====================================================
