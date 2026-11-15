@@ -210,21 +210,16 @@ PKG_CONFIG='pkg-config --static' build "$SDL2_MIXER_URL" --disable-static \
 	--disable-music-gme --disable-music-wavpack
 
 # Prove the result is what this script says it is, rather than trusting that a
-# green build means it: the right versions are what pkg-config finds; SDL2 can
-# open a window; none of the libraries reaches for a codec library the download
-# would have to carry; and Opus and MP3 are inside SDL2_mixer, not merely
-# promised by it.
+# green build means it: the right versions are what pkg-config finds; none of
+# the libraries reaches for a codec library the download would have to carry;
+# Opus and MP3 are inside SDL2_mixer, not merely promised by it; and SDL2 has
+# the video driver that opens a window.
 echo "==> Checking the result"
 MODULES='sdl2 SDL2_mixer'
 [ "$WINDOWS" = no ] && MODULES='sdl2 SDL2_image SDL2_ttf SDL2_mixer'
 for m in $MODULES; do
 	printf '%-11s %s\n' "$m" "$(pkg-config --modversion $m)"
 done
-if ! grep -q "^Video drivers.*$WANT_VIDEO" \
-		"$WORK/build/$(basename "$SDL2_URL" .tar.gz)/configure.log"; then
-	echo "SDL2 was configured without $WANT_VIDEO, so it could open no window." >&2
-	exit 1
-fi
 for lib in $SHLIB_GLOB; do
 	if dependencies_of "$lib" | grep -E "$FORBIDDEN"; then
 		echo "$lib links a library the download would have to carry." >&2
@@ -251,54 +246,95 @@ if ! grep -q -- '-DMUSIC_MP3_MINIMP3' "$MIXER_BUILD/Makefile"; then
 	echo "SDL2_mixer was configured without minimp3, so it decodes no MP3." >&2
 	exit 1
 fi
-# And then that the built library registers the decoder.  SDL_mixer names each
-# interface it has compiled in (src/codecs/music_minimp3.c calls this one
-# "MINIMP3"), and Mix_GetMusicDecoder reports them, so this asks the library
-# itself rather than the build.  The dummy audio driver means it needs no
-# sound card, which no CI runner has.
+# And then a probe asks the built libraries themselves, rather than the build,
+# the two things that matter most.
 #
-# What it proves: the decoder is compiled in and registered under the name
-# SDL_mixer gives it.  What it does not prove: that an MP3 plays.  Nothing
-# here decodes a file or listens to the result.
-cat >"$WORK/decoders.c" <<'PROBE'
+# Which video drivers SDL2 has.  SDL_GetVideoDriver lists every one compiled
+# in without starting video, so it needs no display.  SDL2's configure summary
+# cannot answer this: on Windows it lists the Direct3D renderers and never the
+# windows driver itself, so a check that read it failed on a good build.
+#
+# Whether SDL2_mixer registers minimp3, under the name
+# src/codecs/music_minimp3.c gives it, "MINIMP3".  Mix_OpenAudio registers
+# only the two decoders that need no setting up, CMD and WAVE.  MP3 is
+# registered by Mix_Init(MIX_INIT_MP3), or by the first MP3 loaded, which is how
+# the game gets it: snd-sdl.c never calls Mix_Init.  A probe that left it out
+# saw CMD and WAVE on a good build, so this one calls it.  The dummy audio
+# driver means it needs no sound card, which no CI runner has.
+#
+# What it proves: the windows or X11 driver is compiled in, and so is the
+# decoder, registered under its own name.  What it does not prove: that a
+# window opens or that an MP3 plays.  Nothing here opens a display, decodes a
+# file or listens to the result.
+#
+# main takes argc and argv because on Windows SDL.h renames it
+# SDL_main(int, char **), and SDL2main supplies the real one; main(void) would
+# not compile there.  gcc rather than cc, because MSYS2 may not provide cc.
+cat >"$WORK/probe.c" <<'PROBE'
 #include <stdio.h>
 #include <string.h>
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-int main(void)
+/* The one argument is the video driver SDL2 must have. */
+int main(int argc, char *argv[])
 {
-	int i, n, found = 0;
+	int i, n, video = 0, mp3 = 0;
+
+	if (argc != 2) {
+		fprintf(stderr, "usage: probe <video driver>\n");
+		return 2;
+	}
+
+	printf("video drivers  ");
+	n = SDL_GetNumVideoDrivers();
+	for (i = 0; i < n; i++) {
+		const char *d = SDL_GetVideoDriver(i);
+
+		printf("%s%s", i ? " " : "", d);
+		if (!strcmp(d, argv[1])) video = 1;
+	}
+	printf("\n");
 
 	SDL_setenv("SDL_AUDIODRIVER", "dummy", 1);
 	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
 		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
 		return 2;
 	}
+	if (!(Mix_Init(MIX_INIT_MP3) & MIX_INIT_MP3)) {
+		fflush(stdout);
+		fprintf(stderr, "Mix_Init: %s\n", Mix_GetError());
+	}
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
 		fprintf(stderr, "Mix_OpenAudio: %s\n", Mix_GetError());
 		return 2;
 	}
+	printf("music decoders ");
 	n = Mix_GetNumMusicDecoders();
 	for (i = 0; i < n; i++) {
 		const char *d = Mix_GetMusicDecoder(i);
 
 		printf("%s%s", i ? " " : "", d);
-		if (!strcmp(d, "MINIMP3")) found = 1;
+		if (!strcmp(d, "MINIMP3")) mp3 = 1;
 	}
 	printf("\n");
+	fflush(stdout);
 	Mix_CloseAudio();
+	Mix_Quit();
 	SDL_Quit();
-	return found ? 0 : 1;
+
+	if (!video)
+		fprintf(stderr, "SDL2 has no %s video driver, so it could open no window.\n",
+			argv[1]);
+	if (!mp3)
+		fprintf(stderr, "SDL2_mixer registers no MINIMP3 decoder, so it decodes no MP3.\n");
+	return video && mp3 ? 0 : 1;
 }
 PROBE
 # shellcheck disable=SC2046
-cc "$WORK/decoders.c" -o "$WORK/decoders" $(pkg-config --cflags --libs SDL2_mixer sdl2)
-printf 'music decoders '
-if ! PATH=$PREFIX/bin:$PATH LD_LIBRARY_PATH=$PREFIX/lib "$WORK/decoders"; then
-	echo "SDL2_mixer registers no MINIMP3 decoder, so it decodes no MP3." >&2
+gcc "$WORK/probe.c" -o "$WORK/probe" $(pkg-config --cflags --libs SDL2_mixer sdl2)
+PATH=$PREFIX/bin:$PATH LD_LIBRARY_PATH=$PREFIX/lib "$WORK/probe" "$WANT_VIDEO" ||
 	exit 1
-fi
 # Opus is linked in from static archives, so nothing should be left undefined
 # for a loader to find.  ELF only: on Windows the same question is answered by
 # the import scan above, which fails on an opus or ogg DLL by name.
