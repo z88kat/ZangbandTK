@@ -31,6 +31,53 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 November 2026 — two checks that could not pass
+=================================================
+
+Yesterday's entry ended by saying that when MSYS2's mirror dropped the pinned
+packages, the answer would be to build SDL2 from source for Windows too. That
+happened the same evening, before the mirror forced it. scripts/build-sdl2 grew
+a Windows arm, the pin was deleted, and the script gained checks that what it
+built was what it claimed. Two of those checks could never pass. The Tk
+workflow went red on Linux and Windows, and so did the Linux AppImage, which
+had been green that morning.
+
+Steven asked this morning where the SDL2 build stood. The Linux jobs stopped at
+"SDL2_mixer registers no MINIMP3 decoder", with the decoder list reading just
+CMD and WAVE. The probe opened the mixer and asked which music decoders it had.
+SDL_mixer's own source says why the list was short: ``Mix_OpenAudio`` registers
+only the two decoders that need no setting up, and MP3 is registered by
+``Mix_Init(MIX_INIT_MP3)`` or by the first MP3 loaded. The game never calls
+``Mix_Init``, and has always got MP3 the second way. So the library was fine
+and the question was wrong. The other MP3 check in the same commit, a grep for
+``-DMUSIC_MP3_MINIMP3`` in the Makefile, had passed.
+
+Windows stopped one check earlier, at "SDL2 was configured without windows".
+That check read the "Video drivers" line of SDL2's configure summary. On
+Windows, SDL2's configure.ac switches the windows driver on without ever adding
+it to that line; it lists d3d9, d3d11 and d3d12. On Linux x11 does appear,
+which is why the same check passed there and looked sound.
+
+Behind that was a third failure nobody had reached. On Windows SDL.h renames
+``main`` to ``SDL_main(int, char **)``, and the probe was written as
+``int main(void)``. I compiled it with MinGW against SDL2's own Windows
+development packages to be sure, and it stops at "conflicting types for
+'SDL_main'".
+
+The probe now asks the built libraries both things: which video drivers SDL2
+has, through ``SDL_GetVideoDriver``, which needs no display, and which music
+decoders SDL2_mixer registers once ``Mix_Init`` has run. In the 18.04 container
+on this Mac it finds x11 and MINIMP3 and passes. I also made it fail on purpose
+twice, by asking for windows on Linux and by telling SDL_mixer to skip
+minimp3, to be sure it still can. The Windows half has only been compiled and
+linked here, never run, so the next Tk run is its first real test. Yesterday's
+commit said the same about itself.
+
+The Linux half of yesterday's change could have been run in that container
+before it was pushed, and it builds in a few minutes. It wasn't. A check is
+code like any other, and these two had never run.
+
+
 14 November 2026 — three red builds, one of them mine
 =====================================================
 
