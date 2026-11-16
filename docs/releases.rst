@@ -107,6 +107,23 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+The browser version is a web page — 16 November 2026
+----------------------------------------------------
+
+- **zangbandtk.com/play/ draws the game as a page**, where it used to show a
+  picture of a terminal. The map is in tiles; your character, pack, equipment
+  and quiver sit beside it, and the messages scroll underneath. Choosing an
+  item, yes-or-no questions, numbers, text and the menus of item actions and
+  powers are boxes you can click or answer from the keyboard. Click the map
+  to walk there. Character creation, the shops, the character sheet, the
+  options and the spell lists are still the game's own text screens, shown in
+  the map's place. See :doc:`play`.
+- **A Tiles menu** on the page switches tilesets while you play: the original
+  tiles, Adam Bolt's, David Gervais', Neon with its colour-blind version, and
+  the 1982 set. Nomad's tiles, taller than they're wide, aren't in the browser
+  version.
+- The first visit downloads about 7 MB, down from 9.5.
+
 Closed stores and small levels — 21 October 2026
 ------------------------------------------------
 

@@ -3,6 +3,10 @@
 #
 # WebAssembly build of Zangband, via Emscripten and the SDL2 frontend.
 #
+# Since 16 November 2026 the site's /play/ page is Makefile.web's build, the
+# HTML front end in main-web.c, and nothing publishes this one.  It still
+# builds, and its test-exe target below is the stdio test build CI runs.
+#
 # Objects go into a directory of their own rather than beside the sources.  The
 # native builds (Makefile.osx above all) leave their .o files in src/, and a
 # wasm object with the same name is not a stale object, it is an object for the

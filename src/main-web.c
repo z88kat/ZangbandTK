@@ -15,7 +15,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  *
- * A spike, to see how the game looks when the page draws it rather than SDL.
+ * This is the version zangbandtk.com/play/ serves.  It replaced the SDL2
+ * front end in a canvas, whose windows, menus and prompts were pixels the page
+ * could do nothing with.
  *
  * The game runs in a Web Worker (web/worker.js) and the page (web/ui.js) draws
  * what this file tells it.  Three kinds of message go up:
@@ -56,6 +58,7 @@
 #include "player-calcs.h"
 #include "player-spell.h"
 #include "player-util.h"
+#include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
@@ -130,6 +133,13 @@ EM_ASYNC_JS(int, web_js_ask_text, (const char *json, char *buf, int len), {
 
 EM_ASYNC_JS(void, web_js_sleep, (int ms), {
 	await new Promise(function (r) { setTimeout(r, ms); });
+});
+
+/* The tileset the page has asked for since the last look, or 0. */
+EM_JS(int, web_js_take_graf, (void), {
+	const g = Module.zbWantGraf | 0;
+	Module.zbWantGraf = 0;
+	return g;
 });
 
 EM_JS(void, web_js_quit, (const char *why), {
@@ -594,6 +604,87 @@ static void notice_message(game_event_type type, game_event_data *data,
 }
 
 /* ------------------------------------------------------------------------
+ * Tilesets
+ * ------------------------------------------------------------------------ */
+
+/*
+ * The page draws every tile square, so a set whose cells are not square --
+ * Nomad's are 8 by 16, made to sit in a text cell -- is never offered.
+ * Makefile.web leaves Nomad out of the data, so it is not even listed; this
+ * is for a set added to list.txt later.
+ */
+static bool tileset_usable(const graphics_mode *mode)
+{
+	return mode && mode->grafID != GRAPHICS_NONE
+		&& mode->cell_width == mode->cell_height;
+}
+
+static void send_tilesets(void)
+{
+	struct jb b;
+	graphics_mode *mode;
+
+	jb_init(&b);
+	jb_put(&b, "{\"type\":\"tilesets\",\"list\":[");
+	for (mode = graphics_modes; mode; mode = mode->pNext) {
+		if (mode->grafID == GRAPHICS_NONE) continue;
+		jb_next(&b);
+		jb_put(&b, "{");
+		jb_kint(&b, "id", mode->grafID);
+		jb_kstr(&b, "name", mode->menuname);
+		jb_kbool(&b, "ok", tileset_usable(mode));
+		jb_put(&b, "}");
+	}
+	jb_fmt(&b, "],\"current\":%d}",
+		current_graphics_mode ? current_graphics_mode->grafID : 0);
+	web_js_post(b.buf);
+	jb_free(&b);
+}
+
+/* Make a tileset the current one and hand its sheet to the page. */
+static void use_tileset(graphics_mode *mode)
+{
+	char path[1024];
+	char head[256];
+
+	current_graphics_mode = mode;
+	use_graphics = mode->grafID;
+
+	strnfmt(head, sizeof(head),
+		"{\"type\":\"tileinfo\",\"id\":%d,\"w\":%d,\"h\":%d}",
+		mode->grafID, mode->cell_width, mode->cell_height);
+	web_js_post(head);
+	path_build(path, sizeof(path), mode->path, mode->file);
+	web_js_send_file(path, "tiles");
+}
+
+/*
+ * A tileset chosen on the page while the game runs.  It waits for the map:
+ * redrawing everything from inside a store or a menu would draw the map over
+ * whatever the game has on the screen.
+ */
+static int pending_graf;
+
+static void switch_tileset(void)
+{
+	graphics_mode *mode;
+	int want = web_js_take_graf();
+
+	if (want) pending_graf = want;
+	if (!pending_graf || !character_dungeon || screen_save_depth > 0) return;
+
+	mode = get_graphics_mode((uint8_t)pending_graf);
+	pending_graf = 0;
+	if (!tileset_usable(mode) || mode == current_graphics_mode) return;
+
+	use_tileset(mode);
+	reset_visuals(true);
+	do_cmd_redraw();
+	send_tilesets();
+	gear_dirty = true;
+}
+
+/* ------------------------------------------------------------------------
  * Input
  * ------------------------------------------------------------------------ */
 
@@ -632,6 +723,7 @@ static errr web_event(int wait)
 	}
 
 	take_input();
+	switch_tileset();
 	return 0;
 }
 
@@ -902,7 +994,6 @@ errr init_web(int argc, char **argv)
 	term *t = &term_main;
 	int cols, rows, tw, th, graf;
 	graphics_mode *mode;
-	char path[1024];
 
 	(void)argc;
 	(void)argv;
@@ -931,27 +1022,18 @@ errr init_web(int argc, char **argv)
 	Term_activate(t);
 	angband_term[0] = t;
 
-	/* Tiles, sized in cells so that a tile is square on the page */
+	/*
+	 * Tiles, sized in cells so that a tile is square on the page.  Neon
+	 * unless the page remembers another choice.
+	 */
 	if (!init_graphics_modes()) quit("Could not read the tile list");
-	mode = get_graphics_mode(graf ? graf : 7);
-	if (!mode || mode->grafID == GRAPHICS_NONE) mode = get_graphics_mode(7);
-	if (mode) {
-		current_graphics_mode = mode;
-		use_graphics = mode->grafID;
-		tile_width = tw;
-		tile_height = th;
-
-		path_build(path, sizeof(path), mode->path, mode->file);
-		{
-			char head[256];
-
-			strnfmt(head, sizeof(head),
-				"{\"type\":\"tileinfo\",\"w\":%d,\"h\":%d,\"name\":\"%s\"}",
-				mode->cell_width, mode->cell_height, mode->menuname);
-			web_js_post(head);
-		}
-		web_js_send_file(path, "tiles");
-	}
+	mode = get_graphics_mode((uint8_t)graf);
+	if (!tileset_usable(mode)) mode = get_graphics_mode(7);
+	if (!tileset_usable(mode)) quit("Could not find the Neon tiles");
+	tile_width = tw;
+	tile_height = th;
+	use_tileset(mode);
+	send_tilesets();
 
 	event_add_handler(EVENT_STATS, notice_status, NULL);
 	event_add_handler(EVENT_HP, notice_status, NULL);

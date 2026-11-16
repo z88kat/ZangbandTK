@@ -31,6 +31,55 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+16 November 2026 — the browser game becomes a page
+==================================================
+
+Steven pointed me at nethack.app this afternoon, the NetHack port that runs in
+a browser, and asked why it felt so much better than ours. Our /play/ page was
+the SDL2 front end compiled to WebAssembly and pointed at a canvas. Every
+window, menu and prompt in it was pixels SDL drew, so the page could do nothing
+with them: no list you could click, no text it could style, nothing the browser
+recognised as a control. nethack-web runs the NetHack core in a Web Worker and
+has it say what it wants, "a menu with these items" or "this glyph on this
+square", and the page draws that as HTML.
+
+The question was whether we had anything like NetHack's window procedures to
+hang that on, and we did, because the Tk front end needed the same thing. The
+game asks for an item, a yes or a no, a quantity or a direction through the
+hooks in game-input.h, and it announces hit points, gold, the pack and every
+message as events. main-tcl.c already wraps all of it. So the spike was a new
+front end, main-web.c, that sends JSON to the page at the points where
+main-tcl.c builds Tcl objects, and a page in plain JavaScript with no build
+step.
+
+One real difference from Tk: Tk wraps the text prompts, so the game's own menu
+still runs in the terminal and the pane is a second way to answer it. Here the
+hooks are replaced. The hook posts the question and waits for the answer the
+way the game waits for a key, with Asyncify unwinding the stack until the
+dialog answers.
+
+Two things went wrong on the way, both found by playing it headlessly. The page
+shows the game's own text screen in place of the map whenever the game has
+drawn something the page can't turn into HTML yet, a shop or the character
+sheet. My first test for that was a saved screen, and the very first command I
+tried, ``i``, saves the screen and then asks for an item, so the item list
+opened over a terminal-shaped copy of the map. The test now is text drawn
+across the map's columns while a screen is saved. The second: the savefile
+lives in IndexedDB, copied there every five seconds as the SDL2 page did, and a
+run that pressed Ctrl-S and closed the page a second later came back without
+the save. It's copied a moment after the game settles to wait now as well.
+
+Steven looked at it and said to go with it, and to replace /play/ straight away
+rather than run the two side by side until the remaining text screens were
+done. So character creation, the shops and the rest are text screens on the
+live page for now. Nomad's tiles didn't make it: they're twice as tall as
+they're wide, and the page draws every tile square. The other five sets are on
+a menu and switch while you play. A character saved on the old page opens on
+the new one, which I checked by saving one from each in the same browser
+profile rather than trusting that the storage paths matched. Character creation
+is next.
+
+
 15 November 2026 — two checks that could not pass
 =================================================
 

@@ -28,6 +28,16 @@ Module.zbInput = function (ev) {
   }
 };
 
+// Wake a waiting game with nothing to read, so that it looks again at what
+// the page has asked for (a tileset, for one).
+Module.zbPoke = function () {
+  if (Module.zbWake) {
+    const wake = Module.zbWake;
+    Module.zbWake = null;
+    wake(Module.zbQueue.length);
+  }
+};
+
 // Called by the game when it wants input.  Blocking, it waits for some;
 // otherwise it only lets the worker's event loop run once, so that a key
 // pressed while the game rests or runs can arrive.

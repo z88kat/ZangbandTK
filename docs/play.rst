@@ -11,18 +11,54 @@ The browser runs the compiled code directly, the same way it would run any
 other program it was handed, and the wilderness is generated in the tab you
 have open.
 
+The page
+========
+
+The map is in the middle, in tiles. Your character is on the left: health and
+mana as bars, then your stats, level, armour, speed, gold and where you are.
+Your pack, equipment and quiver are on the right, each item with its tile and
+its weight. Messages scroll along the bottom, and the ones from your last move
+are brighter than the older ones. The line above the map is the game's prompt
+line, and the line under it is the status bar.
+
+When the game asks you something, it asks in a box over the map. Choosing an
+item gives you a list to click, or you can type the item's letter as usual.
+There are tabs for your equipment, quiver and the floor when the question
+allows them, and ``/``, ``|`` and ``-`` move between them as they do in the
+other builds. Yes-or-no questions, numbers and text, and the menus of item
+actions and powers, come up in boxes too. Escape cancels any of them.
+
+Click a square on the map and you walk to it.
+
+Some screens are still the game's own text screens: character creation, the
+shops, the character sheet, the options, the knowledge menus and the spell
+lists. While one is open it takes the map's place, drawn the way a terminal
+would draw it, and the map comes back when you leave. They're being turned
+into proper pages one at a time.
+
+Tiles
+=====
+
+The *Tiles* menu at the top right changes the tileset straight away, and the
+browser remembers your choice. Five of the six tilesets are there: the original
+8×8 tiles, Adam Bolt's, David Gervais', Neon with its colour-blind version, and
+the 1982 set. You start with Neon. Nomad's set is left out because its tiles
+are twice as tall as they are wide, and the page draws every tile square.
+
 What it costs to start
 ======================
 
-About 9.5 MB on the first visit, and it's cached after that. Roughly 5 MB is
+About 7 MB on the first visit, and it's cached after that. Roughly 2.5 MB is
 compiled code, 4.2 MB is game data (the monsters, objects, dungeon profiles,
-the help files and six tilesets) and the rest is a little glue. A progress bar
-runs while it downloads.
+the help files and five tilesets) and the rest is the page and its font. The
+page shows how far the download has got while it loads.
 
 Savefiles
 =========
 
-Your game is saved in the browser, and it survives closing the tab.
+Your game is saved in the browser, and it survives closing the tab. A
+character from the earlier version of this page opens in this one, because
+both keep the savefile in the same place.
 
 It isn't a file you can find, though. The savefile lives in the browser's own
 storage, so it belongs to one browser on one machine. A character rolled in
@@ -41,21 +77,17 @@ The browser version is smaller than the native ones.
 There's no sound. It's compiled out of the build entirely, which also keeps
 3 MB of samples out of the download.
 
-There's only one terminal. The native builds can put messages, the inventory
-and the monster list in windows of their own. A page has one canvas and no way
-to ask for a second, so the browser version shows the main view alone. The
-buttons that would have opened the others aren't there at all, so none of them
-sits there doing nothing.
+There are no extra windows. The native builds can show the monster list, the
+object list and the rest in windows of their own, and the page has no place
+for them yet.
 
-There's no fullscreen. The canvas already fills the window, and the browser
+There's no fullscreen. The page already fills the window, and the browser
 reserves Escape for leaving fullscreen. This game needs that key far too often
 to lend it out.
 
-All six tilesets are included, though: the original 8×8, Adam Bolt's, Nomad's,
-David Gervais', Neon, with Neon's colour-blind version, and the 1982 set.
-Between them they come to about two and a half megabytes, which is small enough
-for a page load, so they're all here. The game lists only the tilesets it can find, so a build that leaves
-one out won't show it.
+The page is laid out when it loads. Make the window smaller and the map shrinks
+to fit; make it bigger and the map stays the size it was. Either way you see the
+same part of the level until the page next loads.
 
 Everything else is as it is in the native builds: the same wilderness,
 bestiary, lethality and savefile format.
@@ -66,8 +98,9 @@ Which browsers
 Any current Chrome, Edge, Firefox or Safari. WebAssembly has been in all of them
 since 2017, and this build asks for nothing newer.
 
-You'll need a keyboard, though. The game is driven by single keystrokes and has
-no on-screen controls, so a phone or a tablet will load it and then leave you
+You'll need a keyboard, though. The game is driven by single keystrokes. The
+mouse walks you about and answers the boxes, but there are no on-screen
+controls for the rest, so a phone or a tablet will load it and then leave you
 with no way to play.
 
 Which version

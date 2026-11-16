@@ -36,6 +36,12 @@ self.onmessage = function (e) {
     case 'answer':
       if (game) game.zbAnswer(m.value);
       break;
+    case 'graf':
+      if (game) {
+        game.zbWantGraf = m.id;
+        game.zbPoke();
+      }
+      break;
     case 'flush':
       if (game && game.zbFlush) game.zbFlush();
       break;

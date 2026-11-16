@@ -54,6 +54,21 @@ html, body {
   color: var(--gold);
   flex: none;
 }
+#tiles-pick {
+  margin-left: auto;
+  flex: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+#tiles {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-left: 6px;
+}
 #prompt {
   font-family: var(--mono);
   font-size: 15px;

@@ -2,8 +2,10 @@
 # File: Makefile.web
 #
 # The browser front end (main-web.c): the game compiled to WebAssembly, run in
-# a Web Worker, drawn by an HTML page.  A spike beside Makefile.wasm, which
-# builds the SDL2 canvas version; the two share nothing but the core.
+# a Web Worker, drawn by an HTML page.  This is what zangbandtk.com/play/
+# serves (pages.yaml).  Makefile.wasm builds the SDL2 canvas version it
+# replaced, and the stdio test build CI runs under node; the two share nothing
+# but the core.
 #
 #   make -f Makefile.web            build into ../build-web
 #   make -f Makefile.web serve      and serve it on http://localhost:8403/
@@ -48,7 +50,10 @@ ALLOBJS = $(ANGFILES) $(ZFILES) $(BASEMAINFILES) main-web.o
 OBJS    = $(addprefix $(OBJDIR)/,$(ALLOBJS))
 
 LIBDIRS = gamedata screens help customize user
-TILESETS = old nomad adam-bolt gervais neon 1982
+# Every tileset with square tiles.  The page draws each tile in a square, so
+# Nomad's 8x16 cells, made to sit in a text cell, are left out, and grafmode.c
+# lists only the sets it can find.
+TILESETS = old adam-bolt gervais neon 1982
 
 $(OUT)/lib.stamp:
 	@mkdir -p $(OUT)/lib

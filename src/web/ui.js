@@ -42,6 +42,15 @@
     dialog: $('dialog'),
     loading: $('loading'),
     loadingText: $('loading-text'),
+    tiles: $('tiles'),
+    tilesPick: $('tiles-pick'),
+  };
+
+  // The tileset is remembered by this browser; the game falls back to Neon if
+  // the remembered one has gone.
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* not kept */ } },
   };
 
   let palette = new Array(32).fill('#ffffff');
@@ -76,7 +85,7 @@
       rows: 2 + th * tilesH,
       tw: tw,
       th: th,
-      graf: 7,
+      graf: Number(store.get('zangband.tiles')) || 7,
     });
   }
 
@@ -97,6 +106,7 @@
     switch (j.type) {
       case 'palette': palette = j.colors; redraw(); break;
       case 'tileinfo': tileW = j.w; tileH = j.h; break;
+      case 'tilesets': renderTilesets(j); break;
       case 'state': layout = j; redraw(); break;
       case 'status': renderChar(j); break;
       case 'gear': lastGear = j; renderGear(j); break;
@@ -104,10 +114,25 @@
     }
   }
 
+  function renderTilesets(t) {
+    els.tiles.innerHTML = t.list.map((m) => '<option value="' + m.id + '"' + (m.ok ? '' : ' disabled') +
+      (m.id === t.current ? ' selected' : '') + '>' + esc(m.name) + (m.ok ? '' : ' (not in the browser)') +
+      '</option>').join('');
+    els.tilesPick.hidden = false;
+  }
+
+  els.tiles.addEventListener('change', function () {
+    const id = Number(els.tiles.value);
+    store.set('zangband.tiles', String(id));
+    send({ type: 'graf', id: id });
+    els.tiles.blur(); // the keys belong to the game
+  });
+
   function loadSheet(bytes) {
     const url = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
     const img = new Image();
     img.onload = function () {
+      if (sheet) URL.revokeObjectURL(sheet.url);
       sheet = { img: img, url: url, w: img.naturalWidth, h: img.naturalHeight };
       if (lastGear) renderGear(lastGear);
       redraw();
@@ -604,6 +629,7 @@
       e.preventDefault();
       return;
     }
+    if (e.target === els.tiles) return;
     const k = translate(e);
     if (!k) return;
     e.preventDefault();

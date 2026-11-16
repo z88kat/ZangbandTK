@@ -109,9 +109,12 @@ jobs:
           ./emsdk install "$EMSDK_VERSION"
           ./emsdk activate "$EMSDK_VERSION"
 
+      # The browser front end, main-web.c: the game in a Web Worker, drawn by
+      # an HTML page.  Makefile.wasm's SDL2 canvas build was /play/ until 16
+      # November 2026; it still builds, but nothing publishes it.
       - name: Build for the browser
         run: |
-          make -C src -f Makefile.wasm -j$(nproc) \
+          make -C src -f Makefile.web -j$(nproc) \
             EMSDK="$GITHUB_WORKSPACE/emsdk"
 
       # The same test suite the native builds run, against the wasm binary,
@@ -123,18 +126,18 @@ jobs:
             EMSDK="$GITHUB_WORKSPACE/emsdk"
           ./run-tests build-wasm/zangband-test
 
-      # index.html so the address is /play/ and not /play/zangband.html.  The
-      # page asks for the other three files by relative name, so renaming only
-      # the page is safe.
+      # The page is index.html already, so the address is /play/.  Everything
+      # else it loads it asks for by relative name.  build-web/lib is only the
+      # staging tree packed into zangband-web.data, so it stays behind.
       - name: Add the browser build to the site
         run: |
           mkdir -p docs/_build/html/play
-          cp build-wasm/zangband.js \
-             build-wasm/zangband.wasm \
-             build-wasm/zangband.data \
+          cp build-web/index.html build-web/ui.js build-web/worker.js \
+             build-web/style.css build-web/zangband-web.js \
+             build-web/zangband-web.wasm build-web/zangband-web.data \
              docs/_build/html/play/
-          cp build-wasm/zangband.html docs/_build/html/play/index.html
-          ls -l docs/_build/html/play
+          cp -R build-web/fonts docs/_build/html/play/
+          ls -lR docs/_build/html/play
 
       # enablement makes this workflow the authoritative source for the site.
       # It matters: with Pages set to deploy from a branch, GitHub ran Jekyll
