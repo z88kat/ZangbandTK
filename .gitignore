@@ -158,6 +158,7 @@ tcltk/*/doc/
 # the build*/ rule above.
 src/wasm-obj/
 src/wasm-obj-test/
+src/web-obj/
 build-asan/
 
 # Makefile.osx-tty's object tree, and the tarball it packages.  The objects

@@ -1,0 +1,96 @@
+#
+# File: Makefile.web
+#
+# The browser front end (main-web.c): the game compiled to WebAssembly, run in
+# a Web Worker, drawn by an HTML page.  A spike beside Makefile.wasm, which
+# builds the SDL2 canvas version; the two share nothing but the core.
+#
+#   make -f Makefile.web            build into ../build-web
+#   make -f Makefile.web serve      and serve it on http://localhost:8403/
+#
+
+OBJDIR = web-obj
+OUT    = ../build-web
+
+all: $(OUT)/index.html
+
+EMSDK ?= /Users/steven/Development/GitHub/emsdk
+export EM_CONFIG ?= $(EMSDK)/.emscripten
+EMSDK_NODE_BIN := $(firstword $(wildcard $(EMSDK)/node/*/bin))
+export PATH := $(EMSDK)/upstream/emscripten:$(EMSDK_NODE_BIN):$(PATH)
+
+CC = $(EMSDK)/upstream/emscripten/emcc
+OPT ?= -O2
+
+WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+# gnu99, as Makefile.wasm explains: EM_JS will not expand under -std=c99.
+JUST_C = -std=gnu99
+CFLAGS = -I. $(OPT) $(WARNINGS) -DUSE_WEB -DHAVE_MKSTEMP
+
+# ASYNCIFY lets the game wait -- for a key or for a dialog's answer -- by
+# unwinding to the worker's event loop and resuming when the answer comes.
+LDFLAGS = -sASYNCIFY -sASYNCIFY_STACK_SIZE=131072 \
+	-sALLOW_MEMORY_GROWTH=1 \
+	-sINITIAL_MEMORY=268435456 \
+	-sSTACK_SIZE=5242880 \
+	-sEXIT_RUNTIME=0 \
+	-sFORCE_FILESYSTEM=1 \
+	-sENVIRONMENT=worker \
+	-sMODULARIZE=1 -sEXPORT_NAME=createZangband \
+	-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE='["$$stringToUTF8","$$UTF8ToString"]' \
+	-lidbfs.js \
+	--pre-js web/pre.js \
+	--preload-file $(OUT)/lib@/lib
+
+include Makefile.src
+
+ALLOBJS = $(ANGFILES) $(ZFILES) $(BASEMAINFILES) main-web.o
+OBJS    = $(addprefix $(OBJDIR)/,$(ALLOBJS))
+
+LIBDIRS = gamedata screens help customize user
+TILESETS = old nomad adam-bolt gervais neon 1982
+
+$(OUT)/lib.stamp:
+	@mkdir -p $(OUT)/lib
+	@for d in $(LIBDIRS); do \
+		mkdir -p $(OUT)/lib/$$d; \
+		cp -R ../lib/$$d/. $(OUT)/lib/$$d/ 2>/dev/null || true; \
+		rm -f $(OUT)/lib/$$d/Makefile; \
+	done
+	@mkdir -p $(OUT)/lib/tiles
+	@cp ../lib/tiles/list.txt $(OUT)/lib/tiles/
+	@for t in $(TILESETS); do cp -R ../lib/tiles/$$t $(OUT)/lib/tiles/; done
+	@mkdir -p $(OUT)/lib/save $(OUT)/lib/scores
+	@touch $@
+
+$(OUT)/zangband-web.js: $(OBJS) $(OUT)/lib.stamp web/pre.js
+	@printf "%10s %s\n" LINK $@
+	@$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+PAGE = index.html ui.js worker.js style.css
+
+$(OUT)/index.html: $(OUT)/zangband-web.js $(addprefix web/,$(PAGE))
+	@for f in $(PAGE); do cp web/$$f $(OUT)/$$f; done
+	@mkdir -p $(OUT)/fonts
+	@cp ../lib/tcl/fonts/IBMPlexMono-Regular.ttf ../lib/tcl/fonts/IBMPlexMono-Bold.ttf $(OUT)/fonts/
+	@echo "      PAGE $(OUT)"
+
+DEPFLAGS = -MMD -MP
+
+$(OBJDIR)/%.o : %.c Makefile.web
+	@mkdir -p $(dir $@)
+	@printf "%10s %-32s\n" CC $<
+	@$(CC) $(JUST_C) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+-include $(OBJS:.o=.d)
+
+PORT ?= 8403
+
+serve: all
+	@echo "Zangband at http://localhost:$(PORT)/"
+	@cd $(OUT) && python3 -m http.server $(PORT)
+
+clean:
+	-rm -rf $(OBJDIR) $(OUT)
+
+.PHONY: all clean serve

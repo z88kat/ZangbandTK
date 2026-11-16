@@ -44,6 +44,7 @@ extern errr init_vme(int argc, char **argv);
 extern errr init_vcs(int argc, char **argv);
 extern errr init_sdl2(int argc, char **argv);
 extern errr init_test(int argc, char **argv);
+extern errr init_web(int argc, char **argv);
 extern errr init_stats(int argc, char **argv);
 extern errr init_spoil(int argc, char **argv);
 
@@ -64,6 +65,7 @@ extern const char help_ibm[];
 extern const char help_dos[];
 extern const char help_sdl2[];
 extern const char help_test[];
+extern const char help_web[];
 extern const char help_stats[];
 extern const char help_spoil[];
 

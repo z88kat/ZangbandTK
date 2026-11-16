@@ -88,6 +88,10 @@ static const struct module modules[] =
 	{ "sdl2", help_sdl2, init_sdl2, false, false },
 #endif /* USE_SDL2 */
 
+#ifdef USE_WEB
+	{ "web", help_web, init_web, false, false },
+#endif /* USE_WEB */
+
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu, true, false },
 #endif /* USE_GCU */

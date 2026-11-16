@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+  The page of the browser front end (main-web.c).  The game runs in
+  worker.js; ui.js draws what it says and sends it keys, clicks and answers.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zangband</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header id="top">
+  <div id="brand">Zangband</div>
+  <div id="prompt" aria-live="polite"></div>
+</header>
+
+<main id="game">
+  <aside id="left" class="pane">
+    <section id="char"></section>
+  </aside>
+
+  <section id="centre">
+    <div id="mapwrap">
+      <canvas id="map"></canvas>
+      <div id="classic" hidden>
+        <canvas id="classic-canvas"></canvas>
+      </div>
+    </div>
+    <div id="statusline"></div>
+    <div id="log" class="pane"></div>
+  </section>
+
+  <aside id="right" class="pane">
+    <h2>Pack <span id="burden"></span></h2>
+    <ol id="inven" class="items"></ol>
+    <h2>Equipment</h2>
+    <ol id="equip" class="items"></ol>
+    <h2 id="quiver-head" hidden>Quiver</h2>
+    <ol id="quiver" class="items"></ol>
+  </aside>
+</main>
+
+<div id="scrim" hidden>
+  <div id="dialog" role="dialog" aria-modal="true"></div>
+</div>
+
+<div id="loading">
+  <div class="title">Zangband</div>
+  <div id="loading-text">Loading…</div>
+</div>
+
+<script src="ui.js"></script>
+</body>
+</html>
