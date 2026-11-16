@@ -115,9 +115,14 @@ The browser version is a web page — 16 November 2026
   and quiver sit beside it, and the messages scroll underneath. Choosing an
   item, yes-or-no questions, numbers, text and the menus of item actions and
   powers are boxes you can click or answer from the keyboard. Click the map
-  to walk there. Character creation, the shops, the character sheet, the
-  options and the spell lists are still the game's own text screens, shown in
-  the map's place. See :doc:`play`.
+  to walk there. The shops, the character sheet, the options and the spell
+  lists are still the game's own text screens, shown in the map's place. See
+  :doc:`play`.
+- **Character creation in the browser is a page**: lists of races, classes and
+  realms with the game's descriptions and each realm's spells, a portrait of
+  the character as it would look, a table for spending points or rolling, and
+  a summary before you start. *Back*, *Random* and *Finish at random* are
+  buttons, and the text screen's keys still work.
 - **A Tiles menu** on the page switches tilesets while you play: the original
   tiles, Adam Bolt's, David Gervais', Neon with its colour-blind version, and
   the 1982 set. Nomad's tiles, taller than they're wide, aren't in the browser

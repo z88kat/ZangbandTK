@@ -74,10 +74,15 @@ $(OUT)/zangband-web.js: $(OBJS) $(OUT)/lib.stamp web/pre.js
 
 PAGE = index.html ui.js worker.js style.css
 
-$(OUT)/index.html: $(OUT)/zangband-web.js $(addprefix web/,$(PAGE))
+# The page's fonts are two of the Tk front end's, and its character portraits
+# are the Tk Birth window's.
+$(OUT)/index.html: $(OUT)/zangband-web.js $(addprefix web/,$(PAGE)) \
+		../lib/tcl/portraits/portraits.png ../lib/tcl/portraits/portraits.txt
 	@for f in $(PAGE); do cp web/$$f $(OUT)/$$f; done
 	@mkdir -p $(OUT)/fonts
 	@cp ../lib/tcl/fonts/IBMPlexMono-Regular.ttf ../lib/tcl/fonts/IBMPlexMono-Bold.ttf $(OUT)/fonts/
+	@mkdir -p $(OUT)/portraits
+	@cp ../lib/tcl/portraits/portraits.png ../lib/tcl/portraits/portraits.txt $(OUT)/portraits/
 	@echo "      PAGE $(OUT)"
 
 DEPFLAGS = -MMD -MP

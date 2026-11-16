@@ -30,11 +30,30 @@ actions and powers, come up in boxes too. Escape cancels any of them.
 
 Click a square on the map and you walk to it.
 
-Some screens are still the game's own text screens: character creation, the
-shops, the character sheet, the options, the knowledge menus and the spell
-lists. While one is open it takes the map's place, drawn the way a terminal
-would draw it, and the map comes back when you leave. They're being turned
-into proper pages one at a time.
+Some screens are still the game's own text screens: the shops, the character
+sheet, the options, the knowledge menus and the spell lists. While one is open
+it takes the map's place, drawn the way a terminal would draw it, and the map
+comes back when you leave. They're being turned into proper pages one at a
+time.
+
+Making a character
+==================
+
+Character creation has a page of its own. Race, class and realm are lists,
+with the game's description of whichever one you're on and, for a realm, the
+spells your class would learn from it, book by book. A portrait shows the
+character as it would look: the same pictures as the Tk front end's, drawn as a
+Ranger until you've picked a class, because a Ranger has nothing on its head to
+hide the hair, ears and horns that tell the races apart. After those come the
+stats, bought with points or rolled, then a name, a history you can rewrite,
+and a summary to check before you begin.
+
+*Back* steps back a stage, *Random* picks a race or class for you and *Finish
+at random* picks everything that's left. The text screen's keys work as well:
+the arrows and Return, Escape, ``*``, ``@`` and ``=``. The birth options are
+still the game's text screen. When a character dies, *New Game* on the death
+screen lets you play the same character again, or change its name and history
+first.
 
 Tiles
 =====

@@ -85,13 +85,14 @@ jobs:
         run: |
           for f in index.html ui.js worker.js style.css zangband-web.js \
                    zangband-web.wasm zangband-web.data \
-                   fonts/IBMPlexMono-Regular.ttf fonts/IBMPlexMono-Bold.ttf; do
+                   fonts/IBMPlexMono-Regular.ttf fonts/IBMPlexMono-Bold.ttf \
+                   portraits/portraits.png portraits/portraits.txt; do
             if [ ! -s "build-web/$f" ]; then
               echo "missing or empty: build-web/$f" >&2
               exit 1
             fi
           done
-          ls -l build-web build-web/fonts
+          ls -l build-web build-web/fonts build-web/portraits
 
       # The desktop SDL2 front end shares main-sdl2.c with the browser build,
       # and every browser-only change in it sits behind __EMSCRIPTEN__.  Compile

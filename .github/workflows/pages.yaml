@@ -136,7 +136,7 @@ jobs:
              build-web/style.css build-web/zangband-web.js \
              build-web/zangband-web.wasm build-web/zangband-web.data \
              docs/_build/html/play/
-          cp -R build-web/fonts docs/_build/html/play/
+          cp -R build-web/fonts build-web/portraits docs/_build/html/play/
           ls -lR docs/_build/html/play
 
       # enablement makes this workflow the authoritative source for the site.

@@ -15,8 +15,9 @@
   const PANEL_TILE = 24;
   const DIALOG_TILE = 32;
 
-  // The text screens want this much term: 80 columns is the game's floor and
-  // the birth screen's list of races wants about thirty rows.
+  // The text screens want this much term: 80 columns is the game's floor, and
+  // the rows were sized for the birth screen's list of races, which the game
+  // still lays out behind the page's own birth view.
   const MIN_COLS = 80;
   const MIN_ROWS = 32;
   const SIDEBAR_COLS = 13; // COL_MAP with the sidebar on the left
@@ -44,6 +45,7 @@
     loadingText: $('loading-text'),
     tiles: $('tiles'),
     tilesPick: $('tiles-pick'),
+    birth: $('birth'),
   };
 
   // The tileset is remembered by this browser; the game falls back to Neon if
@@ -95,7 +97,11 @@
       case 'json': onJson(JSON.parse(m.text)); break;
       case 'rows': onRows(m); break;
       case 'file': if (m.what === 'tiles') loadSheet(m.data); break;
-      case 'ask': openDialog(JSON.parse(m.text)); break;
+      case 'ask': {
+        const q = JSON.parse(m.text);
+        if (q.kind === 'birth') openBirth(q); else openDialog(q);
+        break;
+      }
       case 'loading': els.loadingText.textContent = m.text || 'Starting…'; break;
       case 'quit': onQuit(m); break;
       case 'error': els.loadingText.textContent = 'Something went wrong: ' + m.text; break;
@@ -435,6 +441,7 @@
     dialog = null;
     els.scrim.hidden = true;
     els.dialog.innerHTML = '';
+    if (birth && birth.waiting) birthIdle();
     redraw();
   }
 
@@ -585,6 +592,414 @@
     };
   }
 
+  // ---------------------------------------------------- making a character --
+
+  // ui-birth.c runs character creation and asks the page for each stage's
+  // answer, as it asks the Tk Birth window.  The page shows the stage and
+  // answers with a verb -- "choose 3", "buy 0", "name Brand", "back" --
+  // which main-web.c turns into the key the stage would have had.
+
+  const STEPS = ['Race', 'Class', 'Realms', 'Stats', 'Name', 'History', 'Confirm'];
+  const STEP_OF = { race: 0, class: 1, realm: 2, method: 3, points: 3, roller: 3, name: 4, history: 5, confirm: 6 };
+  const MENU_STAGES = ['race', 'class', 'realm', 'method'];
+  const PORTRAIT = 128;
+
+  let birth = null; // the stage on show: { q, sel, waiting }
+  const made = { last: '', sel: 0, stat: 0, rolled: false, classChosen: false, name: '', nameAt: -1, timer: 0 };
+
+  // The portraits: a race is a column, a class two rows -- a man's, then a
+  // woman's -- and the class backdrops are the last row.  portraits.txt
+  // gives the order.
+  const portraits = { size: 0, races: [], classes: [] };
+  fetch('portraits/portraits.txt').then((r) => (r.ok ? r.text() : '')).then(function (t) {
+    for (const line of t.split('\n')) {
+      const [k, v] = line.split('\t');
+      if (k === 'size') portraits.size = Number(v);
+      else if (k === 'race' && v) portraits.races.push(v.trim().toLowerCase());
+      else if (k === 'class' && v) portraits.classes.push(v.trim().toLowerCase());
+    }
+    if (birth) drawBirth();
+  }).catch(function () { /* no portraits, then */ });
+
+  // A woman or a man by the parity of what birth rolled, as in the Tk front
+  // end, so a reroll can change it.
+  const isWoman = (c) => !!c && (c.age + c.ht + c.wt) % 2 === 1;
+
+  // The first of the classes that has a portrait; the races are drawn as
+  // Rangers until a class is chosen, as Tk draws them, since a Ranger wears
+  // nothing on the head to hide what tells the races apart.
+  function portraitHTML(race, classes, woman, size) {
+    const s = portraits.size;
+    const col = portraits.races.indexOf(String(race || '').toLowerCase());
+    let row = -1;
+    for (const k of classes) {
+      row = portraits.classes.indexOf(String(k || '').toLowerCase());
+      if (row >= 0) break;
+    }
+    const box = 'width:' + size + 'px;height:' + size + 'px';
+    if (!s || col < 0 || row < 0) return '<div class="portrait none" style="' + box + '"></div>';
+    const n = portraits.classes.length;
+    return '<div class="portrait" style="' + box + ';background-size:' +
+      Math.max(portraits.races.length, n) * size + 'px ' + (2 * n + 1) * size + 'px;background-position:-' +
+      col * size + 'px -' + (2 * row + (woman ? 1 : 0)) * size + 'px,-' + row * size + 'px -' + 2 * n * size +
+      'px"></div>';
+  }
+
+  // The character as it would be if made now: the race or class under the
+  // cursor while one is being chosen.
+  function pictured(size) {
+    const q = birth.q;
+    const c = q.character || {};
+    let race = c.race;
+    let classes = [c.cls];
+    const row = q.choices[birth.sel];
+    if (row && q.stage === 'race') race = row.n;
+    if (row && q.stage === 'class') classes = [row.n];
+    if (q.stage === 'race' && !made.classChosen) classes = ['Ranger', c.cls];
+    return portraitHTML(race, classes, isWoman(q.character), size);
+  }
+
+  const cap = (s) => String(s).charAt(0).toUpperCase() + String(s).slice(1);
+  const signed = (n) => (n > 0 ? '+' + n : String(n));
+  const paragraphs = (t) => String(t).split(/\n\s*\n/).filter((p) => p.trim())
+    .map((p) => '<p>' + esc(p.replace(/\s+/g, ' ').trim()) + '</p>').join('');
+
+  function realmsOf(c) {
+    return c && c.realms && c.realms.length ? c.realms.map(cap).join(' and ') : '';
+  }
+
+  function birthQuestion(q) {
+    const c = q.character || {};
+    switch (q.stage) {
+      case 'realm':
+        // A class with two realms is asked twice, and the second question
+        // has to look like a second one.
+        if (q.slot === 0) return 'Choose a realm of magic.  ' + q.question;
+        return 'Choose your second realm of magic' +
+          (c.realms && c.realms[0] ? ', to study beside ' + cap(c.realms[0]) : '') + '.  ' + q.question;
+      case 'points': return 'Spend the points on your stats.  Each one costs more the higher the stat already is.';
+      case 'roller': return 'Roll again until you like what you see.  Previous brings back the roll before.';
+      case 'name': return 'What is your character called?';
+      case 'history': return 'Your character\'s history.  Change it if you like.';
+      case 'confirm': return 'This is your character.  Create it to begin, or start over.';
+      case 'quickstart':
+        return 'Start again from your last character?  Play Again makes the same character afresh; ' +
+          'you can also change the name and history, or make a new one.';
+      default: return q.question;
+    }
+  }
+
+  function button(act, label, key, opts) {
+    opts = opts || {};
+    return '<button class="bb' + (opts.primary ? ' primary' : '') + '" data-act="' + act + '"' +
+      (opts.off ? ' disabled' : '') + '>' + label + (key ? '<kbd>' + esc(key) + '</kbd>' : '') + '</button>';
+  }
+
+  // Who is being made, beside the stages that are not about choosing who.
+  function whoHTML(c) {
+    if (!c) return '';
+    let h = '<div class="bwho">' + pictured(160);
+    // Not PLAYER, the savefile's name, which the game uses until there is one.
+    const name = c.name && c.name !== 'PLAYER' ? c.name : made.name;
+    if (name && birth.q.stage !== 'name') h += '<div class="nm">' + esc(name) + '</div>';
+    h += '<div class="sub">' + esc(c.race + ' ' + c.cls) + '</div>';
+    const realms = realmsOf(c);
+    if (realms) h += '<div class="sub">' + esc(realms) + '</div>';
+    return h + '</div>';
+  }
+
+  function statTable(c, points) {
+    let h = '<table class="bstats"><thead><tr><th class="k">Stat</th><th>Base</th><th>Race</th><th>Class</th>' +
+      '<th>Total</th>' + (points ? '<th>Spent</th><th></th>' : '') + '</tr></thead><tbody>';
+    c.stats.forEach(function (s, i) {
+      h += '<tr data-i="' + i + '"' + (points && i === made.stat ? ' class="sel"' : '') + '><td class="k">' +
+        esc(s.name) + '</td><td>' + esc(s.base) + '</td><td>' + signed(s.race) + '</td><td>' + signed(s.cls) +
+        '</td><td class="best">' + esc(s.best) + '</td>';
+      if (points) {
+        h += '<td>' + s.spent + '</td><td class="pm">' +
+          '<button class="pmb" data-act="sell:' + i + '"' + (s.spent > 0 ? '' : ' disabled') +
+          ' title="Take a point back">−</button>' +
+          '<button class="pmb" data-act="buy:' + i + '"' + (s.cost <= c.left ? '' : ' disabled') +
+          ' title="The next point costs ' + s.cost + '">+</button></td>';
+      }
+      h += '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+
+  function summaryHTML(c) {
+    let h = '<div class="bsum">' + portraitHTML(c.race, [c.cls], isWoman(c), 192) + '<div class="main">';
+    h += '<h3>' + esc(c.name) + '</h3><div class="sub">' + esc(c.race + ' ' + c.cls);
+    const realms = realmsOf(c);
+    if (realms) h += ', of ' + esc(realms);
+    h += '</div><div class="facts">';
+    const fact = (k, v) => { h += '<span class="k">' + k + '</span><span class="v">' + v + '</span>'; };
+    fact('Hit points', c.hp);
+    if (c.sp) fact('Mana', c.sp);
+    fact('Age', c.age);
+    fact('Height', Math.floor(c.ht / 12) + '′' + (c.ht % 12) + '″');
+    fact('Weight', c.wt + ' lb');
+    h += '</div><div class="stats">';
+    for (const s of c.stats) h += '<span class="k">' + esc(s.name) + '</span><span class="v">' + esc(s.best) + '</span>';
+    h += '</div>';
+    if (c.patron) {
+      h += '<p class="patron">Serving <b>' + esc(c.patron) + '</b>' + (c.patronTitle ? ', ' + esc(c.patronTitle) : '') +
+        '.' + (c.patronText ? ' ' + esc(c.patronText.replace(/\s+/g, ' ').trim()) : '') + '</p>';
+    }
+    if (c.history) h += '<p class="hist">' + esc(c.history.replace(/\s+/g, ' ').trim()) + '</p>';
+    return h + '</div></div>';
+  }
+
+  function openBirth(q) {
+    clearTimeout(made.timer);
+    if (!els.loading.dataset.quit) els.loading.hidden = true;
+    const key = q.stage + ':' + q.slot;
+    if (key !== made.last) {
+      // A new stage starts where the game's own cursor is.
+      made.last = key;
+      made.sel = q.cursor;
+      made.rolled = false;
+      made.nameAt = -1;
+    }
+    if (q.character && q.character.name && q.character.name !== 'PLAYER') made.name = q.character.name;
+    if (q.stage === 'quickstart') made.classChosen = false;
+    else if (!['race', 'class'].includes(q.stage)) made.classChosen = true;
+    birth = { q: q, sel: Math.max(0, Math.min(made.sel, q.choices.length - 1)), waiting: false };
+    document.body.classList.add('birthing');
+    els.birth.hidden = false;
+    els.birth.classList.remove('waiting');
+    drawBirth();
+  }
+
+  function drawBirth() {
+    const q = birth.q;
+    const c = q.character;
+    const at = STEP_OF[q.stage];
+    // The quick start is not one of the steps; it comes before them.
+    let h = '<div class="bcard' + (MENU_STAGES.includes(q.stage) ? '' : ' compact') + '">' +
+      (at === undefined ? '<div class="steps">Your last character</div>' : '<ol class="steps">' +
+        STEPS.map((s, i) => '<li class="' + (i > at ? '' : 'done') + (i === at ? ' now' : '') + '">' + s + '</li>')
+          .join('') + '</ol>') + '<div class="bq">' + esc(birthQuestion(q)) + '</div><div class="bbody">';
+
+    let left = '';
+    let right = button('back', 'Back', 'Esc', { off: q.stage === 'quickstart' }) +
+      button('next', q.stage === 'confirm' ? 'Create character' : 'Next', 'Return', { primary: true });
+
+    if (MENU_STAGES.includes(q.stage)) {
+      h += '<div class="bmenu"><div class="blist">' + q.choices.map((ch, i) =>
+        '<div class="brow" data-i="' + i + '">' + esc(cap(ch.n)) + '</div>').join('') +
+        '</div><div class="bdetail" id="b-detail"></div></div>';
+      left = button('options', 'Options', '=') +
+        (q.stage === 'race' || q.stage === 'class' ? button('random', 'Random', '*') : '') +
+        button('finish', 'Finish at random', '@');
+    } else if (q.stage === 'points' && c) {
+      const spent = c.stats.reduce((n, s) => n + s.spent, 0);
+      h += '<div class="bpair"><div>' + statTable(c, true) + '<p class="note">Points spent: <b>' + spent + '</b> of ' +
+        (spent + c.left) + '</p></div>' + whoHTML(c) + '</div>';
+      left = button('reset', 'Reset', 'r');
+    } else if (q.stage === 'roller' && c) {
+      h += '<div class="bpair"><div>' + statTable(c, false) + '</div>' + whoHTML(c) + '</div>';
+      left = button('reroll', 'Roll again', 'r') + button('previous', 'Previous', 'p', { off: !made.rolled });
+    } else if (q.stage === 'name') {
+      // The browser keeps one savefile, PLAYER, and the game offers that as
+      // the name; one of its random names is a better start.
+      // Stepping back to it, the game has put PLAYER back; the name the
+      // page last saw is the one to offer again.
+      let name = c ? c.name : '';
+      if (!name || name === 'PLAYER') name = made.name || '';
+      if (!name && q.names && q.names.length) {
+        if (made.nameAt < 0) made.nameAt = 0;
+        name = q.names[made.nameAt];
+      }
+      h += '<div class="bpair"><div><input id="b-name" maxlength="31" autocomplete="off" spellcheck="false" value="' +
+        esc(name) + '"></div>' + whoHTML(c) + '</div>';
+      left = q.names && q.names.length ? button('randname', 'Another name', '') : '';
+    } else if (q.stage === 'history') {
+      h += '<div class="bpair"><div><textarea id="b-hist" maxlength="239" spellcheck="false">' +
+        esc(c ? c.history.replace(/\s+/g, ' ').trim() : '') + '</textarea></div>' + whoHTML(c) + '</div>';
+    } else if ((q.stage === 'confirm' || q.stage === 'quickstart') && c) {
+      h += '<div class="bpair one">' + summaryHTML(c) + '</div>';
+      if (q.stage === 'confirm') left = button('startover', 'Start over', 'S');
+      else {
+        left = button('options', 'Options', '=');
+        right = button('redo', 'New character', 'n') + button('change', 'Change name and history', 'c') +
+          button('use', 'Play again', 'y', { primary: true });
+      }
+    }
+    h += '</div><div class="bfoot">' + left + '<span class="gap"></span>' + right + '</div></div>';
+    els.birth.innerHTML = h;
+
+    for (const b of els.birth.querySelectorAll('button[data-act]')) {
+      b.addEventListener('click', () => birthAct(b.dataset.act));
+    }
+    for (const r of els.birth.querySelectorAll('.brow')) {
+      r.addEventListener('click', () => birthSelect(Number(r.dataset.i)));
+      r.addEventListener('dblclick', () => birthAct('next'));
+    }
+    for (const r of els.birth.querySelectorAll('table.bstats tr[data-i]')) {
+      if (q.stage === 'points') r.addEventListener('click', function () { made.stat = Number(r.dataset.i); markStat(); });
+    }
+    if (MENU_STAGES.includes(q.stage)) birthSelect(birth.sel);
+    const input = $('b-name') || $('b-hist');
+    if (input) {
+      input.focus();
+      if (input.select) input.select();
+    }
+  }
+
+  function birthSelect(i) {
+    const q = birth.q;
+    const n = q.choices.length;
+    if (!n) return;
+    birth.sel = made.sel = (i + n) % n;
+    const rows = els.birth.querySelectorAll('.brow');
+    rows.forEach((r, k) => r.classList.toggle('sel', k === birth.sel));
+    if (rows[birth.sel]) rows[birth.sel].scrollIntoView({ block: 'nearest' });
+
+    const ch = q.choices[birth.sel];
+    const c = q.character || {};
+    let h = '<div class="bhead">' + pictured(PORTRAIT) + '<div><h3>' + esc(cap(ch.n)) + '</h3>';
+    if (q.stage === 'class' && c.race) h += '<div class="sub">' + esc(c.race + ' ' + ch.n) + '</div>';
+    if (q.stage === 'method' || q.stage === 'realm') h += '<div class="sub">' + esc(c.race + ' ' + c.cls) + '</div>';
+    h += '</div></div>';
+    if (ch.p) h += '<div class="prose">' + paragraphs(ch.p) + '</div>';
+    if (ch.d && ch.d.trim()) h += '<pre class="bdesc">' + esc(ch.d.replace(/\s+$/, '')) + '</pre>';
+    $('b-detail').innerHTML = h;
+    $('b-detail').scrollTop = 0;
+  }
+
+  function markStat() {
+    els.birth.querySelectorAll('table.bstats tr[data-i]')
+      .forEach((r) => r.classList.toggle('sel', Number(r.dataset.i) === made.stat));
+  }
+
+  function birthReply(value) {
+    if (!birth || birth.waiting) return;
+    birth.waiting = true;
+    els.birth.classList.add('waiting');
+    send({ type: 'answer', value: value });
+    birthIdle();
+  }
+
+  // The next stage usually asks at once.  If nothing has asked in a while the
+  // game has gone somewhere else -- into the dungeon, or to a text screen of
+  // its own like the birth options -- and the overlay steps aside.
+  function birthIdle() {
+    clearTimeout(made.timer);
+    made.timer = setTimeout(function () {
+      if (!dialog && birth && birth.waiting) closeBirth();
+    }, 400);
+  }
+
+  function closeBirth() {
+    birth = null;
+    els.birth.hidden = true;
+    els.birth.innerHTML = '';
+    document.body.classList.remove('birthing');
+    redraw();
+  }
+
+  function birthAct(act) {
+    if (!birth || birth.waiting) return;
+    const q = birth.q;
+    const [verb, arg] = act.split(':');
+    switch (verb) {
+      case 'next': return birthNext();
+      case 'randname': {
+        const names = q.names || [];
+        if (!names.length) return;
+        made.nameAt = (made.nameAt + 1) % names.length;
+        const input = $('b-name');
+        input.value = names[made.nameAt];
+        input.focus();
+        return;
+      }
+      case 'buy':
+      case 'sell':
+        made.stat = Number(arg);
+        return birthReply(verb + ' ' + arg);
+      case 'reroll':
+        made.rolled = true;
+        return birthReply('reroll');
+      default:
+        return birthReply(verb);
+    }
+  }
+
+  function birthNext() {
+    const q = birth.q;
+    if (MENU_STAGES.includes(q.stage)) return birthReply('choose ' + birth.sel);
+    if (q.stage === 'name') {
+      const input = $('b-name');
+      const v = input.value.trim();
+      if (!v) {
+        input.classList.remove('bad');
+        void input.offsetWidth; // restart the shake
+        input.classList.add('bad');
+        return;
+      }
+      return birthReply('name ' + v);
+    }
+    if (q.stage === 'history') {
+      const v = $('b-hist').value.replace(/\s+/g, ' ').trim();
+      const was = ((q.character && q.character.history) || '').replace(/\s+/g, ' ').trim();
+      return birthReply(v && v !== was ? 'history ' + v : 'accept');
+    }
+    if (q.stage === 'quickstart') return birthReply('use');
+    return birthReply('accept');
+  }
+
+  function birthKey(e) {
+    if (!birth || birth.waiting) return;
+    const q = birth.q;
+    const k = e.key;
+    if (q.stage === 'name' || q.stage === 'history') {
+      if (k === 'Escape') return birthAct('back');
+      if (k === 'Enter') return birthAct('next');
+      return 'pass'; // the typing is the input's
+    }
+    if (k === 'Escape') return q.stage === 'quickstart' ? undefined : birthAct('back');
+    if (MENU_STAGES.includes(q.stage)) {
+      if (k === 'ArrowDown') birthSelect(birth.sel + 1);
+      else if (k === 'ArrowUp') birthSelect(birth.sel - 1);
+      else if (k === 'Home') birthSelect(0);
+      else if (k === 'End') birthSelect(q.choices.length - 1);
+      else if (k === 'Enter' || k === 'ArrowRight') birthAct('next');
+      else if (k === 'ArrowLeft') birthAct('back');
+      else if (k === '*' && (q.stage === 'race' || q.stage === 'class')) birthAct('random');
+      else if (k === '@') birthAct('finish');
+      else if (k === '=') birthAct('options');
+      return;
+    }
+    switch (q.stage) {
+      case 'points': {
+        const n = q.character ? q.character.stats.length : 6;
+        if (k === 'ArrowDown') { made.stat = (made.stat + 1) % n; markStat(); }
+        else if (k === 'ArrowUp') { made.stat = (made.stat + n - 1) % n; markStat(); }
+        else if (k === '+' || k === 'ArrowRight') birthAct('buy:' + made.stat);
+        else if (k === '-' || k === 'ArrowLeft') birthAct('sell:' + made.stat);
+        else if (k === 'r') birthAct('reset');
+        else if (k === 'Enter') birthAct('next');
+        return;
+      }
+      case 'roller':
+        if (k === 'r') birthAct('reroll');
+        else if (k === 'p' && made.rolled) birthAct('previous');
+        else if (k === 'Enter') birthAct('next');
+        return;
+      case 'confirm':
+        if (k === 'S' || k === 's') birthAct('startover');
+        else if (k === 'Enter') birthAct('next');
+        return;
+      case 'quickstart':
+        if (k === 'y' || k === 'Enter') birthAct('use');
+        else if (k === 'n') birthAct('redo');
+        else if (k === 'c') birthAct('change');
+        else if (k === '=') birthAct('options');
+        return;
+    }
+  }
+
   // ------------------------------------------------------------ the keys --
 
   const SPECIAL = {
@@ -626,6 +1041,11 @@
   window.addEventListener('keydown', function (e) {
     if (dialog) {
       if (dialog.onKey && dialog.onKey(e) === 'pass') return;
+      e.preventDefault();
+      return;
+    }
+    if (birth) {
+      if (birthKey(e) === 'pass') return;
       e.preventDefault();
       return;
     }

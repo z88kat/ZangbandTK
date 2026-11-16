@@ -24,12 +24,13 @@
  *
  *   - the main term's cells, row by row, at each Term_fresh.  The page crops
  *     them to the map and draws tiles on a canvas; when the game is showing a
- *     text screen of its own (birth, a store, the character sheet) the page
- *     shows the whole term instead, as the classic screen.
+ *     text screen of its own (a store, the character sheet, the options) the
+ *     page shows the whole term instead, as the classic screen.
  *   - what the game's events say, as JSON: the character, the pack, the
  *     equipment, the messages.  The page draws those as HTML panels.
  *   - questions.  The item prompt, yes-or-no, quantity, text and the game's
- *     small menus are asked here and answered by an HTML dialog.  The game
+ *     small menus are asked here and answered by an HTML dialog, and each
+ *     stage of character creation by the page's own birth view.  The game
  *     waits for the answer exactly as it waits for a key: ASYNCIFY unwinds the
  *     stack, the worker goes back to its event loop, and the answer resumes it.
  *
@@ -55,9 +56,11 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player.h"
 #include "player-calcs.h"
 #include "player-spell.h"
 #include "player-util.h"
+#include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -68,6 +71,7 @@
 #include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+#include "z-textblock.h"
 
 /* ------------------------------------------------------------------------
  * The JavaScript side, in web/pre.js
@@ -979,6 +983,344 @@ static void install_hooks(void)
 }
 
 /* ------------------------------------------------------------------------
+ * Character creation
+ * ------------------------------------------------------------------------ */
+
+/*
+ * ui-birth.c keeps the stages, their order, stepping back and what each one
+ * pushes, and asks its view for each stage's answer through birth_view_hook
+ * -- the hook the Tk front end's Birth window answers.  This view sends the
+ * page everything the stage is about and turns the page's reply, a verb and
+ * perhaps an argument, into the answer the stage would have had from a key.
+ */
+
+/* The point costs, as the game last reported them (EVENT_BIRTHPOINTS). */
+static int birth_spent[STAT_MAX], birth_cost[STAT_MAX], birth_left;
+
+static void notice_birth_points(game_event_type type, game_event_data *data,
+		void *user)
+{
+	int i;
+
+	(void)type;
+	(void)user;
+	for (i = 0; i < STAT_MAX; i++) {
+		birth_spent[i] = data->birthpoints.points[i];
+		birth_cost[i] = data->birthpoints.inc_points[i];
+	}
+	birth_left = data->birthpoints.remaining;
+}
+
+static const char *birth_stage_word(enum birth_stage stage)
+{
+	switch (stage) {
+		case BIRTH_QUICKSTART:		return "quickstart";
+		case BIRTH_RACE_CHOICE:		return "race";
+		case BIRTH_CLASS_CHOICE:	return "class";
+		case BIRTH_REALM_CHOICE:	return "realm";
+		case BIRTH_ROLLER_CHOICE:	return "method";
+		case BIRTH_POINTBASED:		return "points";
+		case BIRTH_ROLLER:			return "roller";
+		case BIRTH_NAME_CHOICE:		return "name";
+		case BIRTH_HISTORY_CHOICE:	return "history";
+		case BIRTH_FINAL_CONFIRM:	return "confirm";
+		default:					return "";
+	}
+}
+
+/* What the describing functions write, gathered rather than drawn. */
+static struct jb *birth_capture;
+
+static void birth_text_out(uint8_t attr, const char *str)
+{
+	(void)attr;
+	jb_put(birth_capture, str);
+}
+
+/* A race or class described in the words the text screen puts beside it. */
+static void jb_birth_describe(struct jb *b, enum birth_stage stage, int row)
+{
+	struct jb text;
+	void (*old)(uint8_t, const char *) = text_out_hook;
+	int indent = text_out_indent;
+
+	jb_init(&text);
+	birth_capture = &text;
+	text_out_hook = birth_text_out;
+	text_out_indent = 0;
+	birth_describe(stage, row);
+	text_out_hook = old;
+	text_out_indent = indent;
+	birth_capture = NULL;
+
+	jb_kstr(b, "d", text.buf);
+	jb_free(&text);
+}
+
+/*
+ * A realm has nothing beside it on the text screen, so it is described as
+ * the Tk Birth window describes it: what its magic is and which stat it
+ * draws on, then this class's books in it, spell by spell.
+ */
+static void jb_realm_describe(struct jb *b, const struct magic_realm *realm)
+{
+	const struct class_magic *magic = &player->class->magic;
+	struct jb text;
+	char stat[16], line[160];
+	int bk, k;
+
+	jb_init(&text);
+	my_strcpy(stat, stat_names[realm->stat], sizeof(stat));
+	for (k = (int)strlen(stat); k > 0
+			&& (stat[k - 1] == ' ' || stat[k - 1] == ':'); k--)
+		stat[k - 1] = 0;
+	strnfmt(line, sizeof(line), "You %s %ss from %ss, and study them with %s.\n",
+		realm->verb, realm->spell_noun, realm->book_noun, stat);
+	jb_put(&text, line);
+
+	for (bk = 0; bk < magic->num_books; bk++) {
+		const struct class_book *book = &magic->books[bk];
+		struct object_kind *kind = lookup_kind(book->tval, book->sval);
+		char name[80];
+
+		if (book->realm != realm || !kind) continue;
+		object_kind_name(name, sizeof(name), kind, true);
+		strnfmt(line, sizeof(line), "\n%s%s\n", name,
+			book->dungeon ? " (found in the dungeon)" : "");
+		jb_put(&text, line);
+		for (k = 0; k < book->num_spells; k++) {
+			strnfmt(line, sizeof(line), "  %2d  %s\n",
+				book->spells[k].slevel, book->spells[k].name);
+			jb_put(&text, line);
+		}
+	}
+	jb_kstr(b, "d", text.buf);
+	jb_free(&text);
+	jb_kstr(b, "p", realm->desc ? realm->desc : "");
+}
+
+static const char *race_prose(const char *name)
+{
+	struct player_race *r;
+
+	for (r = races; r; r = r->next)
+		if (streq(r->name, name)) return r->desc ? r->desc : "";
+	return "";
+}
+
+static const char *class_prose(const char *name)
+{
+	struct player_class *c;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, name)) return c->desc ? c->desc : "";
+	return "";
+}
+
+/* A stat as the game prints it, "18/50", without its padding. */
+static void jb_kstat(struct jb *b, const char *key, int value)
+{
+	char buf[32];
+	char *p = buf;
+
+	cnv_stat(value, buf, sizeof(buf));
+	while (*p == ' ') p++;
+	jb_kstr(b, key, p);
+}
+
+static void jb_birth_character(struct jb *b)
+{
+	int i;
+
+	jb_key(b, "character");
+	jb_put(b, "{");
+	jb_kstr(b, "name", player->full_name);
+	jb_kstr(b, "race", player->race->name);
+	jb_kstr(b, "cls", player->class->name);
+	jb_key(b, "realms");
+	jb_put(b, "[");
+	for (i = 0; i < REALM_CHOICES; i++) {
+		if (!player->realm[i]) continue;
+		jb_next(b);
+		jb_str(b, player->realm[i]->name);
+	}
+	jb_put(b, "]");
+	jb_kstr(b, "patron", player->patron ? player->patron->name : "");
+	jb_kstr(b, "patronTitle", (player->patron && player->patron->title)
+		? player->patron->title : "");
+	jb_kstr(b, "patronText", (player->patron && player->patron->text)
+		? player->patron->text : "");
+	jb_kstr(b, "history", player->history ? player->history : "");
+	jb_kint(b, "hp", player->mhp);
+	jb_kint(b, "sp", player->msp);
+	jb_kint(b, "age", player->age);
+	jb_kint(b, "ht", player->ht);
+	jb_kint(b, "wt", player->wt);
+
+	jb_key(b, "stats");
+	jb_put(b, "[");
+	for (i = 0; i < STAT_MAX; i++) {
+		char name[16];
+		size_t n;
+
+		my_strcpy(name, stat_names[i], sizeof(name));
+		for (n = strlen(name); n > 0 && (name[n - 1] == ' '
+				|| name[n - 1] == ':'); n--)
+			name[n - 1] = 0;
+		jb_next(b);
+		jb_put(b, "{");
+		jb_kstr(b, "name", name);
+		jb_kstat(b, "base", player->stat_max[i]);
+		jb_kint(b, "race", player->race->r_adj[i]);
+		jb_kint(b, "cls", player->class->c_adj[i]);
+		jb_kstat(b, "best", player->state.stat_top[i]);
+		jb_kint(b, "spent", birth_spent[i]);
+		jb_kint(b, "cost", birth_cost[i]);
+		jb_put(b, "}");
+	}
+	jb_put(b, "]");
+	jb_kint(b, "left", birth_left);
+	jb_put(b, "}");
+}
+
+/* The page's reply, a verb and perhaps an argument, as the stage's answer. */
+static void birth_reply(enum birth_stage stage, const char *reply,
+		struct birth_answer *a)
+{
+	static const struct {
+		const char *verb;
+		int key;
+		int arg;		/* 0 none, 1 a row or stat, 2 text */
+	} verbs[] = {
+		{ "choose",		0,				1 },
+		{ "back",		ESCAPE,			0 },
+		{ "random",		'*',			0 },
+		{ "finish",		'@',			0 },
+		{ "options",	'=',			0 },
+		{ "use",		'y',			0 },
+		{ "redo",		'n',			0 },
+		{ "change",		'c',			0 },
+		{ "reroll",		'r',			0 },
+		{ "previous",	'p',			0 },
+		{ "buy",		'+',			1 },
+		{ "sell",		'-',			1 },
+		{ "reset",		'r',			0 },
+		{ "accept",		KC_ENTER,		0 },
+		{ "startover",	'S',			0 },
+		{ "name",		KC_ENTER,		2 },
+		{ "history",	'n',			2 },
+	};
+	char verb[16];
+	const char *arg = strchr(reply, ' ');
+	size_t v, n = arg ? (size_t)(arg - reply) : strlen(reply);
+
+	my_strcpy(verb, reply, MIN(n + 1, sizeof(verb)));
+	if (arg) arg++;
+
+	a->key.type = EVT_KBRD;
+	a->key.code = ESCAPE;
+	a->key.mods = 0;
+	for (v = 0; v < N_ELEMENTS(verbs); v++) {
+		if (!streq(verbs[v].verb, verb)) continue;
+		a->key.code = (keycode_t)verbs[v].key;
+		if (verbs[v].arg == 1 && arg) a->choice = atoi(arg);
+		if (verbs[v].arg == 2 && arg) my_strcpy(a->text, arg, sizeof(a->text));
+		break;
+	}
+	/* The quick start takes its "use as it is" as 'y', not Enter. */
+	if (streq(verb, "accept") && stage == BIRTH_QUICKSTART) a->key.code = 'y';
+}
+
+static bool history_given;
+
+static void web_birth_view(enum birth_stage stage, int slot,
+		struct birth_answer *answer)
+{
+	struct jb b;
+	char reply[300];
+	const char *names[64];
+	int n, i, cursor;
+
+	/*
+	 * A new history has gone in and the stage asks again; the page's Next
+	 * meant accept it as well, as the Tk window's does.
+	 */
+	if (stage == BIRTH_HISTORY_CHOICE && history_given) {
+		history_given = false;
+		birth_reply(stage, "accept", answer);
+		return;
+	}
+	history_given = false;
+
+	install_hooks();
+	Term_fresh();
+	sync_page();
+
+	jb_init(&b);
+	jb_put(&b, "{");
+	jb_kstr(&b, "kind", "birth");
+	jb_kstr(&b, "stage", birth_stage_word(stage));
+	jb_kint(&b, "slot", slot);
+	jb_kstr(&b, "question", birth_question(stage));
+
+	n = birth_choices(stage, names, (int)N_ELEMENTS(names), &cursor);
+	jb_kint(&b, "cursor", cursor);
+	jb_key(&b, "choices");
+	jb_put(&b, "[");
+	if (stage == BIRTH_REALM_CHOICE && player && player->class) {
+		const struct magic_realm *offered[REALM_MAX];
+		int k = player_realm_offer(player, slot, offered, REALM_MAX);
+
+		for (i = 0; i < n && i < k; i++) {
+			jb_next(&b);
+			jb_put(&b, "{");
+			jb_kstr(&b, "n", names[i] ? names[i] : "");
+			jb_realm_describe(&b, offered[i]);
+			jb_put(&b, "}");
+		}
+	} else {
+		for (i = 0; i < n; i++) {
+			const char *name = names[i] ? names[i] : "";
+
+			jb_next(&b);
+			jb_put(&b, "{");
+			jb_kstr(&b, "n", name);
+			if (stage == BIRTH_RACE_CHOICE || stage == BIRTH_CLASS_CHOICE) {
+				jb_birth_describe(&b, stage, i);
+				jb_kstr(&b, "p", stage == BIRTH_RACE_CHOICE
+					? race_prose(name) : class_prose(name));
+			}
+			jb_put(&b, "}");
+		}
+	}
+	jb_put(&b, "]");
+
+	if (player && player->race && player->class) jb_birth_character(&b);
+
+	if (stage == BIRTH_NAME_CHOICE) {
+		jb_key(&b, "names");
+		jb_put(&b, "[");
+		for (i = 0; i < 12; i++) {
+			char name[PLAYER_NAME_LEN];
+
+			player_random_name(name, sizeof(name));
+			jb_next(&b);
+			jb_str(&b, name);
+		}
+		jb_put(&b, "]");
+	}
+	jb_put(&b, "}");
+
+	if (!web_js_ask_text(b.buf, reply, sizeof(reply)))
+		my_strcpy(reply, "back", sizeof(reply));
+	jb_free(&b);
+
+	birth_reply(stage, reply, answer);
+	if (stage == BIRTH_HISTORY_CHOICE && answer->key.code == 'n')
+		history_given = true;
+}
+
+/* ------------------------------------------------------------------------
  * Starting and stopping
  * ------------------------------------------------------------------------ */
 
@@ -1052,6 +1394,10 @@ errr init_web(int argc, char **argv)
 	event_add_handler(EVENT_EQUIPMENT, notice_gear, NULL);
 	event_add_handler(EVENT_ENTER_WORLD, notice_gear, NULL);
 	event_add_handler(EVENT_MESSAGE, notice_message, NULL);
+	event_add_handler(EVENT_BIRTHPOINTS, notice_birth_points, NULL);
+
+	/* Character creation is a page of its own from the start. */
+	birth_view_hook = web_birth_view;
 
 	quit_aux = web_quit;
 	send_palette();

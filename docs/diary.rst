@@ -31,6 +31,44 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+16 November 2026 — making a character in the browser
+====================================================
+
+Character creation was the text screen people met first on the new page, so
+it went next. It turned out to be mostly done already. The Tk front end's
+Birth window doesn't draw the birth screen either: ui-birth.c still runs the
+stages, their order and stepping back, and asks a view hook for each stage's
+answer. The window answers with a verb, "choose 3", "buy 0", "name Corwin",
+which main-tcl.c turns into the key the stage would have had. main-web.c
+copies that verb table and sends the page each stage's choices, with the
+game's own descriptions and each realm's spells book by book, and the page
+answers with the same verbs. The portraits are the Tk window's 784 busts, cut
+from the same sheet, and the races are dressed as Rangers until a class is
+chosen, as they are in Tk.
+
+The page suggested the name PLAYER for every new character. PLAYER is the
+savefile's name. The browser keeps one savefile, and the game copies its name
+into the character on entering the name stage, so stepping back to that stage
+also threw away the name you'd chosen. The name box now starts with one of the
+game's random names the first time and the last name you gave after that.
+
+The quick start took two tries to test. I made a character, killed it with the
+suicide command and reloaded, expecting the quick start, and got a fresh race
+list instead. The new character had never been saved, so the reload found no
+savefile and nothing to start again from. The route that does work is *New
+Game* on the death screen, which goes straight to the quick start in the same
+session. Checked that way, all ten stages answer: random race, a class with no
+realm skipping the realm question, two realms asked as two questions, points
+sold, bought and reset, the roller's previous roll, an edited history, Start
+over, and the quick start's three ways forward.
+
+One thing turned up that isn't the page's. A new Priest is told "You can learn
+1 more card, spell, ritual, verse, invocation, working, prayer." The list is
+built from every realm the class has books in, and Zangband's casters have
+books in most of them; it should come from the one or two realms the character
+chose. It's in player-calcs.c and waits for its own change.
+
+
 16 November 2026 — the browser game becomes a page
 ==================================================
 
