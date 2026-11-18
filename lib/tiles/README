@@ -62,9 +62,9 @@ Per tileset
 
   That rule used to be written down here as "Oberon of Amber came out wearing
   the Mouth of Sauron's face".  True of automatic borrowing, but a poor account
-  of the policy, because the Neon set already ships Oberon, Dworkin and Mandor
-  sharing a tile with the Mouth of Sauron -- all four are a violet humanoid
-  silhouette at `0x9D:0x9C`, along with eleven others.  Collision was never the
+  of the policy, because Neon's first, 16x16 set shipped Oberon, Dworkin and
+  Mandor sharing a tile with the Mouth of Sauron -- all four were a violet
+  humanoid silhouette, along with eleven others.  Collision was never the
   objection.  The objection is to a picture that claims to be a particular
   someone and is not.
 
@@ -112,6 +112,20 @@ Per tileset
   Each tileset's own `graf-*.prf` gains `%:` lines loading the above.  That is a
   modification of a text file, not of any art.
 
+
+**neon (32x32) -- ours.**
+
+  `lib/tiles/neon` was made for ZangbandTK too.  Its pictures were drawn by an
+  AI image generator as white neon signs on black, sixteen at a time, to a
+  brief written for this game, and `scripts/tiles/build-neon.py` turns them
+  into the two sheets: it cuts each picture down to 32x32, tints its greys with
+  each thing's own colour from lib/gamedata, draws the floors, walls and bolts,
+  lays the sheet out so shimmering monsters can change colour, and writes
+  `graf-neo.prf`.  `32x32-cb.png` is the same sheet in colours made for
+  colour-blind players.  The art it works from is
+  `scripts/tiles/neon/source.png`; nothing in it was taken from another
+  tileset.  Until November 2026 the set was 109 silhouettes typed in by hand at
+  16x16, also ours.
 
 **1982 (32x32) -- ours.**
 

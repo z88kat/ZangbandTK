@@ -67,8 +67,8 @@ are twice as tall as they are wide, and the page draws every tile square.
 What it costs to start
 ======================
 
-About 7 MB on the first visit, and it's cached after that. Roughly 2.5 MB is
-compiled code, 4.2 MB is game data (the monsters, objects, dungeon profiles,
+About 7.7 MB on the first visit, and it's cached after that. Roughly 2.5 MB is
+compiled code, 5 MB is game data (the monsters, objects, dungeon profiles,
 the help files and five tilesets) and the rest is the page and its font. The
 page shows how far the download has got while it loads.
 

@@ -84,6 +84,8 @@ Angband licence and which the licence above does not override:
 
 * **The 1982 tiles (32x32) were made for this game.** An AI image generator drew them to a brief written for ZangbandTK, and ``scripts/tiles/build-1982.py`` cut them down, recoloured them and finished them. Nothing in them was taken from another tile set, so they stand on the project licence like the rest of the tree.
 
+* **The Neon tiles (32x32) were made for this game as well.** The same kind of generator drew them as neon signs to a brief of their own, and ``scripts/tiles/build-neon.py`` cut them down, coloured them and finished them. They take nothing from another tile set either, so the project licence covers them too. They replaced Neon's first tiles, which were typed in by hand for this game, in November 2026.
+
 * **The isometric view's art is this project's own.** ``scripts/tiles/make-iso.py`` draws all of it: the terrain in its three styles, and the letters on its counters, which are taken from the DS port's font in ``src/nds``. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais' that came with no more than a permission given to that project, and nothing of it is used here. What stands on the view (monsters, items, the character) is the chosen tile set's own tiles, under that set's terms above.
 
 * The sounds are licenced under the Creative Commons Attribution 4.0 licence.  They were created by Dubtrain <angband@dubtrain.com>. You can find them in Wave format at http://www.dubtrain.com/angband/.

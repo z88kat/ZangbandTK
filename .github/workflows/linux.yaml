@@ -89,7 +89,9 @@ jobs:
       #
       # With --check, since this step regenerates anyway, so that a change to
       # Neon's colours or to the monsters fails here if it costs the
-      # colour-blind sheet its contrast or its meaning pairs.
+      # colour-blind sheet its contrast or its meaning pairs.  It also fails
+      # if a picture in the atlas is no longer used, or if a shimmering
+      # monster or glinting treasure would step onto a different picture.
       - name: The Neon set is still what its generator produces
         run: |
           python3 scripts/tiles/build-neon.py --check >/dev/null

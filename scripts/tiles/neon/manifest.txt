@@ -1,202 +1,244 @@
-# manifest.txt -- which silhouette each thing in the game is drawn with.
+# manifest.txt -- which Neon picture each thing in the game is drawn with.
 #
-# One shape serves every creature that shares it, because colour is what
-# separates them and colour comes from lib/gamedata.  Thirty-odd breeds of
-# zephyr hound are one drawing here, and each is finally the colour its own
-# entry in monster.txt claims it is.
+# Read by scripts/tiles/build-neon.py.  A picture is named by its id in the
+# source atlas (source.txt), which is the id it had in the brief, or by the id
+# of one the script draws itself (feat-floor, the walls, the bolts).  The list
+# of pictures is the 1982 set's, and so is this file below the terrain:
+# Neon was redrawn picture for picture.  Monsters are in monsters.txt.
 #
-# Anything not listed has no tile and renders as its ASCII letter.  That is
-# the intended state of an unfinished set, and it is the same argument
-# scripts/tiles/README makes about uniques: a letter says "not drawn yet".
+# Every picture is coloured with the thing's own colour from lib/gamedata, so
+# one potion bottle is every potion.  Anything not listed here and not covered
+# by a `tval:` default has no tile and renders as its ASCII letter;
+# audit-tiles.py reports it.
 
-# --- terrain: feat:<CODE>:<shape>[:<tone when lit>] ---
+# --- terrain: feat:<CODE>:<picture>[:<ground>][:<glyph>][:tone=T][:quiet=N] ---
 #
-# The fourth field names the tone a feature sits at when lit; the light moves
-# it from there.  Without one it sits at the tone its colour code maps to.
+# <ground> is what shows through the black of the picture, in its own colour:
+# the floor under the stairs and rubble, the town's grass under the buildings.
+# <glyph> is the number or letter stamped on a building, as on the 1982 set's
+# gables: the shop's glyph from terrain.txt, or for the services, whose glyph
+# is +, the letter the owner chose for 1982 on 3 November 2026.  It goes on
+# the shops' plain roof, right of the sign; at=X,Y puts its top left corner
+# elsewhere.  The cottages were asked for a plain gable and a round window
+# above the door, and the window took the gable, so their letter goes over
+# the window; the towers' between the window and the door.
 #
-# Ground and walls all want `dim`: they are the backdrop, and whatever stands
-# on them has to win.  They are named individually because they start from
-# four different base tones -- Angband's colours were picked for single glyphs
-# and FLOOR is White while GRANITE is Light Slate.
-#
-# An absolute tone and not a relative shift.  Relative was tried and was wrong
-# twice: the shifts stacked with the lighting offset and clamped, so all four
-# ground features landed on `shadow` together -- black, at actual size -- and
-# the global darkening step aimed at the walls pushed lava and broken doors
-# off the bottom with them.---------------------------------------
-feat:FLOOR:floor:dim
-feat:GRANITE:wall:dim
-feat:PERM:wall:dim
-feat:MAGMA:wall:dim
-feat:QUARTZ:wall:dim
-feat:MAGMA_K:wall
-feat:QUARTZ_K:wall
-feat:SECRET:wall:dim
-feat:ROCK:wall:dim
-# The edge of the world is a wall nothing gets through, so it is the one
-# wall that should not recede.
-feat:WORLD_EDGE:wall
-feat:RUBBLE:rubble
-feat:PASS_RUBBLE:rubble
-feat:CLOSED:door_closed
-feat:OPEN:door_open
-feat:BROKEN:door_open
-feat:LESS:stairs_up
-feat:MORE:stairs_down
-feat:GRASS:grass:dim
-feat:DIRT:floor:dim
-feat:SAND:floor:dim
-feat:ROAD:floor:dim
-feat:TREE:tree
-feat:MUD:water
-feat:WATER:water
-feat:DEEP_WATER:water
-feat:DUNGEON:dungeon
-feat:LAVA:lava
-feat:NONE:empty
-feat:STORE_GENERAL:store_1
-feat:STORE_ARMOR:store_2
-feat:STORE_WEAPON:store_3
-feat:STORE_BOOK:store_4
-feat:STORE_ALCHEMY:store_5
-feat:STORE_MAGIC:store_6
-feat:STORE_BLACK:store_7
-feat:HOME:store_8
-feat:STORE_STATUE:store_0
-feat:STORE_FIGURINE:store_figurine
-feat:HEALER:healer
-feat:INN:inn
-feat:MAGESMITH:magesmith
-feat:RECHARGER:recharger
-feat:MAGETOWER:magetower
-feat:CHAOSTOWER:chaostower
+# tone=T is the tone the feature sits at in plain light, where the 16x16 set
+# put it; without one it sits at its colour's own tone, or a tone down from
+# pale, so a torch has somewhere brighter to take it.  quiet=N takes N tones
+# off every grey and colour in the picture: water and lava at full strength
+# drown what stands in them (pilot 2), and the sea, which nobody walks on,
+# needs only one (batch 1).
 
-# --- monsters: base:<monster base>:<shape> ---------------------------------
-base:canine:hound
-base:zephyr hound:hound
-base:feline:hound
-base:quadruped:hound
-base:rodent:hound
-base:yeti:hound
-base:humanoid:humanoid
-base:person:humanoid
-base:townsfolk:humanoid
-base:kobold:humanoid
-base:orc:humanoid
-base:troll:humanoid
-base:ogre:humanoid
-base:giant:humanoid
-base:yeek:humanoid
-base:skeleton:humanoid
-base:zombie:humanoid
-base:dragon:dragon
-base:ancient dragon:dragon
-base:hybrid:dragon
-base:hydra:dragon
-base:ghost:ghost
-base:wraith:ghost
-base:vampire:ghost
-base:lich:ghost
-base:mold:mold
-base:jelly:mold
-base:mushroom:mold
-base:quylthulg:mold
-base:icky thing:mold
-base:snake:snake
-base:naga:snake
-base:worm:snake
-base:reptile:snake
-base:tree:tree
-base:player:player
-base:major demon:major_demon
-base:minor demon:minor_demon
-base:elemental:elemental
-base:fish:fish
-base:spider:spider
-base:ainu:ainu
-base:bird:bird
-base:golem:golem
-base:vortex:vortex
-base:eye:eye
-base:insect:insect
-base:ant:ant
-base:bat:bat
-base:centipede:centipede
-base:killer beetle:killer_beetle
-base:creeping coins:creeping_coins
-base:dragon fly:dragon_fly
-base:xorn:xorn
-base:wall monster:wall_monster
-base:lurker:lurker
-base:mimic:mimic
-base:animated weapon:animated_weapon
-base:Morgoth:morgoth
+feat:NONE:black
+feat:FLOOR:feat-floor:tone=dim
+feat:CLOSED:feat-closed
+feat:OPEN:feat-open
+feat:BROKEN:feat-broken
+feat:LESS:feat-less:floor
+feat:MORE:feat-more:floor
+feat:SECRET:feat-granite:tone=dim
+feat:RUBBLE:feat-rubble:floor
+feat:PASS_RUBBLE:feat-pass-rubble:floor
+feat:MAGMA:feat-magma:tone=dim
+feat:QUARTZ:feat-quartz:tone=dim
+feat:MAGMA_K:feat-magma-k
+feat:QUARTZ_K:feat-quartz-k
+feat:GRANITE:feat-granite:tone=dim
+feat:PERM:feat-perm:tone=dim
+feat:LAVA:feat-lava:quiet=2
+feat:GRASS:feat-grass:tone=dim
+feat:DIRT:feat-dirt:tone=dim
+feat:SAND:feat-sand:tone=dim
+feat:TREE:feat-tree:grass
+feat:MUD:feat-mud
+feat:WATER:feat-water:quiet=2
+feat:DEEP_WATER:feat-deep-water:quiet=2
+feat:WORLD_EDGE:feat-world-edge:quiet=1
+feat:ROCK:feat-rock:tone=dim
+feat:ROAD:feat-road:tone=dim
+feat:DUNGEON:feat-dungeon:grass
+feat:STORE_GENERAL:feat-store-general:grass:1
+feat:STORE_ARMOR:feat-store-armor:grass:2
+feat:STORE_WEAPON:feat-store-weapon:grass:3
+feat:STORE_BOOK:feat-store-book:grass:4
+feat:STORE_ALCHEMY:feat-store-alchemy:grass:5
+feat:STORE_MAGIC:feat-store-magic:grass:6
+feat:STORE_BLACK:feat-store-black:grass:7
+feat:HOME:feat-home:grass:8
+feat:STORE_STATUE:feat-store-statue:grass:0
+feat:STORE_FIGURINE:feat-store-figurine:grass:0
+feat:HEALER:feat-healer:grass:H:at=14,10
+feat:INN:feat-inn:grass:I:at=14,10
+feat:MAGESMITH:feat-magesmith:grass:M:at=14,10
+feat:RECHARGER:feat-recharger:grass:R:at=14,10
+feat:MAGETOWER:feat-magetower:grass:9:at=14,18
+feat:CHAOSTOWER:feat-chaostower:grass:C:at=14,18
 
-# --- objects: tval:<object type>:<shape> -----------------------------------
+# --- the player: one hero and one heroine per class ---
 #
-# Flavoured types take their colour from flavor.txt rather than object.txt,
-# because before it is identified a potion is its flavour and nothing else.
-tval:potion:potion
-tval:flask:potion
-tval:scroll:scroll
-tval:ring:ring
-tval:amulet:ring
-tval:sword:sword
-tval:polearm:axe
-tval:hafted:mace
-tval:bow:bow
-tval:arrow:arrow
-tval:bolt:bolt
-tval:shot:shot
-tval:soft armor:armour_soft
-tval:hard armor:armour_hard
-tval:dragon armor:armour_dragon
-tval:shield:shield
-tval:helm:helm
-tval:crown:crown
-tval:cloak:cloak
-tval:gloves:gloves
-tval:boots:boots
-tval:chest:chest
-tval:figurine:figurine
-tval:statue:statue
-tval:food:food
-tval:gold:gold
-tval:digger:digger
-tval:light:light
-tval:wand:wand
-tval:staff:staff
-tval:rod:rod
-tval:mushroom:mushroom
-tval:none:pile
+# player-<class> and player-<class>-f, the class as class.txt spells it in
+# lower case.  The heroine is chosen by $SEX, which ui-prefs.c works out the
+# way the Tk portraits do.  Before there is a character the warrior stands in.
 
-# --- traps: trap:<trap code>:<shape> ---------------------------------------
-#
-# Keyed on the code, which is trap.txt's first field, so the four dart traps
-# are one drawing and the prf still names each of them.  'no trap' and
-# 'door lock' are left out: neither is a thing drawn on the floor.
-trap:alarm:trap_alarm
-trap:ancient mechanism:trap_mechanism
-trap:dart trap:trap_dart
-trap:decoy:trap_decoy
-trap:discolored spot:trap_spot
-trap:explosion:trap_explosion
-trap:explosive rune:trap_glyph
-trap:gas trap:trap_gas
-trap:glyph of warding:trap_glyph
-trap:mind blast trap:trap_mind
-trap:pit:trap_pit
-trap:strange rune:trap_rune
-trap:trap:trap_generic
-trap:trap door:trap_door
-trap:web:trap_web
+player:default:player-warrior
 
-# --- spell effects: gf:<direction>:<shape> ---------------------------------
-#
-# Five shapes for every projection in the game.  The element is carried
-# entirely by the colour, which projection.txt already states.
-gf:0:bolt_0
-gf:45:bolt_45
-gf:90:bolt_90
-gf:135:bolt_135
-gf:static:burst
+# --- objects: tval:<type>:<tile> is the default for a type, and
+#     object:<type>:<name>:<tile> overrides it for one kind ---
+
+tval:none:-
+object:none:<pile>:item-pile
+object:none:<unknown item>:item-unknown
+object:none:<unknown treasure>:item-unknown
+object:none:<curse object>:item-curse
+
+tval:light:item-torch
+object:light:Lantern:item-lantern
+tval:flask:item-flask
+
+tval:food:item-bread
+object:food:Apple:item-fruit
+object:food:Handful of Dried Fruits:item-fruit
+object:food:Slime Mold:item-fruit
+object:food:Scrap of Flesh:item-meat
+object:food:Slice of Meat:item-meat
+object:food:Strip of Venison:item-meat
+object:food:Flask of Whisky:item-drink
+object:food:Pint of Fine Wine:item-drink
+object:food:Sip of Miruvor:item-drink
+object:food:Swig of Orcish Liquor:item-drink
+object:food:Draught of the Ents:item-drink
+
+tval:sword:item-sword
+object:sword:Dagger:item-dagger
+object:sword:Main Gauche:item-dagger
+object:sword:Tanto:item-dagger
+object:sword:Wakizashi:item-dagger
+object:sword:Basillard:item-dagger
+object:sword:Bastard Sword:item-greatsword
+object:sword:Zweihander:item-greatsword
+object:sword:Executioner's Sword:item-greatsword
+object:sword:Blade of Chaos:item-greatsword
+object:sword:No-dachi:item-greatsword
+object:sword:Flamberge:item-greatsword
+object:sword:Claymore:item-greatsword
+object:sword:Espadon:item-greatsword
+object:sword:Great Scimitar:item-greatsword
+
+tval:hafted:item-mace
+object:hafted:Whip:item-flail
+object:hafted:Ball-and-Chain:item-flail
+object:hafted:Flail:item-flail
+object:hafted:Two-Handed Great Flail:item-flail
+object:hafted:Three Piece Rod:item-flail
+object:hafted:Nunchaku:item-flail
+object:hafted:Whip of Entanglement:item-flail
+object:hafted:Throwing Hammer:item-hammer
+object:hafted:War Hammer:item-hammer
+object:hafted:Maul:item-hammer
+object:hafted:Great Hammer:item-hammer
+object:hafted:Mighty Hammer:item-hammer
+object:hafted:Hammer of Returning:item-hammer
+object:hafted:Quarterstaff:item-staff-weapon
+object:hafted:Bo Staff:item-staff-weapon
+object:hafted:Jo Staff:item-staff-weapon
+
+tval:polearm:item-halberd
+object:polearm:Spear:item-spear
+object:polearm:Awl-Pike:item-spear
+object:polearm:Trident:item-spear
+object:polearm:Pike:item-spear
+object:polearm:Lance:item-spear
+object:polearm:Trifurcate Spear:item-spear
+object:polearm:Broad Spear:item-spear
+object:polearm:Heavy Lance:item-spear
+object:polearm:Throwing Axe:item-axe
+object:polearm:Beaked Axe:item-axe
+object:polearm:Broad Axe:item-axe
+object:polearm:Battle Axe:item-axe
+object:polearm:Lochaber Axe:item-axe
+object:polearm:Great Axe:item-axe
+object:polearm:Hatchet:item-axe
+
+tval:bow:item-bow
+object:bow:Sling:item-sling
+object:bow:Light Crossbow:item-crossbow
+object:bow:Heavy Crossbow:item-crossbow
+tval:shot:item-shot
+tval:arrow:item-arrow
+tval:bolt:item-bolt
+tval:digger:item-pick
+object:digger:Shovel:item-shovel
+
+tval:soft armor:item-soft-armour
+tval:hard armor:item-hard-armour
+tval:dragon armor:item-dragon-armour
+tval:shield:item-shield
+tval:helm:item-helm
+tval:crown:item-crown
+tval:cloak:item-cloak
+tval:gloves:item-gloves
+tval:boots:item-boots
+
+# Flavoured: before it is identified a potion is its flavour, so these are
+# drawn through flavor: lines, each flavour in its own colour.
+tval:potion:item-potion
+tval:scroll:item-scroll
+tval:ring:item-ring
+tval:amulet:item-amulet
+tval:wand:item-wand
+tval:staff:item-magic-staff
+tval:rod:item-rod
+tval:mushroom:item-mushroom
+
+# The books are class.txt's, one tile tinted with each realm's colour from
+# object_base.txt; the Trumps are a deck of cards, drawn as one.
+tval:magic book:item-book
+tval:prayer book:item-book
+tval:nature book:item-book
+tval:shadow book:item-book
+tval:sorcery book:item-book
+tval:chaos book:item-book
+tval:deck:item-deck
+
+tval:chest:item-chest-metal
+object:chest:Small wooden chest:item-chest-wood
+object:chest:Large wooden chest:item-chest-wood
+tval:gold:item-coins
+object:gold:garnets:item-gems
+object:gold:opals:item-gems
+object:gold:sapphires:item-gems
+object:gold:rubies:item-gems
+object:gold:diamonds:item-gems
+object:gold:emeralds:item-gems
+tval:statue:item-statue
+tval:figurine:item-figurine
+
+# --- traps: trap:<code>:<tile>, the code being the part of trap.txt's name
+#     before the colon, so the four dart traps are one drawing ---
+
+trap:glyph of warding:trap-glyph-of-warding
+trap:decoy:trap-decoy
+trap:explosive rune:trap-explosive-rune
+trap:web:trap-web
+trap:trap door:trap-trap-door
+trap:pit:trap-pit
+trap:strange rune:trap-strange-rune
+trap:discolored spot:trap-discolored-spot
+trap:dart trap:trap-dart-trap
+trap:gas trap:trap-gas-trap
+trap:alarm:trap-alarm
+trap:explosion:trap-explosion
+trap:mind blast trap:trap-mind-blast-trap
+trap:ancient mechanism:trap-ancient-mechanism
+trap:trap:trap-generic
+
+# --- spell effects: gf:<direction>:<tile>, tinted with each projection's
+#     colour.  0 is a bolt moving along a column, 90 along a row; 45 is the
+#     rising diagonal and 135 the falling one (bolt_pict, ui-display.c) ---
+
+gf:0:fx-bolt-vertical
+gf:90:fx-bolt-horizontal
+gf:45:fx-bolt-rising
+gf:135:fx-bolt-falling
+gf:static:fx-burst

@@ -6,9 +6,11 @@ Tiles for the things Angband does not have
     make-terrain.py             draw the wilderness for sets that have none
     make-services.py            draw the six service buildings, and the
                                 Statue and Figurine Stores' doors
-    build-neon.py               build the Neon set, generated whole
-    build-1982.py               build the 1982 set from its source atlas,
+    build-neon.py               build the Neon set from its source atlas,
                                 and cut that atlas from the brief's sheets
+    build-1982.py               build the 1982 set the same way
+    neon-colourblind.py         what colour blindness costs Neon, and the
+                                search that found its colour-blind colours
     import-zangband-tiles.py    bring Adam Bolt's Zangband uniques into his
                                 Angband sheet, and Zangband's figurine and
                                 statues into his and the 8x8 one
@@ -58,12 +60,13 @@ some *other* named monster's portrait.  An ASCII letter says "not drawn yet".
 A wrong portrait says something false.
 
 Stated that way rather than as "no tiles for uniques", because the latter is
-not what the project does and never was.  The Neon set gives every unique a
-tile -- a base silhouette in the monster's own colour -- and Oberon, Dworkin,
-Mandor and the Mouth of Sauron all share `0x9D:0x9C` there, with eleven others.
-That is allowed: a violet humanoid asserts violet and humanoid, which is true
-of all of them.  1,013 monsters share 31 silhouettes in that set and none of
-them is a lie.
+not what the project does and never was.  Neon's first pictures, 16x16
+silhouettes, gave every unique a tile -- a base silhouette in the monster's
+own colour -- and Oberon, Dworkin, Mandor and the Mouth of Sauron all shared
+one, with eleven others.  That was allowed: a violet humanoid asserts violet
+and humanoid, which is true of all of them.  1,013 monsters shared 31
+silhouettes in that set and none of them was a lie.  Its 32x32 pictures, like
+the 1982 set's, give every unique a drawing of its own.
 
 The same rule is what lets `import-zangband-tiles.py` give sixty-five of them
 Adam Bolt's own drawings, since a drawing of Robin Hood used for Robin Hood
@@ -122,11 +125,10 @@ Every script now has one, and three of the four write nothing:
     make-services.py --check              read-only
     make-terrain.py --check               read-only
     import-zangband-tiles.py --check      read-only
-    build-neon.py --check                 **regenerates first**, then reports.
-                                          Harmless by hand, because the set is
-                                          generated whole and the output is
-                                          deterministic -- but it is why
-                                          check-build does not run it
+    build-neon.py --check                 **regenerate first**, then report.
+    build-1982.py --check                 Harmless by hand, because the
+                                          output is deterministic -- but it
+                                          is why check-build runs neither
 
 make-terrain.py used to have no --check, and a bare run did the destructive
 thing: it rewrote the row and truncated each sheet back to it, dropping the
@@ -142,9 +144,10 @@ What runs these
     scripts/check-build    audit-tiles, make-terrain --check,
                            make-services --check, borrow-tiles --check,
                            import-zangband-tiles --check
-    linux.yaml, Tiles job  the same five, plus regenerating the Neon set and
-                           diffing graf-neo.prf, which catches generated data
-                           that has gone stale rather than missing
+    linux.yaml, Tiles job  the same five, plus regenerating the Neon and
+                           1982 sets and diffing graf-neo.prf and graf-82.prf,
+                           which catches generated data that has gone stale
+                           rather than missing
 
 No paths filter on the CI job, deliberately.  The way this went red was a
 gamedata change invalidating a tiles artifact -- MON_PSI_DRAIN added to

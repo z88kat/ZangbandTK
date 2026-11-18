@@ -31,6 +31,57 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+18 November 2026 — Neon redrawn
+===============================
+
+Steven likes Neon's look and not its pictures. The 109 silhouettes I typed in
+at 16 by 16 don't say what anything is: the player was a white stick figure and
+the hound read as a camel. After the 1982 set he asked for Neon to be redrawn
+the same way, and on the 14th we started.
+
+The idea was to keep what made Neon work, a tile's colour coming from the game
+data, and change only the drawing. So the generator draws every picture as a
+white neon sign on black in four greys, and the build tints the greys with the
+monster's own colour. The first pilot came back right at 32 pixels, and Steven
+called it "neon, ZX Spectrum vibe". One colour per picture was too tight, though,
+so a picture may also carry up to three fixed colours of its own, a flame or a
+crown, which the tint leaves alone. The second pilot showed the catch: a fixed
+colour in the monster's own hue vanishes into the tint, so every request after
+that chose them off the hue. It also showed that water and lava at full
+brightness drown whatever stands in them, and that the generator would not draw
+a bolt that didn't end in a burst, or a wall without seams, however I asked. The
+floors, walls and bolts are drawn in code instead.
+
+Thirty-two sheets later, on the 17th, the last picture was in. Cutting them
+down took a choice I got wrong first: averaging each 16-pixel block dims a thin
+tube to a glow, and taking its brightest pixel fills a figure in solid, so each
+pixel is the block's 75th percentile. A few pictures came back drawn in mid-grey
+and looked dim in every colour, so a monster with under 30% of its lit pixels
+bright is lifted a grey level. The sheet keeps the old layout, colour on the row
+and picture on the column, so shimmering monsters still shimmer. The importer
+walks every one of them through its cycle the way the engine does and fails if
+a step lands on a different picture. Laying the old set's bolts beside the new
+ones turned up a bug that had been there since September: the old sheet drew
+the vertical bolt lying down.
+
+It went in as two trial modes beside the old set, and then the Mac restarted
+overnight. The work was in a scratch copy of the repository under
+``/private/tmp``, uncommitted, and macOS empties that folder on every restart.
+Everything I had written was gone. What survived was the session's own record
+of every edit and command, and replaying it in order rebuilt the lot: the
+importer, the recipe, the cut atlas, all of it. Every command printed what it
+had printed the day before. The art itself was never at risk, since the
+accepted sheets sit in the brief, but a day's code was, and it shouldn't have
+been. Work like this now gets a copy somewhere a restart doesn't reach.
+
+Today Steven said to drop the old set, so the new one is Neon, modes 7 and 8
+under the old names, and ``build-neon.py`` is the new importer. The colour-blind
+check the old build ran came across with it: each colour-blind colour still has
+to clear its contrast floor, the colours the game gives a meaning to still have
+to stay apart, and the second sheet still has to be the first with only the
+colours changed. I broke a colour on purpose to make sure it notices. It does.
+
+
 16 November 2026 — making a character in the browser
 ====================================================
 

@@ -1,15 +1,16 @@
 # palette.txt -- the colours of the Neon tileset.
 #
-# Every tile is one silhouette drawn in exactly one non-black colour, so a
-# tile's colour is data rather than art: it is looked up from the monster's
-# own `color:` field, or the terrain's `graphics:` field, in lib/gamedata.
-# That is information the other tilesets throw away -- once a graphic tile is
+# A tile's colour is data rather than art.  Every picture is drawn in greys,
+# and the greys take the colour looked up from the monster's own `color:`
+# field, or the terrain's `graphics:` field, in lib/gamedata.  That is
+# information the other tilesets throw away -- once a graphic tile is
 # assigned, ui-map.c:258 short-circuits on `da & 0x80` and the game's own
-# colour never reaches the screen.
+# colour never reaches the screen.  A picture may also carry up to three
+# fixed colours, taken from these same hues, which the tint leaves alone.
 #
-# Ten hues, four tones each, giving forty rows in the tile sheet.  The tones
-# are flat colours and not dithers: a 50% dither of a dark hue loses half the
-# pixels of a one-pixel limb, which at sixteen pixels is the whole silhouette.
+# Ten hues, four tones each, giving forty rows of colour in the tile sheet.
+# The tones are flat colours and not dithers: a 50% dither of a dark hue loses
+# half the pixels of a one-pixel line, which is all a neon tube is.
 #
 # Four and not three because terrain needs a tone for identity *and* a tone
 # for the light.  With three, grass (a dark green) and trees (a light green)
@@ -17,7 +18,7 @@
 # -- visible immediately in the preview and invisible in any assertion.
 #
 # Influence: Jeff Minter / Llamasoft.  Hyper-saturated, and legible because
-# each tile only ever carries one of these at a time.
+# each tile carries its own colour and at most three others, on black.
 
 # hue:<name>:<pale>:<neon>:<dim>:<shadow>
 #
@@ -47,7 +48,7 @@ hue:grey:F0F0FF:B4B4D8:6E6E88:3D3D4C
 #
 # Not chosen by eye, and not by hand.  The measure is what colour blindness
 # costs on a map of tiles: two monsters of the same kind -- the same
-# silhouette -- told apart only by their colour, a fire hound from a cold one.
+# picture -- told apart only by their colour, a fire hound from a cold one.
 # 3,312 such pairs of colours.  Under the Machado (2009) simulation, Neon above
 # loses 246 of them to deuteranopia, 172 to protanopia and 56 to tritanopia.
 # These lose 7, 6 and 24.  The pairs the game gives a meaning to -- hit points

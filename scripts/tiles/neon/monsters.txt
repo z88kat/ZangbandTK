@@ -1,0 +1,1088 @@
+# monsters.txt -- which Neon picture each monster is drawn with.
+#
+# A copy of the 1982 set's monsters.txt, which build-1982.py --cut wrote from
+# that brief's monsters.csv: Neon was redrawn picture for picture, so every
+# monster has the same picture here as there, in its own colour.  The 1982
+# owner's ruling of 7 November 2026 stands: only the uniques and the monsters
+# that look clearly unlike their family have a picture of their own.  A
+# monster not listed takes its base's line.
+
+# --- each monster base's commonest tile, for monsters added later ---
+base:Morgoth:mon-morgoth
+base:ainu:mon-ainu
+base:ancient dragon:mon-ancient-dragon
+base:animated weapon:mon-animated-weapon
+base:ant:mon-ant
+base:bat:mon-bat
+base:bird:mon-bird
+base:canine:mon-canine
+base:centipede:mon-centipede
+base:creeping coins:mon-creeping-coins
+base:dragon:mon-dragon
+base:dragon fly:mon-dragon-fly
+base:elemental:mon-elemental-water
+base:eye:mon-eye
+base:feline:mon-feline
+base:fish:mon-fish
+base:ghost:mon-ghost
+base:giant:mon-giant
+base:golem:mon-golem
+base:humanoid:mon-humanoid-dwarf
+base:hybrid:mon-hybrid
+base:hydra:mon-hydra
+base:icky thing:mon-icky-thing
+base:insect:mon-insect
+base:jelly:mon-jelly
+base:killer beetle:mon-killer-beetle
+base:kobold:mon-kobold
+base:lich:mon-lich
+base:lurker:mon-lurker
+base:major demon:mon-major-demon
+base:mimic:mon-mimic
+base:minor demon:mon-minor-demon
+base:mold:mon-mold
+base:mushroom:mon-mushroom
+base:naga:mon-naga
+base:ogre:mon-ogre
+base:orc:mon-orc
+base:person:mon-person-fighter
+base:quadruped:mon-quadruped
+base:quylthulg:mon-quylthulg
+base:reptile:mon-reptile
+base:rodent:mon-rodent
+base:skeleton:mon-skeleton
+base:snake:mon-snake
+base:spider:mon-spider
+base:townsfolk:mon-townsfolk
+base:tree:mon-tree
+base:troll:mon-troll
+base:vampire:mon-vampire
+base:vortex:mon-vortex
+base:wall monster:mon-wall-monster
+base:worm:mon-worm
+base:wraith:mon-wraith
+base:xorn:mon-xorn
+base:yeek:mon-yeek
+base:yeti:mon-yeti
+base:zephyr hound:mon-zephyr-hound
+base:zombie:mon-zombie
+
+# --- a picture of its own ---
+monster:Unicorn of Amber:mon-unicorn-of-amber
+monster:Morgenstern, Julian's steed:mon-morgenstern-julians-steed
+monster:Jurt the Living Trump:mon-jurt-the-living-trump
+monster:Lord Borel of Hendrake:mon-lord-borel-of-hendrake
+monster:Strygalldwir:mon-strygalldwir
+monster:Moire, Queen of Rebma:mon-moire-queen-of-rebma
+monster:Mandor, Master of the Logrus:mon-mandor-master-of-the-logrus
+monster:Rinaldo, son of Brand:mon-rinaldo-son-of-brand
+monster:Jasra, Brand's Mistress:mon-jasra-brands-mistress
+monster:Dworkin Barimen:mon-dworkin-barimen
+monster:Brand, Mad Visionary of Amber:mon-brand-mad-visionary-of-amber
+monster:Julian, Master of Arden Forest:mon-julian-master-of-arden-forest
+monster:Bleys, Master of Manipulation:mon-bleys-master-of-manipulation
+monster:Fiona the Sorceress:mon-fiona-the-sorceress
+monster:Gerard, Strongman of Amber:mon-gerard-strongman-of-amber
+monster:Caine, the Conspirator:mon-caine-the-conspirator
+monster:Corwin, Lord of Avalon:mon-corwin
+monster:Eric the Usurper:mon-eric-the-usurper
+monster:Benedict, the Ideal Warrior:mon-benedict-the-ideal-warrior
+monster:Oberon, King of Amber:mon-oberon-king-of-amber
+monster:The Serpent of Chaos:mon-the-serpent-of-chaos
+monster:Farmer Maggot:mon-farmer-maggot
+monster:Father Christmas:mon-father-christmas
+monster:Martti Ihrasaari:mon-martti-ihrasaari
+monster:agent of black market:mon-agent-of-black-market
+monster:aimless-looking merchant:mon-aimless-looking-merchant
+monster:battle-scarred veteran:mon-battle-scarred-veteran
+monster:blubbering idiot:mon-blubbering-idiot
+monster:boil-covered wretch:mon-boil-covered-wretch
+monster:chaffinch:mon-chaffinch
+monster:filthy street urchin:mon-filthy-street-urchin
+monster:mangy-looking leper:mon-mangy-looking-leper
+monster:mean-looking mercenary:mon-mean-looking-mercenary
+monster:pitiful-looking beggar:mon-pitiful-looking-beggar
+monster:red-hatted elf:mon-red-hatted-elf
+monster:scrawny cat:mon-scrawny-cat
+monster:scruffy little dog:mon-scruffy-little-dog
+monster:sheep:mon-sheep
+monster:singing, happy drunk:mon-singing-happy-drunk
+monster:sparrow:mon-sparrow
+monster:squint-eyed rogue:mon-squint-eyed-rogue
+monster:village idiot:mon-village-idiot
+monster:wild rabbit:mon-wild-rabbit
+monster:woodsman:mon-woodsman
+monster:clear icky thing:mon-clear-icky-thing
+monster:floating eye:mon-floating-eye
+monster:fruit bat:mon-fruit-bat
+monster:giant white centipede:mon-giant-white-centipede
+monster:giant white mouse:mon-giant-white-mouse
+monster:giant yellow centipede:mon-giant-yellow-centipede
+monster:grey mold:mon-grey-mold
+monster:grey mushroom patch:mon-grey-mushroom-patch
+monster:grid bug:mon-grid-bug
+monster:large white snake:mon-large-white-snake
+monster:newt:mon-newt
+monster:rock lizard:mon-rock-lizard
+monster:small kobold:mon-small-kobold
+monster:soldier ant:mon-soldier-ant
+monster:Fang, Farmer Maggot's Dog:mon-fang-farmer-maggots-dog
+monster:Grip, Farmer Maggot's Dog:mon-grip-farmer-maggots-dog
+monster:giant green frog:mon-frog
+monster:kobold:mon-kobold
+monster:portuguese man-o-war:mon-portuguese-man-o-war
+monster:Sméagol:mon-sm-agol
+monster:Bullroarer the Hobbit:mon-bullroarer-the-hobbit
+monster:Freesia:mon-freesia
+monster:Wolf, Farmer Maggot's dog:mon-wolf-farmer-maggots-dog
+monster:Mughash the Kobold Lord:mon-mughash-the-kobold-lord
+monster:giant red frog:mon-frog
+monster:Lagduf, the Snaga:mon-lagduf-the-snaga
+monster:Wormtongue, Agent of Saruman:mon-wormtongue-agent-of-saruman
+monster:yellow light:mon-sphere
+monster:Brodda, the Easterling:mon-brodda-the-easterling
+monster:yeti:mon-yeti
+monster:Bloodfang the Wolf:mon-bloodfang-the-wolf
+monster:Grishnákh, the Hill Orc:mon-grishn-kh-the-hill-orc
+monster:Orfax, Son of Boldor:mon-orfax-son-of-boldor
+monster:The wounded bear:mon-the-wounded-bear
+monster:skaven shaman:mon-ratman
+monster:logrus ghost:mon-logrus-ghost
+monster:pattern ghost:mon-pattern-ghost
+monster:logrus master:mon-logrus-master
+monster:fire angel:mon-fire-angel
+monster:pattern vortex:mon-pattern-vortex
+monster:lord of chaos:mon-lord-of-chaos
+monster:unmaker:mon-unmaker
+monster:disembodied hand that strangled people:mon-hand
+monster:Golfimbul, the Hill Orc Chief:mon-golfimbul-the-hill-orc-chief
+monster:Robin Hood, the Outlaw:mon-robin-hood-the-outlaw
+monster:Boldor, King of the Yeeks:mon-boldor-king-of-the-yeeks
+monster:ogre:mon-ogre
+monster:Ufthak of Cirith Ungol:mon-ufthak-of-cirith-ungol
+monster:lurker:mon-lurker
+monster:skaven:mon-ratman
+monster:wererat:mon-ratman
+monster:Meneldor the Swift:mon-meneldor-the-swift
+monster:Thorondor:mon-thorondor
+monster:Ulfast, Son of Ulfang:mon-ulfast-son-of-ulfang
+monster:Nár, the Dwarf:mon-n-r-the-dwarf
+monster:The Borshin:mon-the-borshin
+monster:giant red scorpion:mon-scorpion
+monster:Hobbes the Tiger:mon-hobbes-the-tiger
+monster:Gorbag, the Orc Captain:mon-gorbag-the-orc-captain
+monster:Old Man Willow:mon-old-man-willow
+monster:Shagrat, the Orc Captain:mon-shagrat-the-orc-captain
+monster:Bolg, Son of Azog:mon-bolg-son-of-azog
+monster:ixitxachitl:mon-ray
+monster:quylthulg:mon-quylthulg
+monster:Lugdush, the Uruk:mon-lugdush-the-uruk
+monster:mummified orc:mon-mummy
+monster:Uglúk, the Uruk:mon-ugl-k-the-uruk
+monster:giant yellow scorpion:mon-scorpion
+monster:jumping fireball:mon-sphere
+monster:Azog, Enemy of the Dwarves:mon-azog-enemy-of-the-dwarves
+monster:freezing sphere:mon-sphere
+monster:Angamaitë of Umbar:mon-angamait-of-umbar
+monster:Ibun, Son of Mîm:mon-ibun-son-of-m-m
+monster:Khîm, Son of Mîm:mon-kh-m-son-of-m-m
+monster:Sangahyando of Umbar:mon-sangahyando-of-umbar
+monster:flying skull:mon-skull
+monster:mi-go:mon-mi-go
+monster:mummified human:mon-mummy
+monster:gazer:mon-beholder
+monster:Gwaihir the Windlord:mon-gwaihir-the-windlord
+monster:Ulwarth, Son of Ulfang:mon-ulwarth-son-of-ulfang
+monster:Mîm, Betrayer of Turin:mon-m-m-betrayer-of-turin
+monster:giant octopus:mon-octopus
+monster:vampire:mon-vampire
+monster:Beorn, the Mountain Bear:mon-beorn-the-mountain-bear
+monster:Beorn, the Shape-Changer:mon-beorn-the-shape-changer
+monster:Draebor, the Imp:mon-draebor-the-imp
+monster:Uldor the Accursed:mon-uldor-the-accursed
+monster:ixitxachitl priest:mon-ray
+monster:spectator:mon-beholder
+monster:giant black scorpion:mon-scorpion
+monster:Bert the Stone Troll:mon-bert-the-stone-troll
+monster:Bill the Stone Troll:mon-bill-the-stone-troll
+monster:Tom the Stone Troll:mon-tom-the-stone-troll
+monster:ball lightning:mon-sphere
+monster:whale:mon-whale
+monster:ghost:mon-ghost
+monster:killer whale:mon-whale
+monster:Mime, the Nibelung:mon-mime-the-nibelung
+monster:Ulfang the Black:mon-ulfang-the-black
+monster:lich:mon-lich
+monster:Hagen, son of Alberich:mon-hagen-son-of-alberich
+monster:Lokkak, the Ogre Chieftain:mon-lokkak-the-ogre-chieftain
+monster:auto-roller:mon-auto-roller
+monster:mûmak:mon-m-mak
+monster:Lorgan, Chief of the Easterlings:mon-lorgan-chief-of-the-easterlings
+monster:gauth:mon-beholder
+monster:xorn:mon-xorn
+monster:mummified troll:mon-mummy
+monster:Castamir the Usurper:mon-castamir-the-usurper
+monster:headless:mon-headless
+monster:mummified chieftain:mon-mummy
+monster:will o' the wisp:mon-sphere
+monster:Alberich the Nibelung King:mon-alberich-the-nibelung-king
+monster:It:mon-it
+monster:Kharis the Powerslave:mon-kharis-the-powerslave
+monster:beholder:mon-beholder
+monster:vampiric ixitxachitl:mon-ray
+monster:Gorlim, Betrayer of Barahir:mon-gorlim-betrayer-of-barahir
+monster:Grendel:mon-grendel
+monster:Kavlax the Many-Headed:mon-kavlax-the-many-headed
+monster:fiend of slaanesh:mon-scorpion
+monster:Jaws:mon-jaws
+monster:Rogrog the Black Troll:mon-rogrog-the-black-troll
+monster:The Queen Ant:mon-the-queen-ant
+monster:Ariel, Queen of Air:mon-ariel-queen-of-air
+monster:Quaker, Master of Earth:mon-quaker-master-of-earth
+monster:Vargo, Tyrant of Fire:mon-vargo-tyrant-of-fire
+monster:Waldern, King of Water:mon-waldern-king-of-water
+monster:The Ultimate Dungeon Cleaner:mon-the-ultimate-dungeon-cleaner
+monster:Bokrug:mon-bokrug
+monster:undead beholder:mon-beholder
+monster:Barney the Dinosaur:mon-barney-the-dinosaur
+monster:marilith:mon-marilith
+monster:Bull Gates:mon-bull-gates
+monster:elder thing:mon-elder-thing
+monster:giant squid:mon-octopus
+monster:Eöl, the Dark Elf:mon-e-l-the-dark-elf
+monster:The Balrog of Moria:mon-the-balrog-of-moria
+monster:greater mummy:mon-mummy
+monster:Fasolt the Giant:mon-fasolt-the-giant
+monster:Harowen the Black Hand:mon-harowen-the-black-hand
+monster:chaos spawn:mon-beholder
+monster:Giganto the Gargantuan:mon-giganto-the-gargantuan
+monster:Groo the Wanderer:mon-groo-the-wanderer
+monster:Itangast the Fire Drake:mon-itangast-the-fire-drake
+monster:Scatha the Worm:mon-scatha-the-worm
+monster:giant headless:mon-headless
+monster:Loge, Spirit of Fire:mon-loge-spirit-of-fire
+monster:The Greater hell magic mushroom were-quylthulg:mon-the-greater-hell-magic-mushroom-were-quylthulg
+monster:The Phoenix:mon-the-phoenix
+monster:Ar-Pharazôn the Golden:mon-ar-pharaz-n-the-golden
+monster:Little Boy:mon-little-boy
+monster:Shelob, Spider of Darkness:mon-shelob-spider-of-darkness
+monster:dracolich:mon-dracolich
+monster:gas spore:mon-beholder
+monster:Charybdis:mon-charybdis
+monster:Malekith the Accursed:mon-malekith-the-accursed
+monster:hand druj:mon-hand
+monster:Baphomet the Minotaur Lord:mon-baphomet-the-minotaur-lord
+monster:Jack of Shadows:mon-jack-of-shadows
+monster:Scylla:mon-scylla
+monster:Fundin Bluecloak:mon-fundin-bluecloak
+monster:Father Dagon:mon-father-dagon
+monster:Gilim, the Giant of Eruman:mon-gilim-the-giant-of-eruman
+monster:Mother Hydra:mon-mother-hydra
+monster:Saruman of Many Colours:mon-saruman-of-many-colours
+monster:Quachil Uttaus, Treader of the Dust:mon-quachil-uttaus-treader-of-the-dust
+monster:Ubbo-Sathla, the Unbegotten Source:mon-ubbo-sathla-the-unbegotten-source
+monster:sky whale:mon-whale
+monster:Fat Man:mon-fat-man
+monster:Smaug the Golden:mon-smaug-the-golden
+monster:Judge Death:mon-judge-death
+monster:Judge Fear:mon-judge-fear
+monster:Garm, Guardian of Hel:mon-garm-guardian-of-hel
+monster:Judge Mortis:mon-judge-mortis
+monster:fastitocalon:mon-fastitocalon
+monster:Chaugnar Faugn, Horror from the Hills:mon-chaugnar-faugn-horror-from-the-hills
+monster:The Mouth of Sauron:mon-the-mouth-of-sauron
+monster:The Stormbringer:mon-the-stormbringer
+monster:Zoth-Ommog:mon-zoth-ommog
+monster:Fafner the Dragon:mon-fafner-the-dragon
+monster:Judge Fire:mon-judge-fire
+monster:Tevildo, Prince of Cats:mon-tevildo-prince-of-cats
+monster:Thuringwethil, the Vampire Messenger:mon-thuringwethil-the-vampire-messenger
+monster:Utgard-Loke:mon-utgard-loke
+monster:beholder hive-mother:mon-beholder
+monster:Tselakus, the Dreadlord:mon-tselakus-the-dreadlord
+monster:Zhar the Twin Obscenity:mon-zhar-the-twin-obscenity
+monster:Nan, the Giant:mon-nan-the-giant
+monster:The King in Yellow:mon-the-king-in-yellow
+monster:Shudde M'ell:mon-shudde-mell
+monster:Ahtu, Avatar of Nyarlathotep:mon-ahtu-avatar-of-nyarlathotep
+monster:Ossë, Herald of Ulmo:mon-oss-herald-of-ulmo
+monster:Yibb-Tstll the Patient One:mon-yibb-tstll-the-patient-one
+monster:Fangorn:mon-fangorn
+monster:Ghatanothoa:mon-ghatanothoa
+monster:Omarax, the Eye Tyrant:mon-omarax-the-eye-tyrant
+monster:Santa Claus:mon-santa-claus
+monster:Eihort, the Thing in the Labyrinth:mon-eihort-the-thing-in-the-labyrinth
+monster:Nyogtha, the Thing that Should not Be:mon-nyogtha-the-thing-that-should-not-be
+monster:skull druj:mon-skull
+monster:Glaurung, Father of the Dragons:mon-glaurung-father-of-the-dragons
+monster:Ungoliant, the Unlight:mon-ungoliant-the-unlight
+monster:Daoloth, the Render of the Veils:mon-daoloth-the-render-of-the-veils
+monster:Hastur the Unspeakable:mon-hastur-the-unspeakable
+monster:Makar, the Warrior:mon-makar-the-warrior
+monster:Feagwath, the Undead Sorcerer:mon-feagwath-the-undead-sorcerer
+monster:Nidhogg the Hel-Drake:mon-nidhogg-the-hel-drake
+monster:Uvatha the Horseman:mon-uvatha-the-horseman
+monster:Adunaphel the Quiet:mon-adunaphel-the-quiet
+monster:Akhorahil the Blind:mon-akhorahil-the-blind
+monster:Artsi the Champion of Chaos:mon-artsi-the-champion-of-chaos
+monster:Gandalf the Grey:mon-gandalf-the-grey
+monster:Qlzqqlzuup, the Emperor Quylthulg:mon-qlzqqlzuup-the-emperor-quylthulg
+monster:Ulik the Troll:mon-ulik-the-troll
+monster:lesser kraken:mon-octopus
+monster:Raphael, the Messenger:mon-raphael-the-messenger
+monster:Ren the Unclean:mon-ren-the-unclean
+monster:Wiruin, the Maelstrom:mon-wiruin-the-maelstrom
+monster:Ji Indur Dawndeath:mon-ji-indur-dawndeath
+monster:Maeglin, the Traitor of Gondolin:mon-maeglin-the-traitor-of-gondolin
+monster:Dwar, Dog Lord of Waw:mon-dwar-dog-lord-of-waw
+monster:Pazuzu, Lord of Air:mon-pazuzu-lord-of-air
+monster:Draugluin, Sire of All Werewolves:mon-draugluin-sire-of-all-werewolves
+monster:Hoarmurath of Dir:mon-hoarmurath-of-dir
+monster:greater kraken:mon-octopus
+monster:Cantoras, the Skeletal Lord:mon-cantoras-the-skeletal-lord
+monster:Khamûl, the Black Easterling:mon-kham-l-the-black-easterling
+monster:ultimate beholder:mon-beholder
+monster:Ancalagon the Black:mon-ancalagon-the-black
+monster:The Norsa:mon-the-norsa
+monster:The Witch-King of Angmar:mon-the-witch-king-of-angmar
+monster:Glaaki:mon-glaaki
+monster:Hypnos, Lord of Sleep:mon-hypnos-lord-of-sleep
+monster:The Tarrasque:mon-the-tarrasque
+monster:Meássë, the Bloody:mon-me-ss-the-bloody
+monster:Vlad Dracula, Prince of Darkness:mon-vlad-dracula-prince-of-darkness
+monster:Y'golonac:mon-ygolonac
+monster:Bast, Goddess of Cats:mon-bast-goddess-of-cats
+monster:Lungorthin, the Balrog of White Fire:mon-lungorthin-the-balrog-of-white-fire
+monster:Null the Living Void:mon-null-the-living-void
+monster:Ithaqua the Windwalker:mon-ithaqua-the-windwalker
+monster:Carcharoth, the Jaws of Thirst:mon-carcharoth-the-jaws-of-thirst
+monster:Huan, Wolfhound of the Valar:mon-huan-wolfhound-of-the-valar
+monster:Loki the Trickster:mon-loki-the-trickster
+monster:Mephistopheles, Lord of Hell:mon-mephistopheles-lord-of-hell
+monster:Rhan-Tegoth:mon-rhan-tegoth
+monster:Shuma-Gorath:mon-shuma-gorath
+monster:Atlach-Nacha, the Spider God:mon-atlach-nacha-the-spider-god
+monster:Hela, Queen of the Dead:mon-hela-queen-of-the-dead
+monster:Kaschei the Immortal:mon-kaschei-the-immortal
+monster:The Destroyer:mon-the-destroyer
+monster:Vecna, the Emperor Lich:mon-vecna-the-emperor-lich
+monster:Yig, Father of Serpents:mon-yig-father-of-serpents
+monster:Surtur the Giant Fire Demon:mon-surtur-the-giant-fire-demon
+monster:Abhoth, Source of Uncleanness:mon-abhoth-source-of-uncleanness
+monster:Klingsor, Evil Master of Magic:mon-klingsor-evil-master-of-magic
+monster:Tsathoggua, the Sleeper of N'kai:mon-tsathoggua-the-sleeper-of-nkai
+monster:Cthugha, the Living Flame:mon-cthugha-the-living-flame
+monster:Gothmog, the High Captain of Balrogs:mon-gothmog-the-high-captain-of-balrogs
+monster:Nyarlathotep, the Crawling Chaos:mon-nyarlathotep-the-crawling-chaos
+monster:Cyaegha:mon-cyaegha
+monster:Godzilla:mon-godzilla
+monster:Shub-Niggurath, Black Goat of the Woods:mon-shub-niggurath-black-goat-of-the-woods
+monster:Ymir the Ice Giant:mon-ymir-the-ice-giant
+monster:Nodens, Lord of the Great Abyss:mon-nodens-lord-of-the-great-abyss
+monster:Oremorj the Cyberdemon Lord:mon-oremorj-the-cyberdemon-lord
+monster:Yog-Sothoth, the All-in-One:mon-yog-sothoth-the-all-in-one
+monster:Azathoth, Seething Nuclear Chaos:mon-azathoth-seething-nuclear-chaos
+monster:Tulzscha, the Green Flame:mon-tulzscha-the-green-flame
+monster:Great Cthulhu:mon-great-cthulhu
+monster:Jormungand the Midgard Serpent:mon-jormungand-the-midgard-serpent
+monster:Sauron, the Sorcerer:mon-sauron-the-sorcerer
+monster:Serpent-Sauron:mon-serpent-sauron
+monster:The Unicorn of Order:mon-the-unicorn-of-order
+monster:Vampire-Sauron:mon-vampire-sauron
+monster:Wolf-Sauron:mon-wolf-sauron
+monster:Fenris Wolf:mon-fenris-wolf
+monster:Morgoth, Lord of Darkness:mon-morgoth
+monster:a Plain Gold Ring:mon-a-plain-gold-ring
+
+# --- a picture shared with look-alikes ---
+
+# --- a tile drawn for something else ---
+monster:white harpy:mon-bird
+monster:black harpy:mon-bird
+monster:owlbear:mon-quadruped-bear
+monster:potion mimic:item-potion
+monster:shambling mound:mon-mold
+monster:vorpal bunny:mon-wild-rabbit
+monster:hippocampus:mon-fish
+monster:vlasta:mon-reptile-dinosaur
+monster:scroll mimic:item-scroll
+monster:cloaker:item-cloak
+monster:swamp thing:mon-tree
+monster:door mimic:feat-closed
+monster:landmine:trap-explosion
+monster:ring mimic:item-ring
+monster:chaos beastman:mon-hybrid-minotaur
+monster:vampiric mist:mon-elemental-air
+monster:noxious fume:mon-elemental-air
+monster:serpent man:mon-humanoid-lizardfolk
+monster:xiclotlan:mon-tree
+monster:boadile:mon-reptile
+monster:stairway to hell:feat-more
+monster:deep one:mon-humanoid-lizardfolk
+monster:drolem:mon-dragon
+monster:raal's tome of destruction:item-book
+monster:time bomb:trap-explosion
+monster:weird fume:mon-elemental-air
+monster:fire vampire:mon-elemental-fire
+monster:formless spawn of tsathoggua:mon-jelly
+monster:hunting horror:mon-snake
+monster:dark young of shub-niggurath:mon-tree
+monster:eye druj:mon-eye
+monster:behemoth:mon-quadruped
+monster:jabberwock:mon-dragon
+monster:keeper of secrets:mon-major-demon
+monster:shambler:mon-quadruped-bear
+
+# --- its family's picture, in its colour ---
+monster:white deer:mon-quadruped-horse
+monster:white icky thing:mon-icky-thing
+monster:white worm mass:mon-worm
+monster:wild dog:mon-canine
+monster:acolyte:mon-person-priest
+monster:apprentice:mon-person-caster
+monster:blubbering icky thing:mon-icky-thing
+monster:blue yeek:mon-yeek
+monster:cave spider:mon-spider
+monster:crow:mon-bird
+monster:cutpurse:mon-person-rogue
+monster:giant black ant:mon-ant
+monster:green worm mass:mon-worm
+monster:metallic green centipede:mon-centipede
+monster:salamander:mon-reptile
+monster:shrieker mushroom patch:mon-mushroom
+monster:soldier:mon-person-fighter
+monster:white jelly:mon-jelly
+monster:wild cat:mon-feline
+monster:yellow mushroom patch:mon-mushroom
+monster:black naga:mon-naga
+monster:blinking dot:mon-mushroom
+monster:clear worm mass:mon-worm
+monster:eagle:mon-bird
+monster:giant white ant:mon-ant
+monster:giant white louse:mon-insect
+monster:greater hell-beast:mon-major-demon
+monster:green ooze:mon-jelly
+monster:hunting hawk of julian:mon-bird
+monster:insect swarm:mon-insect
+monster:kobold shaman:mon-kobold
+monster:metallic blue centipede:mon-centipede
+monster:metallic red centipede:mon-centipede
+monster:poltergeist:mon-ghost
+monster:radiation eye:mon-eye
+monster:scruffy looking hobbit:mon-humanoid-halfling
+monster:silver jelly:mon-jelly
+monster:spotted mushroom patch:mon-mushroom
+monster:yellow jelly:mon-jelly
+monster:yellow mold:mon-mold
+monster:yellow worm mass:mon-worm
+monster:blue jelly:mon-jelly
+monster:blue worm mass:mon-worm
+monster:cave lizard:mon-reptile
+monster:creeping copper coins:mon-creeping-coins
+monster:gallant:mon-person-fighter
+monster:giant white rat:mon-rodent
+monster:kobold archer:mon-kobold
+monster:large grey snake:mon-snake
+monster:scout:mon-person-archer
+monster:silver mouse:mon-rodent
+monster:snotling:mon-orc
+monster:tamer:mon-person-fighter
+monster:blue ooze:mon-jelly
+monster:copperhead snake:mon-snake
+monster:disenchanter eye:mon-eye
+monster:giant green dragon fly:mon-dragon-fly
+monster:giant white dragon fly:mon-dragon-fly
+monster:green glutton ghost:mon-ghost
+monster:green jelly:mon-jelly
+monster:green naga:mon-naga
+monster:grey icky thing:mon-icky-thing
+monster:large kobold:mon-kobold
+monster:red worm mass:mon-worm
+monster:rot jelly:mon-jelly
+monster:skeleton kobold:mon-skeleton
+monster:brown mold:mon-mold
+monster:creeping silver coins:mon-creeping-coins
+monster:ewok:mon-humanoid-fey
+monster:giant black dragon fly:mon-dragon-fly
+monster:giant brown bat:mon-bat
+monster:giant gold dragon fly:mon-dragon-fly
+monster:purple mushroom patch:mon-mushroom
+monster:rattlesnake:mon-snake
+monster:snaga:mon-orc
+monster:bloodshot eye:mon-eye
+monster:cave orc:mon-orc
+monster:crow of Durthang:mon-bird
+monster:eastern dwarf:mon-humanoid-dwarf
+monster:green icky thing:mon-icky-thing
+monster:lost soul:mon-ghost
+monster:night lizard:mon-reptile
+monster:red jelly:mon-jelly
+monster:red naga:mon-naga
+monster:wood spider:mon-spider
+monster:zog:mon-humanoid
+monster:zombified kobold:mon-zombie
+monster:giant leech:mon-worm
+monster:giant salamander:mon-reptile
+monster:green mold:mon-mold
+monster:lemure:mon-minor-demon
+monster:nibelung:mon-humanoid-dwarf
+monster:nurgling:mon-minor-demon
+monster:orc tracker:mon-orc
+monster:raven:mon-bird
+monster:ruffian:mon-person-rogue
+monster:skeleton orc:mon-skeleton
+monster:swordfish:mon-fish
+monster:terrified yeek:mon-yeek
+monster:baby black dragon:mon-dragon
+monster:baby blue dragon:mon-dragon
+monster:baby gold dragon:mon-dragon
+monster:baby green dragon:mon-dragon
+monster:baby red dragon:mon-dragon
+monster:baby white dragon:mon-dragon
+monster:bloodshot icky thing:mon-icky-thing
+monster:cave bear:mon-quadruped-bear
+monster:giant black louse:mon-insect
+monster:giant grey rat:mon-rodent
+monster:giant red ant:mon-ant
+monster:king cobra:mon-snake
+monster:orc shaman:mon-orc
+monster:piranha:mon-fish
+monster:blacklock mage:mon-humanoid-dwarf
+monster:clear mushroom patch:mon-mushroom
+monster:creeping gold coins:mon-creeping-coins
+monster:crypt creep:mon-skeleton
+monster:disenchanter mold:mon-mold
+monster:giant fruit fly:mon-insect
+monster:giant spider:mon-spider
+monster:giant white tick:mon-spider
+monster:gremlin:mon-minor-demon
+monster:hairy mold:mon-mold
+monster:panther:mon-feline
+monster:pseudo-dragon:mon-dragon
+monster:software bug:mon-insect
+monster:stonefoot warrior:mon-humanoid-dwarf
+monster:tengu:mon-minor-demon
+monster:witch:mon-person-caster
+monster:wolf:mon-canine
+monster:baby multi-hued dragon:mon-dragon
+monster:barracuda:mon-fish
+monster:drúadan mage:mon-person-caster
+monster:giant slug:mon-worm
+monster:hippogriff:mon-hybrid
+monster:old forest tree:mon-tree
+monster:rat-thing:mon-rodent
+monster:zombified orc:mon-zombie
+monster:air spirit:mon-elemental-air
+monster:black mamba:mon-snake
+monster:death sword:mon-animated-weapon
+monster:grape jelly:mon-jelly
+monster:ironfist priest:mon-humanoid-dwarf
+monster:master yeek:mon-yeek
+monster:moaning spirit:mon-ghost
+monster:nether worm mass:mon-worm
+monster:phantom warrior:mon-ghost
+monster:priest:mon-person-priest
+monster:rotting corpse:mon-zombie
+monster:skeleton human:mon-skeleton
+monster:spotted jelly:mon-jelly
+monster:stegocentipede:mon-centipede
+monster:tiger:mon-feline
+monster:warrior:mon-person-fighter
+monster:white wolf:mon-canine
+monster:zombified human:mon-zombie
+monster:creeping mithril coins:mon-creeping-coins
+monster:druid:mon-person-priest
+monster:illusionist:mon-person-caster
+monster:killer brown beetle:mon-killer-beetle
+monster:ochre jelly:mon-jelly
+monster:orc archer:mon-orc
+monster:blue horror:mon-minor-demon
+monster:blue icky thing:mon-icky-thing
+monster:carnivorous flying monkey:mon-hybrid
+monster:flesh golem:mon-golem
+monster:giant flea:mon-insect
+monster:quiver slot:mon-mushroom
+monster:rock mole:mon-rodent
+monster:shadow creature:mon-humanoid
+monster:space monster:mon-lurker
+monster:warg:mon-canine
+monster:black ogre:mon-ogre
+monster:chaos shapechanger:mon-hybrid
+monster:clay golem:mon-golem
+monster:clear hound:mon-zephyr-hound
+monster:dark hound:mon-zephyr-hound
+monster:giant clear centipede:mon-centipede
+monster:giant tan bat:mon-bat
+monster:giant tarantula:mon-spider
+monster:griffon:mon-hybrid
+monster:guardian naga:mon-naga
+monster:half-orc:mon-orc
+monster:homunculus:mon-minor-demon
+monster:kamikaze yeek:mon-yeek
+monster:light hound:mon-zephyr-hound
+monster:magic mushroom patch:mon-mushroom
+monster:sand-dweller:mon-minor-demon
+monster:craban:mon-bird
+monster:gelatinous cube:mon-jelly
+monster:grizzly bear:mon-quadruped-bear
+monster:moon beast:mon-quadruped
+monster:quasit:mon-minor-demon
+monster:rogue:mon-person-rogue
+monster:servant of glaaki:mon-zombie
+monster:tax collector:mon-person-rogue
+monster:umber hulk:mon-xorn
+monster:uruk:mon-orc
+monster:war bear:mon-quadruped-bear
+monster:2-headed hydra:mon-hydra
+monster:earth spirit:mon-elemental-earth
+monster:forest troll:mon-troll
+monster:giant piranha:mon-fish
+monster:hellcat:mon-feline
+monster:imp:mon-minor-demon
+monster:killer bee:mon-insect
+monster:knight archer:mon-person-archer
+monster:mine-dog:mon-canine
+monster:water spirit:mon-elemental-water
+monster:blackguard:mon-person-fighter
+monster:blink dog:mon-canine
+monster:cold hound:mon-zephyr-hound
+monster:energy hound:mon-zephyr-hound
+monster:evil eye:mon-eye
+monster:fire hound:mon-zephyr-hound
+monster:fire spirit:mon-elemental-fire
+monster:hummerhorn:mon-insect
+monster:mongbat:mon-bat
+monster:orc captain:mon-orc
+monster:undead mass:mon-jelly
+monster:culverin:mon-insect
+monster:dweller on the threshold:mon-yeti
+monster:red mold:mon-mold
+monster:shallow puddle:mon-elemental-water
+monster:stone golem:mon-golem
+monster:3-headed hydra:mon-hydra
+monster:Mirkwood spider:mon-spider
+monster:air hound:mon-zephyr-hound
+monster:blood falcon:mon-bird
+monster:chimaera:mon-hybrid
+monster:dark dwarven lord:mon-humanoid-dwarf
+monster:earth hound:mon-zephyr-hound
+monster:frumious bandersnatch:mon-centipede
+monster:irish wolfhound of flora:mon-canine
+monster:paladin:mon-person-fighter
+monster:ranger:mon-person-archer
+monster:sabre-tooth tiger:mon-feline
+monster:sasquatch:mon-yeti
+monster:unstable worm mass:mon-worm
+monster:water hound:mon-zephyr-hound
+monster:werewolf:mon-canine
+monster:blue dragon bat:mon-bat
+monster:cold vortex:mon-vortex
+monster:fire vortex:mon-vortex
+monster:nixie:mon-humanoid-fey
+monster:snaga sapper:mon-orc
+monster:water vortex:mon-vortex
+monster:iron golem:mon-golem
+monster:killer stag beetle:mon-killer-beetle
+monster:neekerbreeker:mon-insect
+monster:wyvern:mon-dragon
+monster:Easterling champion:mon-person-fighter
+monster:bakeneko:mon-feline
+monster:black ooze:mon-jelly
+monster:brigand:mon-person-rogue
+monster:giant silver ant:mon-ant
+monster:great eagle:mon-bird
+monster:lizardman:mon-humanoid-lizardfolk
+monster:phase spider:mon-spider
+monster:red dragon bat:mon-bat
+monster:rust monster:mon-quadruped
+monster:4-headed hydra:mon-hydra
+monster:banshee:mon-ghost
+monster:forest wight:mon-wraith
+monster:hammerhead:mon-fish
+monster:shadow hound:mon-zephyr-hound
+monster:vampire bat:mon-bat
+monster:werebear:mon-quadruped-bear
+monster:carrion crawler:mon-centipede
+monster:dark naga:mon-naga
+monster:hill giant:mon-giant
+monster:killer red beetle:mon-killer-beetle
+monster:necromancer:mon-person-caster
+monster:nruling:mon-minor-demon
+monster:pukelman:mon-golem
+monster:stone troll:mon-troll
+monster:stunwall:mon-wall-monster
+monster:weir:mon-canine
+monster:abyss worm mass:mon-worm
+monster:cave ogre:mon-ogre
+monster:cheerful leprechaun:mon-humanoid-fey
+monster:disenchanter bat:mon-bat
+monster:displacer beast:mon-feline
+monster:ghoul:mon-zombie
+monster:giant fire tick:mon-spider
+monster:giant firefly:mon-insect
+monster:giant grey ant:mon-ant
+monster:gibbering mouther:mon-jelly
+monster:sphinx:mon-hybrid
+monster:white shark:mon-fish
+monster:wolf chieftain:mon-canine
+monster:creeping adamantite coins:mon-creeping-coins
+monster:gorgimaera:mon-hybrid
+monster:killer fire beetle:mon-killer-beetle
+monster:nexus hound:mon-zephyr-hound
+monster:ogre shaman:mon-ogre
+monster:plaguebearer of nurgle:mon-zombie
+monster:shimmering mold:mon-mold
+monster:troll scavenger:mon-troll
+monster:vibration hound:mon-zephyr-hound
+monster:5-headed hydra:mon-hydra
+monster:basilisk:mon-reptile
+monster:bat of Gorgoroth:mon-bat
+monster:black knight:mon-person-fighter
+monster:frost giant:mon-giant
+monster:livingstone:mon-wall-monster
+monster:mage:mon-person-caster
+monster:mind flayer:mon-humanoid
+monster:snow troll:mon-troll
+monster:spirit naga:mon-naga
+monster:catoblepas:mon-quadruped
+monster:daemonette of slaanesh:mon-minor-demon
+monster:energy vortex:mon-vortex
+monster:green elf archer:mon-humanoid-elf
+monster:purple worm:mon-worm
+monster:young blue dragon:mon-dragon
+monster:young green dragon:mon-dragon
+monster:young white dragon:mon-dragon
+monster:fire giant:mon-giant
+monster:ghast:mon-zombie
+monster:giant army ant:mon-ant
+monster:giant blue ant:mon-ant
+monster:grave wight:mon-wraith
+monster:killer slicer beetle:mon-killer-beetle
+monster:lizard king:mon-humanoid-lizardfolk
+monster:manticore:mon-hybrid
+monster:mithril golem:mon-golem
+monster:ogre chieftain:mon-ogre
+monster:pink horror:mon-minor-demon
+monster:skeleton troll:mon-skeleton
+monster:death watch beetle:mon-killer-beetle
+monster:electric eel:mon-snake
+monster:giant time fly:mon-dragon-fly
+monster:huorn:mon-tree
+monster:young black dragon:mon-dragon
+monster:young gold dragon:mon-dragon
+monster:young red dragon:mon-dragon
+monster:carrion:mon-bird
+monster:doombat:mon-bat
+monster:fleshhound of khorne:mon-canine
+monster:memory moss:mon-mushroom
+monster:nexus quylthulg:mon-quylthulg
+monster:ogre mage:mon-ogre
+monster:serpent of the brownlands:mon-snake
+monster:southron assassin:mon-person-rogue
+monster:young multi-hued dragon:mon-dragon
+monster:balance drake:mon-dragon
+monster:barrow wight:mon-wraith
+monster:cave troll:mon-troll
+monster:chaos drake:mon-dragon
+monster:crystal drake:mon-dragon
+monster:drúadan druid:mon-person-priest
+monster:ethereal drake:mon-dragon
+monster:fire elemental:mon-elemental-fire
+monster:ice skeleton:mon-skeleton
+monster:killer crimson beetle:mon-killer-beetle
+monster:law drake:mon-dragon
+monster:mystic:mon-person-monk
+monster:shadow drake:mon-dragon
+monster:skeleton etten:mon-skeleton
+monster:stone giant:mon-giant
+monster:water elemental:mon-elemental-water
+monster:Eog golem:mon-golem
+monster:Maia:mon-ainu
+monster:air elemental:mon-elemental-air
+monster:black:mon-jelly
+monster:earth elemental:mon-elemental-earth
+monster:great white shark:mon-fish
+monster:kouko:mon-wraith
+monster:master thief:mon-person-rogue
+monster:shade:mon-ghost
+monster:troll blackguard:mon-troll
+monster:troll priest:mon-troll
+monster:tyrannosaurus:mon-reptile-dinosaur
+monster:arch-vile:mon-minor-demon
+monster:chest mimic:mon-mimic
+monster:deep puddle:mon-elemental-water
+monster:disenchanter beast:mon-quadruped
+monster:giant fire ant:mon-ant
+monster:globefish:mon-fish
+monster:gravity hound:mon-zephyr-hound
+monster:hill troll:mon-troll
+monster:impact hound:mon-zephyr-hound
+monster:inertia hound:mon-zephyr-hound
+monster:invisible stalker:mon-elemental-air
+monster:silent watcher:mon-golem
+monster:wereworm:mon-worm
+monster:bodak:mon-minor-demon
+monster:cloud giant:mon-giant
+monster:colbran:mon-golem
+monster:colossus:mon-golem
+monster:demonologist:mon-person-caster
+monster:dúnadan of Angmar:mon-person-fighter
+monster:lesser hell-beast:mon-major-demon
+monster:master vampire:mon-vampire
+monster:olog:mon-troll
+monster:ooze elemental:mon-elemental-water
+monster:smoke elemental:mon-elemental-air
+monster:trapper:mon-lurker
+monster:agent of benedict:mon-person-rogue
+monster:dark elven warlock:mon-humanoid-elf
+monster:emperor wight:mon-wraith
+monster:gnoph-keh:mon-quadruped
+monster:ice elemental:mon-elemental-water
+monster:killer iridescent beetle:mon-killer-beetle
+monster:magma elemental:mon-elemental-fire
+monster:mountain troll:mon-troll
+monster:nexus vortex:mon-vortex
+monster:phantom beast:mon-ghost
+monster:plasma vortex:mon-vortex
+monster:shardstorm:mon-vortex
+monster:spectre:mon-ghost
+monster:abyss spider:mon-spider
+monster:corpser:mon-mushroom
+monster:death knight:mon-person-fighter
+monster:etten:mon-troll
+monster:shimmering vortex:mon-vortex
+monster:time vortex:mon-vortex
+monster:white wraith:mon-wraith
+monster:6-headed hydra:mon-hydra
+monster:mature blue dragon:mon-dragon
+monster:mature green dragon:mon-dragon
+monster:mature white dragon:mon-dragon
+monster:night mare:mon-quadruped-horse
+monster:roper:mon-wall-monster
+monster:southron archer:mon-person-archer
+monster:7-headed hydra:mon-hydra
+monster:clairvoyant:mon-person-caster
+monster:death quasit:mon-minor-demon
+monster:disenchanter worm mass:mon-worm
+monster:enchantress:mon-person-caster
+monster:giant roc:mon-bird
+monster:minotaur:mon-hybrid-minotaur
+monster:patriarch:mon-person-priest
+monster:phantom:mon-ghost
+monster:sorcerer:mon-person-caster
+monster:spirit troll:mon-ghost
+monster:troll chieftain:mon-troll
+monster:vrock:mon-major-demon
+monster:xaren:mon-xorn
+monster:beast of nurgle:mon-quadruped
+monster:flamer of tzeentch:mon-mushroom
+monster:jade monk:mon-person-monk
+monster:master lich:mon-lich
+monster:mature black dragon:mon-dragon
+monster:mature gold dragon:mon-dragon
+monster:mature red dragon:mon-dragon
+monster:ranger chieftain:mon-person-archer
+monster:stiffbeard sorcerer:mon-humanoid-dwarf
+monster:black-hearted huorn:mon-tree
+monster:chaos tile:mon-lurker
+monster:hellblade:mon-animated-weapon
+monster:hellhound:mon-canine
+monster:shantak:mon-bird
+monster:Maia of Mandos:mon-ainu
+monster:Maia of Nienna:mon-ainu
+monster:glabrezu:mon-major-demon
+monster:lesser wall monster:mon-wall-monster
+monster:mature multi-hued dragon:mon-dragon
+monster:multi-hued hound:mon-zephyr-hound
+monster:8-headed hydra:mon-hydra
+monster:aklash:mon-troll
+monster:dread:mon-ghost
+monster:skeletal tyrannosaurus:mon-reptile-dinosaur
+monster:behinder:mon-lurker
+monster:berserker:mon-person-fighter
+monster:cyclops:mon-giant
+monster:demonic quylthulg:mon-quylthulg
+monster:draconic quylthulg:mon-quylthulg
+monster:greater basilisk:mon-reptile
+monster:grey wraith:mon-wraith
+monster:ivory monk:mon-person-monk
+monster:killer white beetle:mon-killer-beetle
+monster:nalfeshnee:mon-major-demon
+monster:rotting quylthulg:mon-quylthulg
+monster:dhole:mon-worm
+monster:gug:mon-giant
+monster:lord of Carn Dûm:mon-person-fighter
+monster:vampire lord:mon-vampire
+monster:death mold:mon-mold
+monster:halfling slinger:mon-humanoid-halfling
+monster:malicious leprechaun:mon-humanoid-fey
+monster:ancient spider:mon-spider
+monster:angel:mon-ainu
+monster:gorgon:mon-naga
+monster:iridescent worm mass:mon-worm
+monster:seahorse:mon-fish
+monster:winged horror:mon-bird
+monster:anti-magic hound:mon-zephyr-hound
+monster:archangel:mon-ainu
+monster:black wraith:mon-wraith
+monster:lesser Balrog:mon-major-demon
+monster:mist giant:mon-wall-monster
+monster:storm giant:mon-giant
+monster:ancient blue dragon:mon-ancient-dragon
+monster:ancient green dragon:mon-ancient-dragon
+monster:ancient white dragon:mon-ancient-dragon
+monster:biclops:mon-giant
+monster:death drake:mon-ancient-dragon
+monster:ethereal dragon:mon-ancient-dragon
+monster:great crystal drake:mon-ancient-dragon
+monster:master mystic:mon-person-monk
+monster:shadow:mon-ghost
+monster:ancient black dragon:mon-ancient-dragon
+monster:ancient gold dragon:mon-ancient-dragon
+monster:ancient red dragon:mon-ancient-dragon
+monster:doom drake:mon-dragon
+monster:leng spider:mon-spider
+monster:nether hound:mon-zephyr-hound
+monster:night stalker:mon-elemental-air
+monster:oriental vampire:mon-vampire
+monster:plasma hound:mon-zephyr-hound
+monster:time hound:mon-zephyr-hound
+monster:Maia of Oromë:mon-ainu
+monster:bloodletter of khorne:mon-major-demon
+monster:crypt thing:mon-lich
+monster:gargoyle:mon-minor-demon
+monster:hasty ent:mon-tree
+monster:nightblade:mon-humanoid-elf
+monster:ancient multi-hued dragon:mon-ancient-dragon
+monster:chaos vortex:mon-vortex
+monster:chthonian:mon-worm
+monster:ghoulking:mon-zombie
+monster:headless ghost:mon-ghost
+monster:hezrou:mon-major-demon
+monster:revenant:mon-wraith
+monster:seraph:mon-ainu
+monster:time elemental:mon-elemental
+monster:anti-paladin:mon-person-fighter
+monster:demilich:mon-lich
+monster:dreadmaster:mon-ghost
+monster:mezzodaemon:mon-minor-demon
+monster:nether wraith:mon-wraith
+monster:quantum dot:mon-mushroom
+monster:sea troll:mon-troll
+monster:vore:mon-spider
+monster:barbazu:mon-major-demon
+monster:chaos butterfly:mon-insect
+monster:cherub:mon-ainu
+monster:dracolisk:mon-ancient-dragon
+monster:ebony monk:mon-person-monk
+monster:flying polyp:mon-fish
+monster:star vampire:mon-vampire
+monster:warp drake:mon-dragon
+monster:baron of hell:mon-major-demon
+monster:lesser titan:mon-giant
+monster:9-headed hydra:mon-hydra
+monster:grand master mystic:mon-person-monk
+monster:ipsissimus:mon-person-fighter
+monster:shan:mon-insect
+monster:wyrd sister:mon-person-fighter
+monster:jubjub bird:mon-bird
+monster:elder vampire:mon-vampire
+monster:nightgaunt:mon-major-demon
+monster:Maia of Aulë:mon-ainu
+monster:Maia of Yavanna:mon-ainu
+monster:aether vortex:mon-vortex
+monster:great earth elemental:mon-elemental-earth
+monster:iron lich:mon-lich
+monster:shadow demon:mon-ghost
+monster:spawn of ubbo-sathla:mon-jelly
+monster:bile demon:mon-major-demon
+monster:byakhee:mon-major-demon
+monster:clubber demon:mon-major-demon
+monster:nightwing:mon-wraith
+monster:war troll:mon-troll
+monster:dreadlord:mon-ghost
+monster:monastic lich:mon-lich
+monster:warrior of the dawn:mon-person-fighter
+monster:balrog:mon-major-demon
+monster:leprechaun fanatic:mon-humanoid-fey
+monster:lloigor:mon-vortex
+monster:spectral tyrannosaurus:mon-reptile-dinosaur
+monster:spider of Gorgoroth:mon-spider
+monster:werewolf of Sauron:mon-canine
+monster:archlich:mon-lich
+monster:chaos hound:mon-zephyr-hound
+monster:death leprechaun:mon-humanoid-fey
+monster:shoggoth:mon-jelly
+monster:zephyr lord:mon-wraith
+monster:Fëanorian raider:mon-humanoid-elf
+monster:Maia of Ulmo:mon-ainu
+monster:colour out of space:mon-lurker
+monster:great water elemental:mon-elemental-water
+monster:high priest:mon-person-priest
+monster:osyluth:mon-major-demon
+monster:greater titan:mon-giant
+monster:lesser black reaver:mon-lich
+monster:maulotaur:mon-hybrid-minotaur
+monster:nazgul:mon-wraith
+monster:juggernaut of khorne:mon-golem
+monster:nycadaemon:mon-major-demon
+monster:archon:mon-ainu
+monster:bone golem:mon-golem
+monster:gelugon:mon-major-demon
+monster:hound of Tindalos:mon-zephyr-hound
+monster:nightcrawler:mon-snake
+monster:ultra-elite paladin:mon-person-fighter
+monster:fallen angel:mon-ainu
+monster:great dimensional wyrm:mon-ancient-dragon
+monster:great ice wyrm:mon-ancient-dragon
+monster:great storm wyrm:mon-ancient-dragon
+monster:great swamp wyrm:mon-ancient-dragon
+monster:Maia of Manwë:mon-ainu
+monster:Maia of Varda:mon-ainu
+monster:ent:mon-tree
+monster:greater demonic quylthulg:mon-quylthulg
+monster:greater draconic quylthulg:mon-quylthulg
+monster:greater rotting quylthulg:mon-quylthulg
+monster:auto-mobile:mon-golem
+monster:dark elven shade:mon-humanoid-elf
+monster:greater wall monster:mon-wall-monster
+monster:horned reaper:mon-major-demon
+monster:great bile wyrm:mon-ancient-dragon
+monster:great hell wyrm:mon-ancient-dragon
+monster:great wyrm of thunder:mon-ancient-dragon
+monster:nightwalker:mon-wraith
+monster:storm troll:mon-troll
+monster:aether hound:mon-zephyr-hound
+monster:black reaver:mon-lich
+monster:great unclean one:mon-major-demon
+monster:bronze golem:mon-golem
+monster:goat of mendes:mon-quadruped
+monster:great wyrm of chaos:mon-ancient-dragon
+monster:great wyrm of law:mon-ancient-dragon
+monster:hell knight:mon-person-fighter
+monster:hru:mon-giant
+monster:master quylthulg:mon-quylthulg
+monster:bloodthirster:mon-major-demon
+monster:pit fiend:mon-major-demon
+monster:mana hound:mon-zephyr-hound
+monster:serpent of chaos:mon-snake
+monster:fury:mon-major-demon
+monster:great wyrm of annihilation:mon-ancient-dragon
+monster:sky dragon:mon-ancient-dragon
+monster:leviathan:mon-ancient-dragon
+monster:great wyrm of balance:mon-ancient-dragon
+monster:great wyrm of many colours:mon-ancient-dragon
+monster:lord of change:mon-bird
+monster:greater Balrog:mon-major-demon
+monster:shadowlord:mon-ghost
+monster:warp demon:mon-major-demon
+monster:cyberdemon:mon-major-demon
+monster:creeping dust:mon-lurker
+monster:spectral wyrm:mon-ancient-dragon
+monster:sky drake:mon-ancient-dragon
+monster:great wyrm of power:mon-ancient-dragon
+monster:star-spawn of cthulhu:mon-major-demon
+monster:storm of Unmagic:mon-vortex
+monster:lourph:mon-spider
+monster:caaws:mon-elemental
+monster:hell hound of julian:mon-canine

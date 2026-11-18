@@ -7,7 +7,7 @@ cost less.
     scripts/tiles/neon-colourblind.py --search N [--seed S] [--from cb]
                                                        search, print cbhue lines
 
-On a map of tiles, two monsters of the same kind share a silhouette and are
+On a map of tiles, two monsters of the same kind share a picture and are
 told apart only by their colour: a fire hound from a cold hound, a baby green
 dragon from a baby red one.  The measure is how many of those pairs of colours
 -- 3,312 of them across every kind in lib/gamedata -- a colour-blind player can
@@ -160,14 +160,12 @@ SPECTRUM = [h for h in HUES if h != 'grey']
 
 
 def _floors():
-    """Neon's contrast floor for each slot, from what the slot draws."""
-    _, _, used, _, _ = neon.build()
-    slot_of = {HUES_TABLE[h][t].upper(): (h, t) for h in HUES for t in TONES}
+    """Neon's contrast floor for each slot, from what sits on it in its own
+    colour: the same reckoning build-neon.py --check makes."""
+    slots = neon.build()[4]['slots']
     floors = {}
-    for hexs, kinds in used.items():
-        slot = slot_of.get(hexs.upper())
-        if not slot:
-            continue
+    for (h, t), kinds in slots.items():
+        slot = (h, TONES[t])
         if kinds & {'monster', 'object', 'flavour', 'trap', 'effect'}:
             floors[slot] = max(floors.get(slot, 0), 3.0)
         elif 'terrain' in kinds:

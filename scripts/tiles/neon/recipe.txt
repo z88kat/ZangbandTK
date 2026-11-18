@@ -1,0 +1,511 @@
+# recipe.txt -- where each Neon picture is in the design brief, and how to cut it.
+#
+# build-neon.py --cut reads this and the brief's sheets
+# (archive/design_brief_tileset_neon/<sheet>/sheet.jpeg) and writes source.png
+# and source.txt.  One line per picture:
+#
+#     <id> <sheet> <cell> [cut:<q>] [lift:<n>]
+#
+# cell counts 1 to 16, left to right then down.  Written from the brief's
+# accepted.txt, where every picture taken from a returned sheet is listed, and
+# the `importer:` notes in each sheet's cells.txt.
+#
+#   cut:q   set each pixel's brightness by the qth fraction of its block, not
+#           the 75th percentile: for stripes and bands drawn grey on light,
+#           which the 75th washes out.
+#   lift:n  every grey n levels brighter: for a picture drawn in mid-grey,
+#           which looks dim in every colour.  The rule from batch 13: lift
+#           every monster with under 30% of its lit pixels bright (the two
+#           top greys, or a colour's pale or neon), unless its notes say
+#           otherwise.  Where a note says why, it follows the #.
+#
+# The 18 pictures not here (the walls, floors, bolts and burst) are drawn by
+# build-neon.py itself.
+
+mon-lugdush-the-uruk                           batch-20   1
+mon-ugl-k-the-uruk                             batch-20   2
+mon-azog-enemy-of-the-dwarves                  batch-20   3
+mon-angamait-of-umbar                          batch-20   4
+mon-ibun-son-of-m-m                            batch-20   5
+mon-kh-m-son-of-m-m                            batch-20   6
+mon-sangahyando-of-umbar                       batch-20   7
+mon-mi-go                                      batch-20   8
+mon-ulwarth-son-of-ulfang                      batch-20   9
+mon-gwaihir-the-windlord                       batch-20  10
+mon-m-m-betrayer-of-turin                      batch-20  11
+mon-beorn-the-mountain-bear                    batch-20  12  lift:1  # 26% bright
+mon-beorn-the-shape-changer                    batch-20  13
+mon-draebor-the-imp                            batch-20  14
+mon-uldor-the-accursed                         batch-20  15
+mon-bert-the-stone-troll                       batch-20  16
+mon-bill-the-stone-troll                       batch-21   1
+mon-tom-the-stone-troll                        batch-21   2
+mon-ulfang-the-black                           batch-21   3
+mon-mime-the-nibelung                          batch-21   4
+mon-lokkak-the-ogre-chieftain                  batch-21   5
+mon-m-mak                                      batch-21   6
+mon-auto-roller                                batch-21   7
+mon-hagen-son-of-alberich                      batch-21   8
+mon-lorgan-chief-of-the-easterlings            batch-21   9
+mon-castamir-the-usurper                       batch-21  10
+mon-alberich-the-nibelung-king                 batch-21  11
+mon-it                                         batch-21  12
+mon-kharis-the-powerslave                      batch-21  13
+mon-gorlim-betrayer-of-barahir                 batch-21  14
+mon-kavlax-the-many-headed                     batch-21  15
+mon-grendel                                    batch-21  16
+mon-rogrog-the-black-troll                     batch-22   1  lift:1  # 28% bright
+mon-the-queen-ant                              batch-22   2
+mon-jaws                                       batch-22   3
+mon-ariel-queen-of-air                         batch-22   4
+mon-quaker-master-of-earth                     batch-22   5
+mon-vargo-tyrant-of-fire                       batch-22   6
+mon-waldern-king-of-water                      batch-22   7
+mon-the-ultimate-dungeon-cleaner               batch-22   8
+mon-bokrug                                     batch-22   9
+mon-barney-the-dinosaur                        batch-22  10
+mon-marilith                                   batch-22  11
+mon-bull-gates                                 batch-22  12
+mon-elder-thing                                batch-22  13
+mon-e-l-the-dark-elf                           batch-22  14  lift:1  # 14% bright
+mon-the-balrog-of-moria                        batch-22  15  lift:1  # to give it weight
+
+mon-harowen-the-black-hand                     batch-22  16  lift:1  # 15% bright
+mon-fasolt-the-giant                           batch-23   1
+mon-itangast-the-fire-drake                    batch-23   2
+mon-giganto-the-gargantuan                     batch-23   3
+mon-groo-the-wanderer                          batch-23   4
+mon-scatha-the-worm                            batch-23   5
+mon-the-phoenix                                batch-23   6
+mon-loge-spirit-of-fire                        batch-23   7
+mon-the-greater-hell-magic-mushroom-were-quylthulg batch-23   8
+mon-ar-pharaz-n-the-golden                     batch-24   1
+mon-dracolich                                  batch-23  10
+mon-shelob-spider-of-darkness                  batch-23  11  lift:1  # 8% bright
+mon-little-boy                                 batch-23  12
+mon-charybdis                                  batch-23  13
+mon-malekith-the-accursed                      batch-23  14  lift:1  # 25% bright
+mon-baphomet-the-minotaur-lord                 batch-23  15
+mon-jack-of-shadows                            batch-23  16  lift:1  # 12% bright
+mon-scylla                                     batch-24   2  lift:1  # 25% bright
+mon-fundin-bluecloak                           batch-24   3
+mon-gilim-the-giant-of-eruman                  batch-24   4
+mon-saruman-of-many-colours                    batch-24   5
+mon-father-dagon                               batch-24   6
+mon-mother-hydra                               batch-24   7
+mon-quachil-uttaus-treader-of-the-dust         batch-24   8
+mon-ubbo-sathla-the-unbegotten-source          batch-24   9
+mon-smaug-the-golden                           batch-24  10
+mon-fat-man                                    batch-24  11
+mon-judge-death                                batch-24  12  lift:1  # 7% bright
+mon-judge-fear                                 batch-25   1  lift:1  # 21% bright
+mon-fastitocalon                               batch-24  14
+mon-garm-guardian-of-hel                       batch-24  15
+mon-judge-mortis                               batch-24  16  lift:1  # 23% bright
+mon-the-mouth-of-sauron                        batch-25   2  lift:1  # 22% bright
+mon-chaugnar-faugn-horror-from-the-hills       batch-25   3
+mon-the-stormbringer                           batch-25   4  lift:1
+mon-zoth-ommog                                 batch-25   5
+mon-tevildo-prince-of-cats                     batch-25   6  lift:1  # 18% bright
+mon-fafner-the-dragon                          batch-25   7
+mon-judge-fire                                 batch-26   1
+mon-thuringwethil-the-vampire-messenger        batch-25   9
+mon-utgard-loke                                batch-25  10
+mon-tselakus-the-dreadlord                     batch-25  11  lift:1  # 27% bright
+mon-zhar-the-twin-obscenity                    batch-25  12
+mon-nan-the-giant                              batch-25  13
+mon-the-king-in-yellow                         batch-25  14  lift:1  # 15% bright
+mon-shudde-mell                                batch-25  15
+mon-oss-herald-of-ulmo                         batch-25  16
+mon-ahtu-avatar-of-nyarlathotep                batch-26   2
+mon-yibb-tstll-the-patient-one                 batch-26   3
+mon-omarax-the-eye-tyrant                      batch-26   4
+mon-fangorn                                    batch-26   5
+mon-ghatanothoa                                batch-26   6
+mon-santa-claus                                batch-26   7
+mon-eihort-the-thing-in-the-labyrinth          batch-26   8
+mon-nyogtha-the-thing-that-should-not-be       batch-26   9  lift:1  # 10% bright
+mon-ungoliant-the-unlight                      batch-26  10
+mon-glaurung-father-of-the-dragons             batch-26  11
+mon-makar-the-warrior                          batch-26  12
+mon-daoloth-the-render-of-the-veils            batch-26  13
+mon-hastur-the-unspeakable                     batch-26  14
+mon-feagwath-the-undead-sorcerer               batch-26  15
+mon-uvatha-the-horseman                        batch-26  16
+mon-nidhogg-the-hel-drake                      batch-27   1  lift:1  # to give the dragon weight
+
+mon-adunaphel-the-quiet                        batch-27   2
+mon-akhorahil-the-blind                        batch-27   3
+mon-qlzqqlzuup-the-emperor-quylthulg           batch-27   4
+mon-artsi-the-champion-of-chaos                batch-27   5
+mon-gandalf-the-grey                           batch-27   6
+mon-ulik-the-troll                             batch-27   7
+mon-ren-the-unclean                            batch-28   1
+mon-wiruin-the-maelstrom                       batch-27   9
+mon-raphael-the-messenger                      batch-27  10
+mon-ji-indur-dawndeath                         batch-27  11
+mon-maeglin-the-traitor-of-gondolin            batch-27  12
+mon-dwar-dog-lord-of-waw                       batch-27  13
+mon-pazuzu-lord-of-air                         batch-27  14
+mon-draugluin-sire-of-all-werewolves           batch-27  15
+mon-hoarmurath-of-dir                          batch-27  16  lift:1  # to give the magenta weight
+
+mon-cantoras-the-skeletal-lord                 batch-28   2
+mon-kham-l-the-black-easterling                batch-28   3
+mon-ancalagon-the-black                        batch-28   4  lift:1  # 19% bright
+mon-the-witch-king-of-angmar                   batch-28   5
+mon-the-norsa                                  batch-28   6
+mon-the-tarrasque                              batch-28   7
+mon-glaaki                                     batch-28   8
+mon-hypnos-lord-of-sleep                       batch-28   9
+mon-me-ss-the-bloody                           batch-28  10
+mon-vlad-dracula-prince-of-darkness            batch-28  11
+mon-ygolonac                                   batch-28  12
+mon-lungorthin-the-balrog-of-white-fire        batch-28  13
+mon-bast-goddess-of-cats                       batch-28  14
+mon-null-the-living-void                       batch-28  15
+mon-ithaqua-the-windwalker                     batch-28  16
+mon-carcharoth-the-jaws-of-thirst              batch-29   1
+mon-huan-wolfhound-of-the-valar                batch-29   2
+mon-rhan-tegoth                                batch-29   3
+mon-loki-the-trickster                         batch-29   4
+mon-mephistopheles-lord-of-hell                batch-29   5
+mon-shuma-gorath                               batch-29   6
+mon-vecna-the-emperor-lich                     batch-29   7
+mon-atlach-nacha-the-spider-god                batch-29   8  lift:1  # 7% bright
+mon-hela-queen-of-the-dead                     batch-29   9
+mon-kaschei-the-immortal                       batch-29  10
+mon-the-destroyer                              batch-29  11
+mon-yig-father-of-serpents                     batch-29  12
+mon-surtur-the-giant-fire-demon                batch-30   1
+mon-abhoth-source-of-uncleanness               batch-29  14
+mon-klingsor-evil-master-of-magic              batch-29  15
+mon-tsathoggua-the-sleeper-of-nkai             batch-29  16  lift:1  # 19% bright
+mon-gothmog-the-high-captain-of-balrogs        batch-30   2  lift:1  # 23% bright
+mon-cthugha-the-living-flame                   batch-30   3
+mon-nyarlathotep-the-crawling-chaos            batch-30   4
+mon-cyaegha                                    batch-30   5  lift:2
+mon-godzilla                                   batch-30   6
+mon-shub-niggurath-black-goat-of-the-woods     batch-30   7  lift:1  # 13% bright
+mon-ymir-the-ice-giant                         batch-30   8
+mon-nodens-lord-of-the-great-abyss             batch-30   9
+mon-oremorj-the-cyberdemon-lord                batch-30  10
+mon-yog-sothoth-the-all-in-one                 batch-30  11
+mon-azathoth-seething-nuclear-chaos            batch-30  12
+mon-tulzscha-the-green-flame                   batch-30  13
+mon-sauron-the-sorcerer                        batch-30  14  lift:1  # 14% bright
+mon-serpent-sauron                             batch-30  15
+mon-vampire-sauron                             batch-30  16  lift:1  # 15% bright
+mon-wolf-sauron                                batch-31   1
+mon-great-cthulhu                              batch-31   2
+mon-jormungand-the-midgard-serpent             batch-31   3
+mon-the-unicorn-of-order                       batch-31   4
+mon-fenris-wolf                                batch-32   3
+mon-a-plain-gold-ring                          batch-31   6
+feat-store-weapon                              batch-01  10
+feat-store-book                                batch-01  11
+feat-store-alchemy                             batch-01  12
+feat-store-magic                               batch-01  13
+feat-store-black                               batch-01  14
+feat-home                                      batch-01  15
+feat-store-statue                              batch-01  16
+feat-open                                      batch-01   2
+feat-broken                                    batch-01   3
+feat-rubble                                    batch-01   4
+feat-pass-rubble                               batch-01   5
+feat-water                                     batch-01   6
+feat-world-edge                                batch-01   7
+feat-dungeon                                   batch-01   8
+feat-store-armor                               batch-01   9
+feat-less                                      batch-02   1
+feat-chaostower                                batch-02  10
+player-mage                                    batch-02  11
+player-druid                                   batch-02  12
+player-priest                                  batch-02  13
+player-paladin                                 batch-02  15
+mon-eric-the-usurper                           batch-02   2
+mon-zephyr-hound                               batch-02   3
+feat-store-figurine                            batch-02   4
+feat-healer                                    batch-02   5
+feat-inn                                       batch-02   6
+feat-magesmith                                 batch-02   7
+feat-recharger                                 batch-02   8
+feat-magetower                                 batch-02   9
+player-chaos-warrior                           batch-03  14
+player-high-mage                               batch-03  15
+player-rogue                                   batch-03   2
+player-ranger                                  batch-03   3
+player-blackguard                              batch-03   4
+player-monk                                    batch-03   5
+player-mindcrafter                             batch-03   6
+player-warrior-mage                            batch-03   7
+player-necromancer                             batch-04   1
+player-blackguard-f                            batch-04  10
+player-monk-f                                  batch-04  11
+player-mindcrafter-f                           batch-04  12
+player-warrior-mage-f                          batch-04  13
+player-chaos-warrior-f                         batch-04  14
+player-high-mage-f                             batch-04  15
+item-wand                                      batch-04  16
+player-warrior-f                               batch-04   2
+player-mage-f                                  batch-04   3
+player-priest-f                                batch-04   4
+player-rogue-f                                 batch-04   5
+player-ranger-f                                batch-04   6
+player-paladin-f                               batch-04   7
+player-druid-f                                 batch-04   8
+player-necromancer-f                           batch-04   9
+item-rod                                       batch-05   1
+item-spear                                     batch-05  10
+item-flail                                     batch-05  11
+item-axe                                       batch-05  12
+item-shield                                    batch-05  13
+item-helm                                      batch-05  14
+item-mace                                      batch-05  15
+item-hammer                                    batch-05  16
+item-magic-staff                               batch-05   2
+item-hard-armour                               batch-05   3
+item-soft-armour                               batch-05   4
+item-mushroom                                  batch-05   5
+item-dragon-armour                             batch-05   6
+item-halberd                                   batch-05   7
+item-statue                                    batch-05   8
+item-greatsword                                batch-05   9
+item-boots                                     batch-06   1
+item-chest-metal                               batch-06  10
+item-drink                                     batch-06  11
+item-staff-weapon                              batch-06  12
+item-shot                                      batch-06  13
+item-bolt                                      batch-06  14
+item-meat                                      batch-06  15
+item-fruit                                     batch-06  16
+item-gems                                      batch-06   2
+item-dagger                                    batch-06   3
+item-gloves                                    batch-06   4
+item-arrow                                     batch-06   5
+item-coins                                     batch-06   6
+item-crown                                     batch-06   7
+item-bread                                     batch-06   8
+item-deck                                      batch-06   9
+item-bow                                       batch-07   1
+item-figurine                                  batch-07  10
+item-pile                                      batch-07  11
+item-curse                                     batch-07  12
+item-scroll                                    batch-07  13
+item-cloak                                     batch-07  14
+item-book                                      batch-07  15
+trap-strange-rune                              batch-07  16
+item-crossbow                                  batch-07   2
+item-pick                                      batch-07   3
+item-chest-wood                                batch-07   4
+item-unknown                                   batch-07   5
+item-sling                                     batch-07   6
+item-shovel                                    batch-07   7
+item-lantern                                   batch-07   8
+item-flask                                     batch-07   9
+trap-generic                                   batch-08   1
+trap-decoy                                     batch-08  10
+trap-explosive-rune                            batch-08  11
+trap-web                                       batch-08  12
+trap-trap-door                                 batch-08  13
+trap-explosion                                 batch-08  14
+mon-townsfolk                                  batch-08  15
+mon-worm                                       batch-08  16
+trap-dart-trap                                 batch-08   2
+trap-gas-trap                                  batch-08   3
+trap-ancient-mechanism                         batch-08   4
+trap-pit                                       batch-08   5
+trap-discolored-spot                           batch-08   6
+trap-alarm                                     batch-08   7
+trap-mind-blast-trap                           batch-08   8
+trap-glyph-of-warding                          batch-08   9
+mon-icky-thing                                 batch-09   1
+mon-ant                                        batch-09  10
+mon-centipede                                  batch-09  11
+mon-person-priest                              batch-09  12
+mon-yeek                                       batch-09  13
+mon-frog                                       batch-09  14
+mon-major-demon                                batch-09  15  lift:1  # 8% bright: the rule
+mon-ghost                                      batch-09  16
+mon-quadruped-horse                            batch-09   2
+mon-kobold                                     batch-09   3
+mon-person-fighter                             batch-09   4
+mon-jelly                                      batch-09   5
+mon-bird                                       batch-09   6
+mon-reptile                                    batch-09   7
+mon-mushroom                                   batch-09   8
+mon-feline                                     batch-09   9
+mon-eye                                        batch-10   1
+mon-dragon-fly                                 batch-10  10
+mon-bat                                        batch-10  11  lift:1  # drawn in mid-grey
+mon-humanoid-fey                               batch-10  12
+mon-zombie                                     batch-10  13
+mon-humanoid-dwarf                             batch-10  14
+mon-humanoid                                   batch-10  15
+mon-fish                                       batch-10  16
+mon-insect                                     batch-10   2
+mon-mold                                       batch-10   3
+mon-naga                                       batch-10   4
+mon-humanoid-halfling                          batch-10   5
+mon-snake                                      batch-10   6
+mon-rodent                                     batch-10   7
+mon-person-archer                              batch-10   8  lift:1
+mon-creeping-coins                             batch-10   9
+mon-minor-demon                                batch-11   1
+mon-animated-weapon                            batch-11  10
+mon-killer-beetle                              batch-11  11
+mon-ogre                                       batch-11  12
+mon-golem                                      batch-11  13
+mon-lurker                                     batch-11  14
+mon-quadruped                                  batch-11  15  lift:1
+mon-xorn                                       batch-11  16
+mon-sphere                                     batch-11   2
+mon-quadruped-bear                             batch-11   3
+mon-yeti                                       batch-11   4  lift:1  # 27% bright: the rule
+mon-ratman                                     batch-11   5
+mon-hybrid                                     batch-11   6
+mon-tree                                       batch-11   7  lift:1  # drawn in mid-grey
+mon-hand                                       batch-11   8
+mon-elemental-air                              batch-11   9
+mon-troll                                      batch-12   1
+mon-vortex                                     batch-12  10
+mon-humanoid-lizardfolk                        batch-12  12
+mon-wraith                                     batch-12  13
+mon-skull                                      batch-12  14
+mon-wall-monster                               batch-12  16
+mon-elemental-water                            batch-12   2
+mon-hydra                                      batch-12   3  lift:1
+mon-elemental-earth                            batch-12   4
+mon-scorpion                                   batch-12   5  lift:1  # 29% bright: the rule
+mon-elemental-fire                             batch-12   6
+mon-reptile-dinosaur                           batch-12   8  lift:1
+mon-ray                                        batch-12   9
+mon-quylthulg                                  batch-13   1
+mon-person-monk                                batch-13  10
+mon-ainu                                       batch-13  11
+mon-lich                                       batch-13  12  lift:1  # 26% bright: the rule
+mon-mimic                                      batch-13  13
+mon-headless                                   batch-13  14
+mon-ancient-dragon                             batch-13  15  lift:1  # 8% bright: the rule
+mon-elemental                                  batch-13  16
+mon-mummy                                      batch-13   2  cut:0.35  # bands vanish at p75
+mon-giant                                      batch-13   3
+mon-beholder                                   batch-13   4  lift:1  # 27% bright: the rule
+mon-vampire                                    batch-13   5  lift:1  # 23% bright: the rule
+mon-octopus                                    batch-13   6
+mon-humanoid-elf                               batch-13   7  lift:1  # 29% bright: the rule
+mon-hybrid-minotaur                            batch-13   8  lift:1  # 17% bright: the rule
+mon-whale                                      batch-13   9
+mon-morgoth                                    batch-14   1  lift:1  # 15% bright: the rule
+mon-moire-queen-of-rebma                       batch-14  10
+mon-fire-angel                                 batch-14  11
+mon-mandor-master-of-the-logrus                batch-14  12  lift:1  # 23% bright: the rule
+mon-rinaldo-son-of-brand                       batch-14  13
+mon-jasra-brands-mistress                      batch-14  14  lift:1  # 29% bright: the rule
+mon-pattern-vortex                             batch-14  15
+mon-dworkin-barimen                            batch-14  16
+mon-unicorn-of-amber                           batch-14   2
+mon-logrus-ghost                               batch-14   3  lift:1  # 5% bright: the rule
+mon-logrus-master                              batch-14   5
+mon-morgenstern-julians-steed                  batch-14   6
+mon-lord-borel-of-hendrake                     batch-14   7
+mon-jurt-the-living-trump                      batch-14   8
+mon-strygalldwir                               batch-14   9
+mon-pattern-ghost                              batch-15   1
+mon-oberon-king-of-amber                       batch-15  10
+mon-the-serpent-of-chaos                       batch-15  11
+mon-farmer-maggot                              batch-15  12
+mon-father-christmas                           batch-15  13
+mon-martti-ihrasaari                           batch-15  14
+mon-agent-of-black-market                      batch-15  15  lift:1  # 13% bright: the rule
+mon-aimless-looking-merchant                   batch-15  16
+mon-lord-of-chaos                              batch-15   2
+mon-brand-mad-visionary-of-amber               batch-15   3
+mon-julian-master-of-arden-forest              batch-15   4
+mon-bleys-master-of-manipulation               batch-15   5
+mon-gerard-strongman-of-amber                  batch-15   6
+mon-unmaker                                    batch-15   7
+mon-caine-the-conspirator                      batch-15   8  lift:1  # 21% bright: the rule
+mon-benedict-the-ideal-warrior                 batch-15   9
+mon-battle-scarred-veteran                     batch-16   1
+mon-scrawny-cat                                batch-16  10
+mon-scruffy-little-dog                         batch-16  11
+mon-sheep                                      batch-16  12
+mon-sparrow                                    batch-16  13
+mon-squint-eyed-rogue                          batch-16  14
+mon-village-idiot                              batch-16  15
+mon-wild-rabbit                                batch-16  16
+mon-blubbering-idiot                           batch-16   2
+mon-boil-covered-wretch                        batch-16   3
+mon-chaffinch                                  batch-16   4
+mon-filthy-street-urchin                       batch-16   5
+mon-mangy-looking-leper                        batch-16   6
+mon-mean-looking-mercenary                     batch-16   7
+mon-pitiful-looking-beggar                     batch-16   8
+mon-red-hatted-elf                             batch-16   9
+mon-singing-happy-drunk                        batch-17   1
+mon-grey-mushroom-patch                        batch-17  10
+mon-grid-bug                                   batch-17  11
+mon-large-white-snake                          batch-17  12
+mon-newt                                       batch-17  13
+mon-small-kobold                               batch-17  15
+mon-soldier-ant                                batch-17  16
+mon-woodsman                                   batch-17   2
+mon-clear-icky-thing                           batch-17   3
+mon-fruit-bat                                  batch-17   5
+mon-giant-white-centipede                      batch-17   6
+mon-giant-white-mouse                          batch-17   7
+mon-grey-mold                                  batch-17   9
+mon-floating-eye                               batch-18   1
+mon-wolf-farmer-maggots-dog                    batch-18  10
+mon-mughash-the-kobold-lord                    batch-18  11
+mon-lagduf-the-snaga                           batch-18  12
+mon-wormtongue-agent-of-saruman                batch-18  13
+mon-brodda-the-easterling                      batch-18  14
+mon-bloodfang-the-wolf                         batch-18  15
+mon-grishn-kh-the-hill-orc                     batch-18  16
+mon-giant-yellow-centipede                     batch-18   2
+mon-rock-lizard                                batch-18   3
+mon-fang-farmer-maggots-dog                    batch-18   4
+mon-grip-farmer-maggots-dog                    batch-18   5
+mon-portuguese-man-o-war                       batch-18   6
+mon-sm-agol                                    batch-18   7
+mon-bullroarer-the-hobbit                      batch-18   8
+mon-freesia                                    batch-18   9
+mon-orfax-son-of-boldor                        batch-19   1
+mon-n-r-the-dwarf                              batch-19  10
+mon-the-borshin                                batch-19  11
+mon-hobbes-the-tiger                           batch-19  12  cut:0.5  # stripes vanish at p75
+mon-gorbag-the-orc-captain                     batch-19  13
+mon-old-man-willow                             batch-19  14
+mon-shagrat-the-orc-captain                    batch-19  15
+mon-bolg-son-of-azog                           batch-19  16  lift:1  # 24% bright: the rule
+mon-the-wounded-bear                           batch-19   2
+mon-golfimbul-the-hill-orc-chief               batch-19   3
+mon-robin-hood-the-outlaw                      batch-19   4
+mon-boldor-king-of-the-yeeks                   batch-19   5
+mon-ufthak-of-cirith-ungol                     batch-19   6  lift:1  # 8% bright: the rule
+mon-ulfast-son-of-ulfang                       batch-19   7
+mon-meneldor-the-swift                         batch-19   8
+mon-thorondor                                  batch-19   9
+mon-dragon                                     pilot-1   10
+mon-spider                                     pilot-1   11
+mon-corwin                                     pilot-1   12
+item-potion                                    pilot-1   13
+item-sword                                     pilot-1   14
+feat-more                                      pilot-1    4
+mon-canine                                     pilot-1    6
+mon-person-rogue                               pilot-1    7  lift:1  # 26% bright: the rule
+mon-orc                                        pilot-1    8
+mon-fiona-the-sorceress                        pilot-2   10
+item-ring                                      pilot-2   11
+item-amulet                                    pilot-2   12
+item-torch                                     pilot-2   13
+feat-closed                                    pilot-2   14
+feat-store-general                             pilot-2   16
+feat-lava                                      pilot-2    2
+feat-deep-water                                pilot-2    3
+feat-tree                                      pilot-2    4
+player-warrior                                 pilot-2    5
+mon-person-caster                              pilot-2    8
+mon-skeleton                                   pilot-2    9

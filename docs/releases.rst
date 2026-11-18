@@ -107,6 +107,25 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Neon is redrawn — 18 November 2026
+----------------------------------
+
+- **The Neon tiles are new pictures.** The 109 silhouettes typed in at 16×16
+  are replaced by neon signs at 32×32: 484 pictures drawn by an AI image
+  generator to a brief, and eighteen floors, walls and bolts drawn by
+  ``scripts/tiles/build-neon.py``, which finishes the set. A monster is still
+  the colour the game gives it, and now looks like what it is, and every unique
+  has a drawing of its own. A picture may carry up to three colours of its own,
+  a flame or a crown, which the monster's colour leaves alone.
+- It's still modes 7 and 8, under the same names, so if you chose Neon you have
+  the new set. The colour-blind version is redrawn with it, and shimmering
+  monsters still shimmer with "Color: Shimmer multi-colored things" on.
+- Figures, objects and traps are drawn on nothing and laid on the floor beneath
+  them, as in the 1982 set. The vertical bolt is upright: the old set drew it
+  lying down.
+- In ZangbandTK a Neon tile is now 32 pixels at a tile scale of 1, where it was
+  16. The browser version's first visit is about 0.7 MB larger.
+
 The browser version is a web page — 16 November 2026
 ----------------------------------------------------
 

@@ -62,18 +62,24 @@ extra:0:0:0
 # finds no such mode and the front ends fall back to ASCII, where reusing the
 # number would silently hand somebody a tileset they did not choose.
 
+# Neon signs at 32x32, drawn by an AI image generator to a brief and cut,
+# coloured and laid out by scripts/tiles/build-neon.py, which also writes the
+# prf.  Until November 2026 these two modes were hand-typed 16x16
+# silhouettes; the numbers and names are kept so a player who chose Neon
+# still has it.  A figure, an object or a trap is drawn on nothing and laid
+# on the terrain beneath it, as in the 1982 set, hence the alpha blending.
 name:7:Neon tiles
 directory:neon
-size:16:16:16x16.png
+size:32:32:32x32.png
 pref:graf-neo.prf
-extra:0:0:0
-# The sheet has the colour on the row and the shape on the column, in blocks of
-# ten hues by four tones, so a tile's colour can be changed without changing
-# its picture -- which is what lets a shimmering monster shimmer in graphics
-# mode.  The third number is how many of those hues the shimmer walks through:
-# nine, because the tenth is grey and a rainbow through grey looks like the
-# colour failing.  Only Neon's two sheets are laid out that way; the others
-# must not claim it.
+extra:1:0:0
+# The sheet has the colour on the row and the picture on the column, in
+# blocks of ten hues by four tones, so a tile's colour can be changed without
+# changing its picture -- which is what lets a shimmering monster shimmer in
+# graphics mode.  The third number is how many of those hues the shimmer
+# walks through: nine, because the tenth is grey and a rainbow through grey
+# looks like the colour failing.  Only Neon's two sheets are laid out that
+# way; the others must not claim it.
 cycle:10:4:9
 
 # The same set for a colour-blind player: the same layout and the same pref
@@ -82,18 +88,18 @@ cycle:10:4:9
 # scripts/tiles/neon/palette.txt, which say how and give the numbers.
 name:8:Neon tiles, colour-blind safe
 directory:neon
-size:16:16:16x16-cb.png
+size:32:32:32x32-cb.png
 pref:graf-neo.prf
-extra:0:0:0
+extra:1:0:0
 cycle:10:4:9
 
 # Early-1980s fantasy pixel art at 32x32, drawn by an AI image generator to a
 # brief and finished by scripts/tiles/build-1982.py, which also writes the
 # prf.  A figure, an object or a trap is drawn alone, on nothing, and the front
 # end lays it on the terrain beneath it, so a monster stands on the room's own
-# floor or the town's own grass.  That is why this is the one set asking for
-# alpha blending: the Cocoa front end draws the terrain under a figure only for
-# a set that does (main-cocoa.m), and Tk always does.
+# floor or the town's own grass.  That is why it asks for alpha blending, as
+# Neon does: the Cocoa front end draws the terrain under a figure only for a
+# set that does (main-cocoa.m), and Tk always does.
 name:9:1982 tiles
 directory:1982
 size:32:32:32x32.png

@@ -122,6 +122,12 @@ T	li1 code	scripts/tiles/build-1982.py
 T	li1	 cut them down, recoloured them and finished them. Nothing in them was taken from another tile set, so they stand on the project licence like the rest of the tree.
 T	li1	\n
 T	li1	•\t
+T	li1 strong	The Neon tiles (32x32) were made for this game as well.
+T	li1	 The same kind of generator drew them as neon signs to a brief of their own, and 
+T	li1 code	scripts/tiles/build-neon.py
+T	li1	 cut them down, coloured them and finished them. They take nothing from another tile set either, so the project licence covers them too. They replaced Neon’s first tiles, which were typed in by hand for this game, in November 2026.
+T	li1	\n
+T	li1	•\t
 T	li1 strong	The isometric view’s art is this project’s own.
 T	li1	 
 T	li1 code	scripts/tiles/make-iso.py
