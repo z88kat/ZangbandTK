@@ -38,13 +38,16 @@ Checked, all four:
   adam-bolt   764 named assignments in the archive, 65 of our missing uniques
   old         `graf-xxx.prf` carries three named *monster* assignments in
               total; the 8x8 art exists but nothing says which cell is which
-              monster, and the Tk-side configs that might are Tim Baker's,
-              under a not-for-profit licence this project cannot ship.  It does
+              monster, and the Tk-side configs that might are Tim Baker's.
+              (This said Baker's licence was one this project cannot ship.  It
+              is the Angband licence word for word, which is this project's
+              own; LICENSE.md credits Tim Baker.)  It does
               name its object cells -- `# Magical Figurine` above `K:567` --
               so the 8x8 set takes objects and no monsters
   nomad       a modern set.  There is no 2001 counterpart to take from
-  gervais     mapped only, and byte-identical to Angband's.  Keeping it that
-              way is worth more than sixty-five tiles
+  gervais     left alone by this script.  It said the sheet was mapped only
+              and byte-identical to Angband's, which stopped being true when
+              make-services.py added a row on 10 September 2026
 
 === How the two sheets relate ===
 

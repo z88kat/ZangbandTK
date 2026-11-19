@@ -59,22 +59,28 @@ Angband licence and which the licence above does not override:
    at art already in the sheet and alters no image. A **modification** writes
    pixels into it.
 
-   * **Gervais' 32x32 is mapped only** — the image is byte-identical to
-     Angband's. Thirteen terrain features point at cells Angband never used.
-   * **Adam Bolt's, Nomad's and the original 8x8 are modified**: one row of
-     thirty generated terrain tiles is appended to the bottom of each. Nothing
-     already in those sheets is touched — every original cell keeps its
-     coordinates and every original pixel its value — and the colours are
-     sampled from the sheet being extended, so the additions are in that
+   * **Gervais' 32x32 has one row added**: four service buildings it had no
+     art for, and the Statue and Figurine Stores' doors, all drawn by a
+     script. Everything above that row is Angband's sheet, pixel for pixel,
+     and thirteen terrain features point at cells Angband never used.
+   * **Adam Bolt's, Nomad's and the original 8x8 are modified**: two rows of
+     generated tiles, terrain and service buildings, are appended to the
+     bottom of each. Adam Bolt's also gains three rows of the tiles Bolt drew
+     for Zangband (sixty-five uniques, the magical figurine and ten statues),
+     and the 8x8 gains one row of Zangband's own figurine and statues.
+     Nothing already in those sheets is touched: every original cell keeps
+     its coordinates and every original pixel its value. The generated tiles
+     take their colours from the sheet being extended, so they are in that
      tileset's own palette.
    * **All four gain ``.prf`` files**, which are mappings and change no art.
 
    ``lib/tiles/README`` records this per tileset, and
-   ``scripts/tiles/make-terrain.py`` is the script that does it.
+   ``scripts/tiles/make-terrain.py``, ``make-services.py`` and
+   ``import-zangband-tiles.py`` are the scripts that do it.
 
-* Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, with or without modification.  **Modified here**, which those terms allow in terms.
+* Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, with or without modification.  **Modified here**, which those terms allow.
 
-* David Gervais' (32x32) graphics may be redistributed, modified, and used only under the terms of the `Creative Commons Attribution 3.0 <http://creativecommons.org/licenses/by/3.0/>`_ licence.  **Not modified here**: what this game adds is a mapping onto cells the sheet already held.
+* David Gervais' (32x32) graphics may be redistributed, modified, and used only under the terms of the `Creative Commons Attribution 3.0 <http://creativecommons.org/licenses/by/3.0/>`_ licence.  **Modified here**, which those terms allow: one row of generated buildings is appended below Angband's sheet, which is otherwise unchanged, as described above.
 
 * **Shockbolt's (64x64) graphics are not distributed with this game.** Angband ships them; ZangbandTK may not. The licence grants use "with in-development and released versions of Angband" and expressly withholds it for "other games or projects" — and this is another project: separately named, separately released, with a savefile format of its own. The author offers permission on request and we have not asked, so the tileset was removed in 3.95.0 rather than shipped on an assumption. The terms are at `Angband's copying page <https://angband.readthedocs.io/en/latest/copying.html>`_.
 
@@ -86,7 +92,7 @@ Angband licence and which the licence above does not override:
 
 * **The Neon tiles (32x32) were made for this game as well.** The same kind of generator drew them as neon signs to a brief of their own, and ``scripts/tiles/build-neon.py`` cut them down, coloured them and finished them. They take nothing from another tile set either, so the project licence covers them too. They replaced Neon's first tiles, which were typed in by hand for this game, in November 2026.
 
-* **The isometric view's art is this project's own.** ``scripts/tiles/make-iso.py`` draws all of it: the terrain in its three styles, and the letters on its counters, which are taken from the DS port's font in ``src/nds``. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais' that came with no more than a permission given to that project, and nothing of it is used here. What stands on the view (monsters, items, the character) is the chosen tile set's own tiles, under that set's terms above.
+* **The isometric view's art is this project's own.** ``scripts/tiles/make-iso.py`` draws all of it: the terrain in its three styles, and the letters on its counters, which are taken from the DS port's font in ``src/nds``. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais', and nothing of it is used here. This page used to say that sheet came with no more than a permission given to that project. It doesn't: Gervais' own tile library publishes it under Creative Commons Attribution 3.0, like the rest of Gervais' tiles. What stands on the view (monsters, items, the character) is the chosen tile set's own tiles, under that set's terms above.
 
 * The sounds are licenced under the Creative Commons Attribution 4.0 licence.  They were created by Dubtrain <angband@dubtrain.com>. You can find them in Wave format at http://www.dubtrain.com/angband/.
 

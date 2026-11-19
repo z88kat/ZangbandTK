@@ -105,7 +105,9 @@ Per tileset
   byte-identical.
 
   Nomad's and Gervais' get nothing: Nomad's is a modern set with no 2001
-  counterpart, and Gervais' is mapped-only and staying that way.  So the
+  counterpart, and nothing has been taken into Gervais' from the 2001
+  sheets.  (This used to say Gervais' was mapped-only; it has not been since
+  make-services.py added its row on 10 September 2026.)  So the
   figurine and the statues are their letter in those two, which
   `audit-tiles.py` lists as deliberate.
 
@@ -149,7 +151,11 @@ Per tileset
   which says which drawing each terrain uses.  Nothing in it was taken from
   anybody's art.  The letters are the DS port's 5x8 font, read from
   `src/nds/nds-font-5x8.c`.  ZAngbandTk 2.4's isometric sheet, which was David
-  Gervais', is not used: it came with only a permission given to that project.
+  Gervais', is not used.  This used to say it came with only a permission
+  given to that project.  It does not: Gervais' tile library,
+  http://pousse.rapiere.free.fr/tome/tome-tiles.htm, publishes it under
+  Creative Commons Attribution 3.0, in an "AngbandTk" set whose 41 sheets are
+  byte-identical to the archive's copies (checked 15 November 2026).
 
   It is not in list.txt, because it is not a set of tiles for the flat map,
   and it has no Makefile, because only the Tk front end reads it: CMake

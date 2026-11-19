@@ -71,12 +71,12 @@ T	p0 note strong	modification
 T	p0 note	 writes pixels into it.
 T	p0 note	\n
 T	li1 note	•\t
-T	li1 note strong	Gervais’ 32x32 is mapped only
-T	li1 note	 — the image is byte-identical to Angband’s. Thirteen terrain features point at cells Angband never used.
+T	li1 note strong	Gervais’ 32x32 has one row added
+T	li1 note	: four service buildings it had no art for, and the Statue and Figurine Stores’ doors, all drawn by a script. Everything above that row is Angband’s sheet, pixel for pixel, and thirteen terrain features point at cells Angband never used.
 T	li1 note	\n
 T	li1 note	•\t
 T	li1 note strong	Adam Bolt’s, Nomad’s and the original 8x8 are modified
-T	li1 note	: one row of thirty generated terrain tiles is appended to the bottom of each. Nothing already in those sheets is touched — every original cell keeps its coordinates and every original pixel its value — and the colours are sampled from the sheet being extended, so the additions are in that tileset’s own palette.
+T	li1 note	: two rows of generated tiles, terrain and service buildings, are appended to the bottom of each. Adam Bolt’s also gains three rows of the tiles Bolt drew for Zangband (sixty-five uniques, the magical figurine and ten statues), and the 8x8 gains one row of Zangband’s own figurine and statues. Nothing already in those sheets is touched: every original cell keeps its coordinates and every original pixel its value. The generated tiles take their colours from the sheet being extended, so they are in that tileset’s own palette.
 T	li1 note	\n
 T	li1 note	•\t
 T	li1 note strong	All four gain ``.prf`` files
@@ -85,20 +85,24 @@ T	li1 note	\n
 T	p0 note code	lib/tiles/README
 T	p0 note	 records this per tileset, and 
 T	p0 note code	scripts/tiles/make-terrain.py
-T	p0 note	 is the script that does it.
+T	p0 note	, 
+T	p0 note code	make-services.py
+T	p0 note	 and 
+T	p0 note code	import-zangband-tiles.py
+T	p0 note	 are the scripts that do it.
 T	p0 note	\n
 T	li1	•\t
 T	li1	Adam Bolt’s (16x16) graphics may be redistributed and used for any purpose, with or without modification. 
 T	li1 strong	Modified here
-T	li1	, which those terms allow in terms.
+T	li1	, which those terms allow.
 T	li1	\n
 T	li1	•\t
 T	li1	David Gervais’ (32x32) graphics may be redistributed, modified, and used only under the terms of the 
 L	li1 link	2	http://creativecommons.org/licenses/by/3.0/	Creative Commons Attribution 3.0
 M	creative-commons-attribution-3-0
 T	li1	 licence. 
-T	li1 strong	Not modified here
-T	li1	: what this game adds is a mapping onto cells the sheet already held.
+T	li1 strong	Modified here
+T	li1	, which those terms allow: one row of generated buildings is appended below Angband’s sheet, which is otherwise unchanged, as described above.
 T	li1	\n
 T	li1	•\t
 T	li1 strong	Shockbolt’s (64x64) graphics are not distributed with this game.
@@ -133,7 +137,7 @@ T	li1
 T	li1 code	scripts/tiles/make-iso.py
 T	li1	 draws all of it: the terrain in its three styles, and the letters on its counters, which are taken from the DS port’s font in 
 T	li1 code	src/nds
-T	li1	. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais’ that came with no more than a permission given to that project, and nothing of it is used here. What stands on the view (monsters, items, the character) is the chosen tile set’s own tiles, under that set’s terms above.
+T	li1	. So it stands on the project licence like the rest of the tree. ZAngbandTk 2.4 had an isometric view as well, drawn from an isometric sheet of David Gervais’, and nothing of it is used here. This page used to say that sheet came with no more than a permission given to that project. It doesn’t: Gervais’ own tile library publishes it under Creative Commons Attribution 3.0, like the rest of Gervais’ tiles. What stands on the view (monsters, items, the character) is the chosen tile set’s own tiles, under that set’s terms above.
 T	li1	\n
 T	li1	•\t
 T	li1	The sounds are licenced under the Creative Commons Attribution 4.0 licence. They were created by Dubtrain <

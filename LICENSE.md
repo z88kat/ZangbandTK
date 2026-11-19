@@ -47,25 +47,26 @@ was a *mapping* (a lookup table pointing at art already in the sheet) or a
 
 | Tileset | Image | What we added |
 |---|---|---|
-| Gervais 32×32 | **untouched** | a mapping only, onto cells Angband never used |
-| Adam Bolt 16×16 | **modified** | one appended row of thirty generated terrain tiles |
-| Nomad 16×16 | **modified** | the same |
-| Original 8×8 | **modified** | the same |
+| Gervais 32×32 | **modified** | one appended row of generated buildings (four services and two shop doors), and a mapping onto cells Angband never used |
+| Adam Bolt 16×16 | **modified** | two appended rows of generated terrain and service buildings, and three rows of the tiles Adam Bolt drew for Zangband |
+| Nomad 16×16 | **modified** | the two generated rows |
+| Original 8×8 | **modified** | the two generated rows, and one row of Zangband's own figurine and statues |
 
-Nothing already in a sheet is altered: the generated row goes below the existing
+Nothing already in a sheet is altered: every addition goes below the existing
 art, so every original cell keeps its coordinates and every original pixel its
-value. The colours are sampled from the sheet being extended, so the additions
-are in that tileset's own palette. All four also gain `.prf` files, which are
-mappings and change no art.
+value, which has been checked against each sheet's last Angband version. The
+generated tiles take their colours from the sheet they extend, so they are in
+that tileset's own palette. All four also gain `.prf` files, which are mappings
+and change no art.
 
 - **Adam Bolt's 16×16 tiles** may be redistributed and used for any purpose,
-  with or without modification. Modified here, which those terms allow in
-  terms.
+  with or without modification. Modified here, which those terms allow.
 - **David Gervais' 32×32 tiles** may be redistributed, modified and used only
   under the terms of the
   [Creative Commons Attribution 3.0](http://creativecommons.org/licenses/by/3.0/)
-  licence. **Not modified here** — `32x32.png` is byte-identical to Angband's.
-  What this game adds is a mapping onto cells the sheet already contained.
+  licence. **Modified here**, which those terms allow: one row of generated
+  buildings is appended below Angband's sheet, which is otherwise unchanged,
+  and [lib/tiles/README](lib/tiles/README) says what is in it.
 - **Shockbolt's 64×64 tiles are not distributed with this game**, and were
   removed in 3.95.0. Angband ships them; we may not. The licence grants use
   "with in-development and released versions of Angband" and withholds it for
