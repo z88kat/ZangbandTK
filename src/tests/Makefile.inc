@@ -48,6 +48,21 @@ depgen:
  ../cave.h ../list-square-flags.h ../list-terrain-flags.h ../cmd-core.h \
  ../object.h ../ui-keymap.h ../ui-event.h ../ui-game.h ../game-event.h \
  ../ui-input.h ../ui-event.h ../ui-term.h ../z-virt.h
+./command/wizard.o: command/wizard.c unit-test.h unit-test-types.h ../z-util.h \
+ ../h-basic.h test-utils.h ../z-type.h ../cave.h ../z-type.h \
+ ../z-bitflag.h ../z-form.h ../z-virt.h ../list-square-flags.h \
+ ../list-terrain-flags.h ../list-terrain.h ../cmd-core.h ../object.h \
+ ../z-quark.h ../z-dice.h ../z-rand.h ../z-expression.h \
+ ../obj-properties.h ../z-file.h ../list-tvals.h ../list-object-flags.h \
+ ../list-kind-flags.h ../list-stats.h ../list-object-modifiers.h \
+ ../list-elements.h ../list-origins.h ../cmds.h ../cave.h ../cmd-core.h \
+ ../game-world.h ../generate.h ../monster.h ../target.h \
+ ../mon-predicate.h ../mon-timed.h ../list-mon-timed.h ../mon-blows.h \
+ ../player.h ../guid.h ../option.h ../list-options.h \
+ ../list-player-flags.h ../list-mon-temp-flags.h ../list-mon-race-flags.h \
+ ../list-mon-spells.h ../list-room-flags.h ../init.h ../z-util.h \
+ ../datafile.h ../parser.h ../list-parser-errors.h ../mon-make.h \
+ ../player-birth.h
 ./effects/chain.o: effects/chain.c unit-test.h unit-test-types.h ../z-util.h \
  ../h-basic.h test-utils.h ../cave.h ../z-type.h ../z-bitflag.h \
  ../z-form.h ../z-virt.h ../list-square-flags.h ../list-terrain-flags.h \

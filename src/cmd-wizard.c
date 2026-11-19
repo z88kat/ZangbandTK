@@ -2008,6 +2008,16 @@ void do_cmd_wiz_push_object(struct command *cmd)
 	if (cmd_get_point(cmd, "point", &grid) != CMD_OK) {
 		return;
 	}
+
+	/*
+	 * The point comes from an argument or a front end's hook, so may be
+	 * anywhere, and off the level push_object() aborts the game.
+	 */
+	if (!square_in_bounds(cave, grid)) {
+		msg("The square you are aiming for is outside the level.");
+		return;
+	}
+
 	push_object(grid);
 }
 
@@ -2820,6 +2830,17 @@ void do_cmd_wiz_teleport_to(struct command *cmd)
 	struct loc grid;
 
 	if (cmd_get_point(cmd, "point", &grid) != CMD_OK) {
+		return;
+	}
+
+	/*
+	 * The point comes from an argument or a front end's hook, so may be
+	 * anywhere.  Off the level, square_ispassable() aborts the game.  On its
+	 * edge, which the look command will not target, TELEPORT_TO looks for
+	 * ever for a landing inside the edge if the square there is passable.
+	 */
+	if (!square_in_bounds_fully(cave, grid)) {
+		msg("The square you are aiming for is on or past the edge of the level.");
 		return;
 	}
 

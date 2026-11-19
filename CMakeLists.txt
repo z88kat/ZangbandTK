@@ -943,6 +943,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     cave/scatter.c
     cave/wild.c
     command/lookup.c
+    command/wizard.c
     effects/chain.c
     effects/destruction.c
     effects/swap.c
