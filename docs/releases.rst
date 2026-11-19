@@ -107,6 +107,31 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+David Gervais' 2001 tiles — 19 November 2026
+--------------------------------------------
+
+- **A new tile set, graphics mode 10.** The sheets David Gervais drew in 2001
+  for AngbandTk and ZAngbandTk, the ones the original Tk front end drew its
+  towns and ground with: grass, sand and water, brick walls and round doors,
+  and white-stone shopfronts with an emblem on every shop and service the game
+  has. Monsters, objects and spells are the same pictures as in David Gervais'
+  set, mode 3, which is unchanged.
+- **In ZangbandTK the ground joins up.** Grass and sand meet water in a bank,
+  roads join, and the town's buildings have red tiled roofs, each worked out
+  from the squares around it. Only what you've seen counts, so a bank never
+  gives away a pond you haven't found. The original only ever laid these
+  pieces by hand, in its vault editor. ZangbandTK's roads are two squares wide
+  and the 2001 road is one, so each road square is put together from quarters
+  of the 2001 pieces.
+- Zangband.app and the other front ends draw each square on its own. The set
+  isn't in the browser version.
+- The art is under Creative Commons Attribution 3.0, like the Gervais set
+  Angband ships; :doc:`copying` says what was changed.
+- **Fixed:** the debug command that teleports to a location aborted the game
+  when given a square off the level, which a script can do and the look
+  command can't. It now refuses the square and says why, and so does the
+  debug command that pushes objects aside.
+
 Neon is redrawn — 18 November 2026
 ----------------------------------
 

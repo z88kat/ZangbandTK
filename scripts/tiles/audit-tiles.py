@@ -52,8 +52,8 @@ TRAP_SKIP = ('no trap', 'door lock')
 # own.  These two have nothing like them, so they show the ` until someone
 # draws one.
 OBJECT_SKIP = {
-    'figurine': ('nomad', 'gervais'),
-    'statue': ('nomad', 'gervais'),
+    'figurine': ('nomad', 'gervais', 'gervais-2001'),
+    'statue': ('nomad', 'gervais', 'gervais-2001'),
 }
 
 # Flavoured kinds are covered by flavor: lines rather than object: lines,

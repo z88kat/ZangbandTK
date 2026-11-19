@@ -98,4 +98,16 @@ void tcl_iso_flush(term_data *map);
 void tcl_iso_touched(const term_data *map, int x, int y);
 void tcl_iso_shown(const term_data *map, int x, int y, int w, int h);
 
+/*
+ * tcl/edges.c: terrain drawn from its neighbours, for a tile set with an
+ * edges.txt.  tcl_map_terrain is main-tcl.c's, lent to it: the terrain tile
+ * the map shows at a grid, if the grid is on screen and drawn as a tile.
+ */
+void tcl_edges_load(const char *dir);
+bool tcl_edges_on(void);
+bool tcl_edges_terrain(struct loc grid, int *ta, int *tc);
+void tcl_edges_neighbours(term_data *t, struct loc grid,
+		void (*redraw)(term_data *t, struct loc grid));
+bool tcl_map_terrain(term_data *t, struct loc grid, int *ta, int *tc);
+
 #endif /* INCLUDED_TCL_MAIN_TCL_H */

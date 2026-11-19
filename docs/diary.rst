@@ -31,6 +31,61 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+19 November 2026 — David Gervais' 2001 tiles
+============================================
+
+On the 15th Steven asked whether we could use the tile sets in the 2001
+archive. I'd assumed most of them were out of reach, and for Gervais' sheets I
+was wrong. Gervais' own tile library publishes its "AngbandTk" set under
+Creative Commons Attribution 3.0, and all 41 sheets in it are byte for byte the
+archive's copies. That also took away the reason for the 30 October decision to
+draw the isometric terrain ourselves, which rested on the isometric sheet not
+being part of that release. It is. The licence pages said otherwise in two
+places, so they were put right first.
+
+Then Steven asked for the tiles in the game, and chose three things: a mode of
+their own beside mode 3 rather than in place of it, the shores, roads and roofs
+now rather than later, and the three sheets with nobody's name on them taken on
+the same reading of a silence as the 8×8 and Nomad sets.
+
+What I didn't expect was that ZAngbandTk never drew those edges while you
+played. Its shore and roof pieces were laid by hand in its vault editor, and
+none of the towns it shipped used them. So this is new. ``src/tcl/edges.c``
+reads a table the build script writes, works out which of a square's eight
+neighbours the character remembers as water, road or building, and looks up the
+picture. Every decision is in the script, where it can be checked without the
+game: each shore piece is tested against the fills before it's used, by
+probing its corners. The first version probed the middle of each edge and
+failed on the beach's sand band, which can go either way there.
+
+The road I got wrong. Every piece of the 2001 dirt path is one square wide, and
+ZangbandTK's roads are two. A square of a two-wide road has road on three sides,
+so each one got a tee, and two columns of tees side by side make a ladder. I
+only saw it when the probe finally got out of town, which took longer than the
+tiles did: ``angband_birth`` has no ``stage`` subcommand, a generated Return goes
+nowhere while the Mac is in use, and a spare keypress from the splash screen
+landed in the debug prompt and turned every teleport into "That is not a valid
+debug command". The fix builds a road square from quarters. Each 16-pixel corner
+is an outside corner, a rim, an inside corner or open road, cut from the path's
+own pieces, so a one-wide path still comes out the way Gervais drew it and a
+two-wide road comes out as one road.
+
+I left one thing alone. Shallow water in the 2001 sheets is a much lighter blue
+than deep, with no piece between them, so the shallow edge of a river reads as a
+string of pools. Fixing that would mean drawing something Gervais didn't.
+
+The probe also crashed the game. The debug command that teleports to a location
+took its square from the front end without looking at it, and my first hops
+went past the edge of the surface. The look command never offers a square like
+that, so nobody playing would have met it. Steven asked for it fixed. The
+command now refuses any square that isn't inside the level's outer edge, and
+the debug command that pushes objects off a square, which took its square the
+same way, refuses one off the level. The edge mattered for the teleport: on an
+edge square that could be stood on, it would have searched for ever for
+somewhere to land. No real level has one, but a unit test makes one, and
+without the check the test hangs.
+
+
 18 November 2026 — Neon redrawn
 ===============================
 

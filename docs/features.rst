@@ -356,6 +356,11 @@ rebuilt on Tcl/Tk 9 and not ported:
   the tile set, the fonts, the size of every window's text, and palettes
   including high contrast and colour-blind, with a colour-blind version of the
   Neon tiles to go with it.
+- The original's tiles: the ones David Gervais drew for it in 2001, as a tile
+  set of their own. Grass runs down to the water in a beach, roads join up and
+  the town's buildings have roofs, all worked out from the squares around
+  them, where the original could only lay those pieces by hand in its vault
+  editor.
 - Sound, and your own music. There are Angband 4.2's sounds, with 38 more for
   events the original sounded and 4.2 didn't, and music from a folder of your
   own, shuffled. Both are off until you turn them on.

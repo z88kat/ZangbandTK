@@ -142,6 +142,59 @@ Per tileset
   tileset.  The sheet and the prf are build output -- edit the source, the
   manifest or the recipe there and run the script again.
 
+**gervais-2001 (32x32) -- David Gervais' 2001 sheets, modified.**
+
+  The sheets Gervais drew for AngbandTk and ZAngbandTk in 2001, the ones the
+  original Tk front end drew the town and the ground with.  Seventeen of
+  Gervais' sheets, and the three described at the end of this entry, were
+  decoded out of archive/Tk's GIFs into `scripts/tiles/gervais2001/` by
+  `scripts/tiles/build-gervais2001.py --import`.  Those PNGs are committed,
+  and the script builds `lib/tiles/gervais-2001` from them on every run
+  after.
+
+  `32x32.png` is Angband's Gervais sheet as `lib/tiles/gervais` has it,
+  generated row included, with rows of 2001 art below.  The monsters, objects
+  and spells were already the same pictures in both, so `graf-2001.prf` loads
+  `graf-dvg.prf` unchanged and only says where the floor, the walls, the
+  doors, the stairs, the ground and the shops differ.  Mode 3 is not touched.
+
+  What was done to the 2001 art:
+
+  * Each picture goes in three times: as drawn, then at 0.75 and 0.5 of its
+    brightness, for squares the character sees, remembers, and remembers
+    unlit.  Those are Gervais' own factors, measured on the floor and walls
+    drawn in all three.
+  * White, the 2001 sheets' transparent colour, becomes transparent.
+  * The roof is the red tiled roof from `dg_edging2`, laid over the town
+    wall.  Gervais drew its eight edges and corners; the middle squares are
+    made from the halves of two opposite edges, which is where its ridge
+    comes from.
+  * The road is the dirt path from `dg_edging3`, laid on the 2001 grass.  The
+    path is one square wide and ZangbandTK's roads are two, so each road
+    square is put together from quarters of the path's pieces: an outside
+    corner, a rim, an inside corner, or open road, which is the path's
+    surface repeated.
+  * Nothing was drawn.  Every pixel is Gervais', cut up, dimmed or
+    rearranged.
+
+  `edges.txt` is for the Tk front end, which draws grass meeting water,
+  sand meeting water, roads and roofs from the squares around them.  The
+  other front ends draw each square's own picture, from the prf.  ZAngbandTk
+  never did this during play: its shore and roof pieces were laid by hand in
+  its vault editor, and none of the towns it shipped used them.
+
+  Two shops had no emblem in the 2001 town sheets and were given the nearest
+  one: the Statue Store a carved arm and the Figurine Store a crown.
+
+  Three more sheets came out of the same archive with nobody's name on them:
+  `image/town32.gif` (a town building's roofs and front), `image/feature32.gif`
+  (mineral veins) and ZAngbandTk's `pattern16.gif`.  They are in neither
+  Gervais' sheets nor Adam Bolt's, so they are probably Tim Baker's own, but
+  that is a reading of a silence (see below).  They are kept as source,
+  `roofs.png`, `veins.png` and `pattern16.png`, and nothing draws them yet:
+  ZangbandTK has no Pattern, the Adam Bolt modes already draw the veins, and
+  the town front is one building of one fixed shape.
+
 
 **iso -- ours, and not a tileset.**
 
@@ -177,6 +230,15 @@ May we?
     modification with attribution and asks that changes be indicated.  The one
     modification is the generated row described above, and this file is where
     it is indicated.
+  * **David Gervais' 2001 sheets** are under the same licence.  Gervais' own
+    tile library, http://pousse.rapiere.free.fr/tome/tome-tiles.htm,
+    publishes them in its "AngbandTk" set, whose 41 sheets are byte-identical
+    to the archive's copies (checked 15 November 2026).  What was changed is
+    listed under gervais-2001 above.  The three sheets with no name on them
+    stand where the 8x8 and Nomad sets do: on the project licence, by a
+    reading of a silence, recorded as one.  If whoever drew them says
+    otherwise, they are three PNGs in scripts/tiles/gervais2001 that nothing
+    reads.
   * **The original 8x8 and Nomad's** carry no licence statement, here or in
     Angband's own `copying.rst`.  They are not listed among the exceptions in
     LICENSE.md, so they stand on the project licence like the rest of the tree.
@@ -205,4 +267,6 @@ are buildings and openings rather than ground textures -- shapes, not rules --
 and a borrowed picture for one of them would be actively wrong rather than
 merely absent.  They render as ASCII until somebody draws them.  So does the
 magical figurine and the statues in the Nomad and Gervais sets, for the same
-reason.
+reason.  The 2001 set has all four buildings, from ZAngbandTk's town sheets,
+but not the figurine or the statues: it takes its objects from Angband's
+Gervais sheet.

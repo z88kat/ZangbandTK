@@ -105,9 +105,22 @@ T	li1 strong	Modified here
 T	li1	, which those terms allow: one row of generated buildings is appended below Angband’s sheet, which is otherwise unchanged, as described above.
 T	li1	\n
 T	li1	•\t
+T	li1 strong	David Gervais’ 2001 tiles
+T	li1	 (32x32), the sheets Gervais drew for AngbandTk and ZAngbandTk, are under the same 
+L	li1 link	3	http://creativecommons.org/licenses/by/3.0/	Creative Commons Attribution 3.0
+M	id1
+T	li1	 licence: Gervais’ own tile library publishes them, byte for byte the copies this project took from the 2001 archive. 
+T	li1 strong	Modified here
+T	li1	: 
+T	li1 code	scripts/tiles/build-gervais2001.py
+T	li1	 cuts them into cells, dims each for the game’s lighting and lays them out below Angband’s Gervais sheet as a tile set of their own, and assembles roofs and roads from the 2001 pieces. 
+T	li1 code	lib/tiles/README
+T	li1	 lists every change. Three more sheets from the same archive carry nobody’s name (a town building, mineral veins and the Pattern). They stand on the project licence by the same reading of a silence as the original and Nomad’s tiles below, and are kept as source; nothing in the game draws them.
+T	li1	\n
+T	li1	•\t
 T	li1 strong	Shockbolt’s (64x64) graphics are not distributed with this game.
 T	li1	 Angband ships them; ZangbandTK may not. The licence grants use “with in-development and released versions of Angband” and expressly withholds it for “other games or projects” — and this is another project: separately named, separately released, with a savefile format of its own. The author offers permission on request and we have not asked, so the tileset was removed in 3.95.0 rather than shipped on an assumption. The terms are at 
-L	li1 link	3	https://angband.readthedocs.io/en/latest/copying.html	Angband’s copying page
+L	li1 link	4	https://angband.readthedocs.io/en/latest/copying.html	Angband’s copying page
 M	angband-s-copying-page
 T	li1	.
 T	li1	\n
@@ -141,9 +154,9 @@ T	li1	. So it stands on the project licence like the rest of the tree. ZAngbandT
 T	li1	\n
 T	li1	•\t
 T	li1	The sounds are licenced under the Creative Commons Attribution 4.0 licence. They were created by Dubtrain <
-L	li1 link	4	mailto:angband@dubtrain.com	angband@dubtrain.com
+L	li1 link	5	mailto:angband@dubtrain.com	angband@dubtrain.com
 T	li1	>. You can find them in Wave format at 
-L	li1 link	5	http://www.dubtrain.com/angband/	http://www.dubtrain.com/angband/
+L	li1 link	6	http://www.dubtrain.com/angband/	http://www.dubtrain.com/angband/
 T	li1	.
 T	li1	\n
 T	li1	•\t
@@ -154,7 +167,7 @@ T	li1 strong	ZangbandTK’s own fonts
 T	li1	, in 
 T	li1 code	lib/tcl/fonts
 T	li1	, are other people’s work, unmodified, under the 
-L	li1 link	6	https://openfontlicense.org/	SIL Open Font License 1.1
+L	li1 link	7	https://openfontlicense.org/	SIL Open Font License 1.1
 M	sil-open-font-license-1-1
 T	li1	: JetBrains Mono (the JetBrains Mono Project Authors), IBM Plex Mono (IBM), Source Code Pro (Adobe), Space Mono (the Space Mono Project Authors) and Red Hat Mono (the Red Hat Project Authors). Each font’s licence and copyright are beside it in that folder and in 
 T	li1 code	THIRD-PARTY-LICENSES.txt

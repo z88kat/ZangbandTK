@@ -104,6 +104,14 @@ jobs:
           python3 scripts/tiles/build-1982.py --check >/dev/null
           git diff --exit-code -- lib/tiles/1982/graf-82.prf
 
+      # And the Gervais 2001 set, built from David Gervais' 2001 sheets and
+      # from lib/tiles/gervais, whose sheet and prefs it carries.  --check
+      # builds in memory and compares pixels, not PNG bytes, so a runner's
+      # zlib cannot make it flake; it also fails when lib/tiles/gervais has
+      # changed and this set was not built again.
+      - name: The Gervais 2001 set is still what its generator produces
+        run: python3 scripts/tiles/build-gervais2001.py --check
+
   tests:
     name: Tests
     runs-on: ubuntu-latest

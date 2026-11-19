@@ -59,10 +59,12 @@ Tiles
 =====
 
 The *Tiles* menu at the top right changes the tileset straight away, and the
-browser remembers your choice. Five of the six tilesets are there: the original
-8×8 tiles, Adam Bolt's, David Gervais', Neon with its colour-blind version, and
-the 1982 set. You start with Neon. Nomad's set is left out because its tiles
-are twice as tall as they are wide, and the page draws every tile square.
+browser remembers your choice. Five of the seven tilesets are there: the
+original 8×8 tiles, Adam Bolt's, David Gervais', Neon with its colour-blind
+version, and the 1982 set. You start with Neon. Nomad's set is left out because
+its tiles are twice as tall as they are wide, and the page draws every tile
+square. David Gervais' 2001 set is left out too. Its shores, roads and roofs
+are drawn only in ZangbandTK's own windows, and its sheet alone is a megabyte.
 
 What it costs to start
 ======================

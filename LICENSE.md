@@ -67,6 +67,20 @@ and change no art.
   licence. **Modified here**, which those terms allow: one row of generated
   buildings is appended below Angband's sheet, which is otherwise unchanged,
   and [lib/tiles/README](lib/tiles/README) says what is in it.
+- **David Gervais' 2001 tiles**, the sheets Gervais drew for AngbandTk and
+  ZAngbandTk, are under the same
+  [Creative Commons Attribution 3.0](http://creativecommons.org/licenses/by/3.0/)
+  licence: Gervais' own tile library publishes them, byte for byte the copies
+  this project took from the 2001 archive. **Modified here**: cut into cells,
+  dimmed for the game's lighting, and laid out below Angband's Gervais sheet
+  as a tileset of their own, with roofs and roads assembled from the 2001
+  pieces. [lib/tiles/README](lib/tiles/README) lists every change.
+
+  Three more sheets from the same archive carry nobody's name: a town
+  building (`town32.gif`), mineral veins (`feature32.gif`) and the Pattern
+  (`pattern16.gif`). They stand on the project licence by the same reading of
+  a silence as the 8×8 and Nomad sets below, and are written down as such.
+  They are kept as source, and nothing in the game draws them.
 - **Shockbolt's 64×64 tiles are not distributed with this game**, and were
   removed in 3.95.0. Angband ships them; we may not. The licence grants use
   "with in-development and released versions of Angband" and withholds it for

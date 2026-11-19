@@ -1100,6 +1100,125 @@ void tcl_text_items_delete(const term_data *t)
 	Tcl_DecrRefCount(del);
 }
 
+/*
+ * The grid the map pane shows at cell `x`, `y`, when that is the first cell
+ * of a tile there: cell_is_seen()'s arithmetic, for the map's own term.
+ */
+static bool map_cell_grid(const term_data *t, int x, int y, struct loc *grid)
+{
+	if (!player || !character_dungeon || !cave) return false;
+	if (td_count < 1 || t != &td[0]) return false;
+	if (y < ROW_MAP || x < COL_MAP) return false;
+	if ((y - ROW_MAP) % tile_height || (x - COL_MAP) % tile_width)
+		return false;
+
+	grid->y = (y - ROW_MAP) / tile_height + t->t.offset_y;
+	grid->x = (x - COL_MAP) / tile_width + t->t.offset_x;
+	return square_in_bounds(cave, *grid);
+}
+
+/*
+ * The other way: the first cell of the tile showing `grid`, if the map pane
+ * has it on screen as a tile -- not under a menu, a shop or a prompt that
+ * has drawn its text over the map.
+ */
+static bool map_grid_cell(const term_data *t, struct loc grid, int *x, int *y)
+{
+	const term_win *old = t->t.old;
+
+	if (td_count < 1 || t != &td[0] || !old) return false;
+	*x = COL_MAP + (grid.x - t->t.offset_x) * tile_width;
+	*y = ROW_MAP + (grid.y - t->t.offset_y) * tile_height;
+	if (*x < COL_MAP || *y < ROW_MAP) return false;
+	if (*x + tile_width > t->t.wid || *y + tile_height > t->t.hgt)
+		return false;
+	return (old->a[*y][*x] & 0x80) && old->a[*y][*x] != 255;
+}
+
+bool tcl_map_terrain(term_data *t, struct loc grid, int *ta, int *tc)
+{
+	int x, y;
+
+	if (!map_grid_cell(t, grid, &x, &y)) return false;
+	*ta = t->t.old->ta[y][x];
+	*tc = (int)t->t.old->tc[y][x];
+	return (*ta & 0x80) != 0;
+}
+
+static void draw_tile_cell(term_data *t, int x, int y, int a, int c,
+		bool has_terrain, int ta, int tc, bool neighbours);
+
+/* Draw `grid` again from what the term last showed there: tcl/edges.c. */
+static void edges_redraw(term_data *t, struct loc grid)
+{
+	const term_win *old = t->t.old;
+	int x, y;
+
+	if (!map_grid_cell(t, grid, &x, &y)) return;
+	draw_tile_cell(t, x, y, old->a[y][x], (int)old->c[y][x], true,
+			old->ta[y][x], (int)old->tc[y][x], false);
+}
+
+/*
+ * One tile at cell `x`, `y`: the thing in (a, c), standing on the terrain in
+ * (ta, tc) when has_terrain says the term gave one.  `neighbours` says the
+ * game drew this square, rather than edges_redraw(), and so the squares
+ * around it are looked at again; see tcl/edges.c.
+ */
+static void draw_tile_cell(term_data *t, int x, int y, int a, int c,
+		bool has_terrain, int ta, int tc, bool neighbours)
+{
+	struct loc grid;
+	bool edges = has_terrain && tcl_edges_on()
+		&& map_cell_grid(t, x, y, &grid);
+
+	/*
+	 * The terrain tile goes down first and the thing standing on it second,
+	 * which is what makes a monster on grass look like a monster on grass.
+	 * Transparency comes from the sheet's own alpha.  A set with an
+	 * edges.txt may draw the terrain from its neighbours instead.
+	 */
+	if (has_terrain && (ta != a || tc != c)) {
+		/*
+		 * Something is standing on the terrain.  The terrain tile is the
+		 * set's own choice for this lighting; the thing on top has only one
+		 * tile, so it is dimmed here when the grid is remembered rather than
+		 * seen.  Without this a detected monster two rooms away, or an object
+		 * left behind in the dark, is drawn exactly as brightly as what is in
+		 * front of you.
+		 */
+		if (edges) tcl_edges_terrain(grid, &ta, &tc);
+		blit_tile(t, x, y, ta, tc, TK_PHOTO_COMPOSITE_SET, false);
+		blit_tile(t, x, y, a, c, TK_PHOTO_COMPOSITE_OVERLAY,
+				!cell_is_seen(t, x, y));
+	} else {
+		if (edges) tcl_edges_terrain(grid, &a, &c);
+		blit_tile(t, x, y, a, c, TK_PHOTO_COMPOSITE_SET, false);
+	}
+
+	/*
+	 * Blank the text of every cell the tile covers, not just the one it was
+	 * queued at.
+	 *
+	 * A tile spanning tile_width cells is queued once, and the term marks the
+	 * cells after it with attribute 255 and then skips them -- "2nd byte of
+	 * bigtile" in ui-term.c, which `continue`s without calling any hook.  So
+	 * nothing ever tells us to clear those cells, and a character left there
+	 * by a full-screen display stays put with the tile drawn behind it.  That
+	 * is what made every other column of a store or a character sheet survive
+	 * being closed.
+	 */
+	{
+		int dx, dy;
+
+		for (dy = 0; dy < tile_height; dy++)
+			for (dx = 0; dx < tile_width; dx++)
+				cell_set(t, x + dx, y + dy, " ", COLOUR_WHITE);
+	}
+
+	if (edges && neighbours) tcl_edges_neighbours(t, grid, edges_redraw);
+}
+
 static errr Term_pict_tcl(int x, int y, int n, const int *ap,
 		const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
@@ -1118,48 +1237,8 @@ static errr Term_pict_tcl(int x, int y, int n, const int *ap,
 			continue;
 		}
 
-		/*
-		 * The terrain tile goes down first and the thing standing on it
-		 * second, which is what makes a monster on grass look like a monster
-		 * on grass.  Transparency comes from the sheet's own alpha.
-		 */
-		if (tap && (tap[i] != ap[i] || tcp[i] != cp[i])) {
-			/*
-			 * Something is standing on the terrain.  The terrain tile is the
-			 * set's own choice for this lighting; the thing on top has only
-			 * one tile, so it is dimmed here when the grid is remembered
-			 * rather than seen.  Without this a detected monster two rooms
-			 * away, or an object left behind in the dark, is drawn exactly as
-			 * brightly as what is in front of you.
-			 */
-			blit_tile(td, x + i, y, tap[i], tcp[i], TK_PHOTO_COMPOSITE_SET,
-					false);
-			blit_tile(td, x + i, y, ap[i], cp[i], TK_PHOTO_COMPOSITE_OVERLAY,
-					!cell_is_seen(td, x + i, y));
-		} else {
-			blit_tile(td, x + i, y, ap[i], cp[i], TK_PHOTO_COMPOSITE_SET,
-					false);
-		}
-
-		/*
-		 * Blank the text of every cell the tile covers, not just the one it
-		 * was queued at.
-		 *
-		 * A tile spanning tile_width cells is queued once, and the term marks
-		 * the cells after it with attribute 255 and then skips them --
-		 * "2nd byte of bigtile" in ui-term.c, which `continue`s without
-		 * calling any hook.  So nothing ever tells us to clear those cells,
-		 * and a character left there by a full-screen display stays put with
-		 * the tile drawn behind it.  That is what made every other column of
-		 * a store or a character sheet survive being closed.
-		 */
-		{
-			int dx, dy;
-
-			for (dy = 0; dy < tile_height; dy++)
-				for (dx = 0; dx < tile_width; dx++)
-					cell_set(td, x + i + dx, y + dy, " ", COLOUR_WHITE);
-		}
+		draw_tile_cell(td, x + i, y, ap[i], (int)cp[i], tap != NULL,
+				tap ? tap[i] : 0, tap ? (int)tcp[i] : 0, true);
 	}
 
 	return 0;
@@ -10753,6 +10832,9 @@ static bool graphics_load(graphics_mode *mode)
 	/* The isometric view may have to give way to the new set. */
 	tcl_iso_tiles_changed(mode ? mode->grafID : GRAPHICS_NONE);
 
+	/* A set may draw some terrain from its neighbours: tcl/edges.c. */
+	tcl_edges_load(NULL);
+
 	if (!mode || mode->grafID == GRAPHICS_NONE) {
 		current_graphics_mode = get_graphics_mode(GRAPHICS_NONE);
 		use_graphics = GRAPHICS_NONE;
@@ -10774,6 +10856,7 @@ static bool graphics_load(graphics_mode *mode)
 
 	current_graphics_mode = mode;
 	use_graphics = mode->grafID;
+	tcl_edges_load(mode->path);
 
 	/*
 	 * Two cells across, one down, whatever the set -- times the tile scale.

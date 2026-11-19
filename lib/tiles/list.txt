@@ -105,3 +105,16 @@ directory:1982
 size:32:32:32x32.png
 pref:graf-82.prf
 extra:1:0:0
+
+# David Gervais' art as ZAngbandTk 2.4 drew it in 2001: Angband's Gervais
+# sheet, with the 2001 ground, walls, doors and white-stone shopfronts below
+# it, made by scripts/tiles/build-gervais2001.py with the prefs.  Monsters
+# and objects are the same pictures as mode 3's, drawn on nothing and laid on
+# the terrain, hence the alpha blending.  The Tk front end also reads
+# edges.txt beside it, and draws shorelines, joined-up roads and the town's
+# roofs from each square's neighbours.
+name:10:David Gervais' 2001 tiles
+directory:gervais-2001
+size:32:32:32x32.png
+pref:graf-2001.prf
+extra:1:0:0

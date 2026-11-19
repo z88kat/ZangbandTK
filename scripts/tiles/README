@@ -9,6 +9,10 @@ Tiles for the things Angband does not have
     build-neon.py               build the Neon set from its source atlas,
                                 and cut that atlas from the brief's sheets
     build-1982.py               build the 1982 set the same way
+    build-gervais2001.py        build David Gervais' 2001 set from the
+                                2001 sheets and lib/tiles/gervais, and the
+                                edges.txt the Tk front end draws shores,
+                                roads and roofs from
     neon-colourblind.py         what colour blindness costs Neon, and the
                                 search that found its colour-blind colours
     import-zangband-tiles.py    bring Adam Bolt's Zangband uniques into his
@@ -20,8 +24,12 @@ matters -- is anything in the game still without a tile -- and it exits
 non-zero if the answer is yes.  The things left as letters on purpose are
 uniques, two traps that are not pictures, and the objects its OBJECT_SKIP
 names for the sets with no picture of them: so far, the magical figurine and
-the ten statues in the Nomad and Gervais sets.  The other scripts each check what they wrote,
-which is a different and smaller claim.
+the ten statues in the Nomad and both Gervais sets.  The other scripts each
+check what they wrote, which is a different and smaller claim.
+
+build-gervais2001.py carries a copy of lib/tiles/gervais -- its sheet and its
+prefs -- so run it again after anything that changes that set: make-services,
+borrow-tiles, a new Angband sheet.  Its --check fails until you do.
 
 Where the gaps come from
 ------------------------
@@ -146,8 +154,9 @@ What runs these
                            import-zangband-tiles --check
     linux.yaml, Tiles job  the same five, plus regenerating the Neon and
                            1982 sets and diffing graf-neo.prf and graf-82.prf,
-                           which catches generated data that has gone stale
-                           rather than missing
+                           and build-gervais2001 --check, which catch
+                           generated data that has gone stale rather than
+                           missing
 
 No paths filter on the CI job, deliberately.  The way this went red was a
 gamedata change invalidating a tiles artifact -- MON_PSI_DRAIN added to
