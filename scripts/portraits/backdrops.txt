@@ -1,0 +1,18 @@
+# backdrops.txt -- the ground each class's portrait is set on in a window:
+# a gradient from the first colour at the top to the second at the bottom.
+# The tombstone sets the figure on the stone instead.  build-portraits.py
+# draws them onto the portrait sheets' last row.
+Warrior        #4a5466  #1c2230
+Mage           #26305e  #0e1228
+Druid          #3a4a1e  #121a08
+Priest         #6a5426  #2a200c
+Necromancer    #2e1440  #0c0414
+Paladin        #2a3e78  #0c1430
+Rogue          #323a4c  #0e1018
+Ranger         #2e4a26  #0e1a0a
+Blackguard     #4a1414  #140404
+Monk           #5a3a1a  #1a0e04
+Mindcrafter    #30204a  #0c0618
+Chaos-Warrior  #5a2410  #1a0804
+Warrior-Mage   #24405a  #0a1420
+High-Mage      #2a1648  #0a0418

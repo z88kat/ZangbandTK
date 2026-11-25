@@ -1,0 +1,1004 @@
+# accepted.txt -- which take of each portrait won.  One portrait a line:
+#
+#   race  class  sex  sheet  cell  [note]
+#
+# The importer will read this.  A cell's fixes are in its sheet's fixes.txt;
+# the colours every sheet snaps to beyond DB32 are EXTRA in tools/cut.py.
+# Cut any sheet with tools/cut.py FOLDER.  Update this with every sheet, and
+# say in the note when a later take replaces an earlier one.
+
+# --- Human (batch-01 and batch-02, 20 Nov 2026) --------------------------------
+# The pilot's Human Warrior pair is replaced by batch-01's, drawn on the same
+# sheet as the rest of the Humans.
+Human  Warrior      M  batch-01  1
+Human  Warrior      F  batch-01  2
+Human  Mage         M  batch-01  3   royal blue (cut.py EXTRA), else violet
+Human  Mage         F  batch-01  4   royal blue (cut.py EXTRA), else violet
+Human  Druid        M  batch-01  5
+Human  Druid        F  batch-01  6
+Human  Priest       M  batch-01  7   holds a second cross; kept
+Human  Priest       F  batch-01  8   holds a second cross; kept
+Human  Necromancer  M  batch-02  13  replaces batch-01 9 (face lost in the hood, eyes glowing)
+Human  Necromancer  F  batch-02  14  replaces batch-01 10 (eyes glowing); grid lines cleared (fixes.txt)
+Human  Paladin      M  batch-01  11
+Human  Paladin      F  batch-01  12
+Human  Rogue        M  batch-01  13
+Human  Rogue        F  batch-01  14
+Human  Ranger       M  batch-01  15
+Human  Ranger       F  batch-01  16
+Human  Blackguard     M  batch-02  1   neutral near-black armour (cut.py EXTRA), else green
+Human  Blackguard     F  batch-02  2   neutral near-black armour (cut.py EXTRA), else green
+Human  Monk           M  batch-02  3
+Human  Monk           F  batch-02  4
+Human  Mindcrafter    M  batch-02  5
+Human  Mindcrafter    F  batch-02  6
+Human  Chaos-Warrior  M  batch-06  13  replaces batch-02 7 (visored helmet); horn tips touch the top
+Human  Chaos-Warrior  F  batch-06  14  replaces batch-02 8 (visored helmet)
+Human  Warrior-Mage   M  batch-02  9
+Human  Warrior-Mage   F  batch-02  10
+Human  High-Mage      M  batch-02  11  warm mid-brown skin (cut.py EXTRA), else olive
+Human  High-Mage      F  batch-02  12
+
+# --- Amberite (batch-03 and batch-04, 20 Nov 2026) -----------------------------
+# Black hair, green eyes and the red jewel on its chain in every cell.
+Amberite  Warrior      M  batch-03  1
+Amberite  Warrior      F  batch-03  2
+Amberite  Mage         M  batch-03  3   kept over batch-04 13, which lost the red jewel
+Amberite  Mage         F  batch-04  14  replaces batch-03 4 (two staffs); her blue collar gem painted red (batch-04/fixes.txt)
+Amberite  Druid        M  batch-03  5
+Amberite  Druid        F  batch-03  6
+Amberite  Priest       M  batch-03  7
+Amberite  Priest       F  batch-03  8
+Amberite  Necromancer  M  batch-03  9
+Amberite  Necromancer  F  batch-03  10
+Amberite  Paladin      M  batch-03  11
+Amberite  Paladin      F  batch-03  12
+Amberite  Rogue        M  batch-04  15  replaces batch-03 13 (face deep in the hood's shadow)
+Amberite  Rogue        F  batch-04  16  replaces batch-03 14, to match the man
+Amberite  Ranger       M  batch-03  15
+Amberite  Ranger       F  batch-03  16
+Amberite  Blackguard     M  batch-04  1
+Amberite  Blackguard     F  batch-04  2
+Amberite  Monk           M  batch-04  3
+Amberite  Monk           F  batch-04  4
+Amberite  Mindcrafter    M  batch-04  5
+Amberite  Mindcrafter    F  batch-04  6
+Amberite  Chaos-Warrior  M  batch-08  13  replaces batch-06 15, to match the woman (both wear a jewel on the band)
+Amberite  Chaos-Warrior  F  batch-08  14  replaces batch-06 16 (no sword); rose on the jaw painted tan (batch-08/fixes.txt)
+Amberite  Warrior-Mage   M  batch-04  9
+Amberite  Warrior-Mage   F  batch-04  10
+Amberite  High-Mage      M  batch-04  11
+Amberite  High-Mage      F  batch-04  12
+
+# --- Half-Elf A (batch-05, 21 Nov 2026) -----------------------------------------
+Half-Elf  Warrior      M  batch-05  1 
+Half-Elf  Warrior      F  batch-05  2 
+Half-Elf  Mage         M  batch-05  3 
+Half-Elf  Mage         F  batch-05  4 
+Half-Elf  Druid        M  batch-05  5 
+Half-Elf  Druid        F  batch-05  6 
+Half-Elf  Priest       M  batch-05  7 
+Half-Elf  Priest       F  batch-05  8   holds a second cross; kept
+Half-Elf  Necromancer  M  batch-05  9 
+Half-Elf  Necromancer  F  batch-05  10
+Half-Elf  Paladin      M  batch-05  11
+Half-Elf  Paladin      F  batch-05  12
+Half-Elf  Rogue        M  batch-05  13
+Half-Elf  Rogue        F  batch-05  14
+Half-Elf  Ranger       M  batch-05  15
+Half-Elf  Ranger       F  batch-05  16
+
+# --- Half-Elf B (batch-06, 21 Nov 2026) -------------------------------------
+# Batch 6 drew black grid lines between every cell; cut.py paints them over.
+Half-Elf  Blackguard     M  batch-06  1
+Half-Elf  Blackguard     F  batch-06  2
+Half-Elf  Monk           M  batch-06  3
+Half-Elf  Monk           F  batch-06  4
+Half-Elf  Mindcrafter    M  batch-06  5
+Half-Elf  Mindcrafter    F  batch-06  6
+Half-Elf  Chaos-Warrior  M  batch-06  7
+Half-Elf  Chaos-Warrior  F  batch-06  8
+Half-Elf  Warrior-Mage   M  batch-06  9
+Half-Elf  Warrior-Mage   F  batch-06  10
+Half-Elf  High-Mage      M  batch-06  11
+Half-Elf  High-Mage      F  batch-06  12
+
+# --- Elf A (batch-07, 21 Nov 2026) -----------------------------------------------
+# Gold hair, trim and crosses snap to the gold in cut.py EXTRA, else orange.
+Elf       Warrior        M  batch-07  1
+Elf       Warrior        F  batch-07  2
+Elf       Mage           M  batch-07  3  replaces pilot 3
+Elf       Mage           F  batch-07  4  replaces pilot 4
+Elf       Druid          M  batch-07  5
+Elf       Druid          F  batch-07  6
+Elf       Priest         M  batch-07  7  holds a second cross; kept
+Elf       Priest         F  batch-07  8  holds a second cross; kept
+Elf       Necromancer    M  batch-07  9
+Elf       Necromancer    F  batch-07  10
+Elf       Paladin        M  batch-07  11
+Elf       Paladin        F  batch-07  12
+Elf       Rogue          M  batch-07  13
+Elf       Rogue          F  batch-07  14
+Elf       Ranger         M  batch-07  15
+Elf       Ranger         F  batch-07  16
+
+# --- Elf B (batch-08, 21 Nov 2026) -----------------------------------------------
+# Grid lines again, painted over by cut.py.
+Elf       Blackguard     M  batch-08  1
+Elf       Blackguard     F  batch-08  2
+Elf       Monk           M  batch-08  3
+Elf       Monk           F  batch-08  4
+Elf       Mindcrafter    M  batch-08  5
+Elf       Mindcrafter    F  batch-08  6
+Elf       Chaos-Warrior  M  batch-08  7
+Elf       Chaos-Warrior  F  batch-08  8
+Elf       Warrior-Mage   M  batch-08  9
+Elf       Warrior-Mage   F  batch-08  10
+Elf       High-Mage      M  batch-08  11
+Elf       High-Mage      F  batch-08  12
+
+# --- Hobbit A (batch-09, 21 Nov 2026) --------------------------------------------
+Hobbit    Warrior        M  batch-09  1
+Hobbit    Warrior        F  batch-09  2
+Hobbit    Mage           M  batch-09  3
+Hobbit    Mage           F  batch-09  4
+Hobbit    Druid          M  batch-09  5
+Hobbit    Druid          F  batch-09  6
+Hobbit    Priest         M  batch-09  7  holds a second cross; kept
+Hobbit    Priest         F  batch-09  8  holds a second cross; kept
+Hobbit    Necromancer    M  batch-09  9
+Hobbit    Necromancer    F  batch-09  10
+Hobbit    Paladin        M  batch-09  11
+Hobbit    Paladin        F  batch-09  12
+Hobbit    Rogue          M  batch-09  13
+Hobbit    Rogue          F  batch-09  14
+Hobbit    Ranger         M  batch-09  15
+Hobbit    Ranger         F  batch-09  16
+
+# --- Hobbit B (batch-10, 21 Nov 2026) --------------------------------------------
+# The women carry on the left, the men on the right.
+Hobbit    Blackguard     M  batch-10  1
+Hobbit    Blackguard     F  batch-10  2
+Hobbit    Monk           M  batch-10  3
+Hobbit    Monk           F  batch-10  4
+Hobbit    Mindcrafter    M  batch-10  5
+Hobbit    Mindcrafter    F  batch-10  6
+Hobbit    Chaos-Warrior  M  batch-10  7
+Hobbit    Chaos-Warrior  F  batch-10  8
+Hobbit    Warrior-Mage   M  batch-10  9
+Hobbit    Warrior-Mage   F  batch-10  10
+Hobbit    High-Mage      M  batch-10  11
+Hobbit    High-Mage      F  batch-10  12
+
+# --- Gnome A (batch-11, 21 Nov 2026) ---------------------------------------------
+# Salmon skin added to every cell (batch-11/fixes.txt), else rose stripes.
+# The women's buns come out through the helmet and hood; kept.
+Gnome     Warrior        M  batch-11  1
+Gnome     Warrior        F  batch-11  2
+Gnome     Mage           M  batch-11  3
+Gnome     Mage           F  batch-11  4
+Gnome     Druid          M  batch-11  5
+Gnome     Druid          F  batch-11  6
+Gnome     Priest         M  batch-11  7  holds a second cross; kept
+Gnome     Priest         F  batch-11  8  holds a second cross; kept
+Gnome     Necromancer    M  batch-11  9
+Gnome     Necromancer    F  batch-11  10
+Gnome     Paladin        M  batch-11  11
+Gnome     Paladin        F  batch-11  12
+Gnome     Rogue          M  batch-11  13
+Gnome     Rogue          F  batch-11  14
+Gnome     Ranger         M  batch-11  15
+Gnome     Ranger         F  batch-11  16
+
+# --- Gnome B (batch-12, 21 Nov 2026) -------------------------------------------
+# Salmon skin added to every cell, as on batch-11 (batch-12/fixes.txt).
+Gnome     Blackguard     M  batch-12  1
+Gnome     Blackguard     F  batch-12  2
+Gnome     Monk           M  batch-12  3  a second hand behind his shoulder cleared and painted (fixes.txt)
+Gnome     Monk           F  batch-12  4
+Gnome     Mindcrafter    M  batch-12  5
+Gnome     Mindcrafter    F  batch-12  6
+Gnome     Chaos-Warrior  M  batch-12  7
+Gnome     Chaos-Warrior  F  batch-12  8
+Gnome     Warrior-Mage   M  batch-12  9
+Gnome     Warrior-Mage   F  batch-12  10
+Gnome     High-Mage      M  batch-12  11
+Gnome     High-Mage      F  batch-12  12
+
+# --- Dwarf A (batch-13, 21 Nov 2026) -------------------------------------------
+# Accepted as drawn, no fixes: hair on the men this time, two braids on the women.
+Dwarf     Warrior        M  batch-13  1
+Dwarf     Warrior        F  batch-13  2
+Dwarf     Mage           M  batch-13  3
+Dwarf     Mage           F  batch-13  4
+Dwarf     Druid          M  batch-13  5
+Dwarf     Druid          F  batch-13  6
+Dwarf     Priest         M  batch-13  7  replaces pilot 5 (the trial's man was bald)
+Dwarf     Priest         F  batch-13  8  replaces pilot 6 (the trial's man was bald)
+Dwarf     Necromancer    M  batch-13  9
+Dwarf     Necromancer    F  batch-13  10
+Dwarf     Paladin        M  batch-13  11
+Dwarf     Paladin        F  batch-13  12
+Dwarf     Rogue          M  batch-13  13
+Dwarf     Rogue          F  batch-13  14
+Dwarf     Ranger         M  batch-13  15
+Dwarf     Ranger         F  batch-13  16
+
+# --- Dwarf B (batch-14, 21 Nov 2026) -------------------------------------------
+# The chaos knights wear a horned cap, not the plain band; faces open, kept.
+Dwarf     Blackguard     M  batch-14  1
+Dwarf     Blackguard     F  batch-14  2  rose round the brows and eyes painted out (fixes.txt)
+Dwarf     Monk           M  batch-14  3
+Dwarf     Monk           F  batch-14  4
+Dwarf     Mindcrafter    M  batch-14  5
+Dwarf     Mindcrafter    F  batch-14  6
+Dwarf     Chaos-Warrior  M  batch-14  7
+Dwarf     Chaos-Warrior  F  batch-14  8
+Dwarf     Warrior-Mage   M  batch-14  9
+Dwarf     Warrior-Mage   F  batch-14  10
+Dwarf     High-Mage      M  batch-14  11
+Dwarf     High-Mage      F  batch-14  12
+
+# --- Half-Orc A (batch-15, 21 Nov 2026) ----------------------------------------
+# Green skin holds without the trial's add: ramp; tusks on the women.
+Half-Orc  Warrior        M  batch-15  1
+Half-Orc  Warrior        F  batch-15  2
+Half-Orc  Mage           M  batch-15  3
+Half-Orc  Mage           F  batch-15  4
+Half-Orc  Druid          M  batch-15  5
+Half-Orc  Druid          F  batch-15  6
+Half-Orc  Priest         M  batch-15  7
+Half-Orc  Priest         F  batch-15  8
+Half-Orc  Necromancer    M  batch-15  9  eyes glow a little, skull ringed in lime; red eyes are the people's own, kept
+Half-Orc  Necromancer    F  batch-15  10
+Half-Orc  Paladin        M  batch-15  11
+Half-Orc  Paladin        F  batch-15  12
+Half-Orc  Rogue          M  batch-15  13  replaces pilot 7
+Half-Orc  Rogue          F  batch-15  14  replaces pilot 8 (no tusks)
+Half-Orc  Ranger         M  batch-15  15
+Half-Orc  Ranger         F  batch-15  16
+
+# --- Half-Orc B (batch-16, 21 Nov 2026) ----------------------------------------
+Half-Orc  Blackguard     M  batch-16  1
+Half-Orc  Blackguard     F  batch-16  2
+Half-Orc  Monk           M  batch-18  13  replaces batch-16 3, to match the woman; pewter skin painted sage (fixes.txt)
+Half-Orc  Monk           F  batch-18  14  replaces batch-16 4 (sleeveless); pewter skin painted sage (fixes.txt)
+Half-Orc  Mindcrafter    M  batch-16  5
+Half-Orc  Mindcrafter    F  batch-16  6
+Half-Orc  Chaos-Warrior  M  batch-16  7
+Half-Orc  Chaos-Warrior  F  batch-16  8
+Half-Orc  Warrior-Mage   M  batch-16  9
+Half-Orc  Warrior-Mage   F  batch-16  10
+Half-Orc  High-Mage      M  batch-16  11
+Half-Orc  High-Mage      F  batch-16  12
+
+# --- Half-Troll A (batch-17, 21 Nov 2026) --------------------------------------
+# Dark green and yellow-eyed, against the Half-Orc's sage and red: they read
+# apart at 1x.  The hooded faces are dark, but eyes and tusks carry them.
+Half-Troll Warrior       M  batch-17  1
+Half-Troll Warrior       F  batch-17  2
+Half-Troll Mage          M  batch-17  3
+Half-Troll Mage          F  batch-17  4
+Half-Troll Druid         M  batch-17  5
+Half-Troll Druid         F  batch-17  6
+Half-Troll Priest        M  batch-17  7  holds a second cross; kept
+Half-Troll Priest        F  batch-17  8  holds a second cross; kept
+Half-Troll Necromancer   M  batch-17  9
+Half-Troll Necromancer   F  batch-17  10
+Half-Troll Paladin       M  batch-17  11
+Half-Troll Paladin       F  batch-17  12
+Half-Troll Rogue         M  batch-17  13
+Half-Troll Rogue         F  batch-17  14
+Half-Troll Ranger        M  batch-17  15
+Half-Troll Ranger        F  batch-17  16
+
+# --- Half-Troll B (batch-18, 21 Nov 2026) --------------------------------------
+Half-Troll Blackguard    M  batch-18  1
+Half-Troll Blackguard    F  batch-18  2
+Half-Troll Monk          M  batch-18  3
+Half-Troll Monk          F  batch-18  4
+Half-Troll Mindcrafter   M  batch-18  5
+Half-Troll Mindcrafter   F  batch-18  6
+Half-Troll Chaos-Warrior M  batch-18  7
+Half-Troll Chaos-Warrior F  batch-18  8
+Half-Troll Warrior-Mage  M  batch-18  9
+Half-Troll Warrior-Mage  F  batch-18  10
+Half-Troll High-Mage     M  batch-18  11
+Half-Troll High-Mage     F  batch-18  12
+
+# --- Dunadan A (batch-19, 21 Nov 2026) -----------------------------------------
+Dunadan   Warrior        M  batch-19  1
+Dunadan   Warrior        F  batch-19  2
+Dunadan   Mage           M  batch-19  3
+Dunadan   Mage           F  batch-19  4
+Dunadan   Druid          M  batch-20  13  replaces batch-19 5, to match the woman
+Dunadan   Druid          F  batch-20  14  replaces batch-19 6 (two staffs)
+Dunadan   Priest         M  batch-19  7  holds a second cross; kept
+Dunadan   Priest         F  batch-19  8  holds a second cross; kept
+Dunadan   Necromancer    M  batch-20  15  replaces batch-19 9 (green glowing eyes, face shadowed)
+Dunadan   Necromancer    F  batch-20  16  replaces batch-19 10, to match the man
+Dunadan   Paladin        M  batch-19  11
+Dunadan   Paladin        F  batch-19  12
+Dunadan   Rogue          M  batch-19  13  pointed ear tips cleared from the hood (fixes.txt)
+Dunadan   Rogue          F  batch-19  14
+Dunadan   Ranger         M  batch-19  15
+Dunadan   Ranger         F  batch-19  16
+
+# --- Dunadan B (batch-20, 22 Nov 2026) -----------------------------------------
+# The chaos knights wear a horned cap, face open, as the Dwarves' did; kept.
+Dunadan   Blackguard     M  batch-20  1
+Dunadan   Blackguard     F  batch-20  2
+Dunadan   Monk           M  batch-20  3
+Dunadan   Monk           F  batch-20  4
+Dunadan   Mindcrafter    M  batch-20  5
+Dunadan   Mindcrafter    F  batch-20  6
+Dunadan   Chaos-Warrior  M  batch-20  7
+Dunadan   Chaos-Warrior  F  batch-20  8
+Dunadan   Warrior-Mage   M  batch-20  9
+Dunadan   Warrior-Mage   F  batch-20  10
+Dunadan   High-Mage      M  batch-20  11
+Dunadan   High-Mage      F  batch-20  12
+
+# --- High-Elf A (batch-21, 22 Nov 2026) ------------------------------------------
+# Pale skin: RACE_EXTRA in cut.py, else chalk white.
+High-Elf  Warrior        M  batch-21  1
+High-Elf  Warrior        F  batch-21  2
+High-Elf  Mage           M  batch-21  3
+High-Elf  Mage           F  batch-21  4
+High-Elf  Druid          M  batch-21  5
+High-Elf  Druid          F  batch-21  6
+High-Elf  Priest         M  batch-21  7
+High-Elf  Priest         F  batch-21  8
+High-Elf  Necromancer    M  batch-24  13  replaces batch-21 9 (green glowing eyes, violet face)
+High-Elf  Necromancer    F  batch-24  14  replaces batch-21 10, to match the man
+High-Elf  Paladin        M  batch-24  15  replaces batch-21 11, to match the woman
+High-Elf  Paladin        F  batch-24  16  replaces batch-21 12 (no sword)
+High-Elf  Rogue          M  batch-26  13  replaces batch-21 13 (face tan in the hood's shadow)
+High-Elf  Rogue          F  batch-26  14  replaces batch-21 14 (no dagger)
+High-Elf  Ranger         M  batch-21  15
+High-Elf  Ranger         F  batch-21  16
+
+# --- High-Elf B (batch-22, 22 Nov 2026) ------------------------------------------
+# Faint purple grid lines, found by cut.py's second test; pale skin as on A.
+High-Elf  Blackguard     M  batch-22  1
+High-Elf  Blackguard     F  batch-22  2
+High-Elf  Monk           M  batch-22  3
+High-Elf  Monk           F  batch-22  4
+High-Elf  Mindcrafter    M  batch-22  5
+High-Elf  Mindcrafter    F  batch-22  6
+High-Elf  Chaos-Warrior  M  batch-22  7
+High-Elf  Chaos-Warrior  F  batch-22  8
+High-Elf  Warrior-Mage   M  batch-22  9
+High-Elf  Warrior-Mage   F  batch-22  10
+High-Elf  High-Mage      M  batch-22  11
+High-Elf  High-Mage      F  batch-22  12
+
+# --- Kobold A (batch-23, 22 Nov 2026) --------------------------------------------
+Kobold    Warrior        M  batch-23  1
+Kobold    Warrior        F  batch-23  2
+Kobold    Mage           M  batch-23  3
+Kobold    Mage           F  batch-23  4
+Kobold    Druid          M  batch-23  5
+Kobold    Druid          F  batch-23  6
+Kobold    Priest         M  batch-23  7
+Kobold    Priest         F  batch-23  8
+Kobold    Necromancer    M  batch-23  9
+Kobold    Necromancer    F  batch-23  10
+Kobold    Paladin        M  batch-23  11
+Kobold    Paladin        F  batch-23  12
+Kobold    Rogue          M  batch-23  13  kept over batch-28/take-2 13 (fur red, snarling)
+Kobold    Rogue          F  batch-28/take-2  14  replaces batch-23 14 (hood down, the man's up)
+Kobold    Ranger         M  batch-23  15
+Kobold    Ranger         F  batch-23  16
+
+# --- Kobold B (batch-24, 22 Nov 2026) --------------------------------------------
+Kobold    Blackguard     M  batch-24  1
+Kobold    Blackguard     F  batch-24  2
+Kobold    Monk           M  batch-24  3
+Kobold    Monk           F  batch-24  4
+Kobold    Mindcrafter    M  batch-24  5
+Kobold    Mindcrafter    F  batch-24  6
+Kobold    Chaos-Warrior  M  batch-24  7
+Kobold    Chaos-Warrior  F  batch-24  8
+Kobold    Warrior-Mage   M  batch-24  9
+Kobold    Warrior-Mage   F  batch-24  10
+Kobold    High-Mage      M  batch-24  11
+Kobold    High-Mage      F  batch-24  12
+
+# --- Beastman A (batch-25, 22 Nov 2026) ------------------------------------------
+# Heavy black grid lines, painted over by cut.py; the yellow eyes are theirs.
+Beastman  Warrior        M  batch-25  1
+Beastman  Warrior        F  batch-25  2
+Beastman  Mage           M  batch-25  3
+Beastman  Mage           F  batch-25  4
+Beastman  Druid          M  batch-25  5
+Beastman  Druid          F  batch-25  6
+Beastman  Priest         M  batch-25  7
+Beastman  Priest         F  batch-25  8
+Beastman  Necromancer    M  batch-25  9
+Beastman  Necromancer    F  batch-25  10
+Beastman  Paladin        M  batch-25  11
+Beastman  Paladin        F  batch-25  12
+Beastman  Rogue          M  batch-25  13
+Beastman  Rogue          F  batch-25  14
+Beastman  Ranger         M  batch-25  15
+Beastman  Ranger         F  batch-25  16
+
+# --- Beastman B (batch-26, 22 Nov 2026) ------------------------------------------
+Beastman  Blackguard     M  batch-26  1
+Beastman  Blackguard     F  batch-26  2
+Beastman  Monk           M  batch-26  3
+Beastman  Monk           F  batch-26  4
+Beastman  Mindcrafter    M  batch-26  5
+Beastman  Mindcrafter    F  batch-26  6
+Beastman  Chaos-Warrior  M  batch-26  7  horns rise upright from the band; kept over batch-28 13 (curled horns, but a full goat's head and lighter hide)
+Beastman  Chaos-Warrior  F  batch-26  8  kept over batch-28 14 (a goat's head, reads bearded)
+Beastman  Warrior-Mage   M  batch-26  9
+Beastman  Warrior-Mage   F  batch-26  10
+Beastman  High-Mage      M  batch-26  11
+Beastman  High-Mage      F  batch-26  12
+
+# --- Yeek A (batch-27, 22 Nov 2026) ----------------------------------------------
+Yeek      Warrior        M  batch-27  1
+Yeek      Warrior        F  batch-27  2
+Yeek      Mage           M  batch-27  3
+Yeek      Mage           F  batch-27  4
+Yeek      Druid          M  batch-27  5
+Yeek      Druid          F  batch-27  6
+Yeek      Priest         M  batch-27  7
+Yeek      Priest         F  batch-27  8
+Yeek      Necromancer    M  batch-27  9
+Yeek      Necromancer    F  batch-27  10
+Yeek      Paladin        M  batch-27  11
+Yeek      Paladin        F  batch-27  12
+Yeek      Rogue          M  batch-27  13
+Yeek      Rogue          F  batch-27  14  leather dark grey, the man's brown
+Yeek      Ranger         M  batch-27  15
+Yeek      Ranger         F  batch-27  16
+
+# --- Yeek B (batch-28, third take, 22 Nov 2026) ----------------------------------
+# Takes 1 (too coarse) and 2 (ears hidden) in batch-28/take-1 and take-2.  Skin
+# painted pewter>steel on 1-12; ghost wings cleared from 1-4 (fixes.txt).
+Yeek      Blackguard     M  batch-28  1
+Yeek      Blackguard     F  batch-28  2
+Yeek       Monk          M  batch-36  13  redrawn: skin painted steel/sea
+Yeek       Monk          F  batch-36  14  redrawn: skin painted steel/sea
+Yeek      Mindcrafter    M  batch-28  5
+Yeek      Mindcrafter    F  batch-28  6
+Yeek      Chaos-Warrior  M  batch-28  7
+Yeek      Chaos-Warrior  F  batch-28  8
+Yeek      Warrior-Mage   M  batch-28  9
+Yeek      Warrior-Mage   F  batch-28  10
+Yeek       High-Mage     M  batch-36  15  redrawn: skin painted steel/sea
+Yeek       High-Mage     F  batch-36  16  redrawn: skin painted steel/sea
+
+# --- Draconian A (batch-29, 22 Nov 2026) -----------------------------------------
+# Green men, bronze-gold women, as asked.  Wings reach the cell edges; cut fine.
+Draconian Warrior        M  batch-57  1  redrawn: the pair, helmeted
+Draconian Warrior        F  batch-57  2  redrawn: the pair, helmeted
+Draconian Mage           M  batch-29  3
+Draconian Mage           F  batch-29  4
+Draconian Druid          M  batch-57  3  redrawn: the pair, circlet and staff
+Draconian Druid          F  batch-57  4  redrawn: the pair, circlet and staff
+Draconian Priest         M  batch-29  7
+Draconian Priest         F  batch-29  8
+Draconian Necromancer    M  batch-29  9
+Draconian Necromancer    F  batch-29  10
+Draconian Paladin        M  batch-29  11
+Draconian Paladin        F  batch-29  12
+Draconian Rogue          M  batch-57  5  redrawn: the pair, hooded and lit
+Draconian Rogue          F  batch-57  6  redrawn: the pair, hooded and lit
+Draconian Ranger         M  batch-29  15
+Draconian Ranger         F  batch-29  16
+
+# --- Draconian B (batch-30, 22 Nov 2026) -----------------------------------------
+Draconian Blackguard     M  batch-30  1
+Draconian Blackguard     F  batch-30  2  the man's axe blade cleared from her left edge (fixes.txt)
+Draconian Monk           M  batch-30  3
+Draconian Monk           F  batch-30  4
+Draconian Mindcrafter    M  batch-30  5
+Draconian Mindcrafter    F  batch-30  6
+Draconian Chaos-Warrior  M  batch-57  7  redrawn: green scales under the rust armour
+Draconian Chaos-Warrior  F  batch-57  8  redrawn: gold scales under the rust armour
+Draconian Warrior-Mage   M  batch-30  9
+Draconian Warrior-Mage   F  batch-30  10
+Draconian High-Mage      M  batch-30  11
+Draconian High-Mage      F  batch-30  12
+
+# --- Mindflayer A (batch-31, second take, 22 Nov 2026) --------------------------
+# Take 1 (batch-31/take-1) had Draconian wings on eight cells; take 2 came
+# from a fresh chat.  Its paladin woman had no sword, so take 1's stands in.
+Mindflayer Warrior       M  batch-31  1
+Mindflayer Warrior       F  batch-31  2
+Mindflayer Mage          M  batch-31  3
+Mindflayer Mage          F  batch-31  4
+Mindflayer Druid         M  batch-31  5
+Mindflayer Druid         F  batch-31  6
+Mindflayer Priest        M  batch-31  7
+Mindflayer Priest        F  batch-31  8
+Mindflayer Necromancer   M  batch-31  9
+Mindflayer Necromancer   F  batch-31  10  skull green all over
+Mindflayer Paladin       M  batch-31  11
+Mindflayer Paladin       F  batch-31/take-1  12  take 2's had no sword
+Mindflayer Rogue         M  batch-31  13
+Mindflayer Rogue         F  batch-31  14
+Mindflayer Ranger        M  batch-31  15  bow, no quiver
+Mindflayer Ranger        F  batch-31  16
+
+# --- Mindflayer B (batch-32/v2, 22 Nov 2026) ----------------------------------
+# The fifth try, the first with grid.png: back on the fine 5.12 px grid.  Two
+# fixes (fixes.txt): the crystal's see-through glow, snapped to peach, taken
+# off; the women's grey shading turned purple as on sheet 31.  Takes 1-4 kept.
+Mindflayer Blackguard    M  batch-32/v2  1
+Mindflayer Blackguard    F  batch-32/v2  2
+Mindflayer Monk          M  batch-32/v2  3
+Mindflayer Monk          F  batch-32/v2  4
+Mindflayer Mindcrafter   M  batch-32/v2  5
+Mindflayer Mindcrafter   F  batch-32/v2  6
+Mindflayer Chaos-Warrior M  batch-32/v2  7
+Mindflayer Chaos-Warrior F  batch-32/v2  8
+Mindflayer Warrior-Mage  M  batch-32/v2  9
+Mindflayer Warrior-Mage  F  batch-32/v2  10
+Mindflayer High-Mage     M  batch-32/v2  11
+Mindflayer High-Mage     F  batch-32/v2  12
+
+# --- Vampire A (batch-33, 22 Nov 2026) ----------------------------------------
+# First sheet sent with grid.png from the start.  No lattice (like sheet 1 v2),
+# fine detail.  Skin snapped to frost shaded steel, not white: deathly pale
+# all the same, and all sixteen alike.  Fix: the necromancer woman's eyes
+# took the skull's green; painted red.
+Vampire    Warrior       M  batch-33  1
+Vampire    Warrior       F  batch-33  2
+Vampire    Mage          M  batch-33  3
+Vampire    Mage          F  batch-33  4
+Vampire    Druid         M  batch-33  5
+Vampire    Druid         F  batch-33  6
+Vampire    Priest        M  batch-33  7
+Vampire    Priest        F  batch-33  8
+Vampire    Necromancer   M  batch-33  9
+Vampire    Necromancer   F  batch-33  10
+Vampire    Paladin       M  batch-33  11
+Vampire    Paladin       F  batch-33  12
+Vampire    Rogue         M  batch-33  13
+Vampire    Rogue         F  batch-33  14
+Vampire    Ranger        M  batch-33  15
+Vampire    Ranger        F  batch-33  16
+
+# --- Vampire B (batch-34, 22 Nov 2026) ----------------------------------------
+# Lattice-free like sheet 33.  Both Vampire sheets now keep their red eyes
+# (accent:14-50,14-30:red:0.15 on every cell).  The Warrior-Mage man holds
+# two crossed swords, the woman one: kept.
+Vampire    Blackguard    M  batch-34  1
+Vampire    Blackguard    F  batch-34  2
+Vampire    Monk          M  batch-34  3
+Vampire    Monk          F  batch-34  4
+Vampire    Mindcrafter   M  batch-34  5
+Vampire    Mindcrafter   F  batch-34  6
+Vampire    Chaos-Warrior M  batch-34  7
+Vampire    Chaos-Warrior F  batch-34  8
+Vampire    Warrior-Mage  M  batch-34  9  two swords
+Vampire    Warrior-Mage  F  batch-34  10
+Vampire    High-Mage     M  batch-34  11
+Vampire    High-Mage     F  batch-34  12
+
+# --- Golem A (batch-35, 22 Nov 2026) ------------------------------------------
+# Back on the fine 5.12 px grid (0.63).  Grey stone men, red-brown clay women,
+# orange eyes that survive the cut.  Fix: the necromancer man's face came out
+# flesh under a grey crown; painted pewter.
+Golem      Warrior       M  batch-35  1
+Golem      Warrior       F  batch-35  2
+Golem      Mage          M  batch-35  3
+Golem      Mage          F  batch-35  4
+Golem      Druid         M  batch-35  5
+Golem      Druid         F  batch-35  6
+Golem      Priest        M  batch-35  7
+Golem      Priest        F  batch-35  8
+Golem      Necromancer   M  batch-35  9
+Golem      Necromancer   F  batch-35  10
+Golem      Paladin       M  batch-35  11
+Golem      Paladin       F  batch-35  12
+Golem      Rogue         M  batch-35  13
+Golem      Rogue         F  batch-35  14
+Golem      Ranger        M  batch-35  15
+Golem      Ranger        F  batch-35  16
+
+# --- Golem B (batch-36, 22 Nov 2026) ------------------------------------------
+# Fine 5.12 px grid (0.49).  All twelve as briefed.  The same sheet's 13-16 are
+# the Yeek Monk and High-Mage pairs (see Yeek B).
+Golem      Blackguard    M  batch-36  1
+Golem      Blackguard    F  batch-36  2
+Golem      Monk          M  batch-36  3
+Golem      Monk          F  batch-36  4
+Golem      Mindcrafter   M  batch-36  5
+Golem      Mindcrafter   F  batch-36  6
+Golem      Chaos-Warrior M  batch-36  7
+Golem      Chaos-Warrior F  batch-36  8
+Golem      Warrior-Mage  M  batch-36  9
+Golem      Warrior-Mage  F  batch-36  10
+Golem      High-Mage     M  batch-36  11
+Golem      High-Mage     F  batch-36  12
+
+# --- Barbarian A (batch-37, 22 Nov 2026) --------------------------------------
+# Fine 5.12 px grid (0.64).  Wild red hair, blue paint, blue eyes.  Fix: the
+# necromancer man's eyes took the skull's green; painted blue.
+Barbarian  Warrior       M  batch-37  1
+Barbarian  Warrior       F  batch-37  2
+Barbarian  Mage          M  batch-37  3
+Barbarian  Mage          F  batch-37  4
+Barbarian  Druid         M  batch-37  5
+Barbarian  Druid         F  batch-37  6
+Barbarian  Priest        M  batch-37  7
+Barbarian  Priest        F  batch-37  8
+Barbarian  Necromancer   M  batch-37  9
+Barbarian  Necromancer   F  batch-37  10
+Barbarian  Paladin       M  batch-37  11
+Barbarian  Paladin       F  batch-37  12
+Barbarian  Rogue         M  batch-37  13
+Barbarian  Rogue         F  batch-37  14
+Barbarian  Ranger        M  batch-38  13  redrawn: hair back
+Barbarian  Ranger        F  batch-38  14  redrawn: hair back
+
+# --- Barbarian B (batch-38, 22 Nov 2026) --------------------------------------
+# Lattice-free; grid.png's fine lines copied into the magenta, harmless (they
+# pass the magenta test).  The monks' forearms show between wrap and sleeve,
+# as on the Golem monks: kept.  Fix: the crystal glow (peach) taken off.  The
+# ranger pair redrawn in 13-14 has its hair back, swept rather than wild.
+Barbarian  Blackguard    M  batch-38  1
+Barbarian  Blackguard    F  batch-38  2
+Barbarian  Monk          M  batch-38  3
+Barbarian  Monk          F  batch-38  4
+Barbarian  Mindcrafter   M  batch-38  5
+Barbarian  Mindcrafter   F  batch-38  6
+Barbarian  Chaos-Warrior M  batch-38  7
+Barbarian  Chaos-Warrior F  batch-38  8
+Barbarian  Warrior-Mage  M  batch-38  9
+Barbarian  Warrior-Mage  F  batch-38  10
+Barbarian  High-Mage     M  batch-38  11
+Barbarian  High-Mage     F  batch-38  12
+
+# --- Klackon A (batch-39, 22 Nov 2026) ----------------------------------------
+# Fine 5.12 px grid (0.35).  Red-brown men, orange women, antennae through
+# every hat and hood.  Fixes: the necromancer man's eyes glowed green and the
+# rogue man's white, both painted ink with a steel glint; the mage crystals'
+# see-through glow (a steel ring) taken off.
+Klackon    Warrior       M  batch-39  1
+Klackon    Warrior       F  batch-39  2
+Klackon    Mage          M  batch-39  3
+Klackon    Mage          F  batch-39  4
+Klackon    Druid         M  batch-39  5
+Klackon    Druid         F  batch-39  6
+Klackon    Priest        M  batch-39  7
+Klackon    Priest        F  batch-39  8
+Klackon    Necromancer   M  batch-39  9
+Klackon    Necromancer   F  batch-39  10
+Klackon    Paladin       M  batch-39  11
+Klackon    Paladin       F  batch-39  12
+Klackon    Rogue         M  batch-39  13
+Klackon    Rogue         F  batch-39  14
+Klackon    Ranger        M  batch-39  15
+Klackon    Ranger        F  batch-39  16
+
+# --- Klackon B (batch-40, 22 Nov 2026) ----------------------------------------
+# Lattice-free, the dark cell lines painted out.  All twelve as briefed, no
+# fixes.  The blackguards hold the axe on opposite sides: kept.
+Klackon    Blackguard    M  batch-40  1
+Klackon    Blackguard    F  batch-40  2
+Klackon    Monk          M  batch-40  3
+Klackon    Monk          F  batch-40  4
+Klackon    Mindcrafter   M  batch-40  5
+Klackon    Mindcrafter   F  batch-40  6
+Klackon    Chaos-Warrior M  batch-40  7
+Klackon    Chaos-Warrior F  batch-40  8
+Klackon    Warrior-Mage  M  batch-40  9
+Klackon    Warrior-Mage  F  batch-40  10
+Klackon    High-Mage     M  batch-40  11
+Klackon    High-Mage     F  batch-40  12
+
+# --- Nibelung A (batch-41, 23 Nov 2026) ---------------------------------------
+# Fine 5.12 px grid (0.54).  Black beards and braids, pale blue eyes; the skin
+# came darker than pewter but alike in all sixteen.  Fix: the necromancer
+# man's eyes took the skull's green; painted frost.
+Nibelung   Warrior       M  batch-41  1
+Nibelung   Warrior       F  batch-41  2
+Nibelung   Mage          M  batch-41  3
+Nibelung   Mage          F  batch-41  4
+Nibelung   Druid         M  batch-41  5
+Nibelung   Druid         F  batch-41  6
+Nibelung   Priest        M  batch-41  7
+Nibelung   Priest        F  batch-41  8
+Nibelung   Necromancer   M  batch-41  9
+Nibelung   Necromancer   F  batch-41  10
+Nibelung   Paladin       M  batch-41  11
+Nibelung   Paladin       F  batch-41  12
+Nibelung   Rogue         M  batch-41  13
+Nibelung   Rogue         F  batch-41  14
+Nibelung   Ranger        M  batch-41  15
+Nibelung   Ranger        F  batch-41  16
+
+# --- Nibelung B (batch-42, 23 Nov 2026) ---------------------------------------
+# Lattice-free.  All twelve as briefed, no fixes.  The men wear their hair
+# long where sheet 41's priest, paladin and ranger were bald: the brief
+# allows both.
+Nibelung   Blackguard    M  batch-42  1
+Nibelung   Blackguard    F  batch-42  2
+Nibelung   Monk          M  batch-42  3
+Nibelung   Monk          F  batch-42  4
+Nibelung   Mindcrafter   M  batch-42  5
+Nibelung   Mindcrafter   F  batch-42  6
+Nibelung   Chaos-Warrior M  batch-42  7
+Nibelung   Chaos-Warrior F  batch-42  8
+Nibelung   Warrior-Mage  M  batch-42  9
+Nibelung   Warrior-Mage  F  batch-42  10
+Nibelung   High-Mage     M  batch-42  11
+Nibelung   High-Mage     F  batch-42  12
+
+# --- Imp A (batch-43, 24 Nov 2026) --------------------------------------------
+# Lattice-free.  Red skin, dark horns through every hat and hood, fangs.  The
+# necromancers' eyes stayed yellow (the new wording).  Fixes: the mage
+# crystals' see-through glow (a blue ring) taken off; the yellow eyes kept
+# with accent:14-50,16-30:yellow:0.15 on every cell.
+Imp        Warrior       M  batch-43  1
+Imp        Warrior       F  batch-43  2
+Imp        Mage          M  batch-43  3
+Imp        Mage          F  batch-43  4
+Imp        Druid         M  batch-43  5
+Imp        Druid         F  batch-43  6
+Imp        Priest        M  batch-43  7
+Imp        Priest        F  batch-43  8
+Imp        Necromancer   M  batch-43  9
+Imp        Necromancer   F  batch-43  10
+Imp        Paladin       M  batch-43  11
+Imp        Paladin       F  batch-43  12
+Imp        Rogue         M  batch-43  13
+Imp        Rogue         F  batch-43  14
+Imp        Ranger        M  batch-43  15
+Imp        Ranger        F  batch-43  16
+
+# --- Imp B (batch-44, 24 Nov 2026) --------------------------------------------
+# Lattice-free.  All twelve as briefed; the chaos band sits among their own
+# horns.  Fixes: yellow eyes kept (accent, as sheet 43); the monk woman's
+# headband, lost under her hair in the cut, painted back across the brow.
+Imp        Blackguard    M  batch-44  1
+Imp        Blackguard    F  batch-44  2
+Imp        Monk          M  batch-44  3
+Imp        Monk          F  batch-44  4
+Imp        Mindcrafter   M  batch-44  5
+Imp        Mindcrafter   F  batch-44  6
+Imp        Chaos-Warrior M  batch-44  7
+Imp        Chaos-Warrior F  batch-44  8
+Imp        Warrior-Mage  M  batch-44  9
+Imp        Warrior-Mage  F  batch-44  10
+Imp        High-Mage     M  batch-44  11
+Imp        High-Mage     F  batch-44  12
+
+# --- Skeleton A (batch-45, 25 Nov 2026) ---------------------------------------
+# Fine 5.12 px grid (0.54).  Bare skulls, grey strands on the women.  Fixes:
+# the eye-hole sparks kept (accent:14-50,14-30:orange:0.15 on every cell); the
+# woman necromancer's staff skull, drawn green all over, painted bone.
+Skeleton   Warrior       M  batch-45  1
+Skeleton   Warrior       F  batch-45  2
+Skeleton   Mage          M  batch-45  3
+Skeleton   Mage          F  batch-45  4
+Skeleton   Druid         M  batch-45  5
+Skeleton   Druid         F  batch-45  6
+Skeleton   Priest        M  batch-45  7
+Skeleton   Priest        F  batch-45  8
+Skeleton   Necromancer   M  batch-45  9
+Skeleton   Necromancer   F  batch-45  10
+Skeleton   Paladin       M  batch-45  11
+Skeleton   Paladin       F  batch-45  12
+Skeleton   Rogue         M  batch-45  13
+Skeleton   Rogue         F  batch-45  14
+Skeleton   Ranger        M  batch-45  15
+Skeleton   Ranger        F  batch-45  16
+
+# --- Skeleton B (batch-46, 25 Nov 2026) ---------------------------------------
+# Lattice-free.  All twelve as briefed; the women's grey hair fuller than
+# 'a few strands', as on sheet 45.  Fix: the eye sparks kept (accent).
+Skeleton   Blackguard    M  batch-46  1
+Skeleton   Blackguard    F  batch-46  2
+Skeleton   Monk          M  batch-46  3
+Skeleton   Monk          F  batch-46  4
+Skeleton   Mindcrafter   M  batch-46  5
+Skeleton   Mindcrafter   F  batch-46  6
+Skeleton   Chaos-Warrior M  batch-46  7
+Skeleton   Chaos-Warrior F  batch-46  8
+Skeleton   Warrior-Mage  M  batch-46  9
+Skeleton   Warrior-Mage  F  batch-46  10
+Skeleton   High-Mage     M  batch-46  11
+Skeleton   High-Mage     F  batch-46  12
+
+# --- Zombie A (batch-47, 25 Nov 2026) -----------------------------------------
+# Fine 5.12 px grid (0.46).  Grey-green skin, plum scar, pale eyes, all
+# sixteen as briefed; the necromancers' eyes stayed pale.  No fixes.
+Zombie     Warrior       M  batch-47  1
+Zombie     Warrior       F  batch-47  2
+Zombie     Mage          M  batch-47  3
+Zombie     Mage          F  batch-47  4
+Zombie     Druid         M  batch-47  5
+Zombie     Druid         F  batch-47  6
+Zombie     Priest        M  batch-47  7
+Zombie     Priest        F  batch-47  8
+Zombie     Necromancer   M  batch-47  9
+Zombie     Necromancer   F  batch-47  10
+Zombie     Paladin       M  batch-47  11
+Zombie     Paladin       F  batch-47  12
+Zombie     Rogue         M  batch-47  13
+Zombie     Rogue         F  batch-47  14
+Zombie     Ranger        M  batch-47  15
+Zombie     Ranger        F  batch-47  16
+
+# --- Zombie B (batch-48, 25 Nov 2026) -----------------------------------------
+# Lattice-free.  All twelve as briefed (the monks raise an open, bound hand,
+# not a fist: kept).  Fix: the skin snapped to grey; green:1.6 on every cell
+# brings it to sheet 47's sage.
+Zombie     Blackguard    M  batch-48  1
+Zombie     Blackguard    F  batch-48  2
+Zombie     Monk          M  batch-48  3
+Zombie     Monk          F  batch-48  4
+Zombie     Mindcrafter   M  batch-48  5
+Zombie     Mindcrafter   F  batch-48  6
+Zombie     Chaos-Warrior M  batch-48  7
+Zombie     Chaos-Warrior F  batch-48  8
+Zombie     Warrior-Mage  M  batch-48  9
+Zombie     Warrior-Mage  F  batch-48  10
+Zombie     High-Mage     M  batch-48  11
+Zombie     High-Mage     F  batch-48  12
+
+# --- Spectre A (batch-49, 25 Nov 2026) ----------------------------------------
+# Fine 5.12 px grid (0.55).  Pale blue faces, cyan eyes, white wisps rising,
+# all solid.  The necromancer man's face is a shade darker (sky) inside his
+# hood: kept.  Fix: the woman necromancer held a second skull staff on her
+# right, standing clear of her robe; cleared.
+Spectre    Warrior       M  batch-49  1
+Spectre    Warrior       F  batch-49  2
+Spectre    Mage          M  batch-49  3
+Spectre    Mage          F  batch-49  4
+Spectre    Druid         M  batch-49  5
+Spectre    Druid         F  batch-49  6
+Spectre    Priest        M  batch-49  7
+Spectre    Priest        F  batch-49  8
+Spectre    Necromancer   M  batch-49  9
+Spectre    Necromancer   F  batch-49  10
+Spectre    Paladin       M  batch-49  11
+Spectre    Paladin       F  batch-49  12
+Spectre    Rogue         M  batch-49  13
+Spectre    Rogue         F  batch-49  14
+Spectre    Ranger        M  batch-49  15
+Spectre    Ranger        F  batch-49  16
+
+# --- Spectre B (batch-50, 25 Nov 2026) ----------------------------------------
+# Lattice-free.  All twelve as briefed, no fixes; the blackguard woman's hair
+# drifts to the right edge.
+Spectre    Blackguard    M  batch-50  1
+Spectre    Blackguard    F  batch-50  2
+Spectre    Monk          M  batch-50  3
+Spectre    Monk          F  batch-50  4
+Spectre    Mindcrafter   M  batch-50  5
+Spectre    Mindcrafter   F  batch-50  6
+Spectre    Chaos-Warrior M  batch-50  7
+Spectre    Chaos-Warrior F  batch-50  8
+Spectre    Warrior-Mage  M  batch-50  9
+Spectre    Warrior-Mage  F  batch-50  10
+Spectre    High-Mage     M  batch-50  11
+Spectre    High-Mage     F  batch-50  12
+
+# --- Ghoul A (batch-51, 25 Nov 2026) ------------------------------------------
+# Fine 5.12 px grid (0.19).  Grey corpse skin, white stare, jagged teeth.
+# Fix: the necromancer man's eyes took the skull's green; painted white.
+Ghoul      Warrior       M  batch-51  1
+Ghoul      Warrior       F  batch-51  2
+Ghoul      Mage          M  batch-51  3
+Ghoul      Mage          F  batch-51  4
+Ghoul      Druid         M  batch-51  5
+Ghoul      Druid         F  batch-51  6
+Ghoul      Priest        M  batch-51  7
+Ghoul      Priest        F  batch-51  8
+Ghoul      Necromancer   M  batch-51  9
+Ghoul      Necromancer   F  batch-51  10
+Ghoul      Paladin       M  batch-51  11
+Ghoul      Paladin       F  batch-51  12
+Ghoul      Rogue         M  batch-51  13
+Ghoul      Rogue         F  batch-51  14
+Ghoul      Ranger        M  batch-51  15
+Ghoul      Ranger        F  batch-51  16
+
+# --- Ghoul B (batch-52, 25 Nov 2026) ------------------------------------------
+# Lattice-free.  All twelve as briefed, no fixes.
+Ghoul      Blackguard    M  batch-52  1
+Ghoul      Blackguard    F  batch-52  2
+Ghoul      Monk          M  batch-52  3
+Ghoul      Monk          F  batch-52  4
+Ghoul      Mindcrafter   M  batch-52  5
+Ghoul      Mindcrafter   F  batch-52  6
+Ghoul      Chaos-Warrior M  batch-52  7
+Ghoul      Chaos-Warrior F  batch-52  8
+Ghoul      Warrior-Mage  M  batch-52  9
+Ghoul      Warrior-Mage  F  batch-52  10
+Ghoul      High-Mage     M  batch-52  11
+Ghoul      High-Mage     F  batch-52  12
+
+# --- Sprite A (batch-53, 25 Nov 2026) -----------------------------------------
+# Lattice-free.  Green hair, teal eyes, pointed ears; the solid frost wings
+# spread past the cell edges into the neighbours, so each cut shows them
+# cropped by the frame on both sides, which reads as wings filling the
+# picture.  No fixes.
+Sprite     Warrior       M  batch-53  1
+Sprite     Warrior       F  batch-53  2
+Sprite     Mage          M  batch-53  3
+Sprite     Mage          F  batch-53  4
+Sprite     Druid         M  batch-53  5
+Sprite     Druid         F  batch-53  6
+Sprite     Priest        M  batch-53  7
+Sprite     Priest        F  batch-53  8
+Sprite     Necromancer   M  batch-53  9
+Sprite     Necromancer   F  batch-53  10
+Sprite     Paladin       M  batch-53  11
+Sprite     Paladin       F  batch-53  12
+Sprite     Rogue         M  batch-53  13
+Sprite     Rogue         F  batch-53  14
+Sprite     Ranger        M  batch-53  15
+Sprite     Ranger        F  batch-53  16
+
+# --- Sprite B (batch-54, 25 Nov 2026) ---------------------------------------
+# Lattice-free.  All twelve as briefed, no fixes; the wings are cropped by
+# the frame as on sheet 53.
+Sprite     Blackguard    M  batch-54  1
+Sprite     Blackguard    F  batch-54  2
+Sprite     Monk          M  batch-54  3
+Sprite     Monk          F  batch-54  4
+Sprite     Mindcrafter   M  batch-54  5
+Sprite     Mindcrafter   F  batch-54  6
+Sprite     Chaos-Warrior M  batch-54  7
+Sprite     Chaos-Warrior F  batch-54  8
+Sprite     Warrior-Mage  M  batch-54  9
+Sprite     Warrior-Mage  F  batch-54  10
+Sprite     High-Mage     M  batch-54  11
+Sprite     High-Mage     F  batch-54  12
+
+# --- Half-Titan A (batch-55, 25 Nov 2026) -----------------------------------
+# Lattice-free.  All sixteen as briefed, no fixes; the amber eyes survive the
+# cut, the necromancers' included.
+Half-Titan Warrior       M  batch-55  1
+Half-Titan Warrior       F  batch-55  2
+Half-Titan Mage          M  batch-55  3
+Half-Titan Mage          F  batch-55  4
+Half-Titan Druid         M  batch-55  5
+Half-Titan Druid         F  batch-55  6
+Half-Titan Priest        M  batch-55  7
+Half-Titan Priest        F  batch-55  8
+Half-Titan Necromancer   M  batch-55  9
+Half-Titan Necromancer   F  batch-55  10
+Half-Titan Paladin       M  batch-55  11
+Half-Titan Paladin       F  batch-55  12
+Half-Titan Rogue         M  batch-55  13
+Half-Titan Rogue         F  batch-55  14
+Half-Titan Ranger        M  batch-55  15
+Half-Titan Ranger        F  batch-55  16
+
+# --- Half-Titan B (batch-56, 25 Nov 2026) -----------------------------------
+# Lattice-free, drawn with dark cell lines, which cut.py paints out.  Cells 2,
+# 4 and 9 had one iris pixel snap to olive, painted back to orange.
+Half-Titan Blackguard    M  batch-56  1
+Half-Titan Blackguard    F  batch-56  2
+Half-Titan Monk          M  batch-56  3
+Half-Titan Monk          F  batch-56  4
+Half-Titan Mindcrafter   M  batch-56  5
+Half-Titan Mindcrafter   F  batch-56  6
+Half-Titan Chaos-Warrior M  batch-56  7
+Half-Titan Chaos-Warrior F  batch-56  8
+Half-Titan Warrior-Mage  M  batch-56  9
+Half-Titan Warrior-Mage  F  batch-56  10
+Half-Titan High-Mage     M  batch-56  11
+Half-Titan High-Mage     F  batch-56  12
+
+# --- Draconian redraws (batch-57, 25 Nov 2026) -------------------------------
+# The four provisional pairs, redrawn on a sheet of their own: their lines in
+# the Draconian blocks above point here.  Lattice-free.  The women came in tan,
+# so fixes.txt paints it to the gold (b88400) the other Draconian women wear.
+
+# --- The trial (pilot, 20 Nov 2026) -------------------------------------------
+# Its last four pairs (Klackon Paladin, Sprite Druid, Spectre Necromancer, Imp
+# Chaos-Warrior) waited for their own race's sheet.  Compared on 25 Nov 2026,
+# the race sheets won all four, as they match the neighbours drawn beside them
+# (and the pilot's Spectre man had his hood down), so no pilot cell is used.

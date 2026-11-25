@@ -1543,14 +1543,11 @@ proc birth_pass_done {} {
 	# 784 portraits, made by scripts/portraits/build-portraits.py: one for
 	# every race and class the game has, as a man and as a woman, each with a
 	# figure in it -- a cell left empty would be a blank square in a window.
+	# The build refuses an empty one.  Here every race is read back from each
+	# sheet, in a class and a sex that walk through all of them; not the whole
+	# sheet, which takes Tk some 17 seconds to load at 64.
 	check "every race and class the game has, has a portrait" {
 		portrait_load
-		# The whole sheet, which the game no longer loads -- it reads one
-		# cell at a time -- but which is the way to look at all 784.
-		if {"probe_sheet" ni [image names]} {
-			image create photo probe_sheet \
-				-file [file join $::portrait(dir) portraits.png]
-		}
 		set races [angband_birth names race]
 		set classes [angband_birth names class]
 		set missing {}
@@ -1561,17 +1558,21 @@ proc birth_pass_done {} {
 			if {$c ni $::portrait(classes)} { lappend missing $c }
 		}
 		set empty 0
-		set s $::portrait(size)
-		for {set row 0} {$row < 2 * [llength $::portrait(classes)]} {incr row} {
+		set rows [expr {2 * [llength $::portrait(classes)]}]
+		foreach sheet $::portrait(sheets) {
+			set s [lindex $sheet 0]
 			for {set col 0} {$col < [llength $::portrait(races)]} {incr col} {
-				if {[probe_sheet transparency get \
-						[expr {$col * $s + $s / 2}] [expr {$row * $s + $s - 4}]]} {
+				set cell [portrait_cell $sheet [expr {$col * $s}] \
+					[expr {$col % $rows * $s}]]
+				if {$cell eq "" || [$cell transparency get \
+						[expr {$s / 2}] [expr {$s - 4}]]} {
 					incr empty
 				}
 			}
 		}
-		list [llength $races] [llength $classes] $missing $empty
-	} "28 14 {} 0"
+		list [llength $races] [llength $classes] [llength $::portrait(sheets)] \
+			$missing $empty
+	} "28 14 2 {} 0"
 
 	# The game has no sex for a character; the portrait takes one from what
 	# birth rolled, so it is the same every time.  On its class's backdrop in a
@@ -1582,19 +1583,19 @@ proc birth_pass_done {} {
 		set drawn [portrait_put probe_portrait 64]
 		set size [list [image width probe_portrait] [image height probe_portrait]]
 		set row [lsearch -exact $::portrait(classes) [angband_player class]]
-		if {"probe_sheet" ni [image names]} {
-			image create photo probe_sheet \
-				-file [file join $::portrait(dir) portraits.png]
-		}
-		set ground [probe_sheet get [expr {$row * 32}] \
-			[expr {2 * [llength $::portrait(classes)] * 32}]]
+		set s [lindex [portrait_sheet 64] 0]
+		set ground [[portrait_cell [portrait_sheet 64] [expr {$row * $s}] \
+			[expr {2 * [llength $::portrait(classes)] * $s}]] get 0 0]
 		set corner [probe_portrait get 0 0]
 		portrait_put probe_portrait 64 0
 		set bare [probe_portrait transparency get 0 0]
+		# The Record's, at 32, is the smaller sheet's rather than a crop.
+		portrait_put probe_portrait 32
+		set small [list [image width probe_portrait] [image height probe_portrait]]
 		image delete probe_portrait
 		list [expr {$sex in {M F}}] [expr {[portrait_sex] eq $sex}] $drawn \
-			$size [expr {$corner eq $ground}] $bare
-	} "1 1 1 {64 64} 1 1"
+			$size [expr {$corner eq $ground}] $bare $small
+	} "1 1 1 {64 64} 1 1 {32 32}"
 
 	# The Hall of Fame is the game's table, and the character being played is
 	# in it where its score would put it, as the game's own prediction does.

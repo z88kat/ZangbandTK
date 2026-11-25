@@ -145,6 +145,12 @@ T	li1 code	scripts/tiles/build-neon.py
 T	li1	 cut them down, coloured them and finished them. They take nothing from another tile set either, so the project licence covers them too. They replaced Neon’s first tiles, which were typed in by hand for this game, in November 2026.
 T	li1	\n
 T	li1	•\t
+T	li1 strong	The character portraits (64x64) were made for this game too.
+T	li1	 An AI image generator drew them to a brief written for ZangbandTK, and 
+T	li1 code	scripts/portraits/build-portraits.py
+T	li1	 cut them down, snapped them to a palette and made the sheets the game reads. They take nothing from anyone else’s art, so the project licence covers them. They replaced the first portraits, which that script put together from text grids written for this game, in November 2026.
+T	li1	\n
+T	li1	•\t
 T	li1 strong	The isometric view’s art is this project’s own.
 T	li1	 
 T	li1 code	scripts/tiles/make-iso.py

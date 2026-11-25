@@ -1,9 +1,12 @@
 # The character portraits: made by scripts/portraits/build-portraits.py
-# from scripts/portraits/art.py.  Do not edit; change those and run it.
+# from scripts/portraits/source.png.  Do not edit; run that instead.
 #
 # A race is a column and a class two rows, a man's and a woman's, in the
 # order listed here.  The class backdrops are the last row, by class.
-size	32
+# portraits.png's cells are size pixels square.  A sheet line names the
+# same layout at another size, for the windows that show them smaller.
+size	64
+sheet	32	portraits-32.png
 race	Human
 race	Half-Elf
 race	Elf

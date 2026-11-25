@@ -1,0 +1,190 @@
+# fixes.txt -- the clean-ups each sheet's cells were cut with, copied from
+# the brief's batch folders by build-portraits.py --cut.  A line is a sheet,
+# a cell and its fixes; the brief's tools/cut.py says what each does.
+batch-02      14  clear:0-63,0-0 clear:0-0,0-63
+batch-04      14  paint:29-35,48-53:teal>red paint:29-35,48-53:sky>rose paint:29-35,48-53:blue>red paint:29-35,48-53:sea>red
+batch-08      14  paint:27-30,38-41:rose>tan
+batch-12      3  clear:53-60,43-44 paint:53-59,45-45:d86c54>plum paint:53-59,45-45:brown>plum paint:53-59,45-45:ink>plum paint:60-60,45-50:purple>plum paint:60-60,45-50:red>plum paint:53-59,46-50:d86c54>orange paint:53-59,46-50:a86a44>orange paint:53-59,46-50:38383f>orange paint:53-59,46-50:081a4c>orange paint:53-59,46-50:ink>orange paint:53-59,46-50:umber>orange paint:53-59,46-50:brown>orange   # a second hand behind his shoulder
+batch-14      2  paint:24-42,14-21:rose>a86a44 paint:24-42,22-24:rose>tan paint:26-32,23-23:red>a86a44
+batch-18      13  paint:0-63,0-63:pewter>sage
+batch-18      14  paint:0-63,0-63:pewter>sage
+batch-19      13  clear:18-19,15-19 paint:20-20,16-19:plum>ink clear:44-45,15-19
+batch-28      1  clear:0-15,0-28 clear:0-12,29-30 paint:0-63,0-63:pewter>steel
+batch-28      2  clear:49-53,3-8 clear:61-63,16-21 paint:0-63,0-63:pewter>steel
+batch-28      3  clear:0-14,0-29 clear:45-63,0-30 paint:0-63,0-63:pewter>steel
+batch-28      4  clear:0-16,0-28 paint:0-63,0-63:pewter>steel
+batch-28      5  paint:0-63,0-63:pewter>steel
+batch-28      6  paint:0-63,0-63:pewter>steel
+batch-28      7  paint:0-63,0-63:pewter>steel
+batch-28      8  paint:0-63,0-63:pewter>steel
+batch-28      9  paint:0-63,0-63:pewter>steel
+batch-28      10 paint:0-63,0-63:pewter>steel
+batch-28      11 paint:0-63,0-63:pewter>steel
+batch-28      12 paint:0-63,0-63:pewter>steel
+batch-30      2 clear:0-7,2-35
+batch-32/v2   11 paint:0-22,0-26:eec39a>none
+batch-32/v2   12 paint:0-22,0-26:eec39a>none
+batch-32/v2   2 paint:32-34,7-7:696a6a>purple paint:37-37,7-7:696a6a>purple paint:29-29,8-8:696a6a>purple paint:28-28,9-9:696a6a>purple paint:27-27,10-10:696a6a>purple paint:26-27,11-11:696a6a>purple
+batch-32/v2   2 paint:26-27,12-12:696a6a>purple paint:43-43,12-12:696a6a>purple paint:25-26,13-13:696a6a>purple paint:25-27,14-14:696a6a>purple paint:44-44,14-14:696a6a>purple paint:24-24,15-15:696a6a>purple
+batch-32/v2   2 paint:26-28,15-15:696a6a>purple paint:26-28,16-16:696a6a>purple paint:24-24,17-17:696a6a>purple paint:26-29,17-17:696a6a>purple paint:26-29,18-18:696a6a>purple paint:26-30,19-19:696a6a>purple
+batch-32/v2   2 paint:25-29,20-20:696a6a>purple paint:25-28,21-21:696a6a>purple paint:25-29,22-22:696a6a>purple paint:26-29,23-23:696a6a>purple paint:35-35,23-23:696a6a>purple paint:37-37,23-23:696a6a>purple
+batch-32/v2   2 paint:41-41,23-23:696a6a>purple paint:27-29,24-24:696a6a>purple paint:40-40,24-24:696a6a>purple paint:27-28,25-25:696a6a>purple paint:43-43,25-25:696a6a>purple paint:35-35,26-26:696a6a>purple
+batch-32/v2   2 paint:44-44,26-26:696a6a>purple paint:29-29,27-27:696a6a>purple paint:30-30,28-28:696a6a>purple paint:43-43,28-28:696a6a>purple paint:31-31,29-29:696a6a>purple paint:31-31,30-30:696a6a>purple
+batch-32/v2   2 paint:31-31,31-31:696a6a>purple paint:34-34,32-32:696a6a>purple paint:38-38,32-32:696a6a>purple paint:42-42,33-33:696a6a>purple paint:33-34,34-34:696a6a>purple paint:42-42,34-34:696a6a>purple
+batch-32/v2   2 paint:44-44,34-34:696a6a>purple paint:40-40,36-36:696a6a>purple paint:40-40,37-37:696a6a>purple paint:40-40,38-38:696a6a>purple paint:40-40,39-39:696a6a>purple paint:31-31,40-40:696a6a>purple
+batch-32/v2   2 paint:40-40,40-40:696a6a>purple paint:31-31,41-41:696a6a>purple paint:35-35,41-41:696a6a>purple paint:36-36,45-45:696a6a>purple
+batch-32/v2   4 paint:28-28,7-7:696a6a>purple paint:33-33,7-7:696a6a>purple paint:25-25,8-8:696a6a>purple paint:24-24,9-9:696a6a>purple paint:23-23,10-10:696a6a>purple paint:22-23,11-11:696a6a>purple
+batch-32/v2   4 paint:22-23,12-12:696a6a>purple paint:39-39,12-12:696a6a>purple paint:21-23,13-13:696a6a>purple paint:23-24,14-14:696a6a>purple
+batch-32/v2   6 paint:27-27,8-8:696a6a>purple paint:35-35,8-8:696a6a>purple paint:23-23,12-12:696a6a>purple paint:41-41,14-14:696a6a>purple paint:23-23,15-15:696a6a>purple paint:26-26,16-16:696a6a>purple
+batch-32/v2   6 paint:34-34,17-17:696a6a>purple paint:22-26,20-20:696a6a>purple paint:30-30,20-20:696a6a>purple paint:42-42,20-20:696a6a>purple paint:21-25,21-21:696a6a>purple paint:31-31,21-21:696a6a>purple
+batch-32/v2   6 paint:22-25,22-22:696a6a>purple paint:22-25,23-23:696a6a>purple paint:22-25,24-24:696a6a>purple paint:23-30,25-25:696a6a>purple paint:40-40,25-25:696a6a>purple paint:23-25,26-26:696a6a>purple
+batch-32/v2   6 paint:23-26,27-27:696a6a>purple paint:33-33,27-27:696a6a>purple paint:37-37,27-27:696a6a>purple paint:24-25,28-28:696a6a>purple paint:37-37,28-28:696a6a>purple paint:30-30,29-29:696a6a>purple
+batch-32/v2   6 paint:38-40,29-29:696a6a>purple paint:26-26,30-30:696a6a>purple paint:31-31,30-30:696a6a>purple paint:27-27,31-31:696a6a>purple paint:27-28,32-32:696a6a>purple paint:28-28,33-33:696a6a>purple
+batch-32/v2   6 paint:40-40,33-33:696a6a>purple paint:31-31,34-34:696a6a>purple paint:31-31,35-35:696a6a>purple paint:35-35,35-35:696a6a>purple paint:27-27,37-37:696a6a>purple paint:36-36,37-37:696a6a>purple
+batch-32/v2   6 paint:40-40,37-37:696a6a>purple paint:37-37,40-40:696a6a>purple paint:37-37,41-41:696a6a>purple paint:31-31,42-42:696a6a>purple paint:32-32,44-44:696a6a>purple paint:37-37,48-48:696a6a>purple
+batch-32/v2   8 paint:28-28,12-12:696a6a>purple paint:37-37,12-12:696a6a>purple paint:26-26,14-14:696a6a>purple paint:25-26,15-15:696a6a>purple paint:24-26,16-16:696a6a>purple paint:41-41,16-16:696a6a>purple
+batch-32/v2   8 paint:26-26,17-17:696a6a>purple paint:28-28,18-18:696a6a>purple paint:36-36,19-19:696a6a>purple paint:41-41,19-19:696a6a>purple paint:27-27,24-24:696a6a>purple paint:26-26,25-25:696a6a>purple
+batch-32/v2   8 paint:43-43,25-25:696a6a>purple paint:24-26,26-26:696a6a>purple paint:24-26,27-27:696a6a>purple paint:31-31,27-27:696a6a>purple paint:39-39,27-27:696a6a>purple paint:25-27,28-28:696a6a>purple
+batch-32/v2   8 paint:34-34,28-28:696a6a>purple paint:25-26,29-29:696a6a>purple paint:34-34,29-29:696a6a>purple paint:42-42,29-29:696a6a>purple paint:25-26,30-30:696a6a>purple paint:30-33,30-30:696a6a>purple
+batch-32/v2   8 paint:40-40,30-30:696a6a>purple paint:27-27,31-31:696a6a>purple paint:27-27,32-32:696a6a>purple paint:41-41,32-32:696a6a>purple paint:28-28,33-33:696a6a>purple paint:41-41,33-33:696a6a>purple
+batch-32/v2   8 paint:41-41,34-34:696a6a>purple paint:39-39,35-35:696a6a>purple paint:32-32,36-36:696a6a>purple paint:39-39,36-36:696a6a>purple paint:40-40,37-37:696a6a>purple paint:28-28,38-38:696a6a>purple
+batch-32/v2   8 paint:28-28,39-39:696a6a>purple paint:28-28,40-40:696a6a>purple paint:28-28,41-41:696a6a>purple paint:41-41,42-42:696a6a>purple paint:32-32,43-43:696a6a>purple paint:32-32,44-44:696a6a>purple
+batch-32/v2   8 paint:39-39,44-44:696a6a>purple paint:37-37,45-45:696a6a>purple paint:37-37,46-46:696a6a>purple paint:33-33,47-47:696a6a>purple paint:37-37,47-47:696a6a>purple
+batch-32/v2   10 paint:28-28,9-9:696a6a>purple paint:26-26,10-10:696a6a>purple paint:25-25,11-11:696a6a>purple paint:24-24,12-12:696a6a>purple paint:23-23,14-14:696a6a>purple paint:41-41,14-14:696a6a>purple
+batch-32/v2   10 paint:22-23,15-15:696a6a>purple paint:22-23,16-16:696a6a>purple paint:21-24,17-17:696a6a>purple paint:21-23,18-18:696a6a>purple paint:23-25,19-19:696a6a>purple paint:24-24,20-20:696a6a>purple
+batch-32/v2   10 paint:23-25,23-23:696a6a>purple paint:24-25,24-24:696a6a>purple paint:41-41,24-24:696a6a>purple paint:23-25,25-25:696a6a>purple paint:23-25,26-26:696a6a>purple paint:32-32,26-26:696a6a>purple
+batch-32/v2   10 paint:24-24,27-27:696a6a>purple paint:27-27,27-27:696a6a>purple paint:24-25,28-28:696a6a>purple paint:37-37,28-28:696a6a>purple paint:31-31,29-29:696a6a>purple paint:40-40,31-31:696a6a>purple
+batch-32/v2   10 paint:28-28,33-33:696a6a>purple paint:39-39,34-34:696a6a>purple paint:34-35,35-35:696a6a>purple paint:29-30,37-37:696a6a>purple paint:33-33,37-37:696a6a>purple paint:36-36,37-37:696a6a>purple
+batch-32/v2   10 paint:27-27,40-40:696a6a>purple paint:36-36,43-43:696a6a>purple paint:32-32,45-45:696a6a>purple paint:32-32,46-46:696a6a>purple
+batch-32/v2   12 paint:26-26,10-10:696a6a>purple paint:25-25,11-11:696a6a>purple paint:24-24,12-12:696a6a>purple paint:24-24,13-13:696a6a>purple paint:41-41,13-13:696a6a>purple paint:24-24,14-14:696a6a>purple
+batch-32/v2   12 paint:23-24,15-15:696a6a>purple paint:23-24,16-16:696a6a>purple paint:22-24,17-17:696a6a>purple paint:22-24,18-18:696a6a>purple paint:22-25,19-19:696a6a>purple paint:22-25,20-20:696a6a>purple
+batch-32/v2   12 paint:43-43,20-20:696a6a>purple paint:22-26,21-21:696a6a>purple paint:43-43,21-21:696a6a>purple paint:23-26,22-22:696a6a>purple paint:24-26,23-23:696a6a>purple paint:43-43,23-23:696a6a>purple
+batch-32/v2   12 paint:24-25,24-24:696a6a>purple paint:24-26,25-25:696a6a>purple paint:24-26,26-26:696a6a>purple paint:24-25,27-27:696a6a>purple paint:27-27,27-27:696a6a>purple paint:32-33,27-27:696a6a>purple
+batch-32/v2   12 paint:37-37,27-27:696a6a>purple paint:24-25,28-28:696a6a>purple paint:28-28,28-28:696a6a>purple paint:34-34,28-28:696a6a>purple paint:37-37,28-28:696a6a>purple paint:41-41,28-28:696a6a>purple
+batch-32/v2   12 paint:30-30,29-29:696a6a>purple paint:40-40,29-29:696a6a>purple paint:28-28,31-31:696a6a>purple paint:31-31,34-34:696a6a>purple paint:28-28,35-35:696a6a>purple paint:30-31,36-36:696a6a>purple
+batch-32/v2   12 paint:36-36,36-36:696a6a>purple paint:37-37,37-37:696a6a>purple paint:33-33,40-40:696a6a>purple paint:33-33,41-41:696a6a>purple paint:28-28,42-42:696a6a>purple paint:33-33,42-42:696a6a>purple
+batch-32/v2   12 paint:30-30,43-43:696a6a>purple paint:37-37,43-43:696a6a>purple paint:40-40,43-43:696a6a>purple paint:30-30,44-44:696a6a>purple paint:40-40,44-44:696a6a>purple paint:37-37,48-48:696a6a>purple
+batch-33      10 paint:24-44,17-24:6abe30>ac3232
+batch-33      1 accent:14-50,14-30:red:0.15
+batch-33      2 accent:14-50,14-30:red:0.15
+batch-33      3 accent:14-50,14-30:red:0.15
+batch-33      4 accent:14-50,14-30:red:0.15
+batch-33      5 accent:14-50,14-30:red:0.15
+batch-33      6 accent:14-50,14-30:red:0.15
+batch-33      7 accent:14-50,14-30:red:0.15
+batch-33      8 accent:14-50,14-30:red:0.15
+batch-33      9 accent:14-50,14-30:red:0.15
+batch-33      10 accent:14-50,14-30:red:0.15
+batch-33      11 accent:14-50,14-30:red:0.15
+batch-33      12 accent:14-50,14-30:red:0.15
+batch-33      13 accent:14-50,14-30:red:0.15
+batch-33      14 accent:14-50,14-30:red:0.15
+batch-33      15 accent:14-50,14-30:red:0.15
+batch-33      16 accent:14-50,14-30:red:0.15
+batch-34      1 accent:14-50,14-30:red:0.15
+batch-34      2 accent:14-50,14-30:red:0.15
+batch-34      3 accent:14-50,14-30:red:0.15
+batch-34      4 accent:14-50,14-30:red:0.15
+batch-34      5 accent:14-50,14-30:red:0.15
+batch-34      6 accent:14-50,14-30:red:0.15
+batch-34      7 accent:14-50,14-30:red:0.15
+batch-34      8 accent:14-50,14-30:red:0.15
+batch-34      9 accent:14-50,14-30:red:0.15
+batch-34      10 accent:14-50,14-30:red:0.15
+batch-34      11 accent:14-50,14-30:red:0.15
+batch-34      12 accent:14-50,14-30:red:0.15
+batch-35      9 paint:16-38,17-33:eec39a>pewter paint:16-38,17-33:cbdbfc>pewter paint:16-38,17-33:9badb7>pewter
+batch-36      13 paint:0-63,0-63:847e87>steel paint:0-63,0-63:696a6a>sea
+batch-36      14 paint:0-63,0-63:847e87>steel paint:0-63,0-63:696a6a>sea
+batch-36      15 paint:0-63,0-63:847e87>steel paint:0-63,0-63:696a6a>sea
+batch-36      16 paint:0-63,0-63:847e87>steel paint:0-63,0-63:696a6a>sea
+batch-37      9 paint:24-42,19-23:6abe30>blue paint:24-42,19-23:4b692f>blue
+batch-38      11 paint:46-63,0-20:eec39a>none
+batch-38      12 paint:48-63,0-20:eec39a>none
+batch-39      9 paint:20-44,17-25:99e550>ink paint:20-44,17-25:6abe30>ink paint:20-44,17-25:4b692f>ink paint:20-44,17-25:8f974a>ink paint:20-44,17-25:eec39a>steel
+batch-39      13 paint:20-44,17-25:ffffff>ink
+batch-39      3 paint:0-17,4-23:9badb7>none
+batch-39      4 paint:0-17,4-23:9badb7>none
+batch-39      13 paint:24-24,20-20:ink>steel paint:37-37,20-20:ink>steel
+batch-41      9 paint:24-46,17-22:99e550>frost paint:24-46,17-22:6abe30>frost
+batch-43      3 paint:0-15,6-24:639bff>none paint:0-15,6-24:5b6ee1>none
+batch-43      4 paint:0-15,6-24:639bff>none paint:0-15,6-24:5b6ee1>none
+batch-43      1 accent:14-50,16-30:yellow:0.15
+batch-43      2 accent:14-50,16-30:yellow:0.15
+batch-43      3 accent:14-50,16-30:yellow:0.15
+batch-43      4 accent:14-50,16-30:yellow:0.15
+batch-43      5 accent:14-50,16-30:yellow:0.15
+batch-43      6 accent:14-50,16-30:yellow:0.15
+batch-43      7 accent:14-50,16-30:yellow:0.15
+batch-43      8 accent:14-50,16-30:yellow:0.15
+batch-43      9 accent:14-50,16-30:yellow:0.15
+batch-43      10 accent:14-50,16-30:yellow:0.15
+batch-43      11 accent:14-50,16-30:yellow:0.15
+batch-43      12 accent:14-50,16-30:yellow:0.15
+batch-43      13 accent:14-50,16-30:yellow:0.15
+batch-43      14 accent:14-50,16-30:yellow:0.15
+batch-43      15 accent:14-50,16-30:yellow:0.15
+batch-43      16 accent:14-50,16-30:yellow:0.15
+batch-44      1 accent:14-50,16-30:yellow:0.15
+batch-44      2 accent:14-50,16-30:yellow:0.15
+batch-44      3 accent:14-50,16-30:yellow:0.15
+batch-44      4 accent:14-50,16-30:yellow:0.15
+batch-44      5 accent:14-50,16-30:yellow:0.15
+batch-44      6 accent:14-50,16-30:yellow:0.15
+batch-44      7 accent:14-50,16-30:yellow:0.15
+batch-44      8 accent:14-50,16-30:yellow:0.15
+batch-44      9 accent:14-50,16-30:yellow:0.15
+batch-44      10 accent:14-50,16-30:yellow:0.15
+batch-44      11 accent:14-50,16-30:yellow:0.15
+batch-44      12 accent:14-50,16-30:yellow:0.15
+batch-44      4 paint:19-34,15-16:222034>red paint:19-34,15-16:000000>red paint:19-34,15-16:45283c>red
+batch-45      10 paint:0-14,0-18:99e550>frost paint:0-14,0-18:eec39a>frost paint:0-14,0-18:8f974a>steel
+batch-45      1 accent:14-50,14-30:orange:0.15
+batch-45      2 accent:14-50,14-30:orange:0.15
+batch-45      3 accent:14-50,14-30:orange:0.15
+batch-45      4 accent:14-50,14-30:orange:0.15
+batch-45      5 accent:14-50,14-30:orange:0.15
+batch-45      6 accent:14-50,14-30:orange:0.15
+batch-45      7 accent:14-50,14-30:orange:0.15
+batch-45      8 accent:14-50,14-30:orange:0.15
+batch-45      9 accent:14-50,14-30:orange:0.15
+batch-45      10 accent:14-50,14-30:orange:0.15
+batch-45      11 accent:14-50,14-30:orange:0.15
+batch-45      12 accent:14-50,14-30:orange:0.15
+batch-45      13 accent:14-50,14-30:orange:0.15
+batch-45      14 accent:14-50,14-30:orange:0.15
+batch-45      15 accent:14-50,14-30:orange:0.15
+batch-45      16 accent:14-50,14-30:orange:0.15
+batch-46      1 accent:14-50,14-30:orange:0.15
+batch-46      2 accent:14-50,14-30:orange:0.15
+batch-46      3 accent:14-50,14-30:orange:0.15
+batch-46      4 accent:14-50,14-30:orange:0.15
+batch-46      5 accent:14-50,14-30:orange:0.15
+batch-46      6 accent:14-50,14-30:orange:0.15
+batch-46      7 accent:14-50,14-30:orange:0.15
+batch-46      8 accent:14-50,14-30:orange:0.15
+batch-46      9 accent:14-50,14-30:orange:0.15
+batch-46      10 accent:14-50,14-30:orange:0.15
+batch-46      11 accent:14-50,14-30:orange:0.15
+batch-46      12 accent:14-50,14-30:orange:0.15
+batch-48      1 green:1.6
+batch-48      2 green:1.6
+batch-48      3 green:1.6
+batch-48      4 green:1.6
+batch-48      5 green:1.6
+batch-48      6 green:1.6
+batch-48      7 green:1.6
+batch-48      8 green:1.6
+batch-48      9 green:1.6
+batch-48      10 green:1.6
+batch-48      11 green:1.6
+batch-48      12 green:1.6
+batch-49      10 clear:0-15,0-63
+batch-51      9 paint:26-44,19-22:99e550>white paint:26-44,19-22:6abe30>white
+batch-56      2 paint:34-42,20-22:8f974a>df7126
+batch-56      4 paint:34-42,20-22:8f974a>df7126
+batch-56      9 paint:34-42,20-22:8f974a>df7126
+batch-57      2 paint:0-63,0-63:d9a066>b88400
+batch-57      4 paint:0-63,0-63:d9a066>b88400
+batch-57      6 paint:0-63,0-63:d9a066>b88400
+batch-57      8 paint:0-63,0-63:d9a066>b88400

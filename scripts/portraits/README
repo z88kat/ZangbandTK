@@ -1,0 +1,47 @@
+The character portraits' source
+================================
+
+A 64x64 portrait for every race and class, as a man and as a woman: 784 in
+all, in early-1990s RPG pixel art and the DB32 palette.  An AI image
+generator drew them in November 2026, sixteen to a sheet, to a brief written
+for this game.  The brief, every sheet it returned and the reasons each
+portrait was kept or drawn again are in archive/design_brief_portraits/,
+which is not in the repository.
+
+    source.png      every accepted portrait, cut to 64x64 and snapped to the
+                    palette, on transparency.  This is the art.
+    source.txt      which race and class is where in source.png
+    backdrops.txt   each class's backdrop, the gradient a window sets its
+                    portraits on
+    recipe.txt      which take of each portrait was used: the brief's
+                    accepted.txt, copied here
+    fixes.txt       the clean-ups each was cut with, copied from the brief's
+                    sheets
+
+`build-portraits.py` reads source.png, source.txt and backdrops.txt and
+writes lib/tcl/portraits/portraits.png (64), portraits-32.png (the same
+shrunk, for the Character Record and the tombstone) and portraits.txt.
+`build-portraits.py --cut` rewrites source.png, source.txt, recipe.txt and
+fixes.txt from the brief's sheets, and needs the brief and ImageMagick.
+`--review DIR` writes labelled sheets of all 784 at both sizes to look at.
+
+A race or class added to lib/gamedata fails the build until it has a
+portrait.  Until then the game shows the character's map tile in its place.
+
+How a sheet was cut
+-------------------
+
+Each sheet is a 4x4 grid of cells on flat magenta.  A cell is split into
+64x64 blocks; a block is transparent when less than half of it is figure,
+and otherwise takes the median colour of its figure pixels, snapped to DB32
+(less pink, which keys out against the magenta) and a few colours the
+generator kept drawing that DB32 lacks (EXTRA in build-portraits.py).  Dark
+grid lines a sheet drew between its cells are painted out first.
+
+fixes.txt gives what one cell needed on top: `paint:` turns one colour into
+another inside a rectangle (an eye that snapped to the wrong colour, a glow
+drawn see-through), `clear:` empties a rectangle (a stray weapon), `accent:`
+keeps a small mark such as a red eye that the median would lose, `green:`
+boosts the green of a skin before the snap, and `add:` gives the snap extra
+colours.  The brief's tools/cut.py is the tool every sheet was judged with
+as it came back; it cuts with these same functions.

@@ -107,6 +107,23 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+The portraits are redrawn — 25 November 2026
+--------------------------------------------
+
+- **The character portraits are new pictures.** All 784, every race and class
+  as a man and as a woman, were drawn by an AI image generator to a brief, in
+  the style of an early-1990s role-playing game, at 64×64. They replace the
+  32×32 busts that ``scripts/portraits/build-portraits.py`` used to put
+  together from text grids. The script now cuts the drawings and finishes the
+  sheets.
+- The Character window and the Birth window show them at 64, as before, but
+  now at their own size where the old ones were doubled. The Character Record
+  and the tombstone show them shrunk to 32.
+- The browser version's character creation page shows the same pictures. Its
+  first visit is about 0.9 MB larger.
+- Nothing changed about which portrait you get: it's still your race and class,
+  and a man or a woman by the age, height and weight birth rolled.
+
 David Gervais' 2001 tiles — 19 November 2026
 --------------------------------------------
 

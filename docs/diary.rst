@@ -31,6 +31,55 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+25 November 2026 — The portraits are drawn
+==========================================
+
+On the 20th Steven asked for better pixel-art portraits, drawn by the AI image
+generator the way the 1982 and Neon tiles were. I made a few calls for him to
+check at the trial. The portraits would be 64 pixels rather than 32, since the
+Character window shows them at 64 anyway. They'd use DB32 rather than 1982's
+sixteen colours, because a face that size wants more than one skin ramp. And
+the generator would draw only the figure, on magenta, so the class backdrops
+stay ours and the tombstone can still set the figure on the stone. The trial
+was eight of the ten portraits he'd approved in October, so it could be judged
+against them. It came back clean, and he sent the first Human sheet straight
+after it.
+
+Then came 56 sheets, two for each people, and a 57th for four Draconian pairs
+that wouldn't come right. Most of the work was the generator's habits. The
+necromancers came hooded with their faces lost in shadow and their eyes glowing
+green, the trope Neon had fought, and even after the wording was tightened the
+green leaked into a man's eyes now and then, right to the end, and was painted
+out. The Mind Flayers arrived with the Draconians' wings, carried over from
+earlier sheets in the same chat, so from then on every sheet went to a fresh
+chat. Small eyes, a vampire's red or an imp's yellow, were averaged away when a
+cell was cut down to 64, until the cut learned to keep a colour that makes up a
+fair share of a block.
+
+On the afternoon of the 22nd the generator changed under us. It started
+drawing on a coarse grid of its own, about 50 squares across a cell, which cut
+down to something blocky. A reference picture of ours fixed the size and then
+lent its human faces to the Mind Flayer women. What worked was a picture of
+the grid itself, the sheet ruled into 64 squares a cell, attached to every
+request to draw into. Steven wondered whether to start again with the new
+generator. The first Human sheet was redrawn that way as a test, and at actual
+size it sat with the old one, so he kept the 448 already done and finished the
+rest rather than spend another four days on it.
+
+The importer follows 1982's. The brief's accepted.txt says which take of each
+portrait won, and ``build-portraits.py --cut`` cuts all 784 again from the
+sheets. They came out pixel for pixel as I'd judged them. The game gets two
+sheets, 64 for the Character and Birth windows and 32, shrunk, for the Record
+and the tombstone, because a Tk photo only zooms up. art.py, a thousand lines
+of text-grid bodies and hats, is gone. Its fourteen backdrops live on in a file
+of their own.
+
+The bigger sheet isn't free. Tk takes about 50 ms to read one portrait from it,
+where the old one took 10, though each is read once and kept. The bridge test
+loaded the whole sheet to check none was empty, and at 64 that takes 17
+seconds, so it now reads one portrait for each race from each sheet instead.
+
+
 19 November 2026 — David Gervais' 2001 tiles
 ============================================
 

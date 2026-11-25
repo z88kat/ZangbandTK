@@ -154,9 +154,9 @@ jobs:
       - name: Tcl tests
         run: scripts/run-tcl-tests
 
-      # The character portraits are made from scripts/portraits/art.py and
-      # committed; this fails when the sheet is not what the art makes, or a
-      # race or class in lib/gamedata has none.
+      # The character portraits are made from scripts/portraits/source.png and
+      # committed; this fails when the sheets are not what the source makes,
+      # or a race or class in lib/gamedata has no portrait.
       - name: Portraits are current
         run: python3 scripts/portraits/build-portraits.py --check
 

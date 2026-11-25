@@ -69,9 +69,10 @@ are drawn only in ZangbandTK's own windows, and its sheet alone is a megabyte.
 What it costs to start
 ======================
 
-About 7.7 MB on the first visit, and it's cached after that. Roughly 2.5 MB is
+About 8.6 MB on the first visit, and it's cached after that. Roughly 2.5 MB is
 compiled code, 5 MB is game data (the monsters, objects, dungeon profiles,
-the help files and five tilesets) and the rest is the page and its font. The
+the help files and five tilesets), 1.1 MB is the character portraits and the
+rest is the page and its font. The
 page shows how far the download has got while it loads.
 
 Savefiles
