@@ -31,6 +31,23 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+25 November 2026, later — the version that stood still
+======================================================
+
+Steven went to make a release and found the game still calling itself 3.138.0,
+the number of the last one, five weeks and 84 commits ago. The rule is on the
+release log's front: patch for a fix, minor for a feature, bumped in the commit
+that does it. Nobody bumped it, me included, through an isometric view, three
+tile sets, 784 portraits and a DS build. So every build in between said 3.138.0
+in its title bar, which is the one thing the number is for.
+
+Catching up commit by commit would have meant inventing about thirty version
+numbers after the fact, none of which any build ever showed. So it's 3.139.0,
+one minor step for the lot, and the release log says so. The log had drifted
+too: nothing from 22 October to 13 November had an entry, so it gained five
+sections, written from the commit messages and from this diary.
+
+
 25 November 2026 — The portraits are drawn
 ==========================================
 

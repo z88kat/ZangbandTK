@@ -5,9 +5,9 @@ Release log
 .. note::
 
    **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
-   and a source archive. The most recent is **3.121.0**, of 15 September, and all of them are on
+   and a source archive. The most recent is **3.139.0**, of 25 November, and all of them are on
    the `Releases page`_. Those up to 3.94.3 are marked as pre-releases;
-   3.111.3 and 3.121.0 aren't.
+   3.111.3 and everything after it aren't.
 
    What follows is the development log, grouped by the milestones the work is
    organised into, newest first, with everything done since the last tag under
@@ -60,7 +60,7 @@ The Tk front end, ZangbandTK.app — 17 September to 14 October 2026
 ---------------------------------------------------------------------
 
 Phase 3 rebuilt the original ZangbandTk's interface as a second Mac application,
-``ZangbandTK.app``, which the next release ships as
+``ZangbandTK.app``, which every release since 3.138.0 ships as
 ``ZangbandTK-<version>-osx-tk.dmg`` beside ``Zangband.app`` — and, from 15
 October, for Windows and Linux too (below). Its work was
 tracked by milestones of its own, T0 to T9, and did not move the version
@@ -106,6 +106,19 @@ number, so it is told here in one place rather than version by version.
 The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
+
+A command card, and 3.139.0 — 25 November 2026
+----------------------------------------------
+
+- **3.139.0** is the release of everything from here down to 3.138.0. The
+  version number didn't move in between: none of the 84 commits after 21
+  October bumped it, as each feature and fix should have, so every build from
+  those five weeks called itself 3.138.0.
+- **A command reference card**: every key, in both keysets, on two sides of
+  A4, which fold in three. It's a `PDF on the site`_, and :doc:`download`
+  says how to print it.
+
+.. _PDF on the site: https://zangbandtk.com/zangbandtk-command-card.pdf
 
 The portraits are redrawn — 25 November 2026
 --------------------------------------------
@@ -189,6 +202,144 @@ The browser version is a web page — 16 November 2026
   the 1982 set. Nomad's tiles, taller than they're wide, aren't in the browser
   version.
 - The first visit downloads about 7 MB, down from 9.5.
+
+Windows builds its own SDL2 — 14 and 15 November 2026
+-----------------------------------------------------
+
+- **ZangbandTK's Windows download builds SDL2 and SDL2_mixer from source**,
+  as the Linux ones already did. In November MSYS2 replaced SDL2 with
+  sdl2-compat and rebuilt SDL2_mixer against FluidSynth, which brings in GNU
+  readline, and readline's GPL 3 can't go into a GPL 2 game.
+- The zip carries fewer files as a result. MP3, Ogg Vorbis, Opus and FLAC are
+  decoded inside SDL2_mixer.dll, as they are in the AppImage, where six codec
+  DLLs used to sit beside it, mpg123 among them. Music of your own in MOD,
+  MIDI or WavPack, which those happened to play, no longer does.
+- The Tk front end hadn't built on Linux or Windows since 2 November, when the
+  bundled fonts arrived. No release had it. Its checks now run on every push,
+  where before they ran on about one push in six.
+
+The 1982 tiles — 13 November 2026
+---------------------------------
+
+- **A new tile set, graphics mode 9**: early-1980s fantasy pixel art at 32×32
+  in a sixteen-colour palette, with a picture for every monster, terrain
+  feature, object, flavour, trap and spell in the game. An AI image generator
+  drew the pictures to a brief, and ``scripts/tiles/build-1982.py`` finishes
+  them.
+- A monster of a family is the family's picture in its own colour, so one
+  young dragon is every young dragon, shading kept. Uniques, and monsters that
+  look nothing like their family, have pictures of their own. Every class has
+  a hero and a heroine, and you get the one your portrait shows.
+- Pref files can ask the character's sex, ``?:[EQU $SEX Female]``, beside
+  ``$RACE`` and ``$CLASS``. It's the same rule the portraits use.
+
+The isometric view — 30 October to 13 November 2026
+---------------------------------------------------
+
+- **ZangbandTK can draw the map isometrically**, as ZAngbandTk 2.4 could. It's
+  on the Display page under *Map view*, and off unless you choose it. There
+  are four styles: pen and ink on cream, blue on white, a dungeon in colour on
+  black with a yellow brick road through town, and ASCII, which stands the
+  text map up with each wall a stack of its character.
+- The art is new, drawn by ``scripts/tiles/make-iso.py``. The 2001 isometric
+  sheet isn't used, because it came with a permission for that project only.
+  What stands on a square is the chosen tile set's own picture, outlined; a
+  thing with no picture is a counter with its letter on it. Traps and runes
+  lie flat, walls in front of you are cut down to their footings so you can
+  see past them, and no two stretches of wall are quite the same.
+- Looking, aiming, the mouse and bolts all work in it. It scrolls as the flat
+  map does, follows *Center map continuously*, grows with the tile size, and
+  shows torchlight. A new level no longer leaves it black until you take a
+  step.
+- **ZangbandTK brings five monospaced fonts**: JetBrains Mono, IBM Plex Mono,
+  Source Code Pro, Space Mono and Red Hat Mono. The Display page offers them
+  for every pane, and nothing is installed on your system.
+- **The Choose Game window can delete savefiles**, one at a time or several
+  together, after a question that names each character and says how it
+  stands.
+- **Fixed:** choosing a tile set at the Choose Game window, before any
+  character was loaded, crashed the game.
+
+A faster game — 29 October 2026
+-------------------------------
+
+- **Release builds use link-time optimisation**, the DOS one included. It takes
+  about a third off the game's own work, and a seeded game plays out exactly
+  as before.
+- **ZangbandTK hands the map to Tk at most once a frame**, and without the
+  transparency it never needed. A step round the town went from 16 ms to 8.
+  Windows that rebuild on the game's events do it once per burst: the
+  Character window had been rebuilding four times for a purchase and a hit.
+- **Zangband.app keeps each tile it cuts from the sheet**, so a full redraw of
+  a 100 by 31 map takes 16 ms where it took 48.
+- **The game does less over the whole level each step.** Light is worked out
+  only round what you can see, six to nine times faster. The noise map
+  monsters hunt you by is three and a half times faster, and covers the same
+  ground. Traps, the minimap and glittering monsters and treasure stopped
+  doing work nobody would see.
+- **Waiting for a key no longer means sleeping and looking.** The SDL2, X11
+  and Windows front ends sleep until something arrives: a key reached the X11
+  game in 12.6 ms and now takes under half a millisecond. On the Mac, running
+  and resting are no longer held to the screen's frame rate.
+- **Fixed:** lava lit four of the eight squares round it, a fault upstream
+  since 2019. A road walked at night vanished when the surface was rebuilt,
+  and dusk forgot the whole town's ground. Zangband.app drew tiles twice as
+  tall as they are wide whenever the font is taller than it is wide, which
+  with Menlo it is. And after a graphics driver restart, the SDL2 front end's
+  windows could go blank.
+- **Fixed:** a Mage who doesn't study Trump could crash the game by browsing a
+  deck of cards. The inspect screen told the same Mage it could read the deck,
+  the store sold one without "(Can't use!)", and the pack sorted it with the
+  books it can read. All four now ask whether the character can read the book.
+- In ZangbandTK's Spell Book and Choose Game windows, clicking the sorted
+  column's heading again reverses the order, and the heading shows which way.
+
+The DS build on a real DS — 23 to 26 October 2026
+-------------------------------------------------
+
+- **The Nintendo DS build plays on an original DS**, tested from a DSpico
+  flashcart and in melonDS. It now needs the 8 MB Memory Expansion Pak in the
+  GBA slot. The text is a readable 5×8 font, the top screen a window onto an
+  80-column screen that keeps the character in the middle, and the
+  character's stats are on the bottom screen under the keyboard. The dungeon
+  plays. In town the townspeople still jump about at every step.
+- A step on the first level went from 367 ms to 106 in melonDS. The biggest
+  part was the view, which was worked out twice a step and over the whole
+  level. That code is shared, so every build has the saving.
+
+Pointing and clicking — 22 to 24 October 2026
+---------------------------------------------
+
+- **ZangbandTK says what's under the pointer**, in the look command's words,
+  on a line under the map: "You see a jumping fireball (undamaged)". Over a
+  monster or an item the Recall pane follows it.
+- **Click to walk.** A click on the map steps towards it; a double click walks
+  there, round monsters and through what you haven't seen, or says "You know
+  of no way there."
+- **The Store window says what a quantity comes to**: "Costs 9 au; you'd have
+  344". It asks the game, so a staff's price for two isn't always twice one.
+- **Ignoring and auto-inscription have windows of their own**, the last of
+  the options left to the text screens: an Ignoring page in the Options
+  window, *Inscribe When Found* in the Knowledge window, and an *Ignore*
+  submenu in every item's menu.
+- **New Character opens in a tenth of a second.** It took two on a Mac and
+  five on a Linux VM, loading every portrait whole. A step on the map takes a
+  quarter of the time it did.
+- On Linux, text sits in the middle of buttons and fields, the Flags page and
+  the map can be read on a desktop scaled to twice the size, and the window
+  has the game's icon. The Items window's doll is a man or a woman, as your
+  portrait is.
+- **The SDL2 front end has one window.** Subwindows open beside the main
+  window, which grows to fit them, and it opens next time as you left it.
+- **A fetch job pays for what you already carry**, and the Knowledge window's
+  Quests page says, for every job, what it wants, what finishes it and what it
+  pays. The Chaos Tower and the inn by day, which had nothing to say to some
+  visitors, open their windows with "Nothing today".
+- The ARM Linux downloads, added to 3.138.0 after its release, are built with
+  the rest from now on.
+- The manual describes the shape powers the Druid, the Necromancer and the
+  Blackguard got back on 18 October. Until now it said only a race grants a
+  power.
 
 Closed stores and small levels — 21 October 2026
 ------------------------------------------------

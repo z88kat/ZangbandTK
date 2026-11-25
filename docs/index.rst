@@ -23,7 +23,7 @@ Zangband's 2005 code wasn't worth keeping. What it rebuilds is the game's
    wilderness, the towns and their services, thirteen dungeons, the bestiary,
    mutations, chaos patrons, seven realms of magic, pets and nightmare mode.
    What's left is polish, and finishing the Tk front end, a second application
-   modelled on the original ZangbandTk, which the next release ships on Windows
+   modelled on the original ZangbandTk, which the releases ship on Windows
    and Linux as well as the Mac. :doc:`features` lists what's in and what
    isn't, and no release has been played through before it was tagged.
    Development happens on `GitHub`_.

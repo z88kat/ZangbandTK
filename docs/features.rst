@@ -548,7 +548,7 @@ Only the Tk front end is left, and its part of the manual is already written.
      - Chapter
    * - The Tk front end
      - T9
-     - Being finished. Ships from the next release, on Windows and Linux as
+     - Being finished. Shipped since 3.138.0, on Windows and Linux as
        well as Apple Silicon Macs.
      - :doc:`customize`
 

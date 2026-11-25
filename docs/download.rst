@@ -77,9 +77,8 @@ front end, the one with Tk in it (see `Two Mac applications`_).
 
 CI builds, signs and verifies each release, but no version has been played
 through before it was tagged, and there are known bugs. The releases up to
-3.94.3 carry a pre-release badge to warn you. The newest, 3.121.0 of 15
-September, came out before nightmare mode was finished, and it has no Tk front
-end. Both arrive with the next release.
+3.94.3 carry a pre-release badge to warn you. The newest is 3.139.0, of 25
+November. ZangbandTK, the Tk front end, has been in every release since 3.138.0.
 
 CI builds and packages the Windows, Linux, Nintendo and DOS builds, and
 smoke-tests all of them except the Nintendo ones. The game is developed and
