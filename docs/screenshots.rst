@@ -176,8 +176,8 @@ There's one for every race and class, as a man and as a woman, and the
 character keeps it for the rest of its life.
 
 .. image:: screenshots/tk-main.png
-   :alt: The main window: the map in Neon tiles with the village of Avernus at
-         the bottom of the view and the sidebar of stats on the left, the
+   :alt: The main window: the map in Neon tiles with the village of Ghenesh in
+         the lower half of the view and the sidebar of stats on the left, the
          overhead map and bars for hit points, spell points, food and
          experience on the right, and three panes below, the last listing the
          pack.
@@ -195,10 +195,10 @@ game's questions about items with a click.
          experience, and three panels headed Fighting, Being and Standing.
    :width: 100%
 
-The Character window. Info is the first of its five pages. The others are the
-character's background, its virtues, its mutations, and the game's notes on what
-has happened to it. A Ranger has no mana at the first level, so that bar is
-empty.
+The Character window. Info is the first of its six pages. The others are the
+:doc:`flags <flags>` and where each comes from, the character's background, its
+virtues, its mutations, and the game's notes on what has happened to it. A
+Ranger has no mana at the first level, so that bar is empty.
 
 .. image:: screenshots/tk-items.png
    :alt: The Items window, with a paper doll on black between twelve equipment
