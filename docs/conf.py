@@ -136,3 +136,8 @@ html_sidebars = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+# Copied to the top of the site as they are, so each has an address that
+# doesn't move: https://zangbandtk.com/zangbandtk-command-card.pdf.  The card
+# is made by scripts/command-card/build.py.
+html_extra_path = ["downloads"]

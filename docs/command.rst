@@ -19,6 +19,13 @@ Most commands take no "energy" to perform, while other commands only take
 energy when they cause the world to change in some way. For example,
 attempting to read a scroll while blind does not use any energy.
 
+.. tip::
+
+   The `command reference card`_ has the short version of this chapter: every
+   key, in both keysets, on one sheet of A4 to print and keep by the keyboard.
+
+.. _command reference card: https://zangbandtk.com/zangbandtk-command-card.pdf
+
 The following command is very useful for beginners,
 
 Command lists ('Enter')

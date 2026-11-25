@@ -106,7 +106,7 @@ Original Keyset Command Summary
 ``e``  List equipped items           ``E``  Eat some food
 ``f``  Fire an item                  ``F``  Fuel your lantern/torch
 ``g``  Get objects on floor          ``G``  Gain new spells/prayers
-``h``  Fire default ammo at target   ``H``  (unused)
+``h``  Fire default ammo at nearest  ``H``  (unused)
 ``i``  List contents of pack         ``I``  Inspect an item
 ``j``  (unused)                      ``J``  Quests you have taken on
 ``k``  Ignore an item                ``K``  Toggle ignore
@@ -122,7 +122,7 @@ Original Keyset Command Summary
 ``u``  Use a staff                   ``U``  Use an item
 ``v``  Throw an item                 ``V``  Display version info
 ``w``  Wear/wield equipment          ``W``  Walk into a trap
-``x``  (unused)                      ``X``  (unused)
+``x``  Swap weapons (wield @0)       ``X``  (unused)
 ``y``  (unused)                      ``Y``  (unused)
 ``z``  Zap a rod                     ``Z``  (unused)
 ``!``  (unused)                      ``^a`` (special - debug command)
@@ -246,7 +246,7 @@ Roguelike Keyset Command Summary
  ``\``  (special - bypass keymap)     ``~``  Check knowledge
   \`    (special - escape)            ``?``  Display help
  ``/``  Identify symbol
-``TAB`` Fire default ammo at target
+``TAB`` Fire default ammo at nearest
  ``|``  List contents of quiver
 ======= ============================= ====== ============================
 
@@ -515,12 +515,12 @@ space or ``+``
   interesting location.
 
 ``<``
-  Look for the nearest, by number of turns needed to move there, down
+  Look for the nearest, by number of turns needed to move there, up
   staircase.  If there is one, move the targeting cursor there.  As noted
   above, can change the targeting mode.
 
 ``>``
-  Look for the nearest, by number of turns needed to move there, up
+  Look for the nearest, by number of turns needed to move there, down
   staircase.  If there is one, move the targeting cursor there.  As noted
   above, can change the targeting mode.
 

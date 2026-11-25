@@ -91,7 +91,7 @@ T	tr0 odd	d  Drop an item                  D   Disarm a trap or lock a door\n
 T	tr0	e  List equipped items           E   Eat some food\n
 T	tr0 odd	f  Fire an item                  F   Fuel your lantern/torch\n
 T	tr0	g  Get objects on floor          G   Gain new spells/prayers\n
-T	tr0 odd	h  Fire default ammo at target   H   (unused)\n
+T	tr0 odd	h  Fire default ammo at nearest  H   (unused)\n
 T	tr0	i  List contents of pack         I   Inspect an item\n
 T	tr0 odd	j  (unused)                      J   Quests you have taken on\n
 T	tr0	k  Ignore an item                K   Toggle ignore\n
@@ -107,7 +107,7 @@ T	tr0 odd	t  Take off equipment            T   Dig a tunnel\n
 T	tr0	u  Use a staff                   U   Use an item\n
 T	tr0 odd	v  Throw an item                 V   Display version info\n
 T	tr0	w  Wear/wield equipment          W   Walk into a trap\n
-T	tr0 odd	x  (unused)                      X   (unused)\n
+T	tr0 odd	x  Swap weapons (wield @0)       X   (unused)\n
 T	tr0	y  (unused)                      Y   (unused)\n
 T	tr0 odd	z  Zap a rod                     Z   (unused)\n
 T	tr0	!  (unused)                      ^a  (special - debug command)\n
@@ -245,7 +245,7 @@ T	tr0 odd	>    Go down staircase (see note)  ^z  Borg commands (if available)\n
 T	tr0	\\    (special - bypass keymap)     ~   Check knowledge\n
 T	tr0 odd	`    (special - escape)            ?   Display help\n
 T	tr0	/    Identify symbol\n
-T	tr0 odd	TAB  Fire default ammo at target\n
+T	tr0 odd	TAB  Fire default ammo at nearest\n
 T	tr0	|    List contents of quiver\n
 T	tbllast0	\n
 M	index-4
@@ -530,11 +530,11 @@ T	p1	Does nothing in free targeting. In interested targeting, go to the previous
 T	p1	\n
 T	dt0 strong code	<
 T	dt0	\n
-T	p1	Look for the nearest, by number of turns needed to move there, down staircase. If there is one, move the targeting cursor there. As noted above, can change the targeting mode.
+T	p1	Look for the nearest, by number of turns needed to move there, up staircase. If there is one, move the targeting cursor there. As noted above, can change the targeting mode.
 T	p1	\n
 T	dt0 strong code	>
 T	dt0	\n
-T	p1	Look for the nearest, by number of turns needed to move there, up staircase. If there is one, move the targeting cursor there. As noted above, can change the targeting mode.
+T	p1	Look for the nearest, by number of turns needed to move there, down staircase. If there is one, move the targeting cursor there. As noted above, can change the targeting mode.
 T	p1	\n
 T	dt0 strong code	x
 T	dt0	\n

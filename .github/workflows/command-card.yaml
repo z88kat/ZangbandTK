@@ -1,0 +1,37 @@
+name: Command card
+
+# The command reference card, docs/downloads/zangbandtk-command-card.pdf, is
+# made by scripts/command-card/build.py from the game's command table and
+# keymaps, and committed.  This checks that every command the game has is on
+# the card, that every command on it is still in the game, and that the rows
+# written out by hand still say what lib/customize/pref.prf does.
+#
+# It doesn't make the PDF again: that needs Chrome, and Chrome's PDFs are never
+# the same twice.  When it fails, give the command a row in build.py, run it,
+# and commit the PDF with the change.
+
+on:
+  push:
+    branches: [ master ]
+    paths: &card_paths
+      - 'src/ui-game.c'
+      - 'lib/customize/pref.prf'
+      - 'scripts/command-card/**'
+      - '.github/workflows/command-card.yaml'
+  pull_request:
+    paths: *card_paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  card:
+    name: The card has every command
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Check the card
+        run: python3 scripts/command-card/build.py --check

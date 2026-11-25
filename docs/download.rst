@@ -86,6 +86,12 @@ smoke-tests all of them except the Nintendo ones. The game is developed and
 played on macOS here, though, and none of the others is played through before a
 release is tagged. Read `Other platforms`_ before you rely on one.
 
+There's a `command reference card`_ to go with the game: every key, in both
+keysets, on two sides of A4. Print it double-sided, flipping on the short edge,
+and it folds in three along the dashed lines. It's the same for every build.
+
+.. _command reference card: https://zangbandtk.com/zangbandtk-command-card.pdf
+
 From here to `Before you start`_, this page is about macOS. Mount the image and
 drag ``Zangband.app``, or ``ZangbandTK.app``, wherever you keep applications.
 
