@@ -14,11 +14,13 @@
 #
 # pages.yaml runs this to put the book on the site, and book.yaml to check a
 # pull request that could change it.  Needs cmake, a C compiler, Python with
-# docs/requirements.txt, Chrome or Chromium, and poppler (pdftotext, pdfinfo).
+# docs/requirements.txt, Chrome or Chromium, and poppler (pdftotext, pdfinfo);
+# on Linux, the X11 headers (libx11-dev) too, since CMake gives a build with
+# no graphical front end the X11 one.
 set -o errexit
 
 if [ $# -ne 2 ]; then
-	sed -n -e '3,19p' "$0" | sed -e 's/^# \{0,1\}//'
+	sed -n -e '3,21p' "$0" | sed -e 's/^# \{0,1\}//'
 	exit 1
 fi
 

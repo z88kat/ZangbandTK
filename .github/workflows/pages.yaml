@@ -97,11 +97,13 @@ jobs:
       # with the spoiler front end first, for the treasure list and the
       # bestiary, outside the tree.  Chrome, which prints the pages, is on the
       # runner already; poppler, which finds the page each chapter starts on,
-      # isn't.  book.yaml is its gate.
+      # isn't, and nor is libx11-dev: CMake gives a build with no graphical
+      # front end the X11 one, as linux.yaml's builds have it.  book.yaml is
+      # its gate.
       - name: Build the book
         run: |
           sudo apt-get update
-          sudo apt-get install -y poppler-utils
+          sudo apt-get install -y poppler-utils libx11-dev
           scripts/book/make-book docs/_build/html "$RUNNER_TEMP/book-game"
 
       # The SDK is about a gigabyte and takes minutes to install, so cache it

@@ -44,13 +44,14 @@ jobs:
           cache: pip
           cache-dependency-path: docs/requirements.txt
 
-      # Chrome is on the runner already.
+      # Chrome is on the runner already.  libx11-dev because CMake gives a
+      # build with no graphical front end the X11 one.
       - name: Install Build Dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r docs/requirements.txt
           sudo apt-get update
-          sudo apt-get install -y cmake poppler-utils
+          sudo apt-get install -y cmake poppler-utils libx11-dev
 
       - name: Make the book
         run: scripts/book/make-book book "$RUNNER_TEMP/book-game"
