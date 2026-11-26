@@ -2,6 +2,55 @@
 Download
 ========
 
+.. The two printed guides come first: the rest of the page is long, and they
+   were hard to find at the foot of it.  The pictures are made from the PDFs:
+   _static/book-cover.jpg is the front cover as scripts/book/cover.py prints
+   it, cut to the trim, and _static/command-card.png is the card's first side.
+   Make them again if either changes.
+
+.. grid:: 1 2 2 2
+   :gutter: 3
+   :class-container: printed-guides
+
+   .. grid-item-card:: The Players' Manual
+      :img-top: _static/book-cover.jpg
+      :img-alt: The book's front cover: a castle on a cliff above a labyrinth,
+                and a cloaked figure walking it.
+
+      The whole manual as a book, in two columns and drawn in ink, the way
+      role-playing rulebooks looked in the early eighties. It adds a treasure
+      list of every object and artifact, and a bestiary, both taken from the
+      game's own data. A4: print it double-sided.
+
+      For a printer, the covers are separate, in colour and with 3 mm of
+      bleed: `front <https://zangbandtk.com/zangbandtk-cover-front.pdf>`__
+      and `back <https://zangbandtk.com/zangbandtk-cover-back.pdf>`__.
+
+      +++
+
+      .. button-link:: https://zangbandtk.com/zangbandtk-book.pdf
+         :color: primary
+         :expand:
+
+         Download the book (PDF)
+
+   .. grid-item-card:: Command reference card
+      :img-top: _static/command-card.png
+      :img-alt: The first side of the command reference card: three panels of
+                commands, each with its key in both keysets.
+
+      Every key in the game, in both keysets, on two sides of A4. Print it
+      double-sided, flipping on the short edge, and fold it in three along the
+      dashed lines. It's the same for every build.
+
+      +++
+
+      .. button-link:: https://zangbandtk.com/zangbandtk-command-card.pdf
+         :color: primary
+         :expand:
+
+         Download the card (PDF)
+
 .. tip::
 
    If you only want to try the game, you don't need to download anything:
@@ -84,23 +133,6 @@ CI builds and packages the Windows, Linux, Nintendo and DOS builds, and
 smoke-tests all of them except the Nintendo ones. The game is developed and
 played on macOS here, though, and none of the others is played through before a
 release is tagged. Read `Other platforms`_ before you rely on one.
-
-There's a `command reference card`_ to go with the game: every key, in both
-keysets, on two sides of A4. Print it double-sided, flipping on the short edge,
-and it folds in three along the dashed lines. It's the same for every build.
-
-.. _command reference card: https://zangbandtk.com/zangbandtk-command-card.pdf
-
-The manual is a book too: `The Players' Manual`_, on A4 in two columns and
-drawn in ink, the way role-playing rulebooks looked in the early eighties. It
-adds a treasure list of every object and artifact, and a bestiary, both taken
-from the game's own data, so they are as up to date as the site. Print it
-double-sided. For a printer, the colour `front cover`_ and `back cover`_ are
-separate files, with 3 mm of bleed.
-
-.. _The Players' Manual: https://zangbandtk.com/zangbandtk-book.pdf
-.. _front cover: https://zangbandtk.com/zangbandtk-cover-front.pdf
-.. _back cover: https://zangbandtk.com/zangbandtk-cover-back.pdf
 
 From here to `Before you start`_, this page is about macOS. Mount the image and
 drag ``Zangband.app``, or ``ZangbandTK.app``, wherever you keep applications.

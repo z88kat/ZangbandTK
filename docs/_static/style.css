@@ -115,3 +115,15 @@ table p {
   margin-top: 0;
   margin-bottom: 0;
 }
+
+/*
+ * The download page's two printed guides.  The book's cover is upright and
+ * the card lies on its side, so each picture is shown whole, on a ground of
+ * its own, at the same height.
+ */
+.printed-guides .sd-card-img-top {
+  height: 15rem;
+  object-fit: contain;
+  padding: 1rem;
+  background-color: var(--pst-color-surface);
+}
