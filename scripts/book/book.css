@@ -1,0 +1,310 @@
+/*
+ * The book's look: a role-playing game's rulebook of the early 1980s, after
+ * the 1991 Amber Diceless Role-Playing in archive/books, which was set the
+ * same way.  Two justified columns of a Century Schoolbook face, Bookman for
+ * the headlines, bold run-in heads, typewriter type for what you press, a
+ * running head over a rule, and the pictures in black ink.
+ *
+ * build.py adds the fonts, and an @page rule for each chapter's running head.
+ */
+
+@page {
+  size: 210mm 297mm;
+  margin: 24mm 13mm 20mm 19mm;
+}
+@page :left { margin-left: 13mm; margin-right: 19mm; }
+@page front { @top-left { content: none; } @top-right { content: none; } }
+
+:root {
+  --ink: #111;
+  --grey: #555;
+  --tint: #eeeeea;
+  --rule: 0.5pt solid #111;
+  --body: 'Book Serif', 'Century Schoolbook', serif;
+  --head: 'Book Head', 'Bookman Old Style', serif;
+  --type: 'Book Type', 'Courier New', monospace;
+}
+
+html { margin: 0; padding: 0; }
+body {
+  margin: 0;
+  font-family: var(--body);
+  font-size: 9.4pt;
+  line-height: 11.6pt;
+  color: var(--ink);
+  hyphens: auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  orphans: 2;
+  widows: 2;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* --- The title page, its reverse, and the contents */
+
+.front { page: front; break-after: page; }
+.titlepage {
+  height: 250mm;
+  display: flex; flex-direction: column;
+  text-align: center;
+}
+.titlepage .name {
+  font-family: var(--head); font-weight: 700;
+  font-size: 64pt; line-height: 1; letter-spacing: -0.01em;
+  margin-top: 30mm;
+}
+.titlepage .what {
+  font-family: var(--head); font-weight: 700;
+  font-size: 19pt; line-height: 1.2;
+  margin-top: 7mm;
+  letter-spacing: 0.02em;
+}
+.titlepage .rule { border-top: 1.5pt solid var(--ink); width: 60%;
+  margin: 9mm auto 0; }
+.titlepage .art { flex: 1; display: flex; align-items: center;
+  justify-content: center; }
+.titlepage .art figure.art { margin: 0; }
+.titlepage .art figure.art img { max-height: 135mm; max-width: 150mm; }
+.titlepage .based { font-size: 11pt; line-height: 15pt; }
+.titlepage .based b { font-weight: 700; }
+.titlepage .ver { margin-top: 6mm; font-style: italic; }
+
+.verso {
+  height: 250mm; display: flex; flex-direction: column;
+  justify-content: flex-end; font-size: 8.4pt; line-height: 10.6pt;
+}
+.verso p { margin: 0 0 2.2mm; text-indent: 0; }
+.verso .lic { font-style: italic; }
+
+.contents h1 {
+  font-family: var(--head); font-weight: 700; font-size: 26pt;
+  text-transform: uppercase; margin: 0 0 6mm; line-height: 1;
+}
+.contents .part {
+  font-family: var(--head); font-weight: 700; font-size: 12pt;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin: 5.5mm 0 1.5mm; border-bottom: var(--rule); padding-bottom: 1mm;
+}
+.contents .line {
+  display: flex; align-items: baseline; font-size: 10.5pt;
+  line-height: 15pt;
+}
+.contents .line .t { flex: none; }
+.contents .line .dots {
+  flex: 1; margin: 0 1.5mm; border-bottom: 1pt dotted var(--grey);
+  transform: translateY(-1mm);
+}
+.contents .line .n { flex: none; font-weight: 700; min-width: 8mm;
+  text-align: right; }
+
+/* --- A chapter */
+
+.chapter {
+  break-before: page;
+  columns: 2;
+  column-gap: 7mm;
+  column-fill: auto;
+}
+.chapter section { display: block; }
+
+.kicker {
+  column-span: all;
+  font-family: var(--head); font-weight: 700;
+  font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--grey);
+  margin: 0 0 1.5mm;
+}
+h1 {
+  column-span: all;
+  font-family: var(--head); font-weight: 700;
+  font-size: 27pt; line-height: 1.02;
+  text-transform: uppercase;
+  margin: 0 0 2mm;
+  padding-bottom: 3mm;
+  border-bottom: 1.5pt solid var(--ink);
+  hyphens: manual;
+}
+h1 + * { margin-top: 4mm; }
+
+h2 {
+  font-family: var(--head); font-weight: 700;
+  font-size: 13.5pt; line-height: 15pt;
+  margin: 5mm 0 1.6mm;
+  break-after: avoid;
+  hyphens: manual;
+}
+h3 {
+  font-family: var(--body); font-weight: 700; font-style: italic;
+  font-size: 10.6pt; line-height: 12pt;
+  margin: 3.6mm 0 1.2mm;
+  break-after: avoid;
+}
+h4, h5 {
+  font-family: var(--body); font-weight: 700;
+  font-size: 9.6pt; margin: 3mm 0 1mm; break-after: avoid;
+}
+
+p { margin: 0; text-align: justify; }
+p + p { text-indent: 1.3em; }
+
+/* Run-in heads, the way those books set a list of terms: the term in bold,
+   and its description going on from it on the same line. */
+dl { margin: 1.6mm 0; }
+dt {
+  float: left; clear: left;
+  font-weight: 700;
+  margin: 0 0.35em 0 0;
+}
+dt::after { content: "."; }
+dd { margin: 0 0 1.8mm 0; }
+dd > p { text-align: justify; }
+dd > p + p { text-indent: 1.3em; }
+dd dl, li dl { margin-left: 0; }
+dt.field-odd, dt.field-even { float: none; }
+
+ul, ol { margin: 1.2mm 0 1.6mm; padding-left: 4.5mm; }
+li { margin: 0 0 0.8mm; }
+li > p { text-indent: 0; }
+li > p + p { text-indent: 1.3em; }
+
+blockquote { margin: 1.6mm 0 1.6mm 4mm; font-style: italic; }
+
+/* What you type, and keys */
+code, kbd, pre, tt {
+  font-family: var(--type); font-weight: 700;
+  font-size: 9.6pt;
+  hyphens: none;
+}
+pre {
+  font-weight: 400; font-size: 8pt; line-height: 9.6pt;
+  white-space: pre-wrap; margin: 1.6mm 0;
+  padding: 1.6mm 2mm; background: var(--tint);
+  break-inside: avoid;
+}
+pre code { font-weight: 400; font-size: inherit; }
+
+/* Boxed asides */
+.admonition, .topic, aside.topic {
+  border: 0.75pt solid var(--ink);
+  background: var(--tint);
+  padding: 2mm 2.6mm 2.2mm;
+  margin: 2.6mm 0 3mm;
+  break-inside: avoid-column;
+  font-size: 8.8pt; line-height: 10.9pt;
+}
+.admonition-title, .topic-title {
+  font-family: var(--head); font-weight: 700;
+  font-size: 8.6pt; letter-spacing: 0.15em; text-transform: uppercase;
+  margin: 0 0 1mm !important; text-indent: 0 !important;
+}
+.admonition-title + p { text-indent: 0; }
+.warning, .caution, .danger, .important { background: #fff;
+  border-width: 1.5pt; }
+
+/* A chapter's list of its own sections is the site's, not the book's. */
+.contents.topic, nav.contents, aside.contents { display: none; }
+
+/* Tables */
+table {
+  border-collapse: collapse; width: 100%;
+  margin: 2mm 0 3mm;
+  font-size: 8.4pt; line-height: 10pt;
+  break-inside: auto;
+}
+table.wide { column-span: all; margin: 3mm 0 4mm; }
+caption { font-weight: 700; text-align: left; margin-bottom: 1mm; }
+thead th, th {
+  font-family: var(--head); font-weight: 700; text-align: left;
+  border-bottom: 1pt solid var(--ink);
+  padding: 0.6mm 1.6mm 0.6mm 0;
+  vertical-align: bottom;
+}
+td {
+  padding: 0.5mm 1.6mm 0.5mm 0; vertical-align: top;
+  border-bottom: 0.3pt solid #999;
+}
+td p, th p { text-indent: 0 !important; text-align: left; }
+tbody tr { break-inside: avoid; }
+table code { font-size: 8.6pt; }
+
+/* Pictures */
+figure.art {
+  margin: 1mm 0 3.4mm; text-align: center;
+  break-inside: avoid;
+}
+figure.art img { width: auto; max-width: 100%; max-height: 100mm;
+  display: block; margin: 0 auto; }
+figure.art.span { column-span: all; }
+.headed { break-inside: avoid; }
+.headed.span { column-span: all; }
+figure.art.span img { width: auto; max-width: 100%; max-height: 95mm;
+  margin: 0 auto; }
+figure.art figcaption {
+  font-style: italic; font-size: 8.4pt; margin-top: 1mm;
+}
+figure.art.draft {
+  border: 0.75pt dashed var(--grey); height: 52mm;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--grey); font-style: italic; font-size: 8.4pt;
+  padding: 0 4mm;
+}
+
+/* Where each chapter begins, for build.py to find in the printed pages.
+   It has to be printed to be found, so it is white and tiny. */
+.marker {
+  column-span: all; font-size: 1pt; line-height: 1pt; height: 1pt;
+  margin-bottom: -1pt; color: #fff;
+}
+
+.blank { page: front; break-before: page; height: 1mm; }
+
+/* What the site has and a page can't use */
+.headerlink, .viewcode-link { display: none; }
+img { max-width: 100%; }
+
+/* A heading straight above a table that crosses both columns crosses them
+   too, so it isn't left at the foot of a column with its table elsewhere. */
+h2:has(+ table.wide), h3:has(+ table.wide), h4:has(+ table.wide) {
+  column-span: all;
+}
+
+/* --- The treasure list and the bestiary, written by compendium.py: smaller
+   type, an entry to each thing with its name run in, and tables. */
+
+.compendium { font-size: 8.6pt; line-height: 10.4pt; }
+.compendium h2 { border-bottom: 0.6pt solid var(--ink); padding-bottom: 0.6mm; }
+.compendium p + p { text-indent: 0; }
+.compendium p.entry, .compendium .artifact, .compendium .monster {
+  margin: 0 0 1.5mm;
+}
+.compendium .facts { font-style: italic; }
+.compendium .story { font-style: italic; margin: 0.4mm 0; }
+
+.compendium .artifact .entry { margin: 0; }
+.compendium .artifact { margin-bottom: 2mm; }
+
+.monster { margin-bottom: 2.4mm !important; }
+.monster .mhead {
+  font-family: var(--head); font-size: 9.8pt; line-height: 11.4pt;
+  break-after: avoid; text-align: left; margin-top: 1mm;
+}
+.monster .mhead .glyph {
+  font-family: var(--type); font-weight: 700; font-size: 8pt;
+  line-height: 1; display: inline-block; vertical-align: 0.4pt;
+  border: 0.5pt solid var(--ink); padding: 0.2mm 0.6mm 0; margin-left: 1mm;
+}
+.monster .facts {
+  font-style: normal; font-size: 7.8pt; font-weight: 700;
+  border-bottom: 0.3pt solid #999; padding-bottom: 0.3mm; margin-bottom: 0.6mm;
+  break-after: avoid; text-align: left;
+}
+
+table.list {
+  font-size: 7.4pt; line-height: 8.8pt; margin: 1mm 0 2.6mm;
+}
+table.list th, table.list td { padding: 0.3mm 0 0.3mm 1.4mm; }
+table.list th:first-child, table.list td:first-child { padding-left: 0; }
+table.list th + th, table.list td + td { text-align: right;
+  white-space: nowrap; }
+.compendium h3:has(+ table.list) { break-after: avoid; }

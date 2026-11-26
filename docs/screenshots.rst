@@ -242,10 +242,23 @@ photographs it on its own.
 Still to come
 =============
 
+From the game itself, drawn in characters like the pictures at the top:
+
 - The bestiary, showing the monsters Angband doesn't have. The capture can reach
   the knowledge browser but can't yet scroll it to a useful page.
 - A vampiric or chaotic weapon discharging, since those mechanics have no Angband
   equivalent.
 - A Chaos-Warrior's patron rewarding or punishing it on a level gained.
 
-The last two need a fight and a level-up staged, which the harness can't do yet.
+The weapon and the patron need a fight and a level-up staged, which the harness
+can't do yet.
+
+From the Tk front end, which has more to show than the five windows above:
+
+- The isometric view, in its four styles: ink, blue, colour and ASCII.
+- David Gervais' 2001 tiles, with the beaches, roads and roofs worked out from
+  the squares around them, and the 1982 set.
+- The knowledge browser, the spell books, the shops and the buildings.
+- The tombstone and the Hall of Fame.
+
+And the game on a Nintendo DS and a 3DS, in text across the two screens.

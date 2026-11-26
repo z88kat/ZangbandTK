@@ -13,7 +13,8 @@
 # Always pick up os, to get os.environ, as used below.
 import os
 import sys
-# _ext holds tkhelp, the builder for the Tk front end's Help window.
+# _ext holds tkhelp, the builder for the Tk front end's Help window, and book,
+# which collects the manual's chapters for the printed book.
 sys.path.insert(0, os.path.abspath('_ext'))
 
 
@@ -61,6 +62,7 @@ extensions = [
     "myst_parser",
     "sphinx_design",
     "tkhelp",
+    "book",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -141,3 +143,20 @@ html_static_path = ["_static"]
 # doesn't move: https://zangbandtk.com/zangbandtk-command-card.pdf.  The card
 # is made by scripts/command-card/build.py.
 html_extra_path = ["downloads"]
+
+
+# -- The book ---------------------------------------------------------------
+
+# The manual as a printed book, made by scripts/book/build.py: its chapters in
+# order, under the headings of its contents.  A chapter left out is linked to
+# on the website instead.
+book_sections = [
+    ("Introduction", ["a-quick-demo", "guide"]),
+    ("Characters", ["birth", "characters", "realms", "mutations", "virtues",
+                    "flags"]),
+    ("Adventuring", ["playing", "dungeon", "attack", "wilderness", "towns",
+                     "quests", "pets", "nightmare"]),
+    ("Treasure", ["objects"]),
+    ("Monsters", ["monsters"]),
+    ("Reference", ["command", "option", "customize", "balance", "faq"]),
+]

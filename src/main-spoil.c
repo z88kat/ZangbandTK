@@ -42,6 +42,7 @@ static struct {
 	{ 'm', spoil_mon_desc, false, NULL },
 	{ 'M', spoil_mon_info, false, NULL },
 	{ 'o', spoil_obj_desc, false, NULL },
+	{ 'O', spoil_obj_info, false, NULL },
 };
 
 const char help_spoil[] =
@@ -52,6 +53,8 @@ const char help_spoil[] =
 	"              -m fname    Write brief monster spoilers to fname\n"
 	"              -M fname    Write extended monster spoilers to fname\n"
 	"              -o fname    Write object spoilers to fname\n"
+	"              -O fname    Write what each kind of object does to\n"
+	"                          fname, for the printed book\n"
 	"              -p          Use the artifacts associated with the\n"
 	"                          savefile set by main.c\n"
 	"              -r fname    Use the randart file, fname, as the source\n"

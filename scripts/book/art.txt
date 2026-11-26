@@ -1,0 +1,61 @@
+# The book's pictures, one a line: its name, the chapter it goes in, where,
+# and what it shows, separated by tabs.  The picture is art/<name>.png.
+#
+# Where is "open", after the chapter's title, in a column; "open-span", the
+# same across both columns; "after:<section>", after that section's heading
+# (its id in the chapter, as the website has it), and "after:<section>-span".
+# The chapter "title" is the title page.
+#
+# What it shows is the picture's alt text, and what the artist was asked to
+# draw.  It names nobody and nothing from a book or a game: the drawings were
+# made by an image generator that refuses a request that does.
+#
+title	title	span	A cloaked swordsman walks a vast labyrinth of curving lines set into the floor of a dark cavern; the lines glow faintly and sparks rise about his boots. Seen from above and behind, the design filling the floor and running away into darkness.
+demo	a-quick-demo	open	An adventurer in a hooded cloak at the top of a narrow stone stair, holding a lantern out over the drop and peering down into the dark.
+guide	guide	open-span	A lone adventurer with sword and torch at the mouth of a wide pillared hall; in the dark beyond, the shapes of many waiting creatures, only their eyes and outlines lit.
+runaway	guide	after:you-can-run-away	A small adventurer scrambling up a stair, cloak flying, with a huge shaggy black hound bounding after him, all teeth. Drawn with some humour.
+peoples	birth	open-span	Seven heroes of different peoples standing side by side as in a line-up: a tall slender elf archer, a stout bearded dwarf with an axe, a small barefoot halfling, a hulking tusked half-troll, a robed human wizard, a winged dragon-man in a breastplate, and a skeleton warrior in a rusty helm.
+amberite	birth	after:races	A prince of an ancient royal house: a lean dark-haired swordsman in a dark cloak fastened at the throat with a brooch shaped like a rose, a long sword at his hip, fanning a deck of painted cards in one hand. Proud, watchful, three-quarter length.
+classes	birth	after:classes	A warrior in mail with sword and shield and a robed mage with a staff, standing back to back, ready for whatever comes from either side.
+patron	birth	after:patrons	A small armoured figure kneeling on a rock before an enormous presence that fills the sky behind: a shape of smoke, eyes and claws, half seen.
+monk	birth	after:martial-arts	A barefoot monk in a plain wrap, caught mid-leap in a high flying kick, his opponent's spear snapping in two.
+tentacled	characters	open	A tall robed scholar whose face ends in four long tentacles below pale eyes, reading a book held in thin long-fingered hands.
+vampire	characters	after:seventeen-new-races	A gaunt nobleman in a high-collared cloak and an old-fashioned coat, smiling to show long canines, a candle in his hand; behind him a hunched grave-eater crouches in the shadow.
+chaoswarrior	characters	after:the-chaos-warrior-and-who-owns-it	A warrior in heavy spiked black armour, a ragged banner of an eight-pointed star on his back, a notched broadsword resting on his shoulder.
+mindcrafter	characters	after:the-mindcrafter-and-psionics	A young woman with closed eyes and a calm face, cross-legged in the air, a cup, a knife, a key and a book floating in a ring round her head.
+spellbooks	realms	open-span	Seven spellbooks on a long table by candlelight, each different: one with a sun on its cover, one bound in plain leather with clasps, one a slim case of painted cards, one with a writhing many-armed sign, one covered in strange symbols, one bound in bark and leaves, one bound in dark hide with a skull clasp.
+cardhand	realms	after:trump	A hand holding a fan of painted cards; on the front card a figure in a cloak is reaching out of the picture, his hand coming out of the card into the real world.
+chaos	realms	after:chaos	A sorcerer in tattered robes flinging up his arms as a storm of twisting, impossible shapes bursts from the air in front of him.
+death	realms	after:death	A hooded necromancer with a bone staff in a graveyard at night, skeletal hands breaking up through the earth at his feet.
+mutation	mutations	open	An adventurer staring in alarm into a hand mirror: scales are spreading up one side of his face and a third arm has sprouted from his shoulder. Drawn with humour.
+vigil	virtues	open	A young knight kneeling in vigil before an altar at night, sword held point down before him, a single candle burning.
+jeweller	flags	open	An old dwarf jeweller at his bench peering at a ring through a magnifying lens, tools and gems spread out before him.
+reading	playing	open	An adventurer sitting on a dungeon floor reading a scroll by the light of a guttering torch, while a large rat watches him from a crack in the wall.
+levels	dungeon	open-span	A cutaway view of the ground and the dungeon beneath it: a small town at the top, and below, cave after cave and level after level, linked by stairs, with tiny figures and monsters in the chambers, going down into darkness.
+trapdoor	dungeon	after:traps	A trapdoor dropping open under a surprised adventurer, coins flying from his purse as he falls.
+digger	dungeon	after:mining	A dwarf swinging a pick at a rock face, chips flying, a seam of glittering ore showing in the stone.
+grave	dungeon	after:upon-death-and-dying	A simple gravestone on a hill with a dented helmet hung on it and a broken sword leaning against it; crows on the stone.
+duel	attack	open	Two swordsmen fighting on a broad stone stair in a castle, one above and one below, blades locked, cloaks swirling.
+egoweapons	attack	after:ego-weapons-and-armor	A weapons rack in an armoury: swords, an axe, a mace and a spear; one sword glows with a cold light that throws the others' shadows.
+hellride	wilderness	open-span	A rider at full gallop along a road through hills; behind him the land is gentle, with oak woods and a walled town, ahead it turns to strange tall trees, crags and a sky of different stars, the change happening as he passes.
+camp	wilderness	after:day-and-night	A traveller asleep by a small campfire under a great sky of stars, wrapped in a cloak, while a wolf watches from the edge of the firelight.
+street	towns	open	A narrow cobbled market street with painted shop signs hanging out over the doors (a bottle, a sword, a book), shoppers and a cat on a step.
+magetower	towns	after:the-magetower	A tall slender tower of stone rising from a town's rooftops, with a single lit window near the top and birds circling it.
+castle	quests	open	A great castle on the top of a mountain above the sea, seen from far off, a long stair cut into the mountainside, and a tiny figure on the road below.
+king	quests	after:what-the-game-is-won-by	An old, powerful bearded king seated on a carved throne in a high hall, a crown on his head and a sword across his knees, looking down at the viewer.
+pets	pets	open	An adventurer resting on a log with a loyal hound at his feet and a small dragon the size of a cat perched on his shoulder.
+nightmare	nightmare	open	A sleeper tossing in a bed in a small room; out of the dark at the edges of the room crowd monsters' heads, claws and eyes.
+hoard	objects	open-span	A treasure hoard spilling from open chests: coins, a crown, swords, a shield, rings, necklaces, a potion bottle and a scroll, piled high.
+grayblade	objects	after:new-artifacts	A long, plain, bright sword drawn halfway from its scabbard, a faint winding labyrinth-like design along the blade.
+ring	objects	after:the-ring-of-fate	A plain heavy ring lying on a flat stone, a thin circle of light around it in the air.
+wand	objects	after:activations	A gloved hand pointing a slim wand; a jagged bolt of lightning cracks from its tip.
+unicorn	monsters	open-span	A white unicorn standing in a forest glade, its head turned toward the viewer, the trees around it drawn in deep shadow.
+bloodcurse	monsters	after:the-blood-curse-of-amber	A wounded prince on one knee pressing a bleeding hand to a stone floor, a fierce face and a dagger in the other hand; where his blood falls the stone cracks.
+tower	monsters	after:monsters-that-talk	A bearded man in chains at the window of a lonely tower on a rock in a strange sky, staring out, the chains running back into the dark.
+vortex	monsters	after:the-one-that-may-not-be-there	A whirling column of bright curving lines and sparks rising from a stone floor in an empty corridor, like a piece of a great design come loose.
+serpent	monsters	after:things-that-live-in-the-water	A sea serpent rearing out of dark water beside a small boat, the rower raising his oar.
+dragon	monsters	after:how-dangerous-are-they	A great dragon lying on its hoard in a cave, one eye open, with a tiny knight standing before it holding up his shield.
+scribe	command	open	An old wizard at a desk with a huge open book, a quill in his hand, candles and scrolls all about him.
+map	customize	after:user-pref-files	A gnome cartographer at a table drawing a map of a dungeon in small neat symbols, with compasses, rulers and inkpots.
+scales	balance	open	A pair of hanging scales: in one pan a knight, in the other a small scaly monster, the two pans level.
+sage	faq	open	An old bearded sage at an open door answering a queue of adventurers, each holding up a hand to ask a question.

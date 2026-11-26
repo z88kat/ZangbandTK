@@ -340,6 +340,91 @@ void spoil_obj_desc(const char *fname)
 
 
 /**
+ * Write what each kind of object does, as the game would describe it to a
+ * player who knew everything about it, for the printed book's treasure
+ * list (scripts/book/compendium.py).
+ *
+ * Each kind is a line
+ *
+ *     @kind GROUP|TVAL|NAME|LEVEL|COST|WEIGHT|DICE|AC|DEPTHS
+ *
+ * where NAME is the kind's name as object.txt has it (with its & and ~
+ * markers), WEIGHT is in tenths of a pound, DICE is "XdY" or empty, and
+ * DEPTHS is "MIN-MAX" or empty for a kind that isn't found lying about;
+ * then the description, word-wrapped; then "@end".  The flavours ("Teal
+ * Potion") are random each game, so they are left out.  Books and
+ * instant artifacts are left out: the realms of magic have a chapter of
+ * their own, and the artifacts a spoiler of their own.
+ */
+void spoil_obj_info(const char *fname)
+{
+	int i, k;
+	char buf[1024];
+	const char *group = "";
+
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
+	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	if (!fh) {
+		msg("Cannot create spoiler file.");
+		return;
+	}
+
+	text_out_hook = text_out_to_file;
+	text_out_file = fh;
+
+	for (i = 0; group_item[i].tval; i++) {
+		int tval = group_item[i].tval;
+
+		if (group_item[i].name) group = group_item[i].name;
+
+		for (k = 1; k < z_info->k_max; k++) {
+			struct object_kind *kind = &k_info[k];
+			struct object *obj, *known_obj;
+			char dice[32] = "";
+			char depths[32] = "";
+
+			if (kind->tval != tval || !kind->name) continue;
+			if (tval_is_book_k(kind)) continue;
+			if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
+
+			/* Seen through a sage's eyes: flavour known, and the
+			 * typical item rather than the best one. */
+			kind->aware = true;
+			obj = object_new();
+			known_obj = object_new();
+			object_prep(obj, kind, 0, AVERAGE);
+			object_copy(known_obj, obj);
+			obj->known = known_obj;
+
+			if (tval_is_ammo(obj) || tval_is_melee_weapon(obj))
+				strnfmt(dice, sizeof(dice), "%dd%d", obj->dd,
+					obj->ds);
+			if (kind->alloc_prob > 0)
+				strnfmt(depths, sizeof(depths), "%d-%d",
+					kind->alloc_min, kind->alloc_max);
+
+			file_putf(fh, "@kind %s|%s|%s|%d|%ld|%d|%s|%d|%s\n",
+				group, tval_find_name(tval), kind->name,
+				kind->level, (long)object_value(obj, 1),
+				object_weight_one(obj), dice,
+				tval_is_armor(obj) ? obj->ac : 0, depths);
+			object_info_spoil(fh, obj, 80);
+			file_putf(fh, "\n@end\n");
+
+			object_delete(NULL, NULL, &known_obj);
+			object_delete(NULL, NULL, &obj);
+		}
+	}
+
+	if (!file_close(fh)) {
+		msg("Cannot close spoiler file.");
+		return;
+	}
+	msg("Successfully created a spoiler file.");
+}
+
+
+/**
  * ------------------------------------------------------------------------
  * Artifact Spoilers by: randy@PICARD.tamu.edu (Randy Hutson)
  *

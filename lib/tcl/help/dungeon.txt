@@ -31,16 +31,17 @@ T	p0	\n
 M	features-that-do-not-block-line-of-sight
 T	h3	Features that do not block line of sight
 T	h3	\n
-T	tr0	.  A floor space       1      Entrance to General Store\n
-T	tr0 odd	.  A trap (hidden)     2      Entrance to Armoury\n
-T	tr0	^  A trap (known)      3      Entrance to Weapon Smith\n
-T	tr0 odd	;  A glyph of warding  4      Entrance to Bookseller\n
-T	tr0	'  An open door        5      Entrance to Alchemy Shop\n
-T	tr0 odd	'  A broken door       6      Entrance to Magic Shop\n
-T	tr0	<  A staircase up      7      Entrance to the Black Market\n
-T	tr0 odd	>  A staircase down    8      Entrance to your Home\n
-T	tr0	#  A pool of lava      9 0 0  Entrance to the magetower Entrance to the Statue Store Entrance to\n
-T	tr0	                              the Figurine Store\n
+T	tr0	.  A floor space       1  Entrance to General Store\n
+T	tr0 odd	.  A trap (hidden)     2  Entrance to Armoury\n
+T	tr0	^  A trap (known)      3  Entrance to Weapon Smith\n
+T	tr0 odd	;  A glyph of warding  4  Entrance to Bookseller\n
+T	tr0	'  An open door        5  Entrance to Alchemy Shop\n
+T	tr0 odd	'  A broken door       6  Entrance to Magic Shop\n
+T	tr0	<  A staircase up      7  Entrance to the Black Market\n
+T	tr0 odd	>  A staircase down    8  Entrance to your Home\n
+T	tr0	#  A pool of lava      9  Entrance to the magetower\n
+T	tr0 odd	                       0  Entrance to the Statue Store\n
+T	tr0	                       0  Entrance to the Figurine Store\n
 T	tbllast0	\n
 T	p0	The two 
 T	p0 code	0

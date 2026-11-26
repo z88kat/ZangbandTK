@@ -53,8 +53,8 @@ Features that do not block line of sight
 ``<``   A staircase up             ``7``    Entrance to the Black Market
 ``>``   A staircase down           ``8``    Entrance to your Home
 ``#``   A pool of lava             ``9``    Entrance to the magetower
-                                   ``0``    Entrance to the Statue Store
-                                   ``0``    Entrance to the Figurine Store
+\                                  ``0``    Entrance to the Statue Store
+\                                  ``0``    Entrance to the Figurine Store
 ===== =========================    =====  ================================== 
 
 The two ``0`` shops are told apart by colour, the Statue Store light brown and
