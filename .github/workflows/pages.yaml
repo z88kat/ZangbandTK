@@ -40,6 +40,7 @@ on:
       - 'src/**'
       - 'lib/**'
       - 'scripts/version.sh'
+      - 'scripts/book/**'
       - '.github/workflows/pages.yaml'
   # Allow publishing by hand, which is also how the very first deployment is
   # most easily made.
@@ -89,6 +90,19 @@ jobs:
 
       - name: Build
         run: make -C docs -j$(nproc) html
+
+      # The manual as a printed book, and its covers, at the top of the site
+      # beside the command card, so each has an address that doesn't move:
+      # https://zangbandtk.com/zangbandtk-book.pdf.  make-book builds the game
+      # with the spoiler front end first, for the treasure list and the
+      # bestiary, outside the tree.  Chrome, which prints the pages, is on the
+      # runner already; poppler, which finds the page each chapter starts on,
+      # isn't.  book.yaml is its gate.
+      - name: Build the book
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          scripts/book/make-book docs/_build/html "$RUNNER_TEMP/book-game"
 
       # The SDK is about a gigabyte and takes minutes to install, so cache it
       # against its version.  Installed by hand rather than through a

@@ -31,6 +31,47 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+26 November 2026 — the book
+===========================
+
+Steven wanted the manual as a printed book, laid out like the 1991 *Amber
+Diceless Role-Playing* rulebook we have in archive/books: two justified
+columns, Century Schoolbook, bold run-in heads, and pictures in black ink. It
+is the manual's own text. Sphinx writes the chapters, and a script puts a
+title page, contents and running heads round them and has Chrome print it.
+Chrome can't number the contents itself, so it prints twice: once to find
+the page each chapter starts on, then again with the numbers in.
+
+The 49 drawings came from the image generator, from briefs that name nobody,
+since it refuses anything that looks like a book's or a game's own. It
+refused one I didn't expect. The Trump realm's picture was a hand holding a
+fan of cards, and the request said "trump"; the generator took that for the
+politician. Renamed "cardhand", it went through first time. Several drawings
+came back with a made-up signature in a corner, which I faded out.
+
+The treasure list and the bestiary are generated rather than written. The
+game's spoiler front end already describes a monster the way monster recall
+does when you know everything; I added an object mode that does the same for
+every kind of object, and the book takes both and cuts out what depends on a
+particular character, such as device-skill percentages and average damage a
+turn. That added about sixty pages.
+
+Then Steven ruled that Sauron, Morgoth and the Cthulhu Mythos stay out of the
+book: seventy monsters, from Great Cthulhu down to the rat-thing. The game
+still has them, and the bestiary says so in a line. It's the first time the
+Amber goal has taken something away rather than added to it, even if only on
+paper. Not everything tentacled is Lovecraft's, and I had to go through the
+list by hand; the ghast is D&D's and stays.
+
+Putting it on the site turned up two things I hadn't seen on the Mac. Chrome
+on Linux doesn't hyphenate, so the CI copy's columns were full of gaps. The
+book now hyphenates itself, putting soft hyphens in from LibreOffice's
+patterns. But Chrome writes every soft hyphen into the PDF's text, used or
+not, and Preview then found "dungeon" 19 times in the book instead of 239.
+So after printing, the build takes them out of the PDF again. The pages are
+identical to the pixel, and search works.
+
+
 25 November 2026, later — the version that stood still
 ======================================================
 

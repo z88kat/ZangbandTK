@@ -91,6 +91,17 @@ and it folds in three along the dashed lines. It's the same for every build.
 
 .. _command reference card: https://zangbandtk.com/zangbandtk-command-card.pdf
 
+The manual is a book too: `The Players' Manual`_, on A4 in two columns and
+drawn in ink, the way role-playing rulebooks looked in the early eighties. It
+adds a treasure list of every object and artifact, and a bestiary, both taken
+from the game's own data, so they are as up to date as the site. Print it
+double-sided. For a printer, the colour `front cover`_ and `back cover`_ are
+separate files, with 3 mm of bleed.
+
+.. _The Players' Manual: https://zangbandtk.com/zangbandtk-book.pdf
+.. _front cover: https://zangbandtk.com/zangbandtk-cover-front.pdf
+.. _back cover: https://zangbandtk.com/zangbandtk-cover-back.pdf
+
 From here to `Before you start`_, this page is about macOS. Mount the image and
 drag ``Zangband.app``, or ``ZangbandTK.app``, wherever you keep applications.
 

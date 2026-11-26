@@ -463,15 +463,59 @@ def monster_text(body, desc):
     return text
 
 
+# Monsters the game has and the book leaves out (the owner's ruling, 26
+# November 2026).  Sauron and Morgoth are Angband's ending, and the ending
+# here is Amber's (quest.txt); the Cthulhu Mythos came in with Zangband.
+# Both are the drift away from Zelazny that this project treats as a defect,
+# so the book doesn't show them, though the game still has them.  Not every
+# tentacled thing is Lovecraft's: the ghast and Shuma-Gorath are D&D's and
+# Marvel's, the shambler and the dweller on the threshold are neither, and
+# they stay.
+LEFT_OUT = {
+    # Angband's ending
+    "Sauron, the Sorcerer", "Wolf-Sauron", "Serpent-Sauron",
+    "Vampire-Sauron", "Morgoth, Lord of Darkness",
+    # The Mythos
+    "rat-thing", "servant of glaaki", "sand-dweller", "moon beast", "mi-go",
+    "serpent man", "xiclotlan", "gnoph-keh", "shantak", "deep one", "dhole",
+    "gug", "Bokrug", "leng spider", "star vampire", "elder thing",
+    "flying polyp", "shan", "Father Dagon", "Mother Hydra", "nightgaunt",
+    "fire vampire", "chthonian", "spawn of ubbo-sathla",
+    "Ubbo-Sathla, the Unbegotten Source", "byakhee",
+    "formless spawn of tsathoggua", "hunting horror",
+    "dark young of shub-niggurath", "colour out of space",
+    "Chaugnar Faugn, Horror from the Hills", "lloigor",
+    "Quachil Uttaus, Treader of the Dust", "shoggoth", "Zoth-Ommog",
+    "Yibb-Tstll the Patient One", "Ghatanothoa", "Zhar the Twin Obscenity",
+    "Eihort, the Thing in the Labyrinth", "The King in Yellow",
+    "Shudde M'ell", "Hastur the Unspeakable",
+    "Nyogtha, the Thing that Should not Be", "Ahtu, Avatar of Nyarlathotep",
+    "Daoloth, the Render of the Veils", "Hypnos, Lord of Sleep", "Glaaki",
+    "Rhan-Tegoth", "Tsathoggua, the Sleeper of N'kai",
+    "Atlach-Nacha, the Spider God", "Y'golonac", "Yig, Father of Serpents",
+    "Cthugha, the Living Flame", "Cyaegha", "Ithaqua the Windwalker",
+    "Abhoth, Source of Uncleanness", "star-spawn of cthulhu",
+    "Tulzscha, the Green Flame", "Yog-Sothoth, the All-in-One",
+    "Shub-Niggurath, Black Goat of the Woods",
+    "Nodens, Lord of the Great Abyss", "Nyarlathotep, the Crawling Chaos",
+    "Azathoth, Seething Nuclear Chaos", "Great Cthulhu",
+    "hound of Tindalos",
+}
+
+
 def bestiary(spoil_monsters):
     doc = BESTIARY
     spoil = parse_monsters(spoil_monsters)
     bases = {first(r, "name"): r for r in records("monster_base.txt")}
     mons = []
+    left_out = set()
     for rec in records("monster.txt", "monster.zangband.txt",
                        "monster.zangbandtk.txt"):
         name = first(rec, "name")
         if name.startswith("<"):
+            continue
+        if name in LEFT_OUT:
+            left_out.add(name)
             continue
         flags = " ".join(every(rec, "flags"))
         base = first(rec, "base")
@@ -488,6 +532,11 @@ def bestiary(spoil_monsters):
             "amber": "AMBERITE" in flags.split(),
             "desc": joined_desc(rec),
         })
+    # A name here that the game no longer has is a list gone stale.
+    stale = LEFT_OUT - left_out
+    if stale:
+        raise SystemExit("compendium.py: LEFT_OUT names monsters the game "
+                         "doesn't have: %s" % ", ".join(sorted(stale)))
     # The game's own name for a monster, which can differ in case
     spoil_by_lower = {k.lower(): v for k, v in spoil.items()}
 
@@ -515,7 +564,7 @@ def bestiary(spoil_monsters):
     rest = [m for m in mons if not m["unique"]]
 
     parts = ['<h1>%s</h1>' % TITLES[doc], (
-        "<p>Every monster in the game. The uniques, each of them one of a "
+        "<p>The monsters of the game. The uniques, each of them one of a "
         "kind, have an entry apiece: the House of Amber first, then the rest "
         "in the order you are likely to meet them. Every other monster is "
         "in the tables at the end, under its kind.</p><p>An entry gives the "
@@ -523,7 +572,9 @@ def bestiary(spoil_monsters):
         "+0, its hit points, its armour class and the experience it is "
         "worth (divided by your level when you kill it). The account after "
         "the story is the game's own, as monster recall gives it once you "
-        "know everything there is to know.</p>")]
+        "know everything there is to know.</p><p>The game also has Sauron, "
+        "Morgoth and the monsters of the Cthulhu Mythos, from the games it "
+        "grew out of. This book leaves them out.</p>")]
     parts.append(section(doc, "The House of Amber", (
         "<p>Oberon's blood, deep in the dungeon and meant to be met late. "
         "Killing one may bring down the blood curse of Amber on you.</p>"

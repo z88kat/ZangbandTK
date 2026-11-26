@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# Make the printed book and its covers, everything the site offers for
+# download about it:
+#
+#    scripts/book/make-book OUTDIR BUILDDIR
+#
+# writes OUTDIR/zangbandtk-book.pdf, OUTDIR/zangbandtk-cover-front.pdf and
+# OUTDIR/zangbandtk-cover-back.pdf.  The treasure list and the bestiary are
+# written from the game's spoilers, so this first builds the game with the
+# spoiler front end in BUILDDIR, a cmake build directory, and reuses it if it
+# is already there.  Keep BUILDDIR out of the source tree on a machine where
+# you commit.
+#
+# pages.yaml runs this to put the book on the site, and book.yaml to check a
+# pull request that could change it.  Needs cmake, a C compiler, Python with
+# docs/requirements.txt, Chrome or Chromium, and poppler (pdftotext, pdfinfo).
+set -o errexit
+
+if [ $# -ne 2 ]; then
+	sed -n -e '3,19p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+HERE=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$HERE/../.." && pwd)
+mkdir -p "$1" "$2"
+OUT=$(cd "$1" && pwd)
+BUILD=$(cd "$2" && pwd)
+
+if command -v nproc >/dev/null 2>&1; then
+	JOBS=$(nproc)
+else
+	JOBS=$(sysctl -n hw.ncpu 2>/dev/null || echo 2)
+fi
+
+cmake -S "$ROOT" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release \
+	-DSUPPORT_SPOIL_FRONTEND=ON
+cmake --build "$BUILD" --parallel "$JOBS"
+
+# The Python that has docs/requirements.txt: .venv-docs when there is one.
+PYTHON=python3
+if [ -x "$ROOT/.venv-docs/bin/python" ] && \
+	"$ROOT/.venv-docs/bin/python" -c 'import pyphen' 2>/dev/null; then
+	PYTHON=$ROOT/.venv-docs/bin/python
+fi
+
+"$PYTHON" "$HERE/build.py" --game "$BUILD/game/angband" \
+	--out "$OUT/zangbandtk-book.pdf"
+"$PYTHON" "$HERE/cover.py" --out-dir "$OUT"
+ls -l "$OUT"/zangbandtk-book.pdf "$OUT"/zangbandtk-cover-*.pdf

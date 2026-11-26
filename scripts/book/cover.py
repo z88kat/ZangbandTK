@@ -210,7 +210,7 @@ def set_trim(pdf):
 
     Chrome writes neither.  Its PDFs keep their page objects and the
     cross-reference table uncompressed, so the boxes go in beside the
-    MediaBox and the table is written again with the objects' new places.
+    MediaBox and build.rewrite_xref writes the table again.
     """
     with open(pdf, "rb") as f:
         data = f.read()
@@ -225,25 +225,8 @@ def set_trim(pdf):
     boxes = (b"/TrimBox [%.3f %.3f %.3f %.3f] /BleedBox [%.3f %.3f %.3f %.3f] "
              % (x0 + b, y0 + b, x1 - b, y1 - b, x0, y0, x1, y1))
     data = re.sub(rb"/MediaBox\s*\[", boxes + b"/MediaBox [", data)
-    xref = data.rfind(b"\nxref\n")
-    if xref < 0:
-        sys.exit("cover.py: %s has no cross-reference table to rewrite; "
-                 "the TrimBox can't be set" % pdf)
-    body = data[:xref + 1]
-    offsets = {int(m.group(1)): m.start(1)
-               for m in re.finditer(rb"(?m)^(\d+) 0 obj\b", body)}
-    size = max(offsets) + 1
-    table = [b"xref\n0 %d\n0000000000 65535 f \n" % size]
-    for i in range(1, size):
-        if i in offsets:
-            table.append(b"%010d 00000 n \n" % offsets[i])
-        else:
-            table.append(b"0000000000 65535 f \n")
-    trailer = data[data.index(b"trailer", xref):]
-    trailer = re.sub(rb"startxref\s+\d+",
-                     b"startxref\n%d" % (xref + 1), trailer)
     with open(pdf, "wb") as f:
-        f.write(body + b"".join(table) + trailer)
+        f.write(build.rewrite_xref(data, "cover.py"))
 
 
 def main():

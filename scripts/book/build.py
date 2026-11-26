@@ -35,7 +35,8 @@ chapter, where in it, and what it shows.  The picture itself is ART/<name>.png
 that isn't there yet is left out, or with --draft drawn as a box saying what
 goes there, so the pages can be laid out before the drawings exist.
 
-Needs Sphinx (docs/requirements.txt; .venv-docs is used when there is one),
+Needs Sphinx and Pyphen (docs/requirements.txt; .venv-docs is used for
+Sphinx when there is one, but run this with its Python for Pyphen),
 Chrome or Chromium (set CHROME if it isn't found), and pdftotext and pdfinfo
 from poppler.
 
@@ -321,6 +322,52 @@ def tidy(body, info):
     return body
 
 
+# Hyphenation is done here, not by Chrome: Chrome hyphenates on a Mac but not
+# on Linux, where the site's copy is printed, and two justified columns
+# without it open up in rivers.  Pyphen has LibreOffice's patterns; each
+# word gets a soft hyphen at every point they allow, and book.css says
+# "hyphens: manual", so the book breaks the same wherever it is made.
+NO_HYPHENS = {"code", "kbd", "pre", "tt", "samp", "script", "style", "title",
+              "th", "h1", "h2", "h3", "h4", "h5", "h6"}
+# A word of six letters or more, all small after the first, and not part of
+# an address, an entity or a name with a hyphen in it.
+WORD = re.compile(r"(?<![\w&#/.@-])[A-Za-z][a-z]{5,}"
+                  r"(?![\w/@-]|\.[A-Za-z])")
+
+
+def hyphenate(body):
+    try:
+        import pyphen
+    except ImportError:
+        raise SystemExit("build.py: no pyphen.  Install docs/requirements.txt"
+                         ", or run with .venv-docs/bin/python.")
+    dic = pyphen.Pyphen(lang="en_GB", left=2, right=3)
+    seen = {}
+
+    def word(m):
+        w = m.group(0)
+        if w not in seen:
+            seen[w] = dic.inserted(w, hyphen="\u00ad")
+        return seen[w]
+
+    out, skip = [], []
+    for part in re.split(r"(<[^>]*>)", body):
+        if part.startswith("<"):
+            m = re.match(r"<(/?)([a-zA-Z0-9]+)", part)
+            if m and m.group(2).lower() in NO_HYPHENS:
+                if m.group(1):
+                    if skip:
+                        skip.pop()
+                elif not part.endswith("/>"):
+                    skip.append(m.group(2))
+            out.append(part)
+        elif skip:
+            out.append(part)
+        else:
+            out.append(WORD.sub(word, part))
+    return "".join(out)
+
+
 def page(info, body, ver, pages, blanks, art_dir, draft):
     css = open(os.path.join(HERE, "book.css"), encoding="utf-8").read()
     return ('<!doctype html><html lang="en-GB"><head><meta charset="utf-8">'
@@ -351,14 +398,102 @@ def find_chrome():
 
 
 def print_pdf(page_path, pdf, profile):
-    subprocess.run([find_chrome(), "--headless=new", "--disable-gpu",
-                    "--no-first-run", "--no-default-browser-check",
-                    "--disable-extensions", "--user-data-dir=" + profile,
-                    "--no-pdf-header-footer", "--print-to-pdf-no-header",
-                    "--generate-pdf-document-outline",
-                    "--virtual-time-budget=60000",
-                    "--print-to-pdf=" + pdf, "file://" + page_path],
+    # In CI, and in a container as root, Chrome's sandbox can't start; the
+    # page is our own, so print without it there.
+    root = hasattr(os, "geteuid") and os.geteuid() == 0
+    sandbox = ["--no-sandbox"] if os.environ.get("CI") or root else []
+    subprocess.run([find_chrome(), "--headless=new", "--disable-gpu"]
+                   + sandbox
+                   + ["--no-first-run", "--no-default-browser-check",
+                      "--disable-extensions", "--user-data-dir=" + profile,
+                      "--no-pdf-header-footer", "--print-to-pdf-no-header",
+                      "--generate-pdf-document-outline",
+                      "--virtual-time-budget=60000",
+                      "--print-to-pdf=" + pdf, "file://" + page_path],
                    check=True, capture_output=True)
+
+
+def rewrite_xref(data, who):
+    """data with its cross-reference table written again, for objects that
+    have moved.  Chrome's PDFs keep the table, and every object, outside
+    any compressed stream, so this is all a change to one needs."""
+    xref = data.rfind(b"\nxref\n")
+    if xref < 0:
+        raise SystemExit("%s: the PDF has no cross-reference table to "
+                         "rewrite" % who)
+    body = data[:xref + 1]
+    offsets = {int(m.group(1)): m.start(1)
+               for m in re.finditer(rb"(?m)^(\d+) 0 obj\b", body)}
+    size = max(offsets) + 1
+    table = [b"xref\n0 %d\n0000000000 65535 f \n" % size]
+    for i in range(1, size):
+        if i in offsets:
+            table.append(b"%010d 00000 n \n" % offsets[i])
+        else:
+            table.append(b"0000000000 65535 f \n")
+    trailer = data[data.index(b"trailer", xref):]
+    trailer = re.sub(rb"startxref\s+\d+",
+                     b"startxref\n%d" % (xref + 1), trailer)
+    return body + b"".join(table) + trailer
+
+
+# Chrome puts every soft hyphen into the PDF's text, though it only shows
+# the ones it breaks a line at.  Each is a span whose ActualText is U+00AD,
+# empty or round an invisible glyph of no width; a hyphen that breaks a line
+# is drawn after it, on its own.  Left in, they split words for anything that
+# reads the text: Preview finds "dungeon" 19 times in the book instead of
+# 239.  So each span goes, keeping only the move (Td) that places what comes
+# after it, and so does U+00AD inside a ligature's ActualText ("f\u00adf"
+# drawn as one ff).
+SOFT_HYPHEN = re.compile(rb"/Span\s*<<\s*/ActualText\s*<FEFF00AD>\s*>>\s*BDC"
+                         rb"\s*(?:([-\d.]+\s+[-\d.]+\s+Td)\s*)?"
+                         rb"(?:<[0-9A-Fa-f]*>\s*Tj\s*)?EMC\s*")
+LIGATURE_TEXT = re.compile(rb"/ActualText\s*<FEFF((?:[0-9A-Fa-f]{4}){2,})>")
+STREAM = re.compile(rb"(?m)^\d+ 0 obj\s*(<<(?:(?!endobj).)*?>>)\s*stream\r?\n",
+                    re.S)
+
+
+def strip_soft_hyphens(pdf):
+    import zlib
+
+    def ligature(m):
+        units = [m.group(1)[i:i + 4] for i in range(0, len(m.group(1)), 4)]
+        units = [u for u in units if u.upper() != b"00AD"]
+        return b"/ActualText <FEFF" + b"".join(units) + b">"
+
+    with open(pdf, "rb") as f:
+        data = f.read()
+    out, pos, changed = [], 0, 0
+    for m in STREAM.finditer(data):
+        head = m.group(1)
+        length = re.search(rb"/Length (\d+)", head)
+        if not length or b"/FlateDecode" not in head:
+            continue
+        start = m.end()
+        end = start + int(length.group(1))
+        try:
+            text = zlib.decompress(data[start:end])
+        except zlib.error:
+            continue
+        if b"00AD" not in text.upper():
+            continue
+        new = SOFT_HYPHEN.sub(
+            lambda h: h.group(1) + b"\n" if h.group(1) else b"", text)
+        new = LIGATURE_TEXT.sub(ligature, new)
+        if new == text:
+            continue
+        packed = zlib.compress(new, 9)
+        out.append(data[pos:m.start(1)])
+        out.append(head.replace(length.group(0),
+                                b"/Length %d" % len(packed)))
+        out.append(data[m.end(1):start])
+        out.append(packed)
+        pos = end
+        changed += 1
+    if changed:
+        out.append(data[pos:])
+        with open(pdf, "wb") as f:
+            f.write(rewrite_xref(b"".join(out), "build.py"))
 
 
 def page_count(pdf):
@@ -400,6 +535,7 @@ def main():
             print("build.py: no --game, so no treasure list or bestiary",
                   file=sys.stderr)
         body = tidy(body, info)
+        body = hyphenate(body)
         body = place_art(body, info, args.art, args.draft)
 
         if args.html:
@@ -431,6 +567,7 @@ def main():
         out = os.path.abspath(args.out)
         os.makedirs(os.path.dirname(out), exist_ok=True)
         print_pdf(path, out, profile)
+        strip_soft_hyphens(out)
 
         again = chapter_pages(out)
         final = page_count(out)

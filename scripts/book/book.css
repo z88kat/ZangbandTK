@@ -32,7 +32,7 @@ body {
   font-size: 9.4pt;
   line-height: 11.6pt;
   color: var(--ink);
-  hyphens: auto;
+  hyphens: manual;   /* build.py puts the soft hyphens in */
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
   orphans: 2;
