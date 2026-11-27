@@ -1047,6 +1047,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/ancient-curse.c
     player/psionic-backfire.c
     player/pathfind.c
+    player/patron-rewards.c
     player/playerstat.c
     player/pscore.c
     player/psychic-drain.c

@@ -107,6 +107,36 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+The Lords of Chaos, as Zangband wrote them — 27 November 2026
+--------------------------------------------------------------
+
+- **3.140.0.** Every reward a Chaos-Warrior's Lord can give was rebuilt from
+  Zangband's source, where before it came from the spoiler, which names them
+  and says little else. Most had come out milder than the original.
+- **Wrath lays the Ancient Curse.** A Lord's wrath hurts you, drains every
+  stat, calls a horde and lays the curse, all at once, and may curse your
+  weapon and armour too. A Lord who is only annoyed may lay the curse as well.
+  Seven of the nine Lords can now curse you; before, none could.
+- **Experience is a fraction of yours.** A Lord's favour adds half again, plus
+  ten, up to 100,000, and its displeasure takes a sixth, which Hold Life
+  doesn't save. Both used to be a few hundred points a level, and meant
+  nothing late in the game.
+- **New rewards.** A Lord can turn your wounds into lesser ones, though one
+  time in five that opens a new one. Gifts of objects come singly or two and
+  three at a time. The worthy blade is a (Chaotic) sword sized to your level,
+  where it used to be whatever an acquirement made. A Lord's banishment, of one
+  kind of monster or of everything near you, costs you no hit points.
+- **The heaviest blows are Zangband's.** "Suffer, pathetic fool!" is a burst of
+  chaos around you and then a second hit, and a summoned horde is chosen by
+  depth, up to greater demons. A ruined stat is lowered for good, all five at
+  once.
+- **The nine Lords' ladders are redrawn** around the new rewards, each Lord
+  keeping its temperament. Zangband's Havoc isn't among them: it is Call Chaos,
+  which has to be aimed, and a reward can't aim.
+- **The Polymorph Wounds mutation** uses the same effect as the Lords. It used
+  to close your cuts and hurt you, which is the opposite of what Zangband's
+  did.
+
 A command card, and 3.139.0 — 25 November 2026
 ----------------------------------------------
 

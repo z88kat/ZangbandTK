@@ -230,3 +230,17 @@ EFFECT(SP_TO_HP,					false,	NULL,		0,		EFINFO_NONE,	"heals your wounds with your
 EFFECT(HP_TO_SP,					false,	NULL,		0,		EFINFO_NONE,	"restores your spell points from your hit points",	"")
 EFFECT(REPORT_MAGICS,				false,	NULL,		0,		EFINFO_NONE,	"tells you how long each magic upon you will last",	"weigh magic")
 EFFECT(THROW,						false,	NULL,		1,		EFINFO_DICE,	"throws an object as hard as a launcher of might %s",	"throw")
+/*
+ * ZangbandTK: what a Lord of the Courts of Chaos does to a servant, ported from
+ * Zangband's gain_level_reward() (DEC-167). ONE_IN is a control effect like
+ * RANDOM: it runs the effect after it one time in its dice and skips it
+ * otherwise, which is how Zangband's WRATH curses a weapon and armour each on
+ * an even chance. HI_SUMMON is activate_hi_summon(), RUIN_STATS is a dec_stat()
+ * on every stat, POLY_WOUNDS is do_poly_wounds() and CHAOS_BLADE is the
+ * patron's weapon.
+ */
+EFFECT(ONE_IN,						false,	NULL,		0,		EFINFO_NONE,	"sometimes ",	"")
+EFFECT(HI_SUMMON,					false,	NULL,		0,		EFINFO_NONE,	"calls up a horde of dangerous monsters around you",	"")
+EFFECT(RUIN_STATS,					false,	NULL,		0,		EFINFO_NONE,	"drains every one of your stats",	"")
+EFFECT(POLY_WOUNDS,					false,	NULL,		0,		EFINFO_NONE,	"turns your wounds into lesser ones, healing you, though one time in five it opens a new one",	"")
+EFFECT(CHAOS_BLADE,					false,	NULL,		0,		EFINFO_NONE,	"conjures a (Chaotic) sword sized to your level",	"")

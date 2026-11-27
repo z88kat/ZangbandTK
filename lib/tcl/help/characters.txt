@@ -133,7 +133,7 @@ T	h2	The Chaos-Warrior, and who owns it
 T	h2	\n
 T	p0	The Chaos-Warrior is the third of Zangband’s classes, and the only one in the game that belongs to somebody.
 T	p0	\n
-T	p0	At birth a Chaos-Warrior is sworn to one of nine Lords of the Courts of Chaos. It doesn’t choose which, it can’t leave, and every time it gains a level its Lord looks up and decides how it feels about the servant it has. Usually that’s a gift: a healing, a raised stat, experience, an object out of nothing. Sometimes it’s a cursed weapon, a ruined stat, monsters dropped on top of you, or the level destroyed around you. The class fights nearly as well as a Warrior, but the relationship with its Lord is what the class is about.
+T	p0	At birth a Chaos-Warrior is sworn to one of nine Lords of the Courts of Chaos. It doesn’t choose which, it can’t leave, and every time it gains a level its Lord looks up and decides how it feels about the servant it has. Usually that’s a gift: a healing, a raised stat, experience, an object out of nothing. Sometimes it’s a cursed weapon, a ruined stat, monsters dropped on top of you, the level destroyed around you, or the Ancient Curse. The class fights nearly as well as a Warrior, but the relationship with its Lord is what the class is about.
 T	p0	\n
 T	p0	It also casts. A Chaos-Warrior learns Chaos magic from level 2, all thirty-two spells, and like a Druid, a Necromancer or a Blackguard it has exactly one realm and no choice about it. Zangband is blunt on the point: they are “not interested in any other form of magic”. Until the Chaos realm existed there was nothing to give them, and the class shipped unable to hold spell points at all.
 T	p0	\n

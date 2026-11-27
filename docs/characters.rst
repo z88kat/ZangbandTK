@@ -202,8 +202,8 @@ At birth a Chaos-Warrior is sworn to one of nine Lords of the Courts of Chaos.
 It doesn't choose which, it can't leave, and every time it gains a level its
 Lord looks up and decides how it feels about the servant it has. Usually that's
 a gift: a healing, a raised stat, experience, an object out of nothing.
-Sometimes it's a cursed weapon, a ruined stat, monsters dropped on top of you, or
-the level destroyed around you. The class fights nearly as well as a Warrior,
+Sometimes it's a cursed weapon, a ruined stat, monsters dropped on top of you,
+the level destroyed around you, or the Ancient Curse. The class fights nearly as well as a Warrior,
 but the relationship with its Lord is what the class is about.
 
 It also casts. A Chaos-Warrior learns Chaos magic from level 2, all thirty-two

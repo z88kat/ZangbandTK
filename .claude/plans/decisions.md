@@ -9523,3 +9523,63 @@ _NET_WM_ICON before and has one after. The bridge test passed, 243 checks.
 
 Not checked: a real MATE or GNOME desktop; Windows, where the Flags factor
 and the tile default follow what Tk sees and so should not move.
+
+**DEC-167 — The Lords of Chaos give Zangband's rewards, ported from its
+source; wrath lays the Ancient Curse (27 November 2026).**
+(Classes, Chaos-Warrior. Settles phase1-player-systems open question 6. 3.140.0.)
+
+**Why.** The patron rewards were built from the Chaos Patrons spoiler, which
+names Zangband's thirty-one and says little of what each does, and most came
+out milder than gain_level_reward() (xtra2.c:3092) made them. WRATH was a
+plain hit of level x 4, where Zangband's also drains every stat, calls a
+horde, lays the Ancient Curse and, one time in two each, curses the weapon and
+the armour. PISS_OFF frightened you. GAIN_EXP and LOSE_EXP were level x 100
+and x 200 before the effect halved them; Zangband's are half your experience
+plus ten (at most 100,000) and a sixth of it, with Hold Life no defence.
+CHAOS_WP was one acquirement under a message promising a blade. Eight
+rewards had no counterpart at all. No Lord could lay the Ancient Curse,
+though in Zangband all sixteen could (the open question's "nine of sixteen"
+was a miscount).
+
+**What.** The owner's rulings, 27 November: re-port every reward from the
+source; the curse arrives through WRATH and PISS_OFF, as in Zangband, so
+there is no TY_CURSE rung; HURT becomes HURT_LOT, Zangband's ball around you;
+POLY_WND and the POLY_WOUND mutation share a new effect; GOOD_OBS and
+GREA_OBS are two or three objects where GOOD_OBJ and GREA_OBJ are one;
+GENOCIDE yes, and a Lord's banishment costs the servant no hit points;
+DO_HAVOC is left out (it is Call Chaos, which aims, and a reward cannot).
+
+- Four new effects, appended to list-effects.h so savefiles are untouched:
+  ONE_IN (the next effect happens one time in N; WRATH's curses use it),
+  HI_SUMMON (activate_hi_summon(): one to nine groups by depth, ants as KIN,
+  cyberdemons as HI_DEMON at level 100), RUIN_STATS (every stat, dec_stat's
+  10-25 amount mapped to one or two steps, sustains ignored; `other` makes it
+  permanent), POLY_WOUNDS (do_poly_wounds(), effects.c:3015) and CHAOS_BLADE
+  (Zangband's level-scaled sword table, made (Chaotic), +3 to +12 to hit and
+  to dam). Three of Zangband's swords are not in our list: the small sword
+  is a Rapier, the sabre a Short Sword, the two-handed sword a Zweihander.
+- `other` flags on existing effects: GAIN_STAT restores first, as
+  do_inc_stat() does; GAIN_EXP caps its gain; LOSE_EXP ignores Hold Life;
+  ACQUIRE makes good objects rather than great; BANISH and MASS_BANISH skip
+  the strain. The spells' paths are unchanged.
+- HURT_LOT's disintegration is a MANA sphere: pure damage that destroys floor
+  items and leaves walls, which is what Zangband's GF_DISINTEGRATE did.
+- A patron's DAMAGE is "the Wrath of <Lord>" on the tombstone, as Zangband's
+  take_hit() said.
+- No favourite stat: DEC-38's Lords don't have one, so GAIN_ABL and LOSE_ABL
+  pick any stat.
+- The (Chaotic) ego here gives one random high resist. Zangband's gave a
+  random resist that was high three times in four. Left as it is.
+- The nine ladders were redrawn around the new codes, each Lord keeping the
+  temperament in birth.rst. Seven can lay the curse; Mandor and Gramble can't.
+
+**Checked.** player/patron-rewards, ten tests over ten seeds: the reward set,
+the seven cursers, the experience arithmetic and Hold Life, drain against
+ruin, the restore, POLY_WOUNDS' one in five (174 to 219 in a thousand), ONE_IN,
+free banishment, a horde arriving, and a level-1 blade being a (Chaotic)
+Dagger. game/wild (106), monster/charm (11), player/ancient-curse and
+player/mutation pass; wild's check that every effect needing a number has one
+now covers SPHERE, ACQUIRE, SUMMON and ONE_IN. mutation.txt was regenerated
+by tools/zconv from mutmap.toml.
+
+Not checked: a Chaos-Warrior played through its levels in the real game.

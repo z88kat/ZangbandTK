@@ -948,14 +948,31 @@ bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 
 /**
  * Gain a stat point.  The stat index is context->subtype.
+ *
+ * ZangbandTK: with context->other set, restore the stat first, as Zangband's
+ * do_inc_stat() does ([effects.c:2855](../archive/zangband/src/effects.c#L2855))
+ * for a Chaos patron's gifts (DEC-167).  A drained stat that is already at its
+ * limit is still put back, and says so.
  */
 bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 {
 	int stat = context->subtype;
+	bool restored = false;
+
+	if (stat < 0 || stat >= STAT_MAX) return false;
+
+	if (context->other && player->stat_cur[stat] < player->stat_max[stat]) {
+		player->stat_cur[stat] = player->stat_max[stat];
+		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->redraw |= (PR_STATS);
+		restored = true;
+	}
 
 	/* Attempt to increase */
 	if (player_stat_inc(player, stat)) {
 		msg("You feel very %s!", desc_stat(stat, true));
+	} else if (restored) {
+		msgt(MSG_RECOVER, "You feel less %s.", desc_stat(stat, false));
 	}
 
 	/* Notice */
@@ -986,13 +1003,26 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 	return (true);
 }
 
-/* Note the divisor of 2, a slight hack to simplify food description */
+/**
+ * Note the divisor of 2, a slight hack to simplify food description.
+ *
+ * ZangbandTK: context->other, when set, is the most this can give.  A Chaos
+ * patron's "Well done, mortal!" is half your experience plus ten, and no more
+ * than 100,000 ([xtra2.c:3159](../archive/zangband/src/xtra2.c#L3159)); the
+ * half comes from the divisor and the PLAYER_EXP base, and the cap from here
+ * (DEC-167).
+ */
 bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 	if (player->exp < PY_MAX_EXP) {
+		int32_t gain = amount / 2;
+
+		if (context->other > 0 && gain > context->other)
+			gain = context->other;
+
 		msg("You feel more experienced.");
-		player_exp_gain(player, amount / 2);
+		player_exp_gain(player, gain);
 	}
 	context->ident = true;
 
@@ -1007,15 +1037,21 @@ bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
  * Chaos-Warrior's patron needs to be able to say "thou hast learned nothing"
  * and mean it, and there is nothing specific to patrons here -- a trap or a
  * monster spell could use it equally well.
+ *
+ * With context->other set, Hold Life does not stand in the way.  A patron
+ * taking back what it thinks you did not deserve is not a drain, and
+ * Zangband's lose_exp() never asks ([xtra2.c:3171](../archive/zangband/src/xtra2.c#L3171),
+ * DEC-167).
  */
 bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
+	bool held = !context->other && player_of_has(player, OF_HOLD_LIFE);
 
-	if (player->exp > 0 && !player_of_has(player, OF_HOLD_LIFE)) {
+	if (player->exp > 0 && !held) {
 		msgt(MSG_DRAIN_EXP, "You feel your memories fade.");
 		player_exp_lose(player, amount / 2, false);
-	} else if (player_of_has(player, OF_HOLD_LIFE)) {
+	} else if (held) {
 		equip_learn_flag(player, OF_HOLD_LIFE);
 		msg("You feel your memories fade for a moment, but they return.");
 	}
@@ -2632,10 +2668,19 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	return true;
 }
 
+/**
+ * Make objects out of nothing.  The number is the dice.
+ *
+ * ZangbandTK: with context->other set they are good rather than great, which
+ * is the difference between a Chaos patron's GOOD_OBJ and GREA_OBJ in Zangband
+ * ([xtra2.c:3175](../archive/zangband/src/xtra2.c#L3175)).  4.2's acquirement
+ * only ever made great ones, so until DEC-167 every patron gift was the larger
+ * of the two.
+ */
 bool effect_handler_ACQUIRE(effect_handler_context_t *context)
 {
 	int num = effect_calculate_value(context, false);
-	acquirement(player->grid, player->depth, num, true);
+	acquirement(player->grid, player->depth, num, !context->other);
 	context->ident = true;
 	return true;
 }
@@ -2868,12 +2913,19 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		dam += randint1(4);
 	}
 
-	/* Hurt the player */
-	dam = player_apply_damage_reduction(player, dam);
-	if (dam > 0 && OPT(player, show_damage)) {
-		msg("You take %d damage.", dam);
+	/*
+	 * Hurt the player -- unless a Chaos patron did the banishing.  Zangband
+	 * passes genocide(FALSE) from a patron's reward
+	 * ([xtra2.c:3511](../archive/zangband/src/xtra2.c#L3511)), and the
+	 * strain is the caster's, not the beneficiary's (DEC-167).
+	 */
+	if (!context->other) {
+		dam = player_apply_damage_reduction(player, dam);
+		if (dam > 0 && OPT(player, show_damage)) {
+			msg("You take %d damage.", dam);
+		}
+		take_hit(player, dam, "the strain of casting Banishment");
 	}
-	take_hit(player, dam, "the strain of casting Banishment");
 
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
@@ -2920,12 +2972,14 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 		dam += randint1(3);
 	}
 
-	/* Hurt the player */
-	dam = player_apply_damage_reduction(player, dam);
-	if (dam > 0 && OPT(player, show_damage)) {
-		msg("You take %d damage.", dam);
+	/* Hurt the player, unless it was a patron's gift (see BANISH) */
+	if (!context->other) {
+		dam = player_apply_damage_reduction(player, dam);
+		if (dam > 0 && OPT(player, show_damage)) {
+			msg("You take %d damage.", dam);
+		}
+		take_hit(player, dam, "the strain of casting Mass Banishment");
 	}
-	take_hit(player, dam, "the strain of casting Mass Banishment");
 
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
@@ -4780,6 +4834,227 @@ bool effect_handler_ANCIENT_CURSE(effect_handler_context_t *context)
 	} while (!stop && rounds < 5 && one_in_(3));
 
 	context->ident = true;
+	return true;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * What a Lord of the Courts does to a servant (ZangbandTK, DEC-167)
+ * ------------------------------------------------------------------------
+ *
+ * Four pieces of Zangband's gain_level_reward() that 4.2 has nothing for.
+ * Each is written as an effect rather than inside the patron code, because
+ * Zangband reaches all four from elsewhere too: a greater summoning from the
+ * Ancient Curse and the Trump deck, a polymorphed wound from a mutation, and
+ * a ruined stat from half the punishments a Lord can hand out.
+ */
+
+/**
+ * Dummy effect: ONE_IN is handled inside effect_do(), as RANDOM is.
+ */
+bool effect_handler_ONE_IN(effect_handler_context_t *context)
+{
+	return true;
+}
+
+/**
+ * A greater summoning: Zangband's activate_hi_summon()
+ * ([spells2.c:3744](../archive/zangband/src/spells2.c#L3744)).
+ *
+ * A handful of summonings, each of one kind, and the kinds get worse with
+ * depth.  At the surface the roll reaches ants, spiders and hounds as often
+ * as dragons and demons; by 1000 feet nearly every pass is the last case,
+ * anything at all from half again as deep.
+ *
+ * Kept as it is in the source, including the loop bound being re-rolled on
+ * every pass -- it averages about three and a half summonings, not five --
+ * and the level 100 for the greater demons, which stand in for Zangband's
+ * cyberdemons as they do in the Ancient Curse.  summon_specific() halves the
+ * level against the dungeon's, as Zangband's did, so 100 is deep but not
+ * absurd.  There is no ant summoning here, so ants are called as kin.
+ */
+bool effect_handler_HI_SUMMON(effect_handler_context_t *context)
+{
+	int i, depth = player->depth;
+
+	context->ident = true;
+
+	/* No summoning in arena levels */
+	if (player->upkeep->arena_level) return true;
+
+	for (i = 0; i < randint1(9) + depth / 40; i++) {
+		const char *type;
+		int lev = depth;
+
+		switch ((randint1(26) + depth / 20) / 2) {
+			case 1:
+				kin_base = lookup_monster_base("ant");
+				type = kin_base ? "KIN" : "ANIMAL";
+				break;
+			case 2: type = "SPIDER"; break;
+			case 3: type = "HOUND"; break;
+			case 4: type = "HYDRA"; break;
+			case 5: type = "AINU"; break;
+			case 6: type = "UNDEAD"; break;
+			case 7: type = "DRAGON"; break;
+			case 8: type = "DEMON"; break;
+			case 9: type = "AMBERITE"; break;
+			case 10: type = "UNIQUE"; break;
+			case 11: type = "HI_UNDEAD"; break;
+			case 12: type = "HI_DRAGON"; break;
+			case 13: type = "HI_DEMON"; lev = 100; break;
+			default: type = "ANY"; lev = (depth * 3) / 2 + 5; break;
+		}
+
+		(void) summon_specific(player->grid, lev, summon_name_to_idx(type),
+							   true, false);
+	}
+
+	return true;
+}
+
+/**
+ * Every stat goes down: Zangband's dec_stat() called on each in turn with an
+ * amount of 10 to 25 ([effects.c:2590](../archive/zangband/src/effects.c#L2590)).
+ *
+ * Zangband keeps stats in tenths, and at that amount dec_stat() takes one bite
+ * out of a stat, and a second when the amount is over 20 -- five times in
+ * sixteen.  One bite is what player_stat_dec() takes, so that is the port.
+ * Sustains do not help: dec_stat() never looks at them, and only the gentler
+ * do_dec_stat() does.
+ *
+ * context->other set makes the loss permanent, as it is when a Lord ruins you;
+ * unset, it is a drain that restoration can mend, as WRATH's is.
+ */
+bool effect_handler_RUIN_STATS(effect_handler_context_t *context)
+{
+	bool permanent = context->other != 0, lost = false;
+	int stat;
+
+	context->ident = true;
+
+	for (stat = 0; stat < STAT_MAX; stat++) {
+		int amount = rand_range(10, 25);
+
+		if (player_stat_dec(player, stat, permanent)) lost = true;
+		if (amount > 20 && player_stat_dec(player, stat, permanent))
+			lost = true;
+	}
+
+	if (lost) msgt(MSG_DRAIN_STAT, "You feel less powerful!");
+
+	return true;
+}
+
+/**
+ * Wounds turned into lesser ones: Zangband's do_poly_wounds()
+ * ([effects.c:3015](../archive/zangband/src/effects.c#L3015)).
+ *
+ * A heal of the character's level in d5, and a cut that closes by half as
+ * much -- except that one time in five the chaos opens a new one instead, and
+ * that one costs half the heal back.  With nothing to heal and no bad luck it
+ * does nothing at all, and says nothing.
+ *
+ * The POLY_WOUND mutation fires this too.  Until DEC-167 it cured your cuts and
+ * then hurt you, which was the opposite of what Zangband's did.
+ */
+bool effect_handler_POLY_WOUNDS(effect_handler_context_t *context)
+{
+	int wounds = player->timed[TMD_CUT];
+	int hurt = player->mhp - player->chp;
+	int change = damroll(MAX(player->lev, 1), 5);
+	bool nasty = one_in_(5);
+	char heal[16];
+
+	context->ident = true;
+
+	if (!wounds && hurt <= 0 && !nasty) return true;
+
+	msg("Your wounds are polymorphed into less serious ones.");
+	strnfmt(heal, sizeof(heal), "%d", change);
+	effect_simple(EF_HEAL_HP, source_player(), heal, 0, 0, 0, 0, 0, NULL);
+
+	if (nasty) {
+		msg("A new wound was created!");
+		take_hit(player, change / 2, "a polymorphed wound");
+		if (!player->is_dead && player_inc_check(player, TMD_CUT, false))
+			(void) player_set_timed(player, TMD_CUT, change, true, true);
+	} else {
+		(void) player_set_timed(player, TMD_CUT,
+								MAX(wounds - change / 2, 0), true, true);
+	}
+
+	return true;
+}
+
+/**
+ * A worthy blade: the sword a Chaos patron hands a servant who pleased it
+ * ([xtra2.c:3191](../archive/zangband/src/xtra2.c#L3191)).
+ *
+ * Which sword is a roll against the character's level, down Zangband's own
+ * list from dagger to Blade of Chaos, so a young servant is given a
+ * main gauche and an old one may be given a zweihander.  It is always
+ * (Chaotic), the ego a Lord takes notice through, and it comes with +3 to +12
+ * to hit and to damage depending on how deep it is given.
+ *
+ * Three of Zangband's swords are not in this game, and each is replaced by
+ * the one with its dice: the small sword (1d6) by the rapier, the sabre (1d7)
+ * by the short sword, and the two-handed sword (3d6) by the zweihander.
+ */
+bool effect_handler_CHAOS_BLADE(effect_handler_context_t *context)
+{
+	static const struct {
+		int upto;
+		const char *name;
+	} blades[] = {
+		{ 1, "Dagger" }, { 3, "Main Gauche" }, { 4, "Tanto" },
+		{ 6, "Rapier" }, { 8, "Rapier" }, { 10, "Basillard" },
+		{ 13, "Short Sword" }, { 15, "Short Sword" }, { 17, "Cutlass" },
+		{ 18, "Wakizashi" }, { 19, "Khopesh" }, { 20, "Tulwar" },
+		{ 21, "Broad Sword" }, { 23, "Long Sword" }, { 25, "Scimitar" },
+		{ 26, "Ninjato" }, { 27, "Katana" }, { 29, "Bastard Sword" },
+		{ 30, "Great Scimitar" }, { 31, "Claymore" }, { 32, "Espadon" },
+		{ 33, "Zweihander" }, { 34, "Flamberge" }, { 35, "No-dachi" },
+		{ 36, "Executioner's Sword" }, { 37, "Zweihander" },
+		{ 38, "Diamond Edge" }, { 9999, "Blade of Chaos" },
+	};
+	int roll = randint1(MAX(player->lev, 1));
+	int depth = player->depth;
+	int sval = -1;
+	size_t i;
+	struct object_kind *kind;
+	struct ego_item *ego;
+	struct object *obj;
+
+	context->ident = true;
+
+	for (i = 0; i < N_ELEMENTS(blades); i++) {
+		if (roll > blades[i].upto) continue;
+		sval = lookup_sval(TV_SWORD, blades[i].name);
+		break;
+	}
+
+	kind = (sval >= 0) ? lookup_kind(TV_SWORD, sval) : NULL;
+	if (!kind) return false;
+
+	obj = object_new();
+	object_prep(obj, kind, depth, RANDOMISE);
+
+	ego = lookup_ego_item("(Chaotic)", TV_SWORD, sval);
+	if (ego) {
+		obj->ego = ego;
+		ego_apply_magic(obj, depth);
+	}
+
+	/* Two separate rolls, as in the source; randint1(0) is not one */
+	obj->to_h = 3 + (depth > 0 ? randint1(depth) : 1) % 10;
+	obj->to_d = 3 + (depth > 0 ? randint1(depth) : 1) % 10;
+
+	obj->origin = ORIGIN_ACQUIRE;
+	obj->origin_depth = convert_depth_to_origin(depth);
+
+	drop_near(cave, &obj, 0, player->grid, true, false);
+
 	return true;
 }
 

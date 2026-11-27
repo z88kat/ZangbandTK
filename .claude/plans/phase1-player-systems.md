@@ -604,7 +604,10 @@ reason PLR-24's confirmation prompt matters.
    reasoning is in the development diary under that date. The limitation is also recorded
    in a comment beside the power in `class.txt`, so the next reader of the data meets it
    there too.
-6. **Which of Zangband's patron rewards are still wanted?** Eight of its thirty-one have no
+6. ~~Which of Zangband's patron rewards are still wanted?~~ **Settled by DEC-167
+   (27 November 2026): all of them but `DO_HAVOC`, re-ported from `gain_level_reward()`,
+   with the Ancient Curse laid through `WRATH` and `PISS_OFF` as Zangband laid it.** The
+   "nine of the sixteen" below is a miscount: all sixteen could. Eight of its thirty-one have no
    counterpart here, and the absences look like work not yet reached rather than curation —
    DEC-38 settles the roster and the polymorph, and says nothing about the reward set. The
    servant rewards were filled in the same way after shipping with none of the three.

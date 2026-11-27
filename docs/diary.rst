@@ -31,6 +31,41 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+27 November 2026 — what the Lords actually do
+=============================================
+
+The patron rewards were the one open question left on the class pages, and
+when Steven asked what needed deciding I went back to Zangband's
+gain_level_reward() instead of the spoiler. That was the mistake the first
+time: the spoiler names thirty-one rewards and describes about half of them in
+a phrase, and we'd filled in the rest with whatever 4.2 could already say.
+Nearly all of it came out gentler than the source. WRATH was a hit of level
+times four. In Zangband it's that, plus every stat drained, a horde summoned
+and the Ancient Curse, plus a coin toss each for a cursed weapon and cursed
+armour. "Thou didst not deserve that, slave" took a few hundred points of
+experience at any level; Zangband's takes a sixth of what you have and doesn't
+care about Hold Life. The worthy blade was an ordinary acquirement.
+
+Steven ruled on it in two passes: port all of it, let the curse arrive the way
+Zangband let it arrive, through wrath, and leave out Havoc, which is Call Chaos
+and needs a target. That made five new effects and a handful of flags on old
+ones. The fiddliest was the blade, which is a table of swords by level, and
+three of Zangband's swords aren't in our object list, so the small sword is a
+rapier now and nobody will notice. ONE_IN exists because the effect language
+could pick one of several effects but had no way to say "maybe this one".
+
+Two corrections. On 14 September I wrote that nine of Zangband's sixteen
+patrons could lay the curse. Every one of the sixteen could: fourteen through WRATH,
+Xiombarg through PISS_OFF, Balaan through a TY_CURSE rung. The other is the
+Polymorph Wounds mutation, which we'd reduced to "close your cuts and take a
+hit", and that's backwards. Zangband's heals you and narrows the cut, and one
+time in five opens a new one. It now uses the same effect as the Lords.
+
+Seven of our nine can curse you now. Mandor and Gramble can't: at their worst
+one curses your weapon and the other hits you, and I left them that way so the
+Lords still differ in how they're angry.
+
+
 26 November 2026 — the book
 ===========================
 

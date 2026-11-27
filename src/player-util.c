@@ -2742,9 +2742,29 @@ void patron_bestow_reward(struct player *p)
 
 	msg(reward->message, lord->name);
 
-	if (reward->effect)
+	if (reward->effect) {
+		/*
+		 * A death at a Lord's hands is "the Wrath of" that Lord, in the
+		 * scores and on the tombstone, as in Zangband
+		 * ([xtra2.c:3121](../archive/zangband/src/xtra2.c#L3121)).  A
+		 * DAMAGE effect from the player names its killer from the effect's
+		 * own message, and one reward serves all nine Lords, so the name is
+		 * lent to the effect for as long as the reward runs and taken back
+		 * afterwards (DEC-167).
+		 */
+		char killer[80];
+		struct effect *e;
+
+		strnfmt(killer, sizeof(killer), "the Wrath of %s", lord->name);
+		for (e = reward->effect; e; e = e->next)
+			if (e->index == EF_DAMAGE && !e->msg) e->msg = killer;
+
 		effect_do(reward->effect, source_player(), NULL, &ident, true, 0,
 				  0, 0, NULL);
+
+		for (e = reward->effect; e; e = e->next)
+			if (e->msg == killer) e->msg = NULL;
+	}
 }
 
 /**

@@ -5244,7 +5244,7 @@ static int test_a_patrons_ladder_runs_worst_to_best(void *state) {
 
 		for (slot = 0; slot < PATRON_LADDER; slot++) {
 			const char *code = patron->ladder[slot]->code;
-			bool harmful = streq(code, "WRATH") || streq(code, "HURT") ||
+			bool harmful = streq(code, "WRATH") || streq(code, "HURT_LOT") ||
 				streq(code, "PISS_OFF") || streq(code, "CURSE_WP") ||
 				streq(code, "CURSE_AR") || streq(code, "LOSE_ABL") ||
 				streq(code, "RUIN_ABL") || streq(code, "LOSE_EXP") ||
@@ -5401,7 +5401,8 @@ static int test_thirteen_is_an_unlucky_level(void *state) {
 static const int effects_needing_a_value[] = {
 	EF_PROJECT_LOS, EF_PROJECT_LOS_AWARE, EF_BALL, EF_BREATH, EF_SPOT,
 	EF_BOLT, EF_BEAM, EF_BOLT_OR_BEAM, EF_DAMAGE, EF_HEAL_HP,
-	EF_TIMED_INC, EF_MON_TIMED_INC, EF_LOSE_EXP, EF_GAIN_EXP, EF_TELEPORT
+	EF_TIMED_INC, EF_MON_TIMED_INC, EF_LOSE_EXP, EF_GAIN_EXP, EF_TELEPORT,
+	EF_SPHERE, EF_ACQUIRE, EF_SUMMON, EF_ONE_IN
 };
 
 /** \return how many effects in the chain need a value but were given none. */

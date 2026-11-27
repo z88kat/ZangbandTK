@@ -322,6 +322,16 @@ static int32_t effect_value_base_player_hp(void)
 	return player->chp;
 }
 
+/**
+ * The character's current experience (ZangbandTK, DEC-167). A Chaos patron's
+ * favour and its displeasure are both a fraction of what you have, not a fixed
+ * sum, which is why the reward can still matter at level forty.
+ */
+static int32_t effect_value_base_player_exp(void)
+{
+	return player->exp;
+}
+
 static int32_t effect_value_base_monster_percent_hp_gone(void)
 {
 	/* Get the targeted monster, fail horribly if none */
@@ -342,6 +352,7 @@ expression_base_value_f effect_value_base_by_name(const char *name)
 		{ "MAX_SIGHT", effect_value_base_max_sight },
 		{ "WEAPON_DAMAGE", effect_value_base_weapon_damage },
 		{ "PLAYER_HP", effect_value_base_player_hp },
+		{ "PLAYER_EXP", effect_value_base_player_exp },
 		{ "MONSTER_PERCENT_HP_GONE",
 		  effect_value_base_monster_percent_hp_gone },
 		{ NULL, NULL },
@@ -405,6 +416,24 @@ bool effect_do(struct effect *effect,
 
 		if (effect->dice != NULL)
 			choice_count = dice_roll(effect->dice, &value);
+
+		/*
+		 * One time in N, the effect after this one (ZangbandTK, DEC-167).
+		 *
+		 * RANDOM picks one of several and always does something; this is
+		 * the other shape a chance takes, "sometimes this, and otherwise
+		 * nothing". Zangband's WRATH writes it as `if (one_in_(2))
+		 * curse_weapon();` and there was no way to say that in data. With
+		 * no dice the effect after it never happens.
+		 */
+		if (effect->index == EF_ONE_IN) {
+			bool happens = choice_count > 0 && one_in_(choice_count);
+
+			completed = true;
+			effect = effect->next;
+			if (!happens && effect) effect = effect->next;
+			continue;
+		}
 
 		/* Deal with special random and select effects */
 		if (effect->index == EF_RANDOM || effect->index == EF_SELECT) {

@@ -466,9 +466,13 @@ effects = [ "TIMED_INC:WRAITH", "dice:$B+d$S",
 
 [random.POLY_WOUND]
 line = 1691
-note = """do_poly_wounds() converts cuts into hit-point loss and back, using \
-chaos. Reduced here to what 4.2 can say: the cuts go, and it costs."""
-effects = [ "CURE:CUT", "DAMAGE", "dice:1d$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = """do_poly_wounds() (effects.c:3015): a heal of the character's level \
+in d5 that closes a cut by half as much, and one time in five opens a new one \
+and takes half the heal back. Since DEC-167 it is the POLY_WOUNDS effect, which \
+a Chaos patron's POLY_WND fires as well. Before that it was reduced to "the \
+cuts go, and it costs": CURE:CUT and a hit of 1d(level), which healed nothing \
+and had the mutation backwards."""
+effects = [ "POLY_WOUNDS" ]
 
 [random.WASTING]
 line = 1699
