@@ -54,7 +54,9 @@ with it.
 Seeing the potion's info line turned up something older: ``LOSE_MUTATION``
 describes itself as taking one mutation however many it's asked for, so the
 info says one where the description says all. That has been true since
-3.49.0, and I left it for a change of its own.
+3.49.0, and it got a change of its own, 3.141.1: the removal now has an info
+flag that reads its count, so the potion says every mutation you have and
+"strangely normal" still says one.
 
 
 27 November 2026 — what the Lords actually do

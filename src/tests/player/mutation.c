@@ -12,6 +12,7 @@
  */
 
 #include "unit-test.h"
+#include <wchar.h>
 
 #include "init.h"
 #include "obj-make.h"
@@ -33,6 +34,7 @@
 #include "mon-util.h"
 #include "cave.h"
 #include "effects.h"
+#include "effects-info.h"
 #include "player-calcs.h"
 #include "player-mutation.h"
 #include "player-timed.h"
@@ -1909,6 +1911,50 @@ static int test_new_life_rerolls_and_cures(void *state) {
 	ok;
 }
 
+/* Does what \p e tells the player contain \p want? */
+static bool described_as(const struct effect *e, const wchar_t *want) {
+	textblock *tb = effect_describe(e, "It ", 0, false);
+	bool found;
+
+	if (!tb) return false;
+	found = wcsstr(textblock_text(tb), want) != NULL;
+	textblock_free(tb);
+
+	return found;
+}
+
+/*
+ * A removal says how many it takes.
+ *
+ * LOSE_MUTATION is asked for one by "strangely normal" and for more than the
+ * roster holds by a potion of New Life, and it used to describe itself as
+ * taking one either way -- so the potion's info line said one where its own
+ * description said all.
+ */
+static int test_a_removal_says_how_many(void *state) {
+	struct object_kind *kind =
+		lookup_kind(TV_POTION, lookup_sval(TV_POTION, "New Life"));
+	const struct mutation *normal = mutation_by_name("NORMALITY");
+	struct effect some = { 0 };
+
+	notnull(kind);
+	require(described_as(kind->effect, L"every mutation you have"));
+	require(!described_as(kind->effect, L"one of your mutations"));
+
+	notnull(normal);
+	require(described_as(normal->fires->effects->effect,
+						 L"takes away one of your mutations"));
+
+	/* And anything between says it, should anything ever ask. */
+	some.index = EF_LOSE_MUTATION;
+	some.dice = dice_new();
+	dice_parse_string(some.dice, "3");
+	require(described_as(&some, L"up to 3 of your mutations"));
+	dice_free(some.dice);
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -1979,5 +2025,6 @@ struct test tests[] = {
 	{ "a melee mutation completes its blow",
 	  test_a_melee_mutation_completes_its_blow },
 	{ "new-life-rerolls-and-cures", test_new_life_rerolls_and_cures },
+	{ "a-removal-says-how-many", test_a_removal_says_how_many },
 	{ NULL, NULL }
 };

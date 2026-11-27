@@ -24,6 +24,7 @@
 #include "message.h"
 #include "mon-summon.h"
 #include "obj-info.h"
+#include "player-mutation.h"
 #include "player-timed.h"
 #include "project.h"
 #include "z-color.h"
@@ -541,6 +542,33 @@ textblock *effect_describe(const struct effect *e, const char *prefix,
 			strnfmt(desc, sizeof(desc), "%s", edesc);
 			break;
 
+		case EFINFO_MUTATION:
+			/*
+			 * How many mutations go (ZangbandTK).  LOSE_MUTATION is
+			 * asked for one by the "strangely normal" mutation and
+			 * for more than the roster holds by a potion of New
+			 * Life, which is how "all of them" is said; a fixed
+			 * description told the potion's drinker it took one.
+			 * The handler reads no value as one, and so does this.
+			 */
+			{
+				int count = randcalc(value, 0, MAXIMISE);
+				char what[40];
+
+				if (count <= 1) {
+					my_strcpy(what, "one of your mutations",
+						sizeof(what));
+				} else if (count >= mutation_count()) {
+					my_strcpy(what, "every mutation you have",
+						sizeof(what));
+				} else {
+					strnfmt(what, sizeof(what),
+						"up to %d of your mutations", count);
+				}
+				strnfmt(desc, sizeof(desc), edesc, what);
+			}
+			break;
+
 		default:
 			strnfmt(desc, sizeof(desc), "%s", "");
 			msg("Bad effect description passed to effect_info().  Please report this bug.");
@@ -596,6 +624,7 @@ size_t effect_get_menu_name(char *buf, size_t max, const struct effect *e)
 	case EFINFO_CONST:
 	case EFINFO_QUAKE:
 	case EFINFO_NONE:
+	case EFINFO_MUTATION:
 		len = strnfmt(buf, max, "%s", fmt);
 		break;
 

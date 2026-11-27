@@ -9621,8 +9621,13 @@ lib/gamedata. The potion's info line
 reads "When quaffed, it gambles your hit points on a fresh roll and takes one
 of your mutations away."
 
-Not changed: LOSE_MUTATION describes itself as taking one mutation whatever
-it is asked for, so New Life's info line says one where its description says
-all. That predates this decision.
+Follow-up, 3.141.1: LOSE_MUTATION described itself as taking one mutation
+whatever it was asked for, so New Life's info line said one where its
+description said all, as it had since 3.49.0. It now has an info flag of its
+own, EFINFO_MUTATION, appended to the enum: one or no value says "one of your
+mutations", the roster or more "every mutation you have", anything between
+"up to N". The potion reads "...and takes away every mutation you have";
+"strangely normal" still says one. player/mutation's a-removal-says-how-many
+checks all three, and fails with the old fixed text.
 
 Not checked: the potion quaffed in the real game.

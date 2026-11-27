@@ -119,6 +119,10 @@ New Life, as Zangband made it — 27 November 2026
   100, as Zangband told it. Only the debug command's rerate showed it before.
 - The potion's description is Zangband's own again, warning that your new
   hitpoints might be worse than your old ones.
+- **3.141.1** — **The potion's information says it takes every mutation.** It
+  said it took one, which is what any removal of a mutation said however many
+  it took. The "strangely normal" mutation, which does take one, still says
+  so.
 
 The Lords of Chaos, as Zangband wrote them — 27 November 2026
 --------------------------------------------------------------
