@@ -178,7 +178,7 @@ T	h2	\n
 T	p0	Barely at all:
 T	p0	\n
 T	li1	•\t
-T	li1	A potion of New Life, which strips away every mutation at once and is the deepest, most expensive potion in the game. Zangband’s also re-rolled your hit points; this one doesn’t, because Angband 4.2 fixes those at birth.
+T	li1	A potion of New Life, which strips away every mutation at once and is the deepest, most expensive potion in the game. Like Zangband’s, it rolls your hit points afresh first and tells you your new life rating, and they can come out worse than they were.
 T	li1	\n
 T	li1	•\t
 T	li1	Gaining a mutation that cancels one you have. There are nine such pairs. Becoming superhumanly strong ends being puny; growing a beak replaces a trunk. Iron skin is the interesting one: it drives out scales, rotting flesh and warts all at once, while any one of those three drives out the iron skin. Scales and warts get along fine together.

@@ -18,11 +18,7 @@
 
 [monster]
 
-# Keyed by slot, as the object converter is: tval 75 (potion), sval 63.
-[object."75:63"]
-# Zangband's description promises two things and the port delivers one. The
-# potion's Lua is `do_cmd_rerate(); cure_all_mutations()`; 4.2 fixes hit points
-# at birth and has no rerate command, so the mutations go and the hit dice
-# stay. Left as an override rather than edited into the generated file, and
-# recorded here so the next reader can see the half that was dropped.
-desc = "This potion strips away every mutation you carry. There is no other way to be rid of them all at once, and no cheap way to come by it."
+# Objects are keyed by slot, as the object converter is: "75:63" is tval 75
+# (potion), sval 63. That one, New Life, carried a description override until
+# DEC-168 ported the half of the potion it had been covering for; Zangband's
+# own description is accurate again.

@@ -1854,6 +1854,61 @@ static int test_a_burning_body_lights_the_way(void *state) {
 	ok;
 }
 
+/*
+ * A potion of New Life does both halves of Zangband's: it rolls the hit points
+ * afresh and then takes every mutation (DEC-168).
+ *
+ * Every level is first given the most its die can, a total no legal roll can
+ * reach -- birth and rerate both keep the fiftieth level between three-eighths
+ * and five-eighths of the way from least to most -- so a roll that did not
+ * happen cannot pass for one that came out the same.
+ */
+static int test_new_life_rerolls_and_cures(void *state) {
+	struct object_kind *kind =
+		lookup_kind(TV_POTION, lookup_sval(TV_POTION, "New Life"));
+	int hitdie = player->hitdie, low, high, i, n;
+	bool ident = false, told = false;
+
+	notnull(kind);
+	require(hitdie > 1);
+
+	for (i = 0; i < 3; i++) (void) player_mutate(player);
+	require(player_mutation_total(player) > 0);
+
+	for (i = 0; i < PY_MAX_LEVEL; i++)
+		player->player_hp[i] = (int16_t) (hitdie * (i + 1));
+
+	effect_do(kind->effect, source_player(), NULL, &ident, true, 0, 0, 0,
+			  NULL);
+
+	low = (PY_MAX_LEVEL * 3 * (hitdie - 1)) / 8 + PY_MAX_LEVEL;
+	high = (PY_MAX_LEVEL * 5 * (hitdie - 1)) / 8 + PY_MAX_LEVEL;
+
+	/* Rolled, a die a level, inside the band. */
+	eq(player->player_hp[0], hitdie);
+	for (i = 1; i < PY_MAX_LEVEL; i++) {
+		int gain = player->player_hp[i] - player->player_hp[i - 1];
+
+		require(gain >= 1 && gain <= hitdie);
+	}
+	require(player->player_hp[PY_MAX_LEVEL - 1] >= low);
+	require(player->player_hp[PY_MAX_LEVEL - 1] <= high);
+
+	/* And the life rating told, as Zangband told it. */
+	n = (int) messages_num();
+	for (i = 0; i < n && i < 40 && !told; i++) {
+		const char *msg = message_str((int16_t) i);
+
+		if (msg && strstr(msg, "Current Life Rating is")) told = true;
+	}
+	require(told);
+
+	/* The other half. */
+	eq(player_mutation_total(player), 0);
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -1923,5 +1978,6 @@ struct test tests[] = {
 	  test_a_burning_body_lights_the_way },
 	{ "a melee mutation completes its blow",
 	  test_a_melee_mutation_completes_its_blow },
+	{ "new-life-rerolls-and-cures", test_new_life_rerolls_and_cures },
 	{ NULL, NULL }
 };

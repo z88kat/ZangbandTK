@@ -237,17 +237,18 @@ is Zangband's doing and is kept. 4.2 keeps an item's power in runes and curses \
 as well as numbers, and `object_prep()` rebuilds all of it at once.""" }
 
 "75:63" = { name = "New Life", lines = [
+    "effect:RERATE_HP",
     "effect:LOSE_MUTATION",
     "dice:96",
 ], note = """CNT-11 deferred this one because mutations were unbuilt, and that \
 reason is gone. `L:USE: do_cmd_rerate(); cure_all_mutations()` -- the potion is \
 a Lua hook rather than a C case, which is why it does not appear beside the \
-other potions in the source. Half of it survives: `cure_all_mutations()` is \
-`LOSE_MUTATION` asked for more than a character can carry, and the count is 96 \
-because that is the whole roster. `do_cmd_rerate()` re-rolls the hit dice and \
-does not, because 4.2 fixes hit points at birth and has no rerate command. \
-What is left is still the rarest and most valuable way out of a bad set of \
-mutations, which is what the potion is for.""" }
+other potions in the source. Both halves are ported, in Zangband's order. \
+`do_cmd_rerate()` is `RERATE_HP`. It was left out at first on the ground that \
+4.2 fixes hit points at birth, and that stopped being true when Trump's \
+Judgement card brought the rerate into play (DEC-141, DEC-168). \
+`cure_all_mutations()` is `LOSE_MUTATION` asked for more than a character can \
+carry, and the count is 96 because that is the whole roster.""" }
 
 "75:62" = { name = "Invulnerability", lines = [
     "effect:TIMED_INC:INVULN",

@@ -239,8 +239,8 @@ Two of Zangband's object kinds are likewise recorded but not imported:
 Thirteen more had to wait for something else in the game, and all thirteen are
 in. The Wand of Tame Monster
 needed pets, and has them (:doc:`pets`). The Potion of New Life strips every
-mutation you carry (:doc:`mutations`); Zangband's version also re-rolled your
-hit points, and that half of it isn't built yet. The Magical Figurine needed an
+mutation you carry (:doc:`mutations`) and, as Zangband's did, rolls your hit
+points again. The Magical Figurine needed an
 object that could name a monster: *a Magical Figurine of a cave spider*, thrown,
 breaks and leaves the cave spider behind as your pet (:doc:`pets`).
 

@@ -244,3 +244,8 @@ EFFECT(HI_SUMMON,					false,	NULL,		0,		EFINFO_NONE,	"calls up a horde of danger
 EFFECT(RUIN_STATS,					false,	NULL,		0,		EFINFO_NONE,	"drains every one of your stats",	"")
 EFFECT(POLY_WOUNDS,					false,	NULL,		0,		EFINFO_NONE,	"turns your wounds into lesser ones, healing you, though one time in five it opens a new one",	"")
 EFFECT(CHAOS_BLADE,					false,	NULL,		0,		EFINFO_NONE,	"conjures a (Chaotic) sword sized to your level",	"")
+/*
+ * ZangbandTK: Zangband's do_cmd_rerate(), which its potion of New Life and its
+ * Judgement card both call (DEC-168).
+ */
+EFFECT(RERATE_HP,					false,	NULL,		0,		EFINFO_NONE,	"gambles your hit points on a fresh roll",	"")

@@ -226,25 +226,34 @@ static int test_the_deferred_objects_are_absent(void *state) {
  * A deferral whose stated reason has expired and which nobody went back to is
  * the failure mode this pair is built against.
  *
- * Half of Zangband's potion survives. Its Lua is
- * `do_cmd_rerate(); cure_all_mutations()`, and 4.2 fixes hit points at birth
- * and has no rerate command -- so the mutations go and the hit dice stay. The
- * description was overridden to stop promising the half that does not happen.
+ * Both halves of Zangband's potion are here, in its order. Its Lua is
+ * `do_cmd_rerate(); cure_all_mutations()`. The rerate was left out at first,
+ * on the ground that 4.2 fixes hit points at birth, and the description was
+ * overridden to stop promising it. That ground went when Trump's Judgement
+ * card brought the rerate into play, which is the same failure mode again: a
+ * reason that expired and a decision that sat on it. DEC-168 restored it, and
+ * Zangband's own description with it.
  */
 static int test_the_new_life_potion_arrived_with_mutations(void *state) {
 	struct object_kind *kind = kind_named(TV_POTION, "New Life");
+	struct effect *cure;
 
 	notnull(kind);
 	notnull(kind->effect);
-	eq(kind->effect->index, EF_LOSE_MUTATION);
+	eq(kind->effect->index, EF_RERATE_HP);
+
+	cure = kind->effect->next;
+	notnull(cure);
+	eq(cure->index, EF_LOSE_MUTATION);
 
 	/* More than a character can carry, which is how "all of them" is said. */
-	notnull(kind->effect->dice);
-	require(dice_evaluate(kind->effect->dice, 0, AVERAGE, NULL) >= 96);
+	notnull(cure->dice);
+	require(dice_evaluate(cure->dice, 0, AVERAGE, NULL) >= 96);
+	null(cure->next);
 
-	/* And it no longer claims to reroll anything. */
+	/* And it warns of the half that can go wrong. */
 	notnull(kind->text);
-	require(!strstr(kind->text, "hitpoint"));
+	require(strstr(kind->text, "hitpoints"));
 
 	ok;
 }

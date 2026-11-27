@@ -107,6 +107,19 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+New Life, as Zangband made it — 27 November 2026
+------------------------------------------------
+
+- **3.141.0.** A potion of New Life rolls your hit points afresh before it takes
+  your mutations, as Zangband's did, and the new ones can be worse than the
+  old. Until now it only took the mutations, on the ground that hit points are
+  fixed at birth. They stopped being fixed in 3.127.0, when Trump's Judgement
+  card arrived and rerolled them.
+- **Your life rating is told** after the potion and after Judgement, out of
+  100, as Zangband told it. Only the debug command's rerate showed it before.
+- The potion's description is Zangband's own again, warning that your new
+  hitpoints might be worse than your old ones.
+
 The Lords of Chaos, as Zangband wrote them — 27 November 2026
 --------------------------------------------------------------
 

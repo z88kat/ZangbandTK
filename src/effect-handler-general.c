@@ -3140,7 +3140,7 @@ bool effect_handler_SHUFFLE(effect_handler_context_t *context)
 		effect_simple(EF_GRANITE, me, "0", 0, 0, 0, 0, 0, NULL);
 	} else if (die < 111) {
 		msg("It's the Judgement.");
-		(void) player_rerate_hp(player);
+		effect_simple(EF_RERATE_HP, me, "0", 0, 0, 0, 0, 0, NULL);
 		if (player_mutation_total(player) > 0) {
 			msg("You are cured of all mutations.");
 			effect_simple(EF_LOSE_MUTATION, me, "1000", 0, 0, 0, 0, 0, NULL);
@@ -5054,6 +5054,29 @@ bool effect_handler_CHAOS_BLADE(effect_handler_context_t *context)
 	obj->origin_depth = convert_depth_to_origin(depth);
 
 	drop_near(cave, &obj, 0, player->grid, true, false);
+
+	return true;
+}
+
+/**
+ * Hit points rolled afresh: Zangband's do_cmd_rerate()
+ * ([wizard2.c:21](../archive/zangband/src/wizard2.c#L21)), which its potion of
+ * New Life and its Judgement card both call (DEC-168).
+ *
+ * The roll is player_rerate_hp(), the wizard's rerate command, and it is the
+ * roll this game makes at birth: one die of the whole hit die a level, kept in
+ * the band birth allows.  Zangband rolled the race's and the class's dice
+ * separately, but it did that at birth too; what matters is that a rerate
+ * draws from the same spread the character was born from.
+ *
+ * The life rating is told, as Zangband told it.  It is the only way to learn
+ * whether the gamble paid.
+ */
+bool effect_handler_RERATE_HP(effect_handler_context_t *context)
+{
+	context->ident = true;
+
+	msg("Current Life Rating is %d/100.", player_rerate_hp(player));
 
 	return true;
 }

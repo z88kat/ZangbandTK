@@ -9583,3 +9583,46 @@ now covers SPHERE, ACQUIRE, SUMMON and ONE_IN. mutation.txt was regenerated
 by tools/zconv from mutmap.toml.
 
 Not checked: a Chaos-Warrior played through its levels in the real game.
+
+**DEC-168 — A potion of New Life rerolls your hit points, as Zangband's did
+(27 November 2026).**
+(Objects and mutations. Reverses the half of 3.49.0's port that left the
+rerate out. 3.141.0.)
+
+**Why.** Zangband's potion is `do_cmd_rerate(); cure_all_mutations()`
+(k_info.txt:2353). 3.49.0 ported the cure and dropped the rerate on the ground
+that 4.2 fixes hit points at birth and has no rerate command, and overrode the
+description in zconv to stop promising it. DEC-141 (3.127.0) then brought the
+rerate into play for Trump's Judgement card through `player_rerate_hp()`, so
+the ground was gone, and the potion was not revisited.
+
+**What.** The owner's ruling, 27 November: restore the rerate.
+
+- RERATE_HP, appended to list-effects.h so savefiles are untouched, is
+  do_cmd_rerate(): `player_rerate_hp()`, then "Current Life Rating is N/100."
+  as Zangband printed it.
+- New Life is RERATE_HP then LOSE_MUTATION:96, Zangband's order, carried in
+  zconv's objmap.toml. The description override in overrides.toml is deleted,
+  so Zangband's own description comes through: "Be careful, your new
+  hitpoints might be worse than your old ones."
+- Judgement uses RERATE_HP rather than calling `player_rerate_hp()` itself,
+  so it tells the life rating too, as Zangband's did.
+- The roll stays the birth roll: one die of the whole hit die per level,
+  within the 3/8 to 5/8 band. Zangband rolled race and class dice separately,
+  at birth as well; what matters is that rerate and birth agree, and they do.
+
+**Checked.** player/mutation's new-life-rerolls-and-cures sets every level to
+the most its die can give, which no legal roll reaches, then runs the
+potion's own effect chain and checks each level's gain, the band, the life
+rating message and that no mutation is left. With `effect:RERATE_HP` removed
+from the data it fails at the band, and object/imported's chain test fails
+too. The whole suite passes, 1658/1658, and `zconv objects --check` matches
+lib/gamedata. The potion's info line
+reads "When quaffed, it gambles your hit points on a fresh roll and takes one
+of your mutations away."
+
+Not changed: LOSE_MUTATION describes itself as taking one mutation whatever
+it is asked for, so New Life's info line says one where its description says
+all. That predates this decision.
+
+Not checked: the potion quaffed in the real game.

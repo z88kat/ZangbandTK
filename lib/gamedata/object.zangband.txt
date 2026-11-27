@@ -157,9 +157,10 @@ alloc:5:75 to 100
 attack:0d0:0:0
 armor:0:0
 flags:EASY_KNOW
+effect:RERATE_HP
 effect:LOSE_MUTATION
 dice:96
-desc:This potion strips away every mutation you carry. There is no other way to be rid of them all at once, and no cheap way to come by it.
+desc:This potion removes all mutations and rerolls your hitpoints. Be careful, your new hitpoints might be worse than your old ones.
 
 name:Booze
 type:potion

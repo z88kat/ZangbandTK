@@ -276,8 +276,9 @@ How you get rid of them
 Barely at all:
 
 - A potion of New Life, which strips away every mutation at once and is the
-  deepest, most expensive potion in the game. Zangband's also re-rolled your
-  hit points; this one doesn't, because Angband 4.2 fixes those at birth.
+  deepest, most expensive potion in the game. Like Zangband's, it rolls your
+  hit points afresh first and tells you your new life rating, and they can
+  come out worse than they were.
 - Gaining a mutation that cancels one you have. There are nine such pairs.
   Becoming superhumanly strong ends being puny; growing a beak replaces a
   trunk. Iron skin is the interesting one: it drives out scales, rotting flesh

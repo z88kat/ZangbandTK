@@ -371,10 +371,10 @@ eight. See :ref:`books-short`.
    breaks the walls around you or shakes the ground, Temperance that puts
    what's next to you to sleep, a creature drawn as a friend, the Lovers'
    charm and the Hermit's wall of granite behind you. At the top are
-   Judgement, which rerolls your hit points and cures every mutation you
-   have; the Sun, which lights and maps the level; and the World, which is
-   experience. A Rogue or a High-Mage, card sharps both, draws higher the more
-   experienced they are.
+   Judgement, which rerolls your hit points, tells you your life rating and
+   cures every mutation you have; the Sun, which lights and maps the level;
+   and the World, which is experience. A Rogue or a High-Mage, card sharps
+   both, draws higher the more experienced they are.
 
    *Joker Card* and *Trump Lore* used to do nothing as well. The Joker calls a
    mold, a bat, a vortex or creeping coins to serve you, and the card decides

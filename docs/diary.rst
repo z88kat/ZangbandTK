@@ -31,6 +31,32 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+27 November 2026 — New Life, both halves
+========================================
+
+Zangband's potion of New Life is one line of Lua, ``do_cmd_rerate();
+cure_all_mutations()``, and 3.49.0 ported half of it. The cure came across;
+the rerate didn't, because 4.2 fixes hit points at birth and had nothing to
+call. That was true when it was written. It stopped being true in 3.127.0,
+when Shuffle's Judgement card needed ``do_cmd_rerate()`` and got it, lifted
+out of the wizard's command as ``player_rerate_hp()``. Nobody went back to the
+potion. The test pinning the omission sat beside a comment warning against
+exactly this, a deferral whose stated reason has expired and which nobody
+revisits.
+
+The fix was small. ``RERATE_HP`` is the rerate as an effect, the potion has
+it ahead of the cure in Zangband's order, and Judgement uses it too, so both
+now print the life rating, which Zangband always did and this game only did
+for the debug command.
+The description override in zconv went, and Zangband's own warning came back
+with it.
+
+Seeing the potion's info line turned up something older: ``LOSE_MUTATION``
+describes itself as taking one mutation however many it's asked for, so the
+info says one where the description says all. That has been true since
+3.49.0, and I left it for a change of its own.
+
+
 27 November 2026 — what the Lords actually do
 =============================================
 
