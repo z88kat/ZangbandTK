@@ -487,36 +487,95 @@ static int test_the_doorstep_is_survivable(void *state) {
 }
 
 /*
+ * What is alive on the surface beyond the town and \p margin grids of its
+ * outskirts.  \p level_zero, if given, is how many of those are the town's own
+ * depth-zero folk.
+ */
+static int count_beyond_town(int margin, int *level_zero) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	struct loc grid;
+	int count = 0;
+
+	if (level_zero) *level_zero = 0;
+
+	for (grid.y = 0; grid.y < cave->height; grid.y++)
+		for (grid.x = 0; grid.x < cave->width; grid.x++) {
+			struct monster *mon;
+
+			if (grid.x >= org.x - margin &&
+				grid.x < org.x + z_info->town_wid + margin &&
+				grid.y >= org.y - margin &&
+				grid.y < org.y + z_info->town_hgt + margin)
+				continue;
+
+			mon = square_monster(cave, grid);
+			if (!mon || !mon->race) continue;
+
+			count++;
+			if (level_zero && mon->race->level == 0) (*level_zero)++;
+		}
+
+	return count;
+}
+
+/*
+ * How many times the surface may be populated before an empty one counts as a
+ * failure.  Far more than a sane world needs: the worst seen so far, seed
+ * 2023401886, is country so barren round the town that three daytime passes
+ * over the whole window placed one monster on macOS and none on Linux, and a
+ * second search beyond the outskirts took four more.  At one monster in every
+ * four passes, sixty come up empty less than one time in a million.
+ */
+#define WILD_POPULATE_TRIES 60
+
+/*
+ * Populate at least \p at_least times, then keep going until something is
+ * alive beyond \p margin of the town, and say how long that took.
+ *
+ * The floor keeps the rounds a test always ran, so that in a world inhabited
+ * after them nothing more is rolled and the tests after it see the surface
+ * they always did.
+ */
+static int populate_until_inhabited(int margin, int at_least,
+									const char *label) {
+	int rounds = 0, count = count_beyond_town(margin, NULL);
+
+	while (rounds < WILD_POPULATE_TRIES && (rounds < at_least || !count)) {
+		wild_populate(wild, player, cave, player->wild_offset);
+		rounds++;
+		count = count_beyond_town(margin, NULL);
+	}
+
+	printf("%s %d beyond the town after %d rounds\n", label, count, rounds);
+
+	return count;
+}
+
+/*
  * There is something alive out there (CNT-05).
  *
  * Rolled per grid from the land's own fertility, so the count varies -- what
  * must not happen is an empty world, which is what it was before this.
  */
 static int test_the_wilderness_is_inhabited(void *state) {
-	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
-						 wild_town_origin(wild).y - player->wild_offset.y);
-	struct loc grid;
-	int wild_monsters = 0, round;
-
 	/*
-	 * Populated three times over.  A single window can legitimately come up
-	 * empty -- the roll is per grid and barren country is meant to be bare --
-	 * so asserting on one would be asserting on the dice.  Three rounds tests
-	 * that the path works without pinning the density, which is a tuning
-	 * matter and belongs in constants.txt.
+	 * Populated until something turns up.  A single window can legitimately
+	 * come up empty -- the roll is per grid and barren country is meant to be
+	 * bare -- so asserting on one would be asserting on the dice.  Three
+	 * rounds was meant to cover that and did not: round a town in barren
+	 * country a pass can place nothing in the whole window, and on Linux CI
+	 * three in a row did (seed 2023401886; forty other seeds all passed).
+	 * Going on until something appears tests that the path works without
+	 * pinning the density, which is a tuning matter and belongs in
+	 * constants.txt.
+	 *
+	 * Counted beyond the outskirts, as the townspeople are below.  Counted
+	 * from the town's edge it was not testing this at all: residents placed
+	 * with their groups scatter a little past it, and with wild_populate()
+	 * stubbed out to do nothing this still found seven.
 	 */
-	for (round = 0; round < 3; round++)
-		wild_populate(wild, player, cave, player->wild_offset);
-
-	for (grid.y = 0; grid.y < cave->height; grid.y++)
-		for (grid.x = 0; grid.x < cave->width; grid.x++) {
-			if (grid.x >= org.x && grid.x < org.x + z_info->town_wid &&
-				grid.y >= org.y && grid.y < org.y + z_info->town_hgt)
-				continue;
-			if (square_monster(cave, grid)) wild_monsters++;
-		}
-
-	require(wild_monsters > 0);
+	require(populate_until_inhabited(12, 3, "INHABITED") > 0);
 
 	ok;
 }
@@ -692,10 +751,7 @@ static int test_a_wounded_unique_is_remembered(void *state) {
  * back near where it was left and he had been following the player.
  */
 static int test_the_townspeople_stay_in_town(void *state) {
-	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
-						 wild_town_origin(wild).y - player->wild_offset.y);
-	struct loc grid;
-	int strays = 0, seen = 0;
+	int strays, seen;
 
 	/*
 	 * Judged outside the town and its outskirts rather than outside the town
@@ -704,24 +760,14 @@ static int test_the_townspeople_stay_in_town(void *state) {
 	 * it -- which is a townsperson on the edge of town, not a townsperson in
 	 * the wilds. The margin still leaves the great majority of the surface
 	 * under test.
+	 *
+	 * Whatever the earlier tests left out there is what gets judged, and in a
+	 * barren world that can be nothing at all; then the surface is populated
+	 * until there is something to judge. Zero rounds in any world that already
+	 * had something, so nothing changes there.
 	 */
-	for (grid.y = 0; grid.y < cave->height; grid.y++)
-		for (grid.x = 0; grid.x < cave->width; grid.x++) {
-			struct monster *mon;
-			int margin = 12;
-
-			if (grid.x >= org.x - margin &&
-				grid.x < org.x + z_info->town_wid + margin &&
-				grid.y >= org.y - margin &&
-				grid.y < org.y + z_info->town_hgt + margin)
-				continue;
-
-			mon = square_monster(cave, grid);
-			if (!mon || !mon->race) continue;
-
-			seen++;
-			if (mon->race->level == 0) strays++;
-		}
+	populate_until_inhabited(12, 0, "OUTSKIRTS");
+	seen = count_beyond_town(12, &strays);
 
 	require(seen > 0);
 	eq(strays, 0);
