@@ -27,6 +27,7 @@
 #include "player-luck.h"
 #include "effects.h"
 #include "player-util.h"
+#include "project.h"
 #include "test-utils.h"
 
 int setup_tests(void **state) {
@@ -197,7 +198,14 @@ static int test_every_flavoured_tval_has_enough_flavours(void *state) {
  */
 static int test_the_deferred_objects_are_absent(void *state) {
 	null(kind_named(TV_SCROLL, "Artifact Creation"));
-	null(kind_named(TV_WAND, "Rockets"));
+
+	/*
+	 * And the Wand of Rockets is here, since 3.142.0. It waited for a rocket
+	 * element that DEC-53 had already decided against when it made the Chaos
+	 * realm's rocket a shard ball, so its reason expired without anyone
+	 * noticing -- see the-wand-of-rockets-is-a-shard-ball.
+	 */
+	notnull(kind_named(TV_WAND, "Rockets"));
 
 	/*
 	 * And the Wand of Tame Monster is here, since 3.72.0. It left this list
@@ -1005,6 +1013,31 @@ static int test_an_imported_rod_recharges(void *state) {
 }
 
 /**
+ * The Wand of Rockets is Zangband's `fire_ball(GF_ROCKET, dir, 250, 2)` with
+ * the rocket as shards, which is DEC-53's ruling for *Magic Rocket* -- the
+ * same ball, so the wand and the spell are the same rocket (DEC-169).
+ */
+static int test_the_wand_of_rockets_is_a_shard_ball(void *state) {
+	struct object_kind *kind = kind_named(TV_WAND, "Rockets");
+	const struct effect *e;
+
+	notnull(kind);
+	e = kind->effect;
+	notnull(e);
+	eq(e->index, EF_BALL);
+	eq(e->subtype, PROJ_SHARD);
+	eq(e->radius, 2);
+	notnull(e->dice);
+	eq(dice_evaluate(e->dice, 0, AVERAGE, NULL), 250);
+	null(e->next);
+
+	notnull(kind->effect_msg);
+	require(streq(kind->effect_msg, "You launch a rocket!"));
+
+	ok;
+}
+
+/**
  * An Amulet of Destruction is never a benefit.
  *
  * Zangband rolls its penalty --
@@ -1240,6 +1273,8 @@ struct test tests[] = {
 	{ "the-rolled-modifiers-are-ranges",
 	  test_the_rolled_modifiers_are_ranges },
 	{ "an-imported-rod-recharges", test_an_imported_rod_recharges },
+	{ "the-wand-of-rockets-is-a-shard-ball",
+	  test_the_wand_of_rockets_is_a_shard_ball },
 	{ "destruction-is-never-a-gift", test_destruction_is_never_a_gift },
 	{ "a-range-arrives-as-its-range", test_a_range_arrives_as_its_range },
 	{ "the-curse-tiers-survive", test_the_curse_tiers_survive },

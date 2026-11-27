@@ -227,20 +227,19 @@ the wilderness plays, which is a bigger job than converting a flag. One ego,
 importing it would have put a pair of boots in the game that granted nothing at
 all.
 
-Two of Zangband's object kinds are likewise recorded but not imported:
+One of Zangband's object kinds is likewise recorded but not imported: the
+Scroll of Artifact Creation, which makes a new artifact out of an ordinary item
+during play. Angband generates its random artifacts once, at birth, and stores
+an artifact in the savefile by name, so one invented mid-game would not be
+there when the character was loaded again.
 
-- A Scroll of Artifact Creation, which makes a new artifact out of an ordinary
-  item during play. Angband generates its random artifacts once, at birth, and
-  stores an artifact in the savefile by name, so one invented mid-game would not
-  be there when the character was loaded again.
-- A Wand of Rockets, whose damage is its own element (it stuns, and shard
-  resistance halves it), and adding an element changes the savefile layout.
-
-Thirteen more had to wait for something else in the game, and all thirteen are
-in. The Wand of Tame Monster
-needed pets, and has them (:doc:`pets`). The Potion of New Life strips every
-mutation you carry (:doc:`mutations`) and, as Zangband's did, rolls your hit
-points again. The Magical Figurine needed an
+Fourteen more had to wait for something else in the game, and all fourteen are
+in. The Wand of Rockets waited for a rocket element until the Chaos realm
+settled that a rocket is shards: it fires a ball of shards for 250, the same
+rocket as the *Magic Rocket* spell, and shard resistance is the defence against
+it. The Wand of Tame Monster needed pets, and has them (:doc:`pets`). The
+Potion of New Life strips every mutation you carry (:doc:`mutations`) and, as
+Zangband's did, rolls your hit points again. The Magical Figurine needed an
 object that could name a monster: *a Magical Figurine of a cave spider*, thrown,
 breaks and leaves the cave spider behind as your pet (:doc:`pets`).
 

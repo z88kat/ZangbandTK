@@ -249,11 +249,13 @@ gated: books for realms that do not exist must not be imported.
 normalisation caveat in §1. ✅ **Met** (3.40.0). 86 kinds imported by
 `zconv objects`; 14 deferred with a recorded reason, 17 refused as artifact bases and 10
 recognised as Zangband's renames of objects 4.2 already ships. The counts moved after
-3.40.0 as mechanisms arrived — most recently the potion of New Life, deferred on the
-single ground that "mutations are unbuilt" and promoted in 3.49.0 when they were.
-**Twelve of the fourteen remaining deferrals wait on pets** (the ten statues, the
-figurine, and the Wand of Tame Monster), which is M10; only Rockets and Artifact Creation
-are independent of another milestone. Three new object
+3.40.0 as mechanisms arrived — the potion of New Life, deferred on the single ground
+that "mutations are unbuilt" and promoted in 3.49.0 when they were, and most recently
+the Wand of Rockets (3.142.0, DEC-169), whose missing rocket element DEC-53 had already
+ruled unnecessary. **Twelve of the fourteen deferrals waited on pets** (the ten statues,
+the figurine, and the Wand of Tame Monster), which is M10, and all twelve are in;
+Artifact Creation is the one left, and it waits on a way to save an artifact made in
+play. Three new object
 properties — `STRANGE_LUCK`, `PSI_CRIT`, `NO_MAGIC` — were built for it. The §1 caveat is
 amended above: name normalisation is necessary and not sufficient.
 

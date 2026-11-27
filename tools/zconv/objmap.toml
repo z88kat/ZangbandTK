@@ -105,14 +105,6 @@ Sorting the true from the false is 647 judgements for one flavour scroll.""" }
 artifact during play. 4.2 generates its random artifacts once, at birth, from \
 the savefile seed; there is no path that makes one mid-game.""" }
 
-"65:29" = { name = "Rockets", why = "no 4.2 element", note = """`GF_ROCKET` \
-is its own damage type: it stuns unless the target resists sound, and is \
-halved by shard resistance (spells1.c:3535). 4.2 has no rocket element, and \
-adding one means an entry in list-elements.h -- which is indexed into \
-`el_info[]` and written to the savefile by position (save.c:177), for every \
-object and every monster. Held deliberately: the wand is one item and the \
-change reaches every savefile in the game.""" }
-
 # ------------------------------------------------------------- effects
 #
 # The Lua on a consumable, as 4.2 effect lines. Each entry is the list of
@@ -143,6 +135,19 @@ in the report.""" }
 ], note = """`fire_ball(GF_FIRE, 0, 350, 4)`, then `take_hit(rand_range(100, \
 200))` unless the reader's fire resistance is good enough. Same caveat as \
 Logrus.""" }
+
+"65:29" = { name = "Rockets", lines = [
+    "effect:BALL:SHARD:2",
+    "dice:250",
+], note = """`fire_ball(GF_ROCKET, dir, 250, 2)`, with the rocket as SHARD, \
+which is DEC-53's ruling for *Magic Rocket* and the same ball. It was deferred \
+here first, waiting for a rocket element that DEC-53 then decided against: \
+Zangband's rocket is great damage that little resists and cuts what survives, \
+and shards is 4.2's element that cuts. Shard resistance cuts the damage, as \
+it halved Zangband's, and shard breathers resist it, as Zangband's did; the \
+stun Zangband added unless you resisted sound is gone, because shards does \
+not stun. 4.2's BALL already stops at the first monster, \
+which is the PROJECT_STOP Zangband added for rockets (spells1.c:4120).""" }
 
 "66:12" = { name = "Pesticide", lines = [
     "effect:BALL:POIS:3",
@@ -281,6 +286,7 @@ is the kind's `pval`, which 4.2 expresses as a NOURISH effect. 8 matches \
 
 [message]
 "80:33" = "That tastes good."
+"65:29" = "You launch a rocket!"
 
 # --- Built, and kept here so the deferred count stops including them --------
 #

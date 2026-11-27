@@ -107,6 +107,16 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+The Wand of Rockets — 27 November 2026
+--------------------------------------
+
+- **3.142.0.** **The Wand of Rockets is in**, found from level 95. It fires a
+  ball of shards for 250 with a radius of 2, the same rocket as the Chaos
+  realm's *Magic Rocket*. It had waited for a rocket element of its own, and
+  the Chaos realm had already settled that a rocket is shards, the element that
+  cuts; shard resistance is the defence against it. The Scroll of Artifact
+  Creation is now the only Zangband object still held back.
+
 New Life, as Zangband made it — 27 November 2026
 ------------------------------------------------
 

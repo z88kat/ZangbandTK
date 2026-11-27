@@ -31,6 +31,24 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+27 November 2026 — the Wand of Rockets
+======================================
+
+The same thing again. The objects page listed two Zangband kinds as not
+imported, and one of them, the Wand of Rockets, was held for want of a rocket
+element. When the Chaos realm came in, DEC-53 decided the
+game didn't need one: *Magic Rocket* became a ball of shards, because shards
+is the element that cuts. The wand fires the same rocket and was never moved
+across. It's in now, a ball of shards for 250 at radius 2, and it needed no
+code at all, only the converter's map. The reason given for holding it was
+partly wrong anyway. The savefile writes how many elements it has, so adding
+one at the end would have loaded old characters.
+
+That leaves the Scroll of Artifact Creation, and its reason still stands.
+An artifact here is a definition the game reads at startup, and a new one
+made during play has nowhere to be saved.
+
+
 27 November 2026 — New Life, both halves
 ========================================
 
