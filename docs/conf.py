@@ -65,6 +65,15 @@ extensions = [
     "book",
 ]
 
+# sphinx-design 0.8 deprecates the '^^^'/'+++' card header and footer
+# separators in favour of card-header/card-footer directives, and
+# scripts/build-tk-help runs with -W, so the warning failed the Tk help
+# workflow.  The separators stay: the new directives do not exist before 0.8,
+# and 0.8 will not install on the Python 3.9 that .venv-docs is built on, so
+# using them would break every local build of the manual.  Migrate download.rst
+# once .venv-docs is on a newer Python, then drop this.
+suppress_warnings = ["design.card_legacy"]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
