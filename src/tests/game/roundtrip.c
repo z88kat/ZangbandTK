@@ -1048,7 +1048,11 @@ static struct object *carried_artifact(const char *name) {
 	return NULL;
 }
 
-/** Whether two artifact definitions say the same thing, the index aside. */
+/**
+ * Whether two artifact definitions say the same thing, the index aside.  The
+ * activation is compared by its index: a reset between save and load rebuilds
+ * the activation table, so the same activation is at a new address.
+ */
 static bool same_artifact(const struct artifact *a, const struct artifact *b) {
 	int i;
 
@@ -1074,14 +1078,20 @@ static bool same_artifact(const struct artifact *a, const struct artifact *b) {
 	for (i = 0; i < z_info->curse_max; i++)
 		if ((a->curses ? a->curses[i] : 0) != (b->curses ? b->curses[i] : 0))
 			return false;
-	if (a->activation != b->activation) return false;
+	if ((a->activation ? a->activation->index : 0) !=
+			(b->activation ? b->activation->index : 0))
+		return false;
 	if (a->time.base != b->time.base || a->time.dice != b->time.dice ||
 			a->time.sides != b->time.sides)
 		return false;
 	return true;
 }
 
-/** A copy of an artifact's definition that outlives the table it was in. */
+/**
+ * A copy of an artifact's definition that outlives the table it was in.  Its
+ * activation is a stub of its own holding only the index, since the table the
+ * real one is in is freed by the reset before a load.
+ */
 static struct artifact *keep_artifact(const struct artifact *art) {
 	struct artifact *copy = mem_zalloc(sizeof(*copy));
 
@@ -1092,6 +1102,13 @@ static struct artifact *keep_artifact(const struct artifact *art) {
 	copy->brands = NULL;
 	copy->slays = NULL;
 	copy->curses = NULL;
+	copy->activation = NULL;
+	if (art->activation) {
+		struct activation *stub = mem_zalloc(sizeof(*stub));
+
+		stub->index = art->activation->index;
+		copy->activation = stub;
+	}
 	if (art->brands) {
 		copy->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
 		memcpy(copy->brands, art->brands, z_info->brand_max * sizeof(bool));
@@ -1108,6 +1125,7 @@ static struct artifact *keep_artifact(const struct artifact *art) {
 }
 
 static void free_kept(struct artifact *copy) {
+	mem_free(copy->activation);
 	string_free(copy->name);
 	mem_free(copy->brands);
 	mem_free(copy->slays);
@@ -1130,6 +1148,17 @@ static int test_a_made_artifact_survives_a_round_trip(void *state) {
 	require(make_a_caster());
 	art = carry_a_made_artifact("'Roundtripper'");
 	notnull(art);
+	/*
+	 * Always one with an activation, which is saved by index and must find
+	 * the same one in the rebuilt table; the designer gives one only now and
+	 * then.
+	 */
+	if (!art->activation) {
+		art->activation = &activations[z_info->act_max - 1];
+		art->time.base = 50;
+		art->time.dice = 1;
+		art->time.sides = 50;
+	}
 	kept = keep_artifact(art);
 	require(savefile_save(savename));
 
@@ -1141,6 +1170,9 @@ static int test_a_made_artifact_survives_a_round_trip(void *state) {
 	obj = carried_artifact("'Roundtripper'");
 	notnull(obj);
 	require(artifact_is_made(obj->artifact));
+	notnull(obj->artifact->activation);
+	require(obj->artifact->activation ==
+		&activations[kept->activation->index]);
 	require(same_artifact(obj->artifact, kept));
 	require(obj->known->artifact == obj->artifact);
 	require(lookup_artifact_name("'Roundtripper'") == obj->artifact);
