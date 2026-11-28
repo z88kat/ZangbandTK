@@ -31,6 +31,60 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+28 November 2026 — the Scroll of Artifact Creation
+==================================================
+
+The last one. Zangband's scroll turns an ordinary weapon or piece of armour
+into an artifact, as strong as one found at twice your level, and asks what to
+call it. I'd held it back because an artifact here is an entry in a table built
+from the data files at startup, and the savefile keeps only which entries
+exist and have been seen. A made one would have been gone on the next load.
+
+The table was the hard part, not the savefile. Every artifact object holds a
+pointer into it, so it can't grow without every one of those pointers going
+stale. So it doesn't grow: the parsers now leave 256 spare entries at the end,
+and a made artifact takes the next. The count every loop over the table
+already reads includes the made ones, which means the knowledge menu, the name
+lookup the savefile uses and the Tk artifact list all see them without being
+told. An allocation chance of zero keeps them out of the dungeon.
+
+Then the savefile needed a block of its own, read before the artifact flags
+and the objects, holding each made artifact whole. The flags block was the
+subtle part. It writes one record per table entry, so if a later version adds
+a standard artifact, the made ones' records land one entry early, on the
+newcomer, which would then be marked as found and never turn up. The new block
+says where the standard set ended, and the flags go by that. Names have to be
+unique too, since objects are saved by their artifact's name: a second
+'Ringil' would load as the first.
+
+For the powers I used this game's own random artifact designer rather than
+port Zangband's ``create_artifact()``, which talks in flags this game doesn't
+have. The designer normally picks its own base item and draws a power from the
+standard artifacts. Here it gets the player's item, and the power comes from
+the artifacts of the same type found by twice the player's level, which is
+what Zangband's level argument meant. A long sword read over at level 1 comes
+out like the shallow daggers, power about 80; at level 50, about 220, the
+middle of the swords.
+
+Two things that had nothing to do with the scroll would have broken it. The
+history log kept each entry's artifact in a single byte, which was fine for
+189 artifacts and wrong from the 67th made one, and the borg did the same.
+Both are 16 bits now.
+
+The third one I only found because the spare entries are zeroed. A test that
+saved a made artifact in a random artifact game crashed on load, inside
+Angband's own designer. It steps over the fixed artifacts with a loop that
+moves on to the next artifact but keeps testing the first one's kind, so the
+first quest artifact it meets makes it skip everything after it. In Angband
+Grond and Morgoth's crown are the last two entries, so nothing was lost. Here
+Zangband's 51 artifacts follow them. Every random artifact game so far has
+kept those as they were, and the designer then went on writing new artifacts
+past the end of the table, into whatever memory came next. With spare entries
+there, the memory past the end is an empty artifact with no name, and the
+first ``strstr`` on that name fell over. It looks at the right kind now, and
+it stops at the end of the table.
+
+
 27 November 2026 — the Wand of Rockets
 ======================================
 

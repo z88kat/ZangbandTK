@@ -3159,9 +3159,13 @@ static errr finish_parse_artifact(struct parser *p) {
 		a = a->next;
 	}
 
-	/* Allocate the direct access list and copy the data to it */
-	a_info = mem_zalloc((z_info->a_max + 1) * sizeof(*a));
-	aup_info = mem_zalloc((z_info->a_max + 1) * sizeof(*aup_info));
+	/*
+	 * Allocate the direct access list and copy the data to it, with room
+	 * at the end for artifacts made in play (ZangbandTK, DEC-170)
+	 */
+	a_info = mem_zalloc((z_info->a_max + 1 + ART_MADE_MAX) * sizeof(*a));
+	aup_info = mem_zalloc((z_info->a_max + 1 + ART_MADE_MAX)
+		* sizeof(*aup_info));
 	aidx = z_info->a_max;
 	for (a = parser_priv(p); a; a = n, aidx--) {
 		assert(aidx > 0);
@@ -3176,6 +3180,7 @@ static errr finish_parse_artifact(struct parser *p) {
 		aup_info[aidx].aidx = aidx;
 	}
 	z_info->a_max += 1;
+	artifacts_note_standard();
 
 	/* Now we're done with object kinds, deal with object-like things */
 	none = tval_find_idx("none");
@@ -3234,9 +3239,13 @@ static errr finish_parse_randart(struct parser *p) {
 		a = a->next;
 	}
 
-	/* Allocate the direct access list and copy the data to it */
-	a_info = mem_zalloc((z_info->a_max + 1) * sizeof(*a));
-	aup_info = mem_zalloc((z_info->a_max + 1) * sizeof(*aup_info));
+	/*
+	 * Allocate the direct access list and copy the data to it, with room
+	 * at the end for artifacts made in play (ZangbandTK, DEC-170)
+	 */
+	a_info = mem_zalloc((z_info->a_max + 1 + ART_MADE_MAX) * sizeof(*a));
+	aup_info = mem_zalloc((z_info->a_max + 1 + ART_MADE_MAX)
+		* sizeof(*aup_info));
 	aidx = z_info->a_max;
 	for (a = parser_priv(p); a; a = n, aidx--) {
 		assert(aidx > 0);
@@ -3251,6 +3260,7 @@ static errr finish_parse_randart(struct parser *p) {
 		aup_info[aidx].aidx = aidx;
 	}
 	z_info->a_max += 1;
+	artifacts_note_standard();
 
 	parser_destroy(p);
 	return 0;

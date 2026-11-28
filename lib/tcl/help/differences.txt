@@ -135,254 +135,257 @@ T	li2	•\t
 L	li2 link	43	objects#the-ring-of-fate	The Ring of Fate
 T	li2	\n
 T	li2	•\t
-L	li2 link	44	objects#the-ancient-and-foul-curse	The Ancient and Foul Curse
+L	li2 link	44	objects#the-scroll-of-artifact-creation	The Scroll of Artifact Creation
 T	li2	\n
 T	li2	•\t
-L	li2 link	45	objects#activations	Activations
+L	li2 link	45	objects#the-ancient-and-foul-curse	The Ancient and Foul Curse
 T	li2	\n
 T	li2	•\t
-L	li2 link	46	objects#the-lotus	The lotus
+L	li2 link	46	objects#activations	Activations
 T	li2	\n
 T	li2	•\t
-L	li2 link	47	objects#eight-more-from-zangband	Eight more from Zangband
+L	li2 link	47	objects#the-lotus	The lotus
 T	li2	\n
 T	li2	•\t
-L	li2 link	48	objects#not-yet-implemented	Not yet implemented
-T	li2	\n
-T	li1	•\t
-L	li1 link	49	wilderness	The Wilderness
-T	li1	\n
-T	li2	•\t
-L	li2 link	50	wilderness#the-world	The world
+L	li2 link	48	objects#eight-more-from-zangband	Eight more from Zangband
 T	li2	\n
 T	li2	•\t
-L	li2 link	51	wilderness#terrain	Terrain
-T	li2	\n
-T	li2	•\t
-L	li2 link	52	wilderness#deep-water	Deep water
-T	li2	\n
-T	li2	•\t
-L	li2 link	53	wilderness#rivers-and-lakes	Rivers and lakes
-T	li2	\n
-T	li2	•\t
-L	li2 link	54	wilderness#travel	Travel
-T	li2	\n
-T	li2	•\t
-L	li2 link	55	wilderness#what-lives-there	What lives there
-T	li2	\n
-T	li2	•\t
-L	li2 link	56	wilderness#what-you-leave-behind	What you leave behind
-T	li2	\n
-T	li2	•\t
-L	li2 link	57	wilderness#what-you-wounded	What you wounded
-T	li2	\n
-T	li2	•\t
-L	li2 link	58	wilderness#the-world-map	The world map
-T	li2	\n
-T	li2	•\t
-L	li2 link	59	wilderness#what-you-know	What you know
-T	li2	\n
-T	li2	•\t
-L	li2 link	60	wilderness#day-and-night	Day and night
-T	li2	\n
-T	li2	•\t
-L	li2 link	61	wilderness#leaving-the-town	Leaving the town
-T	li2	\n
-T	li2	•\t
-L	li2 link	62	wilderness#going-down	Going down
-T	li2	\n
-T	li2	•\t
-L	li2 link	63	wilderness#where-this-is-narrower-than-zangband	Where this is narrower than Zangband
+L	li2 link	49	objects#not-yet-implemented	Not yet implemented
 T	li2	\n
 T	li1	•\t
-L	li1 link	64	towns	Towns and Services
+L	li1 link	50	wilderness	The Wilderness
 T	li1	\n
 T	li2	•\t
-L	li2 link	65	towns#where-places-stand	Where places stand
+L	li2 link	51	wilderness#the-world	The world
 T	li2	\n
 T	li2	•\t
-L	li2 link	66	towns#the-size-bands	The size bands
+L	li2 link	52	wilderness#terrain	Terrain
 T	li2	\n
 T	li2	•\t
-L	li2 link	67	towns#which-shops-a-place-keeps	Which shops a place keeps
+L	li2 link	53	wilderness#deep-water	Deep water
 T	li2	\n
 T	li2	•\t
-L	li2 link	68	towns#how-good-a-shop-is	How good a shop is
+L	li2 link	54	wilderness#rivers-and-lakes	Rivers and lakes
 T	li2	\n
 T	li2	•\t
-L	li2 link	69	towns#your-home-village	Your home village
+L	li2 link	55	wilderness#travel	Travel
 T	li2	\n
 T	li2	•\t
-L	li2 link	70	towns#your-house	Your house
+L	li2 link	56	wilderness#what-lives-there	What lives there
 T	li2	\n
 T	li2	•\t
-L	li2 link	71	towns#what-they-are-called	What they are called
+L	li2 link	57	wilderness#what-you-leave-behind	What you leave behind
 T	li2	\n
 T	li2	•\t
-L	li2 link	72	towns#who-lives-there	Who lives there
+L	li2 link	58	wilderness#what-you-wounded	What you wounded
 T	li2	\n
 T	li2	•\t
-L	li2 link	73	towns#services	Services
+L	li2 link	59	wilderness#the-world-map	The world map
 T	li2	\n
 T	li2	•\t
-L	li2 link	74	towns#work	Work
+L	li2 link	60	wilderness#what-you-know	What you know
 T	li2	\n
 T	li2	•\t
-L	li2 link	75	towns#what-you-dream-at-the-inn	What you dream at the inn
+L	li2 link	61	wilderness#day-and-night	Day and night
 T	li2	\n
 T	li2	•\t
-L	li2 link	76	towns#the-magetower	The magetower
+L	li2 link	62	wilderness#leaving-the-town	Leaving the town
 T	li2	\n
 T	li2	•\t
-L	li2 link	77	towns#walls-and-gates	Walls and gates
+L	li2 link	63	wilderness#going-down	Going down
 T	li2	\n
 T	li2	•\t
-L	li2 link	78	towns#roads	Roads
-T	li2	\n
-T	li2	•\t
-L	li2 link	79	towns#finding-your-way	Finding your way
+L	li2 link	64	wilderness#where-this-is-narrower-than-zangband	Where this is narrower than Zangband
 T	li2	\n
 T	li1	•\t
-L	li1 link	80	quests	Quests
+L	li1 link	65	towns	Towns and Services
 T	li1	\n
 T	li2	•\t
-L	li2 link	81	quests#where-work-comes-from	Where work comes from
+L	li2 link	66	towns#where-places-stand	Where places stand
 T	li2	\n
 T	li2	•\t
-L	li2 link	82	quests#what-you-may-be-asked	What you may be asked
+L	li2 link	67	towns#the-size-bands	The size bands
 T	li2	\n
 T	li2	•\t
-L	li2 link	83	quests#carrying-and-reporting	Carrying and reporting
+L	li2 link	68	towns#which-shops-a-place-keeps	Which shops a place keeps
 T	li2	\n
 T	li2	•\t
-L	li2 link	84	quests#giving-up	Giving up
+L	li2 link	69	towns#how-good-a-shop-is	How good a shop is
 T	li2	\n
 T	li2	•\t
-L	li2 link	85	quests#what-the-game-is-won-by	What the game is won by
+L	li2 link	70	towns#your-home-village	Your home village
+T	li2	\n
+T	li2	•\t
+L	li2 link	71	towns#your-house	Your house
+T	li2	\n
+T	li2	•\t
+L	li2 link	72	towns#what-they-are-called	What they are called
+T	li2	\n
+T	li2	•\t
+L	li2 link	73	towns#who-lives-there	Who lives there
+T	li2	\n
+T	li2	•\t
+L	li2 link	74	towns#services	Services
+T	li2	\n
+T	li2	•\t
+L	li2 link	75	towns#work	Work
+T	li2	\n
+T	li2	•\t
+L	li2 link	76	towns#what-you-dream-at-the-inn	What you dream at the inn
+T	li2	\n
+T	li2	•\t
+L	li2 link	77	towns#the-magetower	The magetower
+T	li2	\n
+T	li2	•\t
+L	li2 link	78	towns#walls-and-gates	Walls and gates
+T	li2	\n
+T	li2	•\t
+L	li2 link	79	towns#roads	Roads
+T	li2	\n
+T	li2	•\t
+L	li2 link	80	towns#finding-your-way	Finding your way
 T	li2	\n
 T	li1	•\t
-L	li1 link	86	realms	The Realms of Magic
+L	li1 link	81	quests	Quests
 T	li1	\n
 T	li2	•\t
-L	li2 link	87	realms#the-seven	The seven
+L	li2 link	82	quests#where-work-comes-from	Where work comes from
 T	li2	\n
 T	li2	•\t
-L	li2 link	88	realms#choosing-them	Choosing them
+L	li2 link	83	quests#what-you-may-be-asked	What you may be asked
 T	li2	\n
 T	li2	•\t
-L	li2 link	89	realms#life	Life
+L	li2 link	84	quests#carrying-and-reporting	Carrying and reporting
 T	li2	\n
 T	li2	•\t
-L	li2 link	90	realms#sorcery	Sorcery
+L	li2 link	85	quests#giving-up	Giving up
 T	li2	\n
 T	li2	•\t
-L	li2 link	91	realms#trump	Trump
-T	li2	\n
-T	li2	•\t
-L	li2 link	92	realms#chaos	Chaos
-T	li2	\n
-T	li2	•\t
-L	li2 link	93	realms#arcane	Arcane
-T	li2	\n
-T	li2	•\t
-L	li2 link	94	realms#nature	Nature
-T	li2	\n
-T	li2	•\t
-L	li2 link	95	realms#death	Death
-T	li2	\n
-T	li2	•\t
-L	li2 link	96	realms#casting	Casting
-T	li2	\n
-T	li2	•\t
-L	li2 link	97	realms#who-can-choose-what	Who can choose what
-T	li2	\n
-T	li2	•\t
-L	li2 link	98	realms#what-has-changed-and-what-has-not	What has changed, and what has not
+L	li2 link	86	quests#what-the-game-is-won-by	What the game is won by
 T	li2	\n
 T	li1	•\t
-L	li1 link	99	mutations	Mutations
+L	li1 link	87	realms	The Realms of Magic
 T	li1	\n
 T	li2	•\t
-L	li2 link	100	mutations#the-four-kinds	The four kinds
+L	li2 link	88	realms#the-seven	The seven
 T	li2	\n
 T	li2	•\t
-L	li2 link	101	mutations#how-you-get-them	How you get them
+L	li2 link	89	realms#choosing-them	Choosing them
 T	li2	\n
 T	li2	•\t
-L	li2 link	102	mutations#how-you-get-rid-of-them	How you get rid of them
+L	li2 link	90	realms#life	Life
 T	li2	\n
 T	li2	•\t
-L	li2 link	103	mutations#a-note-on-the-descriptions	A note on the descriptions
+L	li2 link	91	realms#sorcery	Sorcery
 T	li2	\n
 T	li2	•\t
-L	li2 link	104	mutations#if-you-are-carrying-a-great-many	If you are carrying a great many
+L	li2 link	92	realms#trump	Trump
+T	li2	\n
+T	li2	•\t
+L	li2 link	93	realms#chaos	Chaos
+T	li2	\n
+T	li2	•\t
+L	li2 link	94	realms#arcane	Arcane
+T	li2	\n
+T	li2	•\t
+L	li2 link	95	realms#nature	Nature
+T	li2	\n
+T	li2	•\t
+L	li2 link	96	realms#death	Death
+T	li2	\n
+T	li2	•\t
+L	li2 link	97	realms#casting	Casting
+T	li2	\n
+T	li2	•\t
+L	li2 link	98	realms#who-can-choose-what	Who can choose what
+T	li2	\n
+T	li2	•\t
+L	li2 link	99	realms#what-has-changed-and-what-has-not	What has changed, and what has not
 T	li2	\n
 T	li1	•\t
-L	li1 link	105	virtues	Virtues
+L	li1 link	100	mutations	Mutations
 T	li1	\n
 T	li2	•\t
-L	li2 link	106	virtues#the-eighteen	The eighteen
+L	li2 link	101	mutations#the-four-kinds	The four kinds
 T	li2	\n
 T	li2	•\t
-L	li2 link	107	virtues#how-they-move	How they move
+L	li2 link	102	mutations#how-you-get-them	How you get them
 T	li2	\n
 T	li2	•\t
-L	li2 link	108	virtues#what-reads-them	What reads them
+L	li2 link	103	mutations#how-you-get-rid-of-them	How you get rid of them
 T	li2	\n
 T	li2	•\t
-L	li2 link	109	virtues#where-to-see-them	Where to see them
+L	li2 link	104	mutations#a-note-on-the-descriptions	A note on the descriptions
 T	li2	\n
 T	li2	•\t
-L	li2 link	110	virtues#where-this-came-from	Where this came from
+L	li2 link	105	mutations#if-you-are-carrying-a-great-many	If you are carrying a great many
 T	li2	\n
 T	li1	•\t
-L	li1 link	111	pets	Pets and Allies
+L	li1 link	106	virtues	Virtues
 T	li1	\n
 T	li2	•\t
-L	li2 link	112	pets#whose-side-a-monster-is-on	Whose side a monster is on
+L	li2 link	107	virtues#the-eighteen	The eighteen
 T	li2	\n
 T	li2	•\t
-L	li2 link	113	pets#telling-them-apart	Telling them apart
+L	li2 link	108	virtues#how-they-move	How they move
 T	li2	\n
 T	li2	•\t
-L	li2 link	114	pets#saved-games	Saved games
+L	li2 link	109	virtues#what-reads-them	What reads them
 T	li2	\n
 T	li2	•\t
-L	li2 link	115	pets#how-they-fight	How they fight
+L	li2 link	110	virtues#where-to-see-them	Where to see them
 T	li2	\n
 T	li2	•\t
-L	li2 link	116	pets#giving-orders	Giving orders
-T	li2	\n
-T	li2	•\t
-L	li2 link	117	pets#between-levels	Between levels
-T	li2	\n
-T	li2	•\t
-L	li2 link	118	pets#what-they-cost	What they cost
-T	li2	\n
-T	li2	•\t
-L	li2 link	119	pets#what-they-earn-you	What they earn you
-T	li2	\n
-T	li2	•\t
-L	li2 link	120	pets#losing-one	Losing one
-T	li2	\n
-T	li2	•\t
-L	li2 link	121	pets#getting-one	Getting one
+L	li2 link	111	virtues#where-this-came-from	Where this came from
 T	li2	\n
 T	li1	•\t
-L	li1 link	122	nightmare	Nightmare Mode
+L	li1 link	112	pets	Pets and Allies
 T	li1	\n
 T	li2	•\t
-L	li2 link	123	nightmare#choosing-it	Choosing it
+L	li2 link	113	pets#whose-side-a-monster-is-on	Whose side a monster is on
 T	li2	\n
 T	li2	•\t
-L	li2 link	124	nightmare#knowing-you-are-in-it	Knowing you are in it
+L	li2 link	114	pets#telling-them-apart	Telling them apart
 T	li2	\n
 T	li2	•\t
-L	li2 link	125	nightmare#what-it-changes	What it changes
+L	li2 link	115	pets#saved-games	Saved games
 T	li2	\n
 T	li2	•\t
-L	li2 link	126	nightmare#and-four-things-it-does-not-do	And four things it does not do
+L	li2 link	116	pets#how-they-fight	How they fight
 T	li2	\n
 T	li2	•\t
-L	li2 link	127	nightmare#a-note-on-the-spoiler	A note on the spoiler
+L	li2 link	117	pets#giving-orders	Giving orders
+T	li2	\n
+T	li2	•\t
+L	li2 link	118	pets#between-levels	Between levels
+T	li2	\n
+T	li2	•\t
+L	li2 link	119	pets#what-they-cost	What they cost
+T	li2	\n
+T	li2	•\t
+L	li2 link	120	pets#what-they-earn-you	What they earn you
+T	li2	\n
+T	li2	•\t
+L	li2 link	121	pets#losing-one	Losing one
+T	li2	\n
+T	li2	•\t
+L	li2 link	122	pets#getting-one	Getting one
+T	li2	\n
+T	li1	•\t
+L	li1 link	123	nightmare	Nightmare Mode
+T	li1	\n
+T	li2	•\t
+L	li2 link	124	nightmare#choosing-it	Choosing it
+T	li2	\n
+T	li2	•\t
+L	li2 link	125	nightmare#knowing-you-are-in-it	Knowing you are in it
+T	li2	\n
+T	li2	•\t
+L	li2 link	126	nightmare#what-it-changes	What it changes
+T	li2	\n
+T	li2	•\t
+L	li2 link	127	nightmare#and-four-things-it-does-not-do	And four things it does not do
+T	li2	\n
+T	li2	•\t
+L	li2 link	128	nightmare#a-note-on-the-spoiler	A note on the spoiler
 T	li2	\n

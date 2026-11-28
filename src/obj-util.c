@@ -1237,3 +1237,133 @@ void mark_artifact_everseen(const struct artifact *art, bool seen)
 	assert(art->aidx == aup_info[art->aidx].aidx);
 	aup_info[art->aidx].everseen = seen;
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * Artifacts made in play (ZangbandTK, DEC-170)
+ *
+ * Zangband's Scroll of Artifact Creation turns an ordinary weapon or piece of
+ * armour into an artifact during play.  An artifact here is an entry in
+ * a_info, read from the data files at startup, and an object points at its
+ * entry; so a made artifact takes an entry of its own.  The parsers allocate
+ * a_info with ART_MADE_MAX entries spare beyond the standard set, and a made
+ * artifact takes the next of them: the table never moves, so no object's
+ * pointer into it goes stale.  z_info->a_max counts the entries in use,
+ * standard and made, which is what every loop over the table already reads;
+ * the made ones are kept out of generation by an alloc_prob of 0.
+ *
+ * Their definitions are saved in the "made artifacts" block (save.c), which
+ * loads before anything that names an artifact.
+ * ------------------------------------------------------------------------ */
+
+/** How many entries of a_info the data files filled, counting the empty 0. */
+static int art_standard_max;
+
+/**
+ * Remember where the standard artifacts end.  Called by the parsers once they
+ * have filled a_info, so it is right for whichever set -- standard or random
+ * -- was parsed last, and any made artifacts went with the old table.
+ */
+void artifacts_note_standard(void)
+{
+	art_standard_max = z_info->a_max;
+}
+
+/** The number of a_info entries the data files filled, counting the 0. */
+int artifact_standard_count(void)
+{
+	return art_standard_max;
+}
+
+/** Whether this artifact was made in play rather than read from a file. */
+bool artifact_is_made(const struct artifact *art)
+{
+	return art && (int) art->aidx >= art_standard_max;
+}
+
+/** How many artifacts have been made in this game. */
+int artifact_made_count(void)
+{
+	return z_info->a_max - art_standard_max;
+}
+
+/**
+ * Take the next spare entry for an artifact being made, cleared and indexed,
+ * or NULL if every spare entry is in use.  It is not counted in z_info->a_max
+ * until artifact_made_commit(), so nothing iterating the table sees a half-made
+ * artifact; artifact_made_release() hands it back unused.
+ */
+struct artifact *artifact_made_claim(void)
+{
+	struct artifact *art;
+	int aidx = z_info->a_max;
+
+	if (aidx >= art_standard_max + ART_MADE_MAX) return NULL;
+
+	art = &a_info[aidx];
+	memset(art, 0, sizeof(*art));
+	art->aidx = aidx;
+	memset(&aup_info[aidx], 0, sizeof(aup_info[aidx]));
+	aup_info[aidx].aidx = aidx;
+	return art;
+}
+
+/** Count a claimed entry as a real artifact. */
+void artifact_made_commit(struct artifact *art)
+{
+	assert((int) art->aidx == z_info->a_max);
+	z_info->a_max++;
+}
+
+/** Free what an entry holds and clear it. */
+static void artifact_made_clear(struct artifact *art)
+{
+	uint32_t aidx = art->aidx;
+
+	string_free(art->name);
+	string_free(art->text);
+	string_free(art->alt_msg);
+	mem_free(art->brands);
+	mem_free(art->slays);
+	mem_free(art->curses);
+	memset(art, 0, sizeof(*art));
+	memset(&aup_info[aidx], 0, sizeof(aup_info[aidx]));
+}
+
+/** Hand back a claimed entry that was never committed. */
+void artifact_made_release(struct artifact *art)
+{
+	assert((int) art->aidx == z_info->a_max);
+	artifact_made_clear(art);
+}
+
+/**
+ * Forget every made artifact.  A savefile is loaded into a game that may have
+ * run another character before it, and the made artifacts are that
+ * character's; the load puts back its own.
+ */
+void artifact_made_reset(void)
+{
+	int i;
+
+	if (!a_info || !z_info) return;
+	for (i = art_standard_max; i < z_info->a_max; i++) {
+		artifact_made_clear(&a_info[i]);
+	}
+	if (art_standard_max) z_info->a_max = art_standard_max;
+}
+
+/**
+ * Whether any artifact already has this name, exactly.  Objects are saved
+ * with their artifact's name and loaded by looking it up, so two artifacts
+ * sharing one would come back as the same artifact.
+ */
+bool artifact_name_taken(const char *name)
+{
+	int i;
+
+	for (i = 0; i < z_info->a_max; i++) {
+		if (a_info[i].name && streq(a_info[i].name, name)) return true;
+	}
+	return false;
+}

@@ -843,6 +843,81 @@ void wr_misc(void)
 }
 
 
+/**
+ * ZangbandTK: the artifacts made in play by the Scroll of Artifact Creation
+ * (DEC-170).  Nothing but the savefile holds their definitions, so each is
+ * written whole.  The block goes after "misc", which may rebuild a_info from
+ * the random artifact seed, and before "artifacts" and every object, which
+ * name their artifact.
+ *
+ * The standard count goes first so that "artifacts", which writes one record
+ * per entry of a_info, can be read back by a build whose standard set is a
+ * different size: the records past that count are these, in this order.
+ */
+void wr_made_artifacts(void)
+{
+	int i;
+	size_t j;
+
+	wr_u16b(artifact_standard_count());
+	wr_u16b(artifact_made_count());
+	for (i = artifact_standard_count(); i < z_info->a_max; i++) {
+		const struct artifact *art = &a_info[i];
+		char name[1024];
+
+		wr_string(art->name);
+		wr_string(art->text ? art->text : "");
+
+		/* The kind by name, as an item's is */
+		wr_string(tval_find_name(art->tval));
+		obj_desc_name_format(name, sizeof name, 0,
+			lookup_kind(art->tval, art->sval)->name, 0, false);
+		wr_string(name);
+
+		wr_s16b(art->to_h);
+		wr_s16b(art->to_d);
+		wr_s16b(art->to_a);
+		wr_s16b(art->ac);
+		wr_byte(art->dd);
+		wr_byte(art->ds);
+		wr_s16b(art->weight);
+		wr_s32b(art->cost);
+
+		for (j = 0; j < OF_SIZE; j++)
+			wr_byte(art->flags[j]);
+		for (j = 0; j < OBJ_MOD_MAX; j++)
+			wr_s16b(art->modifiers[j]);
+		for (j = 0; j < ELEM_MAX; j++) {
+			wr_s16b(art->el_info[j].res_level);
+			wr_byte(art->el_info[j].flags);
+		}
+
+		wr_byte(art->brands ? 1 : 0);
+		if (art->brands) {
+			for (j = 0; j < (size_t) z_info->brand_max; j++)
+				wr_byte(art->brands[j] ? 1 : 0);
+		}
+		wr_byte(art->slays ? 1 : 0);
+		if (art->slays) {
+			for (j = 0; j < (size_t) z_info->slay_max; j++)
+				wr_byte(art->slays[j] ? 1 : 0);
+		}
+		wr_byte(art->curses ? 1 : 0);
+		if (art->curses) {
+			for (j = 0; j < (size_t) z_info->curse_max; j++)
+				wr_byte((uint8_t) art->curses[j]);
+		}
+
+		wr_s16b(art->level);
+		wr_u16b(art->activation ? art->activation->index : 0);
+		wr_string(art->alt_msg ? art->alt_msg : "");
+		wr_u16b(art->time.base);
+		wr_u16b(art->time.dice);
+		wr_u16b(art->time.sides);
+	}
+}
+
+
 void wr_artifacts(void)
 {
 	int i;

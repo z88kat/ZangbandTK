@@ -197,7 +197,14 @@ static int test_every_flavoured_tval_has_enough_flavours(void *state) {
  * an object could modify.
  */
 static int test_the_deferred_objects_are_absent(void *state) {
-	null(kind_named(TV_SCROLL, "Artifact Creation"));
+	/*
+	 * None is absent any more.  The Scroll of Artifact Creation was the last,
+	 * held back because an artifact here is an entry in a table read from the
+	 * data files, and one made in play had nowhere to be kept; since 3.143.0
+	 * it has spare entries and a savefile block of its own (DEC-170, and
+	 * artifact/made for what it does).
+	 */
+	notnull(kind_named(TV_SCROLL, "Artifact Creation"));
 
 	/*
 	 * And the Wand of Rockets is here, since 3.142.0. It waited for a rocket

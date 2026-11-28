@@ -1,7 +1,7 @@
 Objects
 =======
 
-ZangbandTK adds 86 object kinds, 51 artifacts and 16 ego types to Angband's,
+ZangbandTK adds 88 object kinds, 51 artifacts and 16 ego types to Angband's,
 along with three weapon properties Angband has no equivalent for.
 
 Three new weapon properties
@@ -55,12 +55,12 @@ rare, and a vampiric long sword is not.
 New objects
 -----------
 
-There are eighty-six of Zangband's own object kinds, which is most of what it
+There are eighty-eight of Zangband's own object kinds, which is most of what it
 had that Angband does not: thirteen swords including the Diamond Edge and the
 Psiblade, nine polearms, eight hafted weapons, eighteen pieces of armour from the
 T-shirt to the feathered Hagaromo, and twenty-five rings and amulets. The
-remaining thirteen are consumables: five potions, four scrolls, two rods, a food
-and an arrow.
+remaining fifteen are consumables: five potions, five scrolls, two rods, a wand,
+a food and an arrow.
 
 The jewellery is where the interesting things are. An Amulet of Anti-Magic stops
 you casting at all, and an Amulet of Anti-Teleportation roots you where you
@@ -101,6 +101,38 @@ for a character who doesn't, and it will eventually introduce you to something
 you were not ready for. Zangband's own source comments the third of its four
 effects with "Luck isn't always good for you...", which is the whole item in six
 words.
+
+The Scroll of Artifact Creation
+-------------------------------
+
+Read one, choose a weapon or a piece of armour, and it becomes an artifact. You
+are asked what to call it. Whatever you type goes in single quotes, so typing
+*Glimmerward* over a leather shield makes the Leather Shield 'Glimmerward', and
+Escape lets the game choose a name. A name another artifact already has is refused, and you're
+asked again.
+
+How good it is depends on you. The scroll makes the artifact you'd expect to
+find at twice your character level: at level 10 you get something like the
+artifacts of that type found around dungeon level 20, and at level 50 anything
+in their whole range. It builds on the item as it was, so a sword with good
+dice and enchantment comes out stronger than a plain one. The powers it adds
+are the ones this game's random artifacts are made from: modifiers,
+resistances, slays and brands, and sometimes an activation. Like every
+artifact, it can't be damaged by acid, lightning, fire or cold. One in thirteen
+comes out cursed, which is the scroll's own warning that artifacts sometimes
+have drawbacks as well as benefits.
+
+You know everything about it at once. Every rune on it is learned, so you'll
+recognise those runes on anything else from then on, and your history gets a
+line that begins "Made" where a found artifact's begins "Found".
+
+It won't change an ego item or an artifact, which are already powerful items,
+or dragon armour, which is already magical, and the scroll is used up all the
+same. Diggers, ammunition, lights, rings and amulets aren't offered. Read over
+a stack, it enchants one and destroys the rest.
+
+The scroll is found from dungeon level 100 and is worth 300,000 gold. A game
+has room for 256 artifacts made this way.
 
 The Ancient and Foul Curse
 --------------------------
@@ -227,14 +259,9 @@ the wilderness plays, which is a bigger job than converting a flag. One ego,
 importing it would have put a pair of boots in the game that granted nothing at
 all.
 
-One of Zangband's object kinds is likewise recorded but not imported: the
-Scroll of Artifact Creation, which makes a new artifact out of an ordinary item
-during play. Angband generates its random artifacts once, at birth, and stores
-an artifact in the savefile by name, so one invented mid-game would not be
-there when the character was loaded again.
-
-Fourteen more had to wait for something else in the game, and all fourteen are
-in. The Wand of Rockets waited for a rocket element until the Chaos realm
+Fifteen of Zangband's object kinds had to wait for something else in the
+game, and all fifteen are in. The Scroll of Artifact Creation waited for
+somewhere to keep an artifact made during play (see above). The Wand of Rockets waited for a rocket element until the Chaos realm
 settled that a rocket is shards: it fires a ball of shards for 250, the same
 rocket as the *Magic Rocket* spell, and shard resistance is the defence against
 it. The Wand of Tame Monster needed pets, and has them (:doc:`pets`). The

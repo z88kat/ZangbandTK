@@ -249,3 +249,8 @@ EFFECT(CHAOS_BLADE,					false,	NULL,		0,		EFINFO_NONE,	"conjures a (Chaotic) swo
  * Judgement card both call (DEC-168).
  */
 EFFECT(RERATE_HP,					false,	NULL,		0,		EFINFO_NONE,	"gambles your hit points on a fresh roll",	"")
+/*
+ * ZangbandTK: Zangband's artifact_scroll(), for its Scroll of Artifact
+ * Creation (DEC-170).
+ */
+EFFECT(CREATE_ARTIFACT,				false,	NULL,		0,		EFINFO_NONE,	"turns an ordinary weapon or piece of armour into an artifact",	"")

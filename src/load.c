@@ -1726,31 +1726,201 @@ int rd_misc(void)
 	return 0;
 }
 
+/**
+ * ZangbandTK (DEC-170): what the "made artifacts" block told "artifacts".
+ * The standard count of the build that wrote the save, 0 when the save has no
+ * such block; how many made artifacts it holds; and where each of them went
+ * in this a_info, or -1 for one that could not be rebuilt.
+ */
+static uint16_t made_saved_from = 0;
+static uint16_t made_saved_count = 0;
+static int made_saved_to[ART_MADE_MAX];
+
+/** Forget what the last load's "made artifacts" block said. */
+void rd_made_artifacts_forget(void)
+{
+	made_saved_from = 0;
+	made_saved_count = 0;
+}
+
+/**
+ * Read back the artifacts made in play (see wr_made_artifacts()).  Each goes
+ * into the next spare entry of a_info.  One whose kind this build cannot name
+ * is read to the end of its record and dropped; the object that was it is
+ * then lost on its own, through rd_item()'s lost path, and nothing else is.
+ */
+int rd_made_artifacts(void)
+{
+	uint16_t from, count, tmp16u;
+	int16_t tmp16s;
+	uint8_t tmp8u;
+	int i;
+	size_t j;
+
+	rd_u16b(&from);
+	rd_u16b(&count);
+	if (count > ART_MADE_MAX) {
+		note(format("Too many (%u) made artifacts!", count));
+		return -1;
+	}
+	made_saved_from = from;
+	made_saved_count = count;
+
+	for (i = 0; i < count; i++) {
+		struct artifact *art = artifact_made_claim();
+		struct object_kind *kind = NULL;
+		char buf[128];
+		int tval, sv = -1;
+
+		if (!art) {
+			note("No room for the made artifacts!");
+			return -1;
+		}
+
+		rd_string(buf, sizeof(buf));
+		art->name = string_make(buf);
+		rd_string(buf, sizeof(buf));
+		if (buf[0]) art->text = string_make(buf);
+
+		rd_string(buf, sizeof(buf));
+		tval = tval_find_idx(buf);
+		rd_string(buf, sizeof(buf));
+		if (tval > 0) {
+			sv = lookup_sval(tval, buf);
+			if (sv < 0 || !lookup_kind(tval, sv)) {
+				const char *now = renamed_to(RENAME_OBJECT, tval, buf, NULL);
+
+				sv = now ? lookup_sval(tval, now) : -1;
+			}
+			if (sv >= 0) kind = lookup_kind(tval, sv);
+		}
+
+		rd_s16b(&tmp16s); art->to_h = tmp16s;
+		rd_s16b(&tmp16s); art->to_d = tmp16s;
+		rd_s16b(&tmp16s); art->to_a = tmp16s;
+		rd_s16b(&tmp16s); art->ac = tmp16s;
+		rd_byte(&tmp8u); art->dd = tmp8u;
+		rd_byte(&tmp8u); art->ds = tmp8u;
+		rd_s16b(&tmp16s); art->weight = tmp16s;
+		{
+			int32_t cost;
+
+			rd_s32b(&cost);
+			art->cost = cost;
+		}
+
+		for (j = 0; j < of_size; j++)
+			rd_byte(&art->flags[j]);
+		for (j = 0; j < obj_mod_max; j++) {
+			rd_s16b(&tmp16s);
+			art->modifiers[j] = tmp16s;
+		}
+		for (j = 0; j < elem_max; j++) {
+			rd_s16b(&art->el_info[j].res_level);
+			rd_byte(&art->el_info[j].flags);
+		}
+
+		rd_byte(&tmp8u);
+		if (tmp8u) {
+			art->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+			for (j = 0; j < brand_max; j++) {
+				rd_byte(&tmp8u);
+				art->brands[j] = tmp8u ? true : false;
+			}
+		}
+		rd_byte(&tmp8u);
+		if (tmp8u) {
+			art->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+			for (j = 0; j < slay_max; j++) {
+				rd_byte(&tmp8u);
+				art->slays[j] = tmp8u ? true : false;
+			}
+		}
+		rd_byte(&tmp8u);
+		if (tmp8u) {
+			art->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+			for (j = 0; j < curse_max; j++) {
+				rd_byte(&tmp8u);
+				art->curses[j] = tmp8u;
+			}
+		}
+
+		rd_s16b(&tmp16s);
+		art->level = tmp16s;
+		rd_u16b(&tmp16u);
+		if (tmp16u && tmp16u < z_info->act_max)
+			art->activation = &activations[tmp16u];
+		rd_string(buf, sizeof(buf));
+		if (buf[0]) art->alt_msg = string_make(buf);
+		rd_u16b(&tmp16u);
+		art->time.base = tmp16u;
+		rd_u16b(&tmp16u);
+		art->time.dice = tmp16u;
+		rd_u16b(&tmp16u);
+		art->time.sides = tmp16u;
+
+		if (!kind) {
+			note(format("Lost the made artifact %s.", art->name));
+			artifact_made_release(art);
+			made_saved_to[i] = -1;
+			continue;
+		}
+
+		art->tval = kind->tval;
+		art->sval = kind->sval;
+		artifact_made_commit(art);
+		mark_artifact_created(art, true);
+		mark_artifact_seen(art, true);
+		mark_artifact_everseen(art, true);
+		made_saved_to[i] = (int) art->aidx;
+	}
+
+	return 0;
+}
+
 int rd_artifacts(void)
 {
-	int i;
+	int i, from;
 	uint16_t tmp16u;
 
 	/* Load the Artifacts */
 	rd_u16b(&tmp16u);
-	if (tmp16u > z_info->a_max) {
-		note(format("Too many (%u) artifacts!", tmp16u));
+
+	/*
+	 * One record per entry of the a_info that wrote the save: the standard
+	 * set, then any made artifacts (DEC-170).  The standard set of that build
+	 * need not be this one's size, so the made ones are found by the count
+	 * the "made artifacts" block saved and sent where that block put them.
+	 * A save without the block holds standard records only.
+	 */
+	from = made_saved_from ? made_saved_from : tmp16u;
+	if (from > artifact_standard_count()) {
+		note(format("Too many (%u) artifacts!", from));
 		return (-1);
 	}
 
 	/* Read the artifact flags */
 	for (i = 0; i < tmp16u; i++) {
-		uint8_t tmp8u;
+		uint8_t created, seen, everseen, tmp8u;
+		int aidx = i;
 
+		rd_byte(&created);
+		rd_byte(&seen);
+		rd_byte(&everseen);
 		rd_byte(&tmp8u);
-		aup_info[i].created = tmp8u ? true : false;
-		rd_byte(&tmp8u);
-		aup_info[i].seen = tmp8u ? true : false;
-		rd_byte(&tmp8u);
-		aup_info[i].everseen = tmp8u ? true : false;
-		rd_byte(&tmp8u);
+
+		if (i >= from) {
+			int m = i - from;
+
+			aidx = (m < made_saved_count) ? made_saved_to[m] : -1;
+			if (aidx < 0) continue;
+		}
+		aup_info[aidx].created = created ? true : false;
+		aup_info[aidx].seen = seen ? true : false;
+		aup_info[aidx].everseen = everseen ? true : false;
 	}
 
+	rd_made_artifacts_forget();
 	return 0;
 }
 

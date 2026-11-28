@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "game-world.h"
 #include "init.h"
+#include "obj-util.h"
 #include "savefile.h"
 #include "save-charoutput.h"
 #include "z-file.h"
@@ -122,6 +123,7 @@ static const struct {
 	{ "player", wr_player, 6 },
 	{ "ignore", wr_ignore, 1 },
 	{ "misc", wr_misc, 1 },
+	{ "made artifacts", wr_made_artifacts, 1 },
 	{ "artifacts", wr_artifacts, 1 },
 	{ "player hp", wr_player_hp, 1 },
 	{ "player spells", wr_player_spells, 2 },
@@ -160,6 +162,7 @@ static const struct blockinfo loaders[] = {
 	{ "player", rd_player, 6 },
 	{ "ignore", rd_ignore, 1 },
 	{ "misc", rd_misc, 1 },
+	{ "made artifacts", rd_made_artifacts, 1 },
 	{ "artifacts", rd_artifacts, 1 },
 	{ "player hp", rd_player_hp, 1 },
 	{ "player spells", rd_player_spells_1, 1 },
@@ -696,6 +699,14 @@ bool savefile_load(const char *path, bool cheat_death)
 		note("Couldn't open savefile.");
 		return false;
 	}
+
+	/*
+	 * The artifacts the last character made are not this one's (DEC-170).
+	 * A save with any brings them back in its "made artifacts" block; one
+	 * from before that block has none.
+	 */
+	artifact_made_reset();
+	rd_made_artifacts_forget();
 
 	ok = try_load(f, loaders);
 	file_close(f);

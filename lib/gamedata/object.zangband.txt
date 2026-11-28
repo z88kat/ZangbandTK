@@ -121,6 +121,17 @@ alloc:100:75 to 100
 flags:IGNORE_COLD | EASY_KNOW
 desc:This scroll creates a cold burst (300) centered on you, but will hurt you as well.
 
+name:Artifact Creation
+type:scroll
+graphics:?:d
+level:100
+weight:5
+cost:300000
+alloc:6:100 to 100
+flags:EASY_KNOW
+effect:CREATE_ARTIFACT
+desc:This powerful scroll will turn a normal item into a unique artifact.  Be careful, sometimes artifacts have drawbacks as well as benefits.  It can't affect an item that already has special powers.
+
 name:Curing
 type:potion
 graphics:!:d

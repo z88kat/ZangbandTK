@@ -100,10 +100,7 @@ Sorting the true from the false is 647 judgements for one flavour scroll.""" }
 
 [defer]
 
-"70:52" = { name = "Artifact Creation", why = "no 4.2 effect", note = """\
-`artifact_scroll()` turns an ordinary item in the pack into a random \
-artifact during play. 4.2 generates its random artifacts once, at birth, from \
-the savefile seed; there is no path that makes one mid-game.""" }
+# None left. The last, the Scroll of Artifact Creation, was built in DEC-170.
 
 # ------------------------------------------------------------- effects
 #
@@ -232,6 +229,15 @@ fires in all eight directions at once, and the one-in-three that detonates a \
 radius-8 blast on the reader. `effect:RANDOM` chooses one of the effects that \
 follow it, which is one effect and not a branch, so the shapes it cannot \
 express are named here rather than approximated.""" }
+
+"70:52" = { name = "Artifact Creation", lines = [
+    "effect:CREATE_ARTIFACT",
+], note = """`artifact_scroll()` turns a weapon or piece of armour into an \
+artifact during play, as strong as one found at twice the reader's level, and \
+asks what to call it. Held back until DEC-170: an artifact here is an entry in \
+a_info, read from the data files at startup, so one made in play needed \
+spare entries and a savefile block of its own. The powers come from 4.2's \
+random artifact designer.""" }
 
 "70:23" = { name = "Mundanity", lines = [
     "effect:MUNDANE",

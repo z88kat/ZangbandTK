@@ -9667,3 +9667,137 @@ where there were two. The wand's info line reads "When aimed, it fires a ball of
 shards with radius 2, dealing 250 damage at the centre".
 
 Not checked: the wand aimed in the real game.
+
+**DEC-170 — The Scroll of Artifact Creation makes artifacts in play, kept in
+spare entries of a_info and a savefile block of their own (28 November 2026).**
+(Objects. Ends CNT-11's last deferral. 3.143.0.)
+
+**Why.** The scroll was the one Zangband kind left in objmap.toml's [defer].
+Zangband's `artifact_scroll()` ([spells3.c:1873](../../archive/zangband/src/spells3.c#L1873))
+calls `create_artifact(o_ptr, p_ptr->lev * 2, TRUE)` on a weapon or piece of
+armour the player picks and keeps the result on the object. Here an artifact
+is an entry in `a_info`, built at startup from artifact.txt and
+artifact.zangband.txt or from the randart seed; objects point into that table
+and are saved by their artifact's name, and the "artifacts" block saves four
+flag bytes per entry. A made artifact had no entry to be, and would have been
+lost on the next load. Offered a full port, a stand-in (turn the item into an
+unfound standard artifact of its kind) or keeping the deferral, the user chose
+the port.
+
+**What.**
+
+- *Where they live.* `finish_parse_artifact()` and `finish_parse_randart()`
+  allocate `a_info` and `aup_info` with `ART_MADE_MAX` (256) entries spare.
+  `artifact_made_claim()` and `artifact_made_commit()` take the next one.
+  `z_info->a_max` counts the entries in use, standard and made, so every loop
+  over the table -- the knowledge menu, `lookup_artifact_name()`, the Tk
+  artifact list, the spoilers -- sees made artifacts unchanged, and the table
+  never moves under an object's pointer. `artifacts_note_standard()` records
+  where the standard set ends; a reparse drops the made ones with the old
+  table. `savefile_load()` calls `artifact_made_reset()` first, because the
+  savefile picker retries a failed load in the same game.
+- *Never placed.* `alloc_prob`, `alloc_min` and `alloc_max` are 0, so
+  `make_artifact()` and `make_artifact_special()` skip a made artifact even
+  when it is marked uncreated.
+- *The savefile.* A new block, "made artifacts" v1, between "misc" (which may
+  rebuild `a_info` from the randart seed) and "artifacts". It holds the
+  standard count, then each made artifact whole: name, text, kind by name
+  (through rename.txt, as an item's), combat numbers, flags, modifiers,
+  elements, brands, slays, curses, level, activation, alt_msg and recharge.
+  One whose kind has gone is dropped, and its object is lost through
+  `rd_item()`'s lost path. `rd_artifacts()` sends the records past the saved
+  standard count to where the block put them, so a build whose standard set is
+  a different size reads them right; without that, one more standard artifact
+  would have taken the first made artifact's flags and never been placed. A
+  save from before the block has no made artifacts. `ITEM_VERSION` is
+  unchanged: an item still names its artifact.
+- *The powers.* `randart_make_from_object()` in obj-randart.c runs
+  `design_artifact()`'s steps on the chosen item. It starts as the item --
+  kind, dice, enchantment, properties and curses -- plus `artifact_prep()`'s
+  first to-hit and to-dam or armour and the four base IGNOREs (Zangband sets
+  the same four flags). The target power is a `Rand_sample()` about the mean
+  of the standard artifacts of the same tval with `alloc_min` at most twice the
+  player's level, spread to their strongest and weakest; the shallowest of the
+  tval stand in when none is that shallow. Quest and special artifacts, and
+  powers the designer itself ignores (cursed below zero, inhibited above
+  20,000), are left out. The statistics come from the standard set only, so
+  the scroll is the same however many artifacts came before it. Zangband's
+  rules kept: at least two abilities stay however strong the item started
+  (`given < 2`), and one in thirteen takes a curse (`random_curse()` at
+  artifact.c:2445). Zangband's other curses, `A_CURSED` and the penalty for
+  too-good artifacts, are for artifacts found in the dungeon and the scroll
+  skips them. The random name comes from `artifact_gen_name()` and must be
+  unused.
+- *The effect.* `CREATE_ARTIFACT`, appended to list-effects.h. Zangband's item
+  tester, swords to gloves: no digger, ammunition, light or jewellery. "The X
+  radiates a blinding light!" whatever follows. Dragon armour is "already
+  magical"; an artifact or an ego item is "already a powerful item", since
+  Zangband's `xtra_name` test covers ego items too
+  ([object2.c:2275](../../archive/zangband/src/object2.c#L2275)). A stack
+  keeps one and loses the rest. A refusal still uses the scroll. The name is
+  asked for, put in single quotes, at most sixty characters, and refused if
+  another artifact has it; Escape keeps the drawn name. Every rune on the item
+  is learned (`object_learn_all_runes()`, Zangband's `identify_fully_aux()`),
+  and the history says "Made". Virtues as Zangband: Individualism +2 and
+  Mysticism +5 (`create_artifact()`), then Mysticism +1; on failure, one time
+  in three, Mysticism -1.
+- *Found on the way.* `history_info.a_idx` and the borg's `art_idx` were
+  `uint8_t`, which 189 artifacts never outgrew and the 67th made one does: its
+  history line would have named another artifact, and saved that name. Both
+  are `uint16_t`. wiz-spoil printed `art->text` unconditionally in randart
+  mode, and a made artifact has none.
+- *The randart designer ran off the table.* `design_artifact()` steps over
+  fixed artifacts (the One Ring by name, quest kinds by `KF_QUEST_ART`) with a
+  loop that advanced `art` but kept testing the first artifact's `kind`, so
+  the first quest artifact skipped every entry after it. Angband's two quest
+  artifacts, Grond and Morgoth's crown, are its last entries and nothing was
+  lost there. Here Zangband's 51 follow them: every randart game so far kept
+  them unrandomised (all but the crown of Chaos, which is on the crown's quest
+  kind), and `create_artifact_set()`'s first pass went on calling
+  `design_artifact()` at indices past `z_info->a_max`, writing past the end of
+  the allocation. The spare entries turned that into a NULL `art->name` and a
+  crash in `strstr()` on the first randart rebuild, which is how the
+  randart-rebuild round trip found it. The loop now looks up each artifact's
+  kind; both passes stop at `z_info->a_max`; and the second pass designs the
+  last entry too, which 4.2's `a_max - 1` left alone because in Angband it is
+  Morgoth's crown. A randart game already started keeps its set, which loads
+  from its archived `randart_<seed>.txt` rather than the seed. One whose file
+  is gone is rebuilt from the seed: entries 1 to 138, Angband's, come out the
+  same as before (compared for five seeds), and Zangband's 50 come out
+  redesigned instead of standard.
+- zconv: `70:52` moves from [defer] to [effect] as `effect:CREATE_ARTIFACT`,
+  and [defer] is empty. object.zangband.txt regenerated: level 100, 300,000
+  gold, `alloc:6:100 to 100`, Zangband's description. docs/objects.rst's count
+  of Zangband kinds goes from 86 to 88; it should have gone to 87 with the Wand
+  of Rockets.
+
+**Checked.** artifact/made (11 tests) reads the scroll through the effect
+over a long sword, a typed name, a taken name, an ego item, dragon armour, a
+stack, a ring, a digger and arrows; measures power at depth 2 and 100; places
+2000 long swords at depth 60 beside an uncreated made artifact; fills the
+spare entries; and logs the 67th made artifact. game/roundtrip (six new, 21 in
+all) saves and loads one and two made artifacts, one whose kind is renamed
+away, one after a fake newcomer joins the standard set, one across a load
+that fails part way and is retried, and one in a randart game rebuilt from the
+seed on load. artifact/randart (new, 3 tests) designs three seeds' sets and
+checks the entry past the table is untouched, that all but the four fixed
+artifacts are redesigned, the last included, and that a seed gives the same
+set twice. Each guard broken in a copy of the tree fails its test: no saver,
+no remap, made artifacts placeable, ego items accepted, taken names allowed,
+the whole stack enchanted, `a_idx` back to a byte, depth ignored, no runes
+learned, no reset in `savefile_load()`, the skip loop's old kind, the second
+pass's old bound. The first pass's bound alone is a backstop no data reaches
+once the kind is right; with the old kind and the old bounds together, 4.2's
+designer, artifact/randart and game/roundtrip crash. The power test first
+asked for twice the shallow median over 31 draws and failed 2 runs in 40
+(deep medians 167 to 278, shallow 79 to 88); at 61 draws and half again it
+passed 60 runs in 60, the lowest ratio 2.1. The three suites pass under
+AddressSanitizer and UBSan with nothing reported, and build under gcc and
+clang with -Werror. The whole suite passes, 1680/1680, the savefile
+corpus in game/saves and game/savefile-hostile among it.
+`zconv objects --check` matches lib/gamedata with nothing deferred. The Sphinx
+build passes with -W, and the Tk help pages are regenerated.
+
+Not checked: the scroll read in the real game in either front end, and so the
+Tk name prompt; the borg reading one; a randart game started in the real game
+since the designer fix.

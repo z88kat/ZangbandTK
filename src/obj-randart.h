@@ -107,5 +107,6 @@ struct artifact_set_data {
 
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 void do_randart(uint32_t randart_seed, bool create_file);
+struct artifact *randart_make_from_object(struct object *obj, int depth);
 
 #endif /* OBJECT_RANDART_H */

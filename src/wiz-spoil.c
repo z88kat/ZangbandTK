@@ -551,7 +551,9 @@ void spoil_artifact(const char *fname)
 				(long)object_power(obj, false, NULL),
 				art_weight / 10, art_weight % 10);
 
-			if (OPT(player, birth_randarts)) text_out("%s.\n", art->text);
+			/* A made artifact (DEC-170) has no text */
+			if (OPT(player, birth_randarts) && art->text)
+				text_out("%s.\n", art->text);
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);

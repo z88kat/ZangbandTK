@@ -935,7 +935,9 @@ endif()
 # make maintenance easier though, when running them, it would be preferable to
 # run the lower level ones first.
 set(ANGBAND_TEST_CASE_SOURCES
+    artifact/made.c
     artifact/name.c
+    artifact/randart.c
     borg/prepared.c
     borg/traits.c
     cave/find.c

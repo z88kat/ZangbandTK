@@ -94,7 +94,8 @@ struct borg_item {
 
     int16_t weight; /* Probable weight */
 
-    uint8_t art_idx; /* Artifact index (if any) */
+    uint16_t art_idx; /* Artifact index (if any); wider than a byte since
+                       * made artifacts (DEC-170) */
     uint8_t ego_idx; /* Ego-item index (if any) */
     int     activ_idx; /* Activation index (if any) */
     bool    one_ring; /* is this the one ring */

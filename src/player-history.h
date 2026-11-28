@@ -48,7 +48,8 @@ struct history_info {
 	bitflag type[HIST_SIZE];	/* Kind of history item */
 	int16_t dlev;			/* Dungeon level when this item was recorded */
 	int16_t clev;			/* Character level when this item was recorded */
-	uint8_t a_idx;			/* Artifact this item relates to */
+	uint16_t a_idx;			/* Artifact this item relates to; wider than
+					 * a byte since made artifacts (DEC-170) */
 	int32_t turn;			/* Turn this item was recorded on */
 	char event[80];			/* The text of the item */
 };
@@ -64,6 +65,7 @@ bool history_add_full(struct player *p,
 bool history_add(struct player *p, const char *text, int type);
 bool history_is_artifact_known(struct player *p, const struct artifact *artifact);
 void history_find_artifact(struct player *p, const struct artifact *artifact);
+void history_make_artifact(struct player *p, const struct artifact *artifact);
 void history_lose_artifact(struct player *p, const struct artifact *artifact);
 void history_unmask_unknown(struct player *p);
 size_t history_get_list(struct player *p, struct history_info **list);

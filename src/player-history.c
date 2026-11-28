@@ -241,6 +241,27 @@ void history_find_artifact(struct player *p, const struct artifact *artifact)
 }
 
 /**
+ * Log an artifact the player made with a Scroll of Artifact Creation
+ * (ZangbandTK, DEC-170).  It is known from the start, so a later
+ * history_find_artifact() only finds the entry already there.
+ */
+void history_make_artifact(struct player *p, const struct artifact *artifact)
+{
+	char o_name[80];
+	char text[80];
+	bitflag flags[HIST_SIZE];
+
+	assert(artifact != NULL);
+
+	get_artifact_name(o_name, sizeof(o_name), artifact);
+	strnfmt(text, sizeof(text), "Made %s", o_name);
+
+	hist_wipe(flags);
+	hist_on(flags, HIST_ARTIFACT_KNOWN);
+	history_add_with_flags(p, text, flags, artifact);
+}
+
+/**
  * Mark artifact number `id` as lost forever.
  */
 void history_lose_artifact(struct player *p, const struct artifact *artifact)

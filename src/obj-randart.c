@@ -2784,6 +2784,15 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 			return;
 		}
 		art = &a_info[*aidx];
+		/*
+		 * ZangbandTK: look at the next artifact's kind too.  4.2 kept the
+		 * first one's, so the first quest artifact skipped everything after
+		 * it.  Angband's two quest artifacts are its last, so that cost
+		 * nothing there; here Zangband's artifacts follow them, went
+		 * unrandomised, and the designer carried on past the end of a_info
+		 * (DEC-170).
+		 */
+		kind = lookup_kind(art->tval, art->sval);
 		art_level = art->level;
 	}
 
@@ -2963,12 +2972,20 @@ static void create_artifact_set(struct artifact_set_data *data)
 		tval_total[i] = (4 * (data->tv_num[i] + 1)) / 5;
 	}
 
+	/*
+	 * ZangbandTK: both passes stop at the end of a_info, and the last entry
+	 * is designed too.  4.2's first pass could run past the end when fixed
+	 * artifacts used up indices, and its second stopped one short, which
+	 * only spared Angband's last artifact, Morgoth's crown, which is skipped
+	 * as a quest artifact anyway (DEC-170).
+	 */
+
 	/* Allocate a minimal set of artifacts to the tvals */
-	while (not_done) {
+	while (not_done && aidx < z_info->a_max) {
 		not_done = false;
 
 		/* Multiple passes through tvals until all have enough artifacts */ 
-		for (i = 0; i < TV_MAX; i++) {
+		for (i = 0; i < TV_MAX && aidx < z_info->a_max; i++) {
 			if (tval_total[i] > 0) {
 				design_artifact(data, i, &aidx);
 				tval_total[i]--;
@@ -2979,7 +2996,7 @@ static void create_artifact_set(struct artifact_set_data *data)
 	}
 
 	/* Allocate remaining artifacts at random */
-	while (aidx < z_info->a_max - 1) {
+	while (aidx < z_info->a_max) {
 		design_artifact(data, TV_NULL, &aidx);
 		aidx++;
 	}
@@ -3216,4 +3233,269 @@ void do_randart(uint32_t randart_seed, bool create_file)
 
 	/* When done, resume use of the Angband "complex" RNG. */
 	Rand_quick = false;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * An artifact made in play (ZangbandTK, DEC-170)
+ *
+ * Zangband's Scroll of Artifact Creation calls create_artifact(o_ptr,
+ * p_ptr->lev * 2, TRUE) on an item the player chose (spells3.c:1935,
+ * artifact.c:2191).  Its powers come here from this game's own designer, the
+ * one that builds every random artifact, run on that item rather than on a
+ * base item it picks for itself.
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Whether a standard artifact is one the scroll's power is measured against:
+ * the same type of item, a power the designer itself would count (neither
+ * cursed below nothing nor inhibited above everything), and not one of the
+ * special or quest artifacts that are made for one place.
+ */
+static bool scroll_measures_by(const struct artifact *art, int tval, int power)
+{
+	const struct object_kind *kind;
+
+	if (!art->name || art->tval != tval) return false;
+	if (power <= 0 || power >= INHIBIT_POWER) return false;
+	kind = lookup_kind(art->tval, art->sval);
+	if (!kind) return false;
+	if (kf_has(kind->kind_flags, KF_QUEST_ART)) return false;
+	if (kf_has(kind->kind_flags, KF_INSTA_ART)) return false;
+	return true;
+}
+
+/**
+ * The power the scroll aims at.
+ *
+ * Zangband passes create_artifact() a level, which for an artifact found in
+ * the dungeon is the depth it was found at; the scroll passes twice the
+ * player's level, so it makes the artifact that would be found that deep.
+ * Here that is the artifacts of the same type this game places by that depth:
+ * a power drawn about their mean and spread towards the strongest and the
+ * weakest of them, as design_artifact() draws a random artifact's.  Where no
+ * artifact of the type is placed so shallow, the shallowest of the type are.
+ */
+static int scroll_target_power(struct artifact_set_data *data, int tval,
+		int depth)
+{
+	int i, n = 0, sum = 0, most = 0, least = INHIBIT_POWER, first = 255;
+
+	for (i = 1; i < artifact_standard_count(); i++) {
+		if (!scroll_measures_by(&a_info[i], tval, data->base_power[i]))
+			continue;
+		first = MIN(first, a_info[i].alloc_min);
+	}
+	depth = MAX(depth, first);
+
+	for (i = 1; i < artifact_standard_count(); i++) {
+		int power = data->base_power[i];
+
+		if (!scroll_measures_by(&a_info[i], tval, power)) continue;
+		if (a_info[i].alloc_min > depth) continue;
+		n++;
+		sum += power;
+		most = MAX(most, power);
+		least = MIN(least, power);
+	}
+
+	if (!n) return MAX(1, data->avg_power);
+	return MAX(1, Rand_sample(sum / n, most, least, 20, 20));
+}
+
+/**
+ * Start the artifact from the item as it is: its kind, dice, armour, weight,
+ * enchantment and every property it already has, curses included, as
+ * Zangband's create_artifact() works on the object in place.  Then what
+ * artifact_prep() gives every random artifact: it ignores the four base
+ * elements (Zangband sets the same four IGNORE flags) and gains a first
+ * measure of to-hit and to-dam, or of armour.
+ */
+static void scroll_seed_from_object(struct artifact *art,
+		const struct object *obj, struct artifact_set_data *data)
+{
+	const struct object_kind *kind = obj->kind;
+	int i;
+
+	art->tval = obj->tval;
+	art->sval = obj->sval;
+	art->to_h = obj->to_h;
+	art->to_d = obj->to_d;
+	art->to_a = obj->to_a;
+	art->ac = obj->ac;
+	art->dd = obj->dd;
+	art->ds = obj->ds;
+	art->weight = obj->weight;
+	of_copy(art->flags, obj->flags);
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		art->modifiers[i] = obj->modifiers[i];
+	for (i = 0; i < ELEM_MAX; i++)
+		art->el_info[i] = obj->el_info[i];
+	copy_slays(&art->slays, obj->slays);
+	copy_brands(&art->brands, obj->brands);
+	if (obj->curses) {
+		art->curses = mem_zalloc(z_info->curse_max * sizeof(*art->curses));
+		for (i = 0; i < z_info->curse_max; i++)
+			art->curses[i] = obj->curses[i].power;
+	}
+
+	/* As artifact_prep(): the kind's activation stays the kind's */
+	art->activation = NULL;
+	if (kind->activation) {
+		art->level = kind->activation->level;
+	} else if (kind->effect) {
+		art->level = kind->level;
+	} else {
+		art->level = 0;
+	}
+
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
+		art->el_info[i].flags |= EL_INFO_IGNORE;
+
+	if (tval_is_weapon(obj)) {
+		art->to_h += (int16_t)(data->hit_startval / 2 +
+							randint0(data->hit_startval));
+		art->to_d += (int16_t)(data->dam_startval / 2 +
+							randint0(data->dam_startval));
+	} else if (tval_is_armor(obj)) {
+		art->to_a += (int16_t)(data->ac_startval / 2 +
+							randint0(data->ac_startval));
+	}
+}
+
+/**
+ * Make the object what the artifact says, exactly.  copy_artifact_data() adds
+ * an artifact to a freshly prepared object and takes the union of the two;
+ * this object already has properties, and the artifact was built from them,
+ * so the artifact's word is final -- including on anything the designer took
+ * away as contradictory.
+ */
+static void scroll_apply_to_object(struct object *obj,
+		const struct artifact *art)
+{
+	int i;
+
+	obj->artifact = art;
+	of_copy(obj->flags, art->flags);
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		obj->modifiers[i] = art->modifiers[i];
+	for (i = 0; i < ELEM_MAX; i++)
+		obj->el_info[i] = art->el_info[i];
+	mem_free(obj->slays);
+	obj->slays = NULL;
+	copy_slays(&obj->slays, art->slays);
+	mem_free(obj->brands);
+	obj->brands = NULL;
+	copy_brands(&obj->brands, art->brands);
+	mem_free(obj->curses);
+	obj->curses = NULL;
+	copy_curses(obj, art->curses);
+	obj->to_h = art->to_h;
+	obj->to_d = art->to_d;
+	obj->to_a = art->to_a;
+	obj->ac = art->ac;
+	obj->dd = art->dd;
+	obj->ds = art->ds;
+	obj->weight = art->weight;
+	if (art->activation) {
+		obj->activation = art->activation;
+		obj->time = art->time;
+	}
+	obj->timeout = 0;
+}
+
+/**
+ * Turn an ordinary weapon or piece of armour into an artifact of its own, as
+ * deep as `depth`, with a random name nothing else has.  Returns the new
+ * artifact, already counted, created and seen, or NULL if every spare entry
+ * in a_info is taken.  Naming it by hand and telling the player are the
+ * caller's.
+ *
+ * The design is design_artifact()'s with two of Zangband's rules: at least
+ * two abilities are kept however strong the item started (create_artifact()
+ * loops until `given >= 2`), and one artifact in thirteen takes a curse
+ * (random_curse() at artifact.c:2445; the scroll skips Zangband's other
+ * curses, which punish only artifacts found in the dungeon).
+ */
+struct artifact *randart_make_from_object(struct object *obj, int depth)
+{
+	struct artifact *art = artifact_made_claim();
+	struct artifact *a_old;
+	struct artifact_set_data *data;
+	int art_freq[ART_IDX_TOTAL];
+	int a_max = z_info->a_max;
+	int power, ap, tries, kept = 0;
+	char *name = NULL;
+
+	if (!art) return NULL;
+
+	/* Measured against the artifacts the data files made, not earlier
+	 * made ones, so the scroll is the same scroll however many came before */
+	z_info->a_max = artifact_standard_count();
+	data = artifact_set_data_new();
+	store_base_power(data);
+	parse_frequencies(data);
+	power = scroll_target_power(data, obj->tval, depth);
+
+	scroll_seed_from_object(art, obj, data);
+
+	/* A name to describe it by while it is measured; replaced below */
+	art->name = string_make("of Making");
+	build_freq_table(art, art_freq, data);
+
+	a_old = mem_zalloc(sizeof *a_old);
+	copy_artifact(art, a_old);
+	try_supercharge(art, power, data);
+	ap = artifact_power(art->aidx, "result of supercharge", false);
+	if (ap > (power * 23) / 20 + 1) copy_artifact(a_old, art);
+
+	for (tries = 0; tries < MAX_TRIES; tries++) {
+		copy_artifact(art, a_old);
+		add_ability(art, power, art_freq, data);
+		ap = artifact_power(art->aidx, "artifact attempt", false);
+		if (ap < 0) break;
+		if (ap > (power * 23) / 20 + 1 && kept >= 2) {
+			copy_artifact(a_old, art);
+			continue;
+		}
+		kept++;
+		if (ap >= (power * 19) / 20 && kept >= 2) break;
+	}
+
+	if (one_in_(13)) add_curse(art, depth);
+
+	mem_free(a_old->slays);
+	mem_free(a_old->brands);
+	mem_free(a_old->curses);
+	mem_free(a_old);
+	artifact_set_data_free(data);
+	z_info->a_max = a_max;
+
+	/* Never placed in the dungeon: it exists already */
+	art->alloc_prob = 0;
+	art->alloc_min = 0;
+	art->alloc_max = 0;
+
+	for (tries = 0; tries < 1000 && !name; tries++) {
+		name = artifact_gen_name(art, name_sections);
+		if (artifact_name_taken(name)) {
+			string_free(name);
+			name = NULL;
+		}
+	}
+	if (!name) {
+		artifact_made_release(art);
+		return NULL;
+	}
+	string_free(art->name);
+	art->name = name;
+
+	scroll_apply_to_object(obj, art);
+	art->cost = object_value_real(obj, 1);
+
+	artifact_made_commit(art);
+	mark_artifact_created(art, true);
+	mark_artifact_seen(art, true);
+	mark_artifact_everseen(art, true);
+	return art;
 }

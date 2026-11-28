@@ -87,4 +87,21 @@ void mark_artifact_created(const struct artifact *art, bool created);
 void mark_artifact_seen(const struct artifact *art, bool seen);
 void mark_artifact_everseen(const struct artifact *art, bool seen);
 
+/**
+ * ZangbandTK: room at the end of a_info for artifacts made in play by the
+ * Scroll of Artifact Creation (DEC-170).  The table is allocated with these
+ * slots spare, so taking one moves nothing that points into it.
+ */
+#define ART_MADE_MAX 256
+
+void artifacts_note_standard(void);
+int artifact_standard_count(void);
+bool artifact_is_made(const struct artifact *art);
+int artifact_made_count(void);
+struct artifact *artifact_made_claim(void);
+void artifact_made_commit(struct artifact *art);
+void artifact_made_release(struct artifact *art);
+void artifact_made_reset(void);
+bool artifact_name_taken(const char *name);
+
 #endif /* OBJECT_UTIL_H */

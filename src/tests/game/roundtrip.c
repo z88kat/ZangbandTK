@@ -41,12 +41,14 @@
 #include "unit-test.h"
 #include "test-utils.h"
 
+#include "datafile.h"
 #include "game-world.h"
 #include "init.h"
 #include "mon-make.h"
 #include "player.h"
 #include "generate.h"
 #include "player-birth.h"
+#include "player-history.h"
 #include "player-calcs.h"
 #include "player-spell.h"
 #include "player-util.h"
@@ -56,6 +58,7 @@
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-mutation.h"
@@ -1004,6 +1007,325 @@ static int test_kind_knowledge_follows_the_name(void *state) {
 	ok;
 }
 
+
+/*
+ * Artifacts made in play (DEC-170).  Nothing but the savefile holds a made
+ * artifact's definition, so these check that the definition comes back whole,
+ * that the item comes back as that artifact rather than another of the same
+ * name or none, and that the per-artifact flags land on it.
+ */
+
+/** Carry a long sword made into an artifact, renamed `name` if given. */
+static struct artifact *carry_a_made_artifact(const char *name) {
+	struct object_kind *kind = lookup_kind(TV_SWORD,
+		lookup_sval(TV_SWORD, "Long Sword"));
+	struct object *obj = object_new();
+	struct artifact *art;
+
+	object_prep(obj, kind, 30, MINIMISE);
+	obj->known = object_new();
+	object_set_base_known(player, obj);
+	object_touch(player, obj);
+	art = randart_make_from_object(obj, 60);
+	if (!art) return NULL;
+	if (name) {
+		string_free(art->name);
+		art->name = string_make(name);
+	}
+	obj->known->artifact = art;
+	object_learn_all_runes(player, obj);
+	history_make_artifact(player, art);
+	inven_carry(player, obj, false, false);
+	return art;
+}
+
+/** The carried object that is the named artifact, or NULL. */
+static struct object *carried_artifact(const char *name) {
+	struct object *obj;
+
+	for (obj = player->gear; obj; obj = obj->next)
+		if (obj->artifact && streq(obj->artifact->name, name)) return obj;
+	return NULL;
+}
+
+/** Whether two artifact definitions say the same thing, the index aside. */
+static bool same_artifact(const struct artifact *a, const struct artifact *b) {
+	int i;
+
+	if (!streq(a->name, b->name)) return false;
+	if (a->tval != b->tval || a->sval != b->sval) return false;
+	if (a->to_h != b->to_h || a->to_d != b->to_d || a->to_a != b->to_a)
+		return false;
+	if (a->ac != b->ac || a->dd != b->dd || a->ds != b->ds) return false;
+	if (a->weight != b->weight || a->level != b->level) return false;
+	if (!of_is_equal(a->flags, b->flags)) return false;
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (a->modifiers[i] != b->modifiers[i]) return false;
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (a->el_info[i].res_level != b->el_info[i].res_level) return false;
+		if (a->el_info[i].flags != b->el_info[i].flags) return false;
+	}
+	for (i = 0; i < z_info->brand_max; i++)
+		if ((a->brands && a->brands[i]) != (b->brands && b->brands[i]))
+			return false;
+	for (i = 0; i < z_info->slay_max; i++)
+		if ((a->slays && a->slays[i]) != (b->slays && b->slays[i]))
+			return false;
+	for (i = 0; i < z_info->curse_max; i++)
+		if ((a->curses ? a->curses[i] : 0) != (b->curses ? b->curses[i] : 0))
+			return false;
+	if (a->activation != b->activation) return false;
+	if (a->time.base != b->time.base || a->time.dice != b->time.dice ||
+			a->time.sides != b->time.sides)
+		return false;
+	return true;
+}
+
+/** A copy of an artifact's definition that outlives the table it was in. */
+static struct artifact *keep_artifact(const struct artifact *art) {
+	struct artifact *copy = mem_zalloc(sizeof(*copy));
+
+	memcpy(copy, art, sizeof(*copy));
+	copy->name = string_make(art->name);
+	copy->text = NULL;
+	copy->alt_msg = NULL;
+	copy->brands = NULL;
+	copy->slays = NULL;
+	copy->curses = NULL;
+	if (art->brands) {
+		copy->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+		memcpy(copy->brands, art->brands, z_info->brand_max * sizeof(bool));
+	}
+	if (art->slays) {
+		copy->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+		memcpy(copy->slays, art->slays, z_info->slay_max * sizeof(bool));
+	}
+	if (art->curses) {
+		copy->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+		memcpy(copy->curses, art->curses, z_info->curse_max * sizeof(int));
+	}
+	return copy;
+}
+
+static void free_kept(struct artifact *copy) {
+	string_free(copy->name);
+	mem_free(copy->brands);
+	mem_free(copy->slays);
+	mem_free(copy->curses);
+	mem_free(copy);
+}
+
+/**
+ * A made artifact comes back as itself: the definition whole, the sword in
+ * the pack pointing at it and known to, the flags that say it was made and
+ * seen, and the history line naming it.
+ */
+static int test_a_made_artifact_survives_a_round_trip(void *state) {
+	struct artifact *art, *kept;
+	struct object *obj;
+	struct history_info *list = NULL;
+	size_t n, i;
+	bool logged = false;
+
+	require(make_a_caster());
+	art = carry_a_made_artifact("'Roundtripper'");
+	notnull(art);
+	kept = keep_artifact(art);
+	require(savefile_save(savename));
+
+	reset_before_load();
+	eq(artifact_made_count(), 0);
+	require(savefile_load(savename, false));
+
+	eq(artifact_made_count(), 1);
+	obj = carried_artifact("'Roundtripper'");
+	notnull(obj);
+	require(artifact_is_made(obj->artifact));
+	require(same_artifact(obj->artifact, kept));
+	require(obj->known->artifact == obj->artifact);
+	require(lookup_artifact_name("'Roundtripper'") == obj->artifact);
+	eq(obj->artifact->alloc_prob, 0);
+	require(is_artifact_created(obj->artifact));
+	require(is_artifact_seen(obj->artifact));
+	require(is_artifact_everseen(obj->artifact));
+
+	n = history_get_list(player, &list);
+	for (i = 0; i < n; i++)
+		if (list[i].a_idx == obj->artifact->aidx &&
+				!strncmp(list[i].event, "Made ", 5))
+			logged = true;
+	require(logged);
+
+	free_kept(kept);
+	ok;
+}
+
+/** Two come back as two, each its own sword's. */
+static int test_two_made_artifacts_come_back_as_two(void *state) {
+	struct object *first, *second;
+
+	require(make_a_caster());
+	notnull(carry_a_made_artifact("'First Made'"));
+	notnull(carry_a_made_artifact("'Second Made'"));
+	require(savefile_save(savename));
+
+	reset_before_load();
+	require(savefile_load(savename, false));
+
+	eq(artifact_made_count(), 2);
+	first = carried_artifact("'First Made'");
+	second = carried_artifact("'Second Made'");
+	notnull(first);
+	notnull(second);
+	require(first->artifact != second->artifact);
+	require(artifact_is_made(first->artifact));
+	require(artifact_is_made(second->artifact));
+	ok;
+}
+
+/**
+ * One whose kind has left the game is dropped, its sword is lost through the
+ * ordinary lost path, and the rest of the character loads.
+ */
+static int test_a_made_artifact_whose_kind_has_gone_is_lost(void *state) {
+	struct object_kind *kind;
+
+	require(make_a_caster());
+	notnull(carry_a_made_artifact("'Orphan'"));
+	require(savefile_save(savename));
+
+	reset_before_load();
+	kind = kind_named("& Long Sword~");
+	if (!kind) kind = kind_named("Long Sword");
+	notnull(kind);
+	string_free(kind->name);
+	kind->name = string_make("A Sword That Is Not There Any More");
+	require(savefile_load(savename, false));
+
+	notnull(player->class);
+	eq(artifact_made_count(), 0);
+	null(carried_artifact("'Orphan'"));
+	null(lookup_artifact_name("'Orphan'"));
+	ok;
+}
+
+/**
+ * The "artifacts" block keeps one record per entry of the a_info that wrote
+ * it, made ones last.  When a later build has one more standard artifact, the
+ * made artifact's record must still find the made artifact, and not land on
+ * the newcomer -- which would mark an artifact nobody has seen as found, and
+ * it would never be placed.  The newcomer is put in the table after the
+ * reset, as a later data file would have put it there.
+ */
+static int test_a_made_artifacts_flags_find_it_after_the_set_grows(void *state) {
+	struct artifact *newcomer;
+	struct object *obj;
+	int old_standard;
+
+	require(make_a_caster());
+	notnull(carry_a_made_artifact("'Steadfast'"));
+	require(savefile_save(savename));
+
+	reset_before_load();
+	old_standard = artifact_standard_count();
+	newcomer = artifact_made_claim();
+	notnull(newcomer);
+	newcomer->name = string_make("'Newcomer'");
+	newcomer->tval = TV_SWORD;
+	newcomer->sval = lookup_sval(TV_SWORD, "Long Sword");
+	newcomer->alloc_prob = 10;
+	artifact_made_commit(newcomer);
+	artifacts_note_standard();
+	eq(artifact_standard_count(), old_standard + 1);
+
+	require(savefile_load(savename, false));
+
+	obj = carried_artifact("'Steadfast'");
+	notnull(obj);
+	eq((int) obj->artifact->aidx, old_standard + 1);
+	require(is_artifact_created(obj->artifact));
+	require(!is_artifact_created(newcomer));
+	require(!is_artifact_seen(newcomer));
+	ok;
+}
+
+/**
+ * Every load starts with no made artifacts.  The savefile picker tries again
+ * in the same game when a load fails, without starting the game afresh, so
+ * what a failed load had already read must go.  A copy of the save cut short
+ * fails after its "made artifacts" block; loading the whole one after it must
+ * find one made artifact, not that one and its own.
+ */
+static int test_a_failed_load_leaves_no_made_artifacts_behind(void *state) {
+	char cut[1024];
+	FILE *in, *out;
+	long size;
+	char *bytes;
+
+	require(make_a_caster());
+	notnull(carry_a_made_artifact("'Second Try'"));
+	require(savefile_save(savename));
+
+	strnfmt(cut, sizeof(cut), "%s.cut", savename);
+	in = fopen(savename, "rb");
+	notnull(in);
+	fseek(in, 0, SEEK_END);
+	size = ftell(in);
+	fseek(in, 0, SEEK_SET);
+	bytes = mem_alloc(size);
+	eq((long) fread(bytes, 1, size, in), size);
+	fclose(in);
+	out = fopen(cut, "wb");
+	notnull(out);
+	fwrite(bytes, 1, (size * 3) / 5, out);
+	fclose(out);
+	mem_free(bytes);
+
+	reset_before_load();
+	require(!savefile_load(cut, false));
+	/* It did get as far as the made artifact before it failed */
+	eq(artifact_made_count(), 1);
+	require(savefile_load(savename, false));
+	eq(artifact_made_count(), 1);
+	notnull(carried_artifact("'Second Try'"));
+	file_delete(cut);
+	ok;
+}
+
+/**
+ * In a game with random artifacts the "misc" block rebuilds a_info from the
+ * seed, before anything names an artifact.  The made ones have to be read
+ * after that, into the rebuilt table, or the rebuild throws them away -- which
+ * is why their block sits between "misc" and "artifacts".
+ */
+static int test_a_made_artifact_survives_a_randart_rebuild(void *state) {
+	struct object *obj;
+	char path[1024];
+
+	require(make_a_caster());
+	OPT(player, birth_randarts) = true;
+	seed_randart = 0x0170abcd;
+	notnull(carry_a_made_artifact("'Through The Rebuild'"));
+	require(savefile_save(savename));
+
+	reset_before_load();
+	require(savefile_load(savename, false));
+	require(OPT(player, birth_randarts));
+	eq(artifact_made_count(), 1);
+	obj = carried_artifact("'Through The Rebuild'");
+	notnull(obj);
+	require(artifact_is_made(obj->artifact));
+	require(is_artifact_created(obj->artifact));
+
+	/* The rebuilt set went to the archive; take it back out */
+	if (randart_file_exists()) {
+		activate_randart_file();
+		path_build(path, sizeof(path), ANGBAND_DIR_USER, "randart.txt");
+		file_delete(path);
+	}
+	ok;
+}
+
 const char *suite_name = "game/roundtrip";
 struct test tests[] = {
 	{ "a-caster-survives-a-round-trip",
@@ -1033,5 +1355,17 @@ struct test tests[] = {
 	  test_the_object_memory_says_version_two },
 	{ "kind-knowledge-follows-the-name",
 	  test_kind_knowledge_follows_the_name },
+	{ "a-made-artifact-survives-a-round-trip",
+	  test_a_made_artifact_survives_a_round_trip },
+	{ "two-made-artifacts-come-back-as-two",
+	  test_two_made_artifacts_come_back_as_two },
+	{ "a-made-artifact-whose-kind-has-gone-is-lost",
+	  test_a_made_artifact_whose_kind_has_gone_is_lost },
+	{ "a-made-artifacts-flags-find-it-after-the-set-grows",
+	  test_a_made_artifacts_flags_find_it_after_the_set_grows },
+	{ "a-failed-load-leaves-no-made-artifacts-behind",
+	  test_a_failed_load_leaves_no_made_artifacts_behind },
+	{ "a-made-artifact-survives-a-randart-rebuild",
+	  test_a_made_artifact_survives_a_randart_rebuild },
 	{ NULL, NULL }
 };

@@ -253,9 +253,10 @@ recognised as Zangband's renames of objects 4.2 already ships. The counts moved 
 that "mutations are unbuilt" and promoted in 3.49.0 when they were, and most recently
 the Wand of Rockets (3.142.0, DEC-169), whose missing rocket element DEC-53 had already
 ruled unnecessary. **Twelve of the fourteen deferrals waited on pets** (the ten statues,
-the figurine, and the Wand of Tame Monster), which is M10, and all twelve are in;
-Artifact Creation is the one left, and it waits on a way to save an artifact made in
-play. Three new object
+the figurine, and the Wand of Tame Monster), which is M10, and all twelve are in.
+Artifact Creation was the last, waiting on a way to save an artifact made in play, and
+arrived in 3.143.0 (DEC-170): spare entries at the end of `a_info` and a "made
+artifacts" savefile block. **No deferral is left.** Three new object
 properties — `STRANGE_LUCK`, `PSI_CRIT`, `NO_MAGIC` — were built for it. The §1 caveat is
 amended above: name normalisation is necessary and not sufficient.
 

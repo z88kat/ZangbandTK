@@ -1,1 +1,1 @@
-TESTPROGS += artifact/name
+TESTPROGS += artifact/made artifact/name artifact/randart

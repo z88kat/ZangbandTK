@@ -39,6 +39,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-power.h"
+#include "obj-randart.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
@@ -5077,6 +5078,151 @@ bool effect_handler_RERATE_HP(effect_handler_context_t *context)
 	context->ident = true;
 
 	msg("Current Life Rating is %d/100.", player_rerate_hp(player));
+
+	return true;
+}
+
+/**
+ * What a Scroll of Artifact Creation will take: Zangband's
+ * item_tester_hook_weapon_armour() (object1.c:1491), swords to gloves.  Not a
+ * digger, ammunition, a light or jewellery.  Dragon armour is offered and
+ * then refused, as Zangband offers and refuses it.
+ */
+static bool obj_takes_artifact_scroll(const struct object *obj)
+{
+	switch (obj->tval) {
+		case TV_SWORD:
+		case TV_HAFTED:
+		case TV_POLEARM:
+		case TV_BOW:
+		case TV_DRAG_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_SOFT_ARMOR:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_CROWN:
+		case TV_HELM:
+		case TV_BOOTS:
+		case TV_GLOVES:
+			return true;
+		default:
+			return false;
+	}
+}
+
+/**
+ * Let the player name what they made, as Zangband asks "What do you want to
+ * call the artifact?" and puts the answer in single quotes.  Escape, or
+ * nothing typed, keeps the name the designer drew.  A name another artifact
+ * already has is refused and asked again: objects are saved by their
+ * artifact's name, so two with one name would load as the same artifact.
+ *
+ * Sixty characters, where Zangband took seventy-nine: the history log keeps
+ * an artifact's name in 80 with "Made the Long Sword " in front of it.
+ */
+static void name_made_artifact(struct artifact *art)
+{
+	char buf[61];
+	char name[64];
+
+	buf[0] = '\0';
+	while (get_string("What do you want to call the artifact? ", buf,
+			sizeof(buf))) {
+		if (!buf[0]) return;
+		strnfmt(name, sizeof(name), "'%s'", buf);
+		if (streq(name, art->name)) return;
+		if (!artifact_name_taken(name)) {
+			string_free(art->name);
+			art->name = string_make(name);
+			return;
+		}
+		msg("There is already an artifact called %s.", name);
+		buf[0] = '\0';
+	}
+}
+
+/**
+ * Zangband's artifact_scroll() (spells3.c:1873), for its Scroll of Artifact
+ * Creation (DEC-170).  A weapon or piece of armour becomes an artifact as
+ * strong as one found at twice the player's level, named by the player.
+ *
+ * Zangband's rules are kept: the item glows whatever happens next; dragon
+ * armour is "already magical" and an artifact or ego item "already a powerful
+ * item" (Zangband tests `xtra_name`, which its ego items carry too); of a
+ * stack, one is enchanted and the rest are destroyed; a refusal still uses the
+ * scroll, and only putting it away unread keeps it.  The powers are this
+ * game's -- see randart_make_from_object() -- and the artifact comes out known
+ * through and through, as identify_fully_aux() left Zangband's.
+ */
+bool effect_handler_CREATE_ARTIFACT(effect_handler_context_t *context)
+{
+	struct object *obj;
+	struct artifact *art = NULL;
+	char o_name[80];
+	const char *q = "Enchant which item? ";
+	const char *s = "You have nothing to enchant.";
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
+
+	context->ident = true;
+
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				obj_takes_artifact_scroll, itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, obj_takes_artifact_scroll,
+			itemmode)) {
+		return false;
+	}
+
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
+	msg("The %s radiate%s a blinding light!", o_name,
+		(obj->number > 1) ? "" : "s");
+
+	if (obj->tval == TV_DRAG_ARMOR) {
+		msg("The %s %s already magical!", o_name,
+			(obj->number > 1) ? "are" : "is");
+	} else if (obj->artifact || obj->ego) {
+		msg("The %s %s already %s!", o_name,
+			(obj->number > 1) ? "are" : "is",
+			(obj->number > 1) ? "powerful items" : "a powerful item");
+	} else {
+		if (obj->number > 1) {
+			msg("Not enough energy to enchant more than one object!");
+			msg("%d of your %s %s destroyed!", obj->number - 1, o_name,
+				(obj->number > 2) ? "were" : "was");
+			obj->number = 1;
+			if (obj->known) obj->known->number = 1;
+		}
+		art = randart_make_from_object(obj, player->lev * 2);
+	}
+
+	if (!art) {
+		event_signal(EVENT_INPUT_FLUSH);
+		msg("The enchantment failed.");
+		if (one_in_(3)) virtue_change(player, V_ENCHANT, -1);
+		return true;
+	}
+
+	/* Known through and through, every rune of it learned */
+	if (obj->known) {
+		obj->known->artifact = art;
+		obj->known->notice |= OBJ_NOTICE_ASSESSED;
+		object_learn_all_runes(player, obj);
+	}
+
+	name_made_artifact(art);
+	history_make_artifact(player, art);
+	sound(MSG_IDENT_ART);
+
+	/* create_artifact()'s, then artifact_scroll()'s */
+	virtue_change(player, V_INDIVIDUALISM, 2);
+	virtue_change(player, V_ENCHANT, 5);
+	virtue_change(player, V_ENCHANT, 1);
+
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	return true;
 }

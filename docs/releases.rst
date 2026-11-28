@@ -107,6 +107,37 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+The Scroll of Artifact Creation — 28 November 2026
+--------------------------------------------------
+
+- **3.143.0.** **The Scroll of Artifact Creation is in**, the last Zangband
+  object that was held back. Read it over a weapon or a piece of armour and
+  the item becomes an artifact as strong as the ones found at twice your
+  level, and you name it. Ego items, artifacts and dragon armour are refused,
+  as Zangband refused them, and of a stack one is enchanted and the rest are
+  destroyed.
+- **Its powers are this game's.** They come from the designer that builds
+  every random artifact, run on the item you chose, so a made artifact has the
+  same kinds of modifiers, resistances, slays, brands and activations as any
+  other. One in thirteen is cursed.
+- **It's still there when you load.** Artifacts are read from the data files
+  when the game starts, so one made in play had nowhere to be kept. Made
+  artifacts now have spare room at the end of the artifact table and a
+  section of the savefile of their own. Older saves load as before.
+- You know a made artifact through and through: every rune on it is learned,
+  and your history says "Made" where a found one says "Found".
+- **Random artifacts cover Zangband's too.** The designer that builds a
+  random artifact set stepped over Angband's fixed artifacts with a test that
+  kept looking at the first one's kind. In Angband the two quest artifacts
+  come last, so it never mattered. Here Zangband's artifacts come after them,
+  so once it reached Grond it skipped all of them, kept them as they were, and
+  went on designing artifacts past the end of the table. Now every artifact
+  but the One Ring, Grond, Morgoth's crown and Zangband's crown of Chaos is
+  redesigned, and the designer stops at the end of the table. A random
+  artifact game already started keeps its set, which is in its randart file.
+- The objects page counts 88 Zangband object kinds. It still said 86 after the
+  Wand of Rockets arrived.
+
 The Wand of Rockets — 27 November 2026
 --------------------------------------
 

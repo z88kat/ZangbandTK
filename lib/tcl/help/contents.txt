@@ -147,6 +147,7 @@ page	New artifacts	objects#new-artifacts
 page	New ego types	objects#new-ego-types
 page	New objects	objects#new-objects
 page	The Ring of Fate	objects#the-ring-of-fate
+page	The Scroll of Artifact Creation	objects#the-scroll-of-artifact-creation
 page	The Ancient and Foul Curse	objects#the-ancient-and-foul-curse
 page	Activations	objects#activations
 page	The lotus	objects#the-lotus
